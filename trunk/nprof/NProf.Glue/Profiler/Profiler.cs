@@ -90,6 +90,9 @@ namespace NProf.Glue.Profiler
 
 					Process p = Process.Start( "iisreset.exe", "" );
 					p.WaitForExit();
+					_run.Messages.AddMessage( "Navigate to your project and ASP.NET will connect to the profiler" );
+					_run.Messages.AddMessage( "NOTE: ASP.NET must be set to run under the SYSTEM account in machine.config" );
+					_run.Messages.AddMessage( @"If ASP.NET cannot be profiled, ensure that the userName=""SYSTEM"" in the <processModel> section of machine.config." );
 
 					return true;
 				}
@@ -137,6 +140,10 @@ namespace NProf.Glue.Profiler
 
 		private void OnProcessExited( object oSender, EventArgs ea )
 		{
+			// This gets called twice for file projects - FIXME
+			if ( _run == null )
+				return;
+
 			if ( !_pss.HasStoppedGracefully )
 			{
 				if ( _run.State == Run.RunState.Initializing )
@@ -159,6 +166,7 @@ namespace NProf.Glue.Profiler
 			}
 
 			_dtEnd = DateTime.Now;
+			_run.Messages.AddMessage( "Stopping profiler listener..." );
 			_pss.Stop();
 //			if ( ProcessCompleted != null )
 //				ProcessCompleted( _pss.ThreadInfoCollection );
@@ -194,7 +202,13 @@ namespace NProf.Glue.Profiler
 
 		private void SetRegistryKeys( RegistryKey rk )
 		{
-			ArrayList alItems = new ArrayList( ( string[] )rk.GetValue( "Environment" ) );
+			object oKeys = rk.GetValue( "Environment" );
+			
+			// If it's not something we expected, fix it
+			if ( oKeys == null || !( oKeys is string[] ) )
+				oKeys = new string[ 0 ]; 
+
+			ArrayList alItems = new ArrayList( ( string[] )oKeys );
 				
 			for ( int nIndex = 0; nIndex < alItems.Count; nIndex++ )
 			{

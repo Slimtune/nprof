@@ -43,6 +43,7 @@ namespace NProf.Application
 			}
 
 			Console.Out.Flush();
+			System.Threading.Thread.CurrentThread.Name = "GUI Thread";
 			System.Windows.Forms.Application.Run( pf );
 		}
 

@@ -59,6 +59,7 @@ namespace NProf.Glue.Profiler.Core
 
 		private void ListenThread()
 		{
+			Thread.CurrentThread.Name = "ProfilerSocketServer Listen Thread";
 			try
 			{
 				_mreReceivedMessage = new ManualResetEvent( false );
