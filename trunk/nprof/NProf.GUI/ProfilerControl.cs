@@ -585,6 +585,16 @@ namespace NProf.GUI
 			FunctionInfo fi = ( FunctionInfo )_lvFunctionInfo.SelectedItems[ 0 ].Tag;
 			_lvChildInfo.Items.Clear();
 
+			// somebody clicked! empty the forward stack and push this click on the "Back" stack.
+			if (!_bNavigating) 
+			{
+				_navStackForward.Clear();
+				if (_navCurrent != null) 
+					_navStackBack.Push(_navCurrent);
+
+				_navCurrent = fi;
+			}
+
 			try
 			{
 				foreach ( CalleeFunctionInfo cfi in fi.CalleeInfo )
@@ -643,6 +653,32 @@ namespace NProf.GUI
 			_lvFunctionInfo.Filter(1, _txtFilterBar.Text);
 		}
 
+		public void  NavigateBackward()
+		{
+			if (_navStackBack.Count == 0)
+				return;
+
+			_navStackForward.Push(_navCurrent);
+			_navCurrent = (FunctionInfo) _navStackBack.Pop();
+
+			_bNavigating = true;
+			JumpToID(_navCurrent.ID);
+			_bNavigating = false;
+		}
+
+		public void NavigateForward()
+		{
+			if (_navStackForward.Count == 0)
+				return;
+
+			_navStackBack.Push(_navCurrent);
+			_navCurrent = (FunctionInfo) _navStackForward.Pop();
+
+			_bNavigating = true;
+			JumpToID(_navCurrent.ID);
+			_bNavigating = false;
+		}
+
 		private void JumpToID( int nID )
 		{
 			foreach( ContainerListViewItem lvi in _lvFunctionInfo.Items )
@@ -683,6 +719,10 @@ namespace NProf.GUI
 		private ThreadInfoCollection _tic;
 		private bool _bUpdating, _bInCheck;
 		private Hashtable _htCheckedItems;
+		private Stack _navStackBack = new Stack();
+		private Stack _navStackForward = new Stack();
+		private FunctionInfo _navCurrent = null;
+		private bool  _bNavigating = false;
 
 		#region Context Menus
 

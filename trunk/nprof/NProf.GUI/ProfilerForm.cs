@@ -39,6 +39,8 @@ namespace NProf.GUI
 		private Crownwood.Magic.Docking.DockingManager _dock;
 		private Crownwood.Magic.Menus.MenuCommand _menuView;
 		private Crownwood.Magic.Menus.MenuCommand _cmdProjectView;
+		private Crownwood.Magic.Menus.MenuCommand _cmdNavBack;
+		private Crownwood.Magic.Menus.MenuCommand _cmdNavForward;
 
 		private Crownwood.Magic.Menus.MenuCommand _sep2;
 		private Crownwood.Magic.Menus.MenuCommand _sep1;
@@ -139,8 +141,26 @@ namespace NProf.GUI
 			this.menuCommand6 = new Crownwood.Magic.Menus.MenuCommand();
 			this._cmdRecentProjects = new Crownwood.Magic.Menus.MenuCommand();
 			this._sep3 = new Crownwood.Magic.Menus.MenuCommand();
+			this._cmdNavBack = new Crownwood.Magic.Menus.MenuCommand();
+			this._cmdNavForward = new Crownwood.Magic.Menus.MenuCommand();
 			((System.ComponentModel.ISupportInitialize)(this._sbpMessage)).BeginInit();
 			this.SuspendLayout();
+			this._cmdNavBack.Description = "Navigate Back"; // should be more detailed! in what context?
+
+			this._cmdNavBack.Text = "Back";
+
+			this._cmdNavBack.Click += new System.EventHandler(this._cmdNavBack_Click);
+
+
+
+			this._cmdNavForward.Description = "Navigate Forward"; // should be more detailed! in what context?
+
+			this._cmdNavForward.Text = "Forward";
+
+			this._cmdNavForward.Click += new System.EventHandler(this._cmdNavForward_Click);
+
+
+
 			// 
 			// menuItem1
 			// 
@@ -295,7 +315,13 @@ namespace NProf.GUI
 			// 
 			this._menuView.Description = "View";
 			this._menuView.MenuCommands.AddRange(new Crownwood.Magic.Menus.MenuCommand[] {
-																													  this._cmdProjectView});
+																													 																							 this._cmdProjectView, 
+
+																							 this._cmdNavBack,
+
+																							 this._cmdNavForward
+
+});
 			this._menuView.Text = "&View";
 			// 
 			// _cmdProjectView
@@ -544,6 +570,34 @@ namespace NProf.GUI
 				_pt.SelectProject( frm.Project );
 			}
 		}
+
+		private void _cmdNavBack_Click(object sender, System.EventArgs e)
+		{
+			Crownwood.Magic.Controls.TabPage tpActive = _tcProfilers.SelectedTab;
+			if (tpActive == null)
+				return;
+
+			if (tpActive.Controls.Count == 0 || !(tpActive.Controls[0] is ProfilerControl)) 
+				return;
+
+			((ProfilerControl) tpActive.Controls[0]).NavigateBackward();
+		}
+
+		private void _cmdNavForward_Click(object sender, System.EventArgs e)
+		{
+
+			Crownwood.Magic.Controls.TabPage tpActive = _tcProfilers.SelectedTab;
+
+			if (tpActive == null)
+				return;
+
+			if (tpActive.Controls.Count == 0 || !(tpActive.Controls[0] is ProfilerControl)) 
+				return;
+
+			((ProfilerControl) tpActive.Controls[0]).NavigateForward();
+
+		}
+
 
 		private void _cmdProjectRun_Click(object sender, System.EventArgs e)
 		{
