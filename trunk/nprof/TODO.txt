@@ -1,0 +1,22 @@
+1.0
+ - Load/save projects
+   - Load/save project info
+   - Load/save project run data
+
+ - New version - Update notification
+
+ - Copy profiler run data to clipboard
+   - Add multi-select capabilities to ListView
+
+ - Documentation
+   - Tutorials
+   - General program help
+   - Code documentation
+
+ - FAQ
+
+Beyond 1.0
+ - New project type of class library
+   - Reflect the assembly and allow user to choose starting method
+   - Provide means for user to enter method arguments
+   - Generate stub to launch the method
