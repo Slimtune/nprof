@@ -39,9 +39,6 @@ namespace NProf.GUI
 		private Crownwood.Magic.Menus.MenuCommand _menuView;
 		private Crownwood.Magic.Menus.MenuCommand _cmdProjectView;
 
-		private Profiler _p;
-		private ProjectTree _pt;
-		private ProjectInfoCollection _pic;
 		private Crownwood.Magic.Menus.MenuCommand _sep2;
 		private Crownwood.Magic.Menus.MenuCommand _sep1;
 		private Crownwood.Magic.Menus.MenuCommand _cmdHelpAbout;
@@ -49,7 +46,10 @@ namespace NProf.GUI
 		private Crownwood.Magic.Menus.MenuCommand menuCommand3;
 		private Crownwood.Magic.Menus.MenuCommand menuCommand4;
 		private System.Windows.Forms.StatusBarPanel _sbpMessage;
-
+		private Profiler							_p;
+		private ProjectTree							_pt;
+		private ProjectInfoCollection				_pic;
+		private ProjectInfo							_piInitialProject;
 
 		/// <summary>
 		/// Required designer variable.
@@ -71,6 +71,7 @@ namespace NProf.GUI
 			_p = new Profiler();
 			//_p.ProcessCompleted += new Profiler.ProcessCompletedHandler( OnProfileComplete );
 			_p.Error += new Profiler.ErrorHandler( OnError );
+			_piInitialProject = null;
 		}
 
 		/// <summary>
@@ -322,6 +323,12 @@ namespace NProf.GUI
 		}
 		#endregion
 
+		public ProjectInfo InitialProject
+		{
+			get { return _piInitialProject; }
+			set { _piInitialProject = value; }
+		}
+
 		public void EnableAndStart()
 		{
 			_p.EnableAndStart( new Options() );
@@ -456,6 +463,13 @@ namespace NProf.GUI
 			Crownwood.Magic.Docking.WindowContent wc = _dock.AddContentWithState( c, Crownwood.Magic.Docking.State.DockLeft );
 			
 			_tcProfilers.Appearance = Crownwood.Magic.Controls.TabControl.VisualAppearance.MultiDocument;
+
+			if ( _piInitialProject != null )
+			{
+				_pic.Add( _piInitialProject );
+				_pt.SelectProject( _piInitialProject );
+				_cmdProjectRun_Click( null, null );
+			}
 		}
 
 		private void _tcProfilers_ClosePressed(object sender, System.EventArgs e)
