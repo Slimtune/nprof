@@ -120,17 +120,26 @@ namespace NProf.Glue.Profiler
 
 		public void Stop()
 		{
-			// Is there anything to stop?
-			if ( _run == null )
-				return;
+			Run run;
+
+			lock ( _oRunLock )
+			{
+				run = _run;
+
+				// Is there anything to stop?
+				if ( _run == null )
+					return;
+
+				_run = null;
+			}
 
 			// Stop the profiler socket server if profilee hasn't connected
-			if ( _run.State == Run.RunState.Initializing )
+			if ( run.State == Run.RunState.Initializing )
 			{
-				_run.Messages.AddMessage( "Shutting down profiler..." );
+				run.Messages.AddMessage( "Shutting down profiler..." );
 				_pss.Stop();
-				_run.State = Run.RunState.Finished;
-				_run.Success = false;
+				run.State = Run.RunState.Finished;
+				run.Success = false;
 			}
 
 			if ( _pi.ProjectType == ProjectType.AspNet )
@@ -147,49 +156,57 @@ namespace NProf.Glue.Profiler
 						SetRegistryKeys( rk, false );
 				}
 
-				_run.Messages.AddMessage( "Terminating ASP.NET..." );
+				run.Messages.AddMessage( "Terminating ASP.NET..." );
 				Process.Start( "iisreset.exe", "/stop" ).WaitForExit();
 			}
 		}
 
 		private void OnProcessExited( object oSender, EventArgs ea )
 		{
-			// This gets called twice for file projects - FIXME
-			if ( _run == null )
-				return;
+			Run run;
+
+			lock ( _oRunLock )
+			{
+				run = _run;
+
+				// This gets called twice for file projects - FIXME
+				if ( _run == null )
+					return;
+
+				_run = null;
+			}
 
 			if ( !_pss.HasStoppedGracefully )
 			{
-				if ( _run.State == Run.RunState.Initializing )
+				if ( run.State == Run.RunState.Initializing )
 				{
-					_run.Messages.AddMessage( "No connection made with profiled application." );
-					_run.Messages.AddMessage( "Application might not support .NET." );
+					run.Messages.AddMessage( "No connection made with profiled application." );
+					run.Messages.AddMessage( "Application might not support .NET." );
 				}
 				else
 				{
-					_run.Messages.AddMessage( "Application stopped before profiler information could be retrieved." );
+					run.Messages.AddMessage( "Application stopped before profiler information could be retrieved." );
 				}
 
-				_run.Success = false;
-				_run.State = Run.RunState.Finished;
-				_run.Messages.AddMessage( "Profiler run did not complete successfully." );
+				run.Success = false;
+				run.State = Run.RunState.Finished;
+				run.Messages.AddMessage( "Profiler run did not complete successfully." );
 			}
 			else
 			{
-				_run.Success = true;
+				run.Success = true;
 			}
 
 			_dtEnd = DateTime.Now;
-			_run.Messages.AddMessage( "Stopping profiler listener..." );
+			run.Messages.AddMessage( "Stopping profiler listener..." );
 			_pss.Stop();
 //			if ( ProcessCompleted != null )
 //				ProcessCompleted( _pss.ThreadInfoCollection );
 
-			_run.EndTime = _dtEnd;
-			_run.ThreadInfoCollection = _pss.ThreadInfoCollection;
+			run.EndTime = _dtEnd;
+			run.ThreadInfoCollection = _pss.ThreadInfoCollection;
 
-			_pch( _run );
-			_run = null;
+			_pch( run );
 		}
 
 		private void OnError( Exception e )
@@ -275,6 +292,7 @@ namespace NProf.Glue.Profiler
 		private DateTime _dtStart;
 		private DateTime _dtEnd;
 		private Run _run;
+		private object _oRunLock = 0;
 
 		[DllImport("Kernel32.dll", CharSet = CharSet.Auto )]
 		private static extern bool SetEnvironmentVariable( string strVariable, string strNewValue );
