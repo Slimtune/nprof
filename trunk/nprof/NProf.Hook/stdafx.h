@@ -53,6 +53,7 @@ using namespace ATL;
 #include <stack>
 #include <utility>
 #include <memory>
+#include <sstream>
 using namespace std;
 
 // COR includes

@@ -11,9 +11,10 @@ enum NetworkMessage
 	THREAD_CREATE,
 	THREAD_END,
 	FUNCTION_DATA,
+	PROFILER_MESSAGE,
 };
 
-const int NETWORK_PROTOCOL_VERSION = 1;
+const int NETWORK_PROTOCOL_VERSION = 2;
 
 class ProfilerSocket
 {
@@ -28,8 +29,9 @@ public:
   void SendThreadEnd( ThreadID tid, UINT64 llThreadStartTime, UINT64 llThreadEndTime );
   void SendStartFunctionData( ThreadID tid );
   void SendFunctionData( ProfilerHelper& ph, FunctionID fid );
-  void SendFunctionTimingData( int nCalls, UINT64 llCycleCount, UINT64 llSuspendCycleCount );
-  void SendCalleeFunctionData( FunctionID fid, int nCalls, UINT64 llCycleCount );
+  void SendProfilerMessage( const string& strMessage );
+  void SendFunctionTimingData( int nCalls, UINT64 llCycleCount, UINT64 llRecursiveCycleCount, UINT64 llSuspendCycleCount );
+  void SendCalleeFunctionData( FunctionID fid, int nCalls, UINT64 llCycleCount, UINT64 llRecursiveCycleCount );
   void SendEndFunctionData();
   void SendEndCalleeFunctionData();
   int ReadByte( BYTE& b );

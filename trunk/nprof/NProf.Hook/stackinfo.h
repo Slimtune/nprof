@@ -22,6 +22,8 @@
 #include "functioninfo.h"
 #include "stackentryinfo.h"
  
+class ThreadInfo;
+
 using namespace std;
 
 /**
@@ -30,7 +32,7 @@ using namespace std;
 
 class StackInfo {
 public: 
-	StackInfo();
+	StackInfo( ThreadInfo* pThreadInfo );
 	~StackInfo();
   
   /** No descriptions */
@@ -45,6 +47,7 @@ public:
 private:
   INT64 _llSuspendStart;
   stack< StackEntryInfo > _sFunctionStack;
+  ThreadInfo* _pThreadInfo;
 };
 
 #endif

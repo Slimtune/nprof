@@ -21,8 +21,10 @@
 FunctionInfo::FunctionInfo( FunctionID fid )
 {
   llCycleCount = -1;
+  llRecursiveCycleCount = -1;
   llSuspendCycleCount = 0;
   nCalls = 0;
+  nRecursiveCount = 0;
   this->fid = fid;
 }
 
@@ -61,10 +63,10 @@ void FunctionInfo::Trace( ProfilerHelper& ph )
 
 void FunctionInfo::Dump( ProfilerSocket& ps, ProfilerHelper& ph )
 {
-  ps.SendFunctionTimingData( nCalls, llCycleCount, llSuspendCycleCount );
+  ps.SendFunctionTimingData( nCalls, llCycleCount, llRecursiveCycleCount, llSuspendCycleCount );
   for ( map< FunctionID, CalleeFunctionInfo* >::iterator it = _mCalleeInfo.begin(); it != _mCalleeInfo.end(); it++ )
   {
-    ps.SendCalleeFunctionData( it->first, it->second->nCalls, it->second->llCycleCount );
+    ps.SendCalleeFunctionData( it->first, it->second->nCalls, it->second->llCycleCount, it->second->llRecursiveCycleCount );
   }
   ps.SendEndCalleeFunctionData();
 }

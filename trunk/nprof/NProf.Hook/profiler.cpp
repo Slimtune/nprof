@@ -33,8 +33,6 @@ Profiler::~Profiler()
 void Profiler::Enter( FunctionID fid )
 {
   FunctionInfo* pFunctionInfo = GetCurrentThreadInfo()->GetFunctionInfo( fid );
-  pFunctionInfo->nCalls++;
-  
   GetCurrentThreadInfo()->GetStackInfo()->PushFunction( pFunctionInfo, rdtsc() );
 }
 
@@ -53,7 +51,6 @@ void Profiler::TailCall( FunctionID fid )
 void Profiler::UnmanagedToManagedCall( FunctionID fid )
 {
   FunctionInfo* pFunctionInfo = GetCurrentThreadInfo()->GetFunctionInfo( fid );
-  pFunctionInfo->nCalls++;
   GetCurrentThreadInfo()->GetStackInfo()->PushFunction( pFunctionInfo, rdtsc() );
 }
 
@@ -87,14 +84,14 @@ void Profiler::ThreadEnd( ThreadID tid )
 /** No descriptions */
 void Profiler::ThreadSuspend()
 {
-  cout << "ThreadSuspend( " << GetCurrentThreadID() << " )" << endl;
+  //cout << "ThreadSuspend( " << GetCurrentThreadID() << " )" << endl;
   _tic.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->SuspendFunction( rdtsc() );
 }
 
 /** No descriptions */
 void Profiler::ThreadResume()
 {
-  cout << "ThreadResume( " << GetCurrentThreadID() << " )" << endl;
+  //cout << "ThreadResume( " << GetCurrentThreadID() << " )" << endl;
   _tic.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->ResumeFunction( rdtsc() );
 }
 

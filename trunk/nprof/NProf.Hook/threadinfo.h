@@ -43,10 +43,11 @@ public:
   void Dump( ProfilerSocket& ps, ProfilerHelper& ph );
   INT64 _llStartTime;
   INT64 _llEndTime;
+  INT64 _llSuspendTime;
   
 private:
   bool  _bRunning;
-  StackInfo _si;
+  StackInfo* _pStackInfo;
   map< FunctionID, FunctionInfo* > _mFunctionInfo;
 };
 

@@ -30,7 +30,9 @@ public:
 	~CalleeFunctionInfo();
 
   INT64 llCycleCount;
+  INT64 llRecursiveCycleCount;
   int nCalls;
+  int nRecursiveCount;
 };
 
 #endif

@@ -38,7 +38,9 @@ public:
   void Dump( ProfilerSocket& ps, ProfilerHelper& ph );
 
   int nCalls;
+  int nRecursiveCount;
   INT64 llCycleCount;
+  INT64 llRecursiveCycleCount;
   INT64 llSuspendCycleCount;
   FunctionID fid;
 

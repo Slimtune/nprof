@@ -22,10 +22,13 @@
 ThreadInfo::ThreadInfo()
 {
   _bRunning = false;
+  _llSuspendTime = 0;
+  _pStackInfo = new StackInfo( this );
 }
 
 ThreadInfo::~ThreadInfo()
 {
+	delete _pStackInfo;
 }
 
 void ThreadInfo::Start()
@@ -47,7 +50,7 @@ bool ThreadInfo::IsRunning()
 
 StackInfo* ThreadInfo::GetStackInfo()
 {
-  return &_si;
+  return _pStackInfo;
 }
 
 FunctionInfo* ThreadInfo::GetFunctionInfo( FunctionID fid )
