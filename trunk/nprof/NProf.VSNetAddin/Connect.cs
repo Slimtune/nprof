@@ -38,13 +38,13 @@ namespace NProf.VSNetAddin
 			_pApplication = ( _DTE )oApplication;
 			_pAddInInstance = ( EnvDTE.AddIn )oAddInInstance;
 
-			Command cmdDebug;
-
 			_pf = new ProfilerForm();
 			_pf.Owner = null;
 			_pf.Closed += new EventHandler(_pf_Closed);
 
 			// Hook up to run events
+			Command cmdDebug;
+
 			cmdDebug = _pApplication.Commands.Item( "Debug.Start", 1 );
 			_cmdevDebugStart = _pApplication.Events.get_CommandEvents( cmdDebug.Guid, cmdDebug.ID );
 			_cmdevDebugStart.BeforeExecute += new EnvDTE._dispCommandEvents_BeforeExecuteEventHandler( OnBeforeRun );
@@ -143,21 +143,16 @@ namespace NProf.VSNetAddin
 			ref object oCommandText )
 		{
 			//System.Diagnostics.Debug.WriteLine( String.Format( "QueryStatus: {0}", strCommandName ) );
-			if( cstwStatus == EnvDTE.vsCommandStatusTextWanted.vsCommandStatusTextWantedNone )
+			if( strCommandName == "NProf.Connect.Enable" )
 			{
-				oCommandText = "Enable Profiling";
+				csCommandStatus = vsCommandStatus.vsCommandStatusSupported;
 
-				if( strCommandName == "NProf.Connect.Enable" )
+				if ( _pApplication.Solution.IsOpen )
 				{
-					csCommandStatus = vsCommandStatus.vsCommandStatusSupported;
+					if ( _bEnabled )
+						csCommandStatus |= vsCommandStatus.vsCommandStatusLatched;
 
-					if ( _pApplication.Solution.IsOpen )
-					{
-						if ( _bEnabled )
-							csCommandStatus |= vsCommandStatus.vsCommandStatusLatched;
-
-						csCommandStatus |= vsCommandStatus.vsCommandStatusEnabled;
-					}
+					csCommandStatus |= vsCommandStatus.vsCommandStatusEnabled;
 				}
 			}
 		}

@@ -12,6 +12,12 @@ namespace NProf.Glue.Profiler.Project
 			_po = new Options();
 			_strName = null;
 			_rc = new RunCollection( this );
+			_bSpecial = false;
+		}
+
+		public ProjectInfo( bool bSpecial ) : this()
+		{
+			_bSpecial = true;
 		}
 
 		public Options Options
@@ -56,9 +62,15 @@ namespace NProf.Glue.Profiler.Project
 			return run;
 		}
 
+		public bool Special
+		{
+			get { return _bSpecial; }
+		}
+
 		private Options _po;
 		private string _strAppName, _strArguments, _strWorkingDirectory;
 		private string _strName;
 		private RunCollection _rc;
+		private bool _bSpecial;
 	}
 }

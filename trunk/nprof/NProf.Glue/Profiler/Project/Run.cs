@@ -11,7 +11,7 @@ namespace NProf.Glue.Profiler.Project
 		public Run( Profiler p, ProjectInfo pi )
 		{
 			_p = p;
-			_dtStart = DateTime.MinValue;
+			_dtStart = DateTime.Now;
 			_dtEnd = DateTime.MaxValue;
 			_rs = RunState.Initializing;
 			_tic = null;

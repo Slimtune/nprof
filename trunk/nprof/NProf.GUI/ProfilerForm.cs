@@ -50,6 +50,7 @@ namespace NProf.GUI
 		private ProjectTree							_pt;
 		private ProjectInfoCollection				_pic;
 		private ProjectInfo							_piInitialProject;
+		private ProjectInfo							_piVSNetProject;
 		private Crownwood.Magic.Menus.MenuCommand _cmdProjectRunViewMessages;
 		private Crownwood.Magic.Menus.MenuCommand menuCommand5;
 		private Crownwood.Magic.Menus.MenuCommand menuCommand6;
@@ -364,13 +365,17 @@ namespace NProf.GUI
 
 		public void EnableAndStart()
 		{
-			ProjectInfo pi = new ProjectInfo();
-			pi.Name = "VS.NET Project";
+			if ( _piVSNetProject == null )
+			{
+				_piVSNetProject = new ProjectInfo( true );
+				_piVSNetProject.Name = "VS.NET Project";
+				_pic.Add( _piVSNetProject );
+			}
 
-			Run run = pi.CreateRun( _p );
+			Run run = _piVSNetProject.CreateRun( _p );
 			run.StateChanged += new Run.RunStateEventHandler( OnRunStateChanged );
 
-			_p.EnableAndStart( pi, run );
+			_p.EnableAndStart( _piVSNetProject, run );
 		}
 
 		public void Disable()
@@ -558,8 +563,8 @@ namespace NProf.GUI
 
 		private void UpdateProjectItems(object sender, System.EventArgs e)
 		{
-			_cmdProjectRun.Enabled = ( _pt.GetSelectedProject() != null );
-			_cmdProjectOptions.Enabled = ( _pt.GetSelectedProject() != null );
+			_cmdProjectRun.Enabled = ( _pt.GetSelectedProject() != null && !_pt.GetSelectedProject().Special );
+			_cmdProjectOptions.Enabled = ( _pt.GetSelectedProject() != null && !_pt.GetSelectedProject().Special );
 			_cmdProjectRunViewMessages.Enabled = ( !IsShowingBlankTab() );
 		}
 
