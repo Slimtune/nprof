@@ -5,6 +5,8 @@ using System.Collections;
 using System.ComponentModel;
 using System.Windows.Forms;
 using System.Data;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using NProf.Glue.Profiler;
 using NProf.Glue.Profiler.Info;
 using NProf.Glue.Profiler.Project;
@@ -84,7 +86,14 @@ namespace NProf.GUI
 			//_p.ProcessCompleted += new Profiler.ProcessCompletedHandler( OnProfileComplete );
 			_p.Error += new Profiler.ErrorHandler( OnError );
 			_piInitialProject = null;
+			
+			string strDirectory = Path.GetDirectoryName( Assembly.GetExecutingAssembly().Location );
+			string strDLL = Path.Combine( strDirectory, "msvcr70.dll" );
+			if ( LoadLibrary( strDLL ) == 0 )
+				throw new Win32Exception( Marshal.GetLastWin32Error(), "Failed to load msvcr10.dll" );
 		}
+
+ 		[DllImport("kernel32.dll", SetLastError=true)] static extern int LoadLibrary( string strLibFileName );
 
 		/// <summary>
 		/// Clean up any resources being used.

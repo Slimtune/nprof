@@ -1,4 +1,4 @@
-set VERSION=0.9-alpha
+set VERSION=0.9b-alpha
 set CONFIGURATION=release
 
 if "%1"=="upload" (

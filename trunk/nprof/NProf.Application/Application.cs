@@ -56,7 +56,8 @@ namespace NProf.Application
 		private static void EnableVisualStyles()
 		{
 			Type applicationType = typeof(System.Windows.Forms.Application);
-			MethodInfo styleMethod = applicationType.GetMethod("EnableVisualStyles");
+			Type[] tArray = new Type[0];
+			MethodInfo styleMethod = applicationType.GetMethod("EnableVisualStyles", tArray);
 
 			// using .Net version 1.1 or higher
 			if(styleMethod != null)

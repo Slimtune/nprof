@@ -65,6 +65,7 @@
 
 		<copy todir="${package.directory}/nprof/bin" flatten="true">
 			<fileset>
+				<includes name="Libraries/DotNetLib/*.dll" />
 				<includes name="NProf.Hook/${build.configuration}/*.dll" />
 				<includes name="NProf.Application/bin/${build.configuration}/*.dll" />
 				<includes name="NProf.VSNetAddin/bin/${build.configuration}/*.dll" />
