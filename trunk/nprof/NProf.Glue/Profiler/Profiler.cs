@@ -26,7 +26,7 @@ namespace NProf.Glue.Profiler
 
 		public static string Version
 		{
-			get { return "0.8a-alpha"; }
+			get { return "0.8b-alpha"; }
 		}
 
 		public bool CheckSetup( out string strMessage )
@@ -81,13 +81,13 @@ namespace NProf.Glue.Profiler
 					using ( RegistryKey rk = Registry.LocalMachine.OpenSubKey( @"SYSTEM\CurrentControlSet\Services\W3SVC", true ) )
 					{
 						if ( rk != null )
-							SetRegistryKeys( rk );
+							SetRegistryKeys( rk, true );
 					}
 
 					using ( RegistryKey rk = Registry.LocalMachine.OpenSubKey( @"SYSTEM\CurrentControlSet\Services\IISADMIN", true ) )
 					{
 						if ( rk != null )
-							SetRegistryKeys( rk );
+							SetRegistryKeys( rk, true );
 					}
 
 					Process p = Process.Start( "iisreset.exe", "" );
@@ -135,6 +135,18 @@ namespace NProf.Glue.Profiler
 
 			if ( _pi.ProjectType == ProjectType.AspNet )
 			{
+				using ( RegistryKey rk = Registry.LocalMachine.OpenSubKey( @"SYSTEM\CurrentControlSet\Services\W3SVC", true ) )
+				{
+					if ( rk != null )
+						SetRegistryKeys( rk, false );
+				}
+
+				using ( RegistryKey rk = Registry.LocalMachine.OpenSubKey( @"SYSTEM\CurrentControlSet\Services\IISADMIN", true ) )
+				{
+					if ( rk != null )
+						SetRegistryKeys( rk, false );
+				}
+
 				_run.Messages.AddMessage( "Terminating ASP.NET..." );
 				Process.Start( "iisreset.exe", "/stop" ).WaitForExit();
 			}
@@ -202,10 +214,17 @@ namespace NProf.Glue.Profiler
 			return ( string )_htFunctionMap[ nFunctionID ];
 		}
 
-		private void SetRegistryKeys( RegistryKey rk )
+		private void SetRegistryKeys( RegistryKey rk, bool bSet )
 		{
 			if ( rk == null )
 				return;
+			
+			if ( !bSet )
+			{
+				// Get rid of the environment
+				rk.DeleteValue( "Environment", false );
+				return;
+			}
 
 			object oKeys = rk.GetValue( "Environment" );
 			
@@ -213,24 +232,34 @@ namespace NProf.Glue.Profiler
 			if ( oKeys == null || !( oKeys is string[] ) )
 				oKeys = new string[ 0 ]; 
 
-			ArrayList alItems = new ArrayList( ( string[] )oKeys );
-				
-			for ( int nIndex = 0; nIndex < alItems.Count; nIndex++ )
+			// Save the environment the first time through
+			if ( rk.GetValue( "nprof Saved Environment" ) == null && ( ( string[] )oKeys ).Length > 0 )
+				rk.SetValue( "nprof Saved Environment", oKeys );
+
+			Hashtable htItems = new Hashtable( Environment.GetEnvironmentVariables() );
+
+			// Set the environment to be the default system environment
+			using ( RegistryKey rkEnv = Registry.LocalMachine.OpenSubKey( @"SYSTEM\CurrentControlSet\Control\Session Manager\Environment" ) )
 			{
-				string[] astrItemComponents = ( ( string )alItems[ nIndex ] ).Split( '=' );
-				string strItemName = astrItemComponents[ 0 ].Trim().ToUpper();
-					
-				// Remove any of the entries we're going to add back
-				if ( strItemName == "COR_ENABLE_PROFILING" || strItemName == "COR_PROFILER" || strItemName == "NPROF_PROFILING_SOCKET" )
-				{
-					alItems.RemoveAt( nIndex );
-					nIndex--;
-				}
+				if ( rkEnv == null )
+					throw new InvalidOperationException( "Unable to locate machine environment key" );
+
+				foreach ( string strValueName in rkEnv.GetValueNames() )
+					htItems[ strValueName ] = rkEnv.GetValue( strValueName );
+				
 			}
 
-			alItems.Add( "COR_ENABLE_PROFILING=0x1" );
-			alItems.Add( "COR_PROFILER=" + PROFILER_GUID );
-			alItems.Add( "NPROF_PROFILING_SOCKET=" + _pss.Port.ToString() );
+			htItems.Remove( "COR_ENABLE_PROFILING" );
+			htItems.Remove( "COR_PROFILER" );
+			htItems.Remove( "NPROF_PROFILING_SOCKET" );
+
+			htItems.Add( "COR_ENABLE_PROFILING", "0x1" );
+			htItems.Add( "COR_PROFILER", PROFILER_GUID );
+			htItems.Add( "NPROF_PROFILING_SOCKET", _pss.Port.ToString() );
+
+			ArrayList alItems = new ArrayList();
+			foreach ( DictionaryEntry de in htItems )
+				alItems.Add( String.Format( "{0}={1}", de.Key, de.Value ) );
 
 			rk.SetValue( "Environment", ( string[] )alItems.ToArray( typeof( string ) ) );
 		}
