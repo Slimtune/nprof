@@ -212,6 +212,10 @@
                     BuildAction = "EmbeddedResource"
                 />
                 <File
+                    RelPath = "Resources\initializing.bmp"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
                     RelPath = "Resources\project.bmp"
                     BuildAction = "EmbeddedResource"
                 />

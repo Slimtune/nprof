@@ -14,10 +14,10 @@ namespace NProf.GUI
 	public class ProfilerRunControl : System.Windows.Forms.UserControl
 	{
 		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.ListView listView1;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.Button _btnStop;
 		private System.Windows.Forms.ColumnHeader _chMessage;
+		private System.Windows.Forms.ListView _lvMessages;
 		/// <summary> 
 		/// Required designer variable.
 		/// </summary>
@@ -30,11 +30,6 @@ namespace NProf.GUI
 
 			// TODO: Add any initialization after the InitializeComponent call
 
-		}
-
-		public Run ProfilerRun
-		{
-			set { _r = value; }
 		}
 
 		/// <summary> 
@@ -60,10 +55,10 @@ namespace NProf.GUI
 		private void InitializeComponent()
 		{
 			this.label1 = new System.Windows.Forms.Label();
-			this.listView1 = new System.Windows.Forms.ListView();
+			this._lvMessages = new System.Windows.Forms.ListView();
+			this._chMessage = new System.Windows.Forms.ColumnHeader();
 			this.label2 = new System.Windows.Forms.Label();
 			this._btnStop = new System.Windows.Forms.Button();
-			this._chMessage = new System.Windows.Forms.ColumnHeader();
 			this.SuspendLayout();
 			// 
 			// label1
@@ -74,19 +69,19 @@ namespace NProf.GUI
 			this.label1.TabIndex = 0;
 			this.label1.Text = "Current state:";
 			// 
-			// listView1
+			// _lvMessages
 			// 
-			this.listView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+			this._lvMessages.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
 				| System.Windows.Forms.AnchorStyles.Left) 
 				| System.Windows.Forms.AnchorStyles.Right)));
-			this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-																						this._chMessage});
-			this.listView1.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
-			this.listView1.Location = new System.Drawing.Point(8, 48);
-			this.listView1.Name = "listView1";
-			this.listView1.Size = new System.Drawing.Size(824, 400);
-			this.listView1.TabIndex = 1;
-			this.listView1.View = System.Windows.Forms.View.Details;
+			this._lvMessages.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+																						  this._chMessage});
+			this._lvMessages.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+			this._lvMessages.Location = new System.Drawing.Point(8, 48);
+			this._lvMessages.Name = "_lvMessages";
+			this._lvMessages.Size = new System.Drawing.Size(824, 400);
+			this._lvMessages.TabIndex = 1;
+			this._lvMessages.View = System.Windows.Forms.View.Details;
 			// 
 			// label2
 			// 
@@ -108,11 +103,12 @@ namespace NProf.GUI
 			// 
 			this.Controls.Add(this._btnStop);
 			this.Controls.Add(this.label2);
-			this.Controls.Add(this.listView1);
+			this.Controls.Add(this._lvMessages);
 			this.Controls.Add(this.label1);
 			this.Name = "ProfilerRunControl";
 			this.Size = new System.Drawing.Size(840, 456);
 			this.VisibleChanged += new System.EventHandler(this.ProfilerRunControl_VisibleChanged);
+			this.Resize += new System.EventHandler(this.ProfilerRunControl_Resize);
 			this.ResumeLayout(false);
 
 		}
@@ -120,14 +116,43 @@ namespace NProf.GUI
 
 		private Run _r;
 
+		private void OnMessage( string strMessage )
+		{
+			_lvMessages.Invoke( new RunMessageCollection.MessageHandler( OnMessageUIThread ), new object[] { strMessage } );
+		}
+
+		private void OnMessageUIThread( string strMessage )
+		{
+			lock ( _lvMessages )
+				_lvMessages.Items.Add( strMessage );
+		}
+
 		private void ProfilerRunControl_VisibleChanged(object sender, System.EventArgs e)
 		{
-			if ( this.Visible )
+			if ( !this.Visible )
 			{
+				_r.Messages.StopListening( new RunMessageCollection.MessageHandler( OnMessage ) );
 			}
-			else
-			{
+		}
+
+		public Run ProfilerRun
+		{
+			set 
+			{ 
+				_r = value; 
+
+				lock ( _lvMessages )
+				{
+					string[] astrMessages = _r.Messages.StartListening( new RunMessageCollection.MessageHandler( OnMessage ) );
+					foreach ( string strMessage in astrMessages )
+						OnMessageUIThread( strMessage );
+				}
 			}
+		}
+
+		private void ProfilerRunControl_Resize(object sender, System.EventArgs e)
+		{
+			_lvMessages.Columns[ 0 ].Width = -2;
 		}
 	}
 }

@@ -265,7 +265,7 @@ namespace NProf.GUI
 			this._cbCurrentThread.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this._cbCurrentThread.Location = new System.Drawing.Point(48, 0);
 			this._cbCurrentThread.Name = "_cbCurrentThread";
-			this._cbCurrentThread.Size = new System.Drawing.Size(121, 21);
+			this._cbCurrentThread.Size = new System.Drawing.Size(136, 21);
 			this._cbCurrentThread.TabIndex = 11;
 			this._cbCurrentThread.SelectedIndexChanged += new System.EventHandler(this._cbCurrentThread_SelectedIndexChanged);
 			// 
@@ -301,10 +301,24 @@ namespace NProf.GUI
 		{
 			_cbCurrentThread.Items.Clear();
 
-			foreach ( ThreadInfo ti in _tic )
-				_cbCurrentThread.Items.Add( ti );
+			_cbCurrentThread.Sorted = false;
+			SortedList sl = new SortedList();
 
-			_cbCurrentThread.SelectedIndex = 0;
+			// Sort the thread info
+			foreach ( ThreadInfo ti in _tic )
+				sl.Add( ti.ID, ti );
+
+			// Then add them to the combobox
+			foreach ( DictionaryEntry de in sl )
+				_cbCurrentThread.Items.Add( de.Value );
+
+			if ( _cbCurrentThread.Items.Count > 0 )
+			{
+				_cbCurrentThread.SelectedIndex = 0;
+				_cbCurrentThread.Enabled = true;
+			}
+			else
+				_cbCurrentThread.Enabled = false;
 		}
 
 		private void _cbCurrentThread_SelectedIndexChanged(object sender, System.EventArgs e)

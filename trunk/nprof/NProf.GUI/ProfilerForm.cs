@@ -402,7 +402,7 @@ namespace NProf.GUI
 		{
 		}
 
-		private void OnProfileComplete( Run run )
+		private void OnProfileStateChange( Run run )
 		{
 			this.BeginInvoke( new HandleProfileComplete( OnUIThreadProfileComplete ), new object[] { run } );
 		}
@@ -476,7 +476,7 @@ namespace NProf.GUI
 				pc.ProfilerRun = run;
 			}
 
-			if ( run.State == Run.RunState.Running && ( tpActive.Controls.Count == 0 || !( tpActive.Controls[ 0 ] is ProfilerRunControl ) ) )
+			if ( ( run.State == Run.RunState.Running || run.State == Run.RunState.Initializing ) && ( tpActive.Controls.Count == 0 || !( tpActive.Controls[ 0 ] is ProfilerRunControl ) ) )
 			{
 				tpActive.Controls.Clear();
 				ProfilerRunControl pc = new ProfilerRunControl();
@@ -534,9 +534,14 @@ namespace NProf.GUI
 
 		private void OnRunStateChanged( Run run, Run.RunState rsOld, Run.RunState rsNew )
 		{
+			if ( rsNew == Run.RunState.Running )
+			{
+				OnProfileStateChange( run );
+			}
+
 			if ( rsNew == Run.RunState.Finished )
 			{
-				OnProfileComplete( run );
+				OnProfileStateChange( run );
 			}
 		}
 

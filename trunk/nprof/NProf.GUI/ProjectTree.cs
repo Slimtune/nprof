@@ -232,10 +232,12 @@ namespace NProf.GUI
 		{
 			switch ( rs )
 			{
+				case Run.RunState.Initializing:
+					return 1;
 				case Run.RunState.Running:
 					return 2;
 				case Run.RunState.Finished:
-					return 1;
+					return 3;
 			}
 
 			return 0;
@@ -247,8 +249,9 @@ namespace NProf.GUI
 			_ilState.TransparentColor = Color.Magenta;
 			
 			_ilState.Images.Add( Image.FromStream( this.GetType().Assembly.GetManifestResourceStream( "NProf.GUI.Resources.project.bmp" ) ) );
-			_ilState.Images.Add( Image.FromStream( this.GetType().Assembly.GetManifestResourceStream( "NProf.GUI.Resources.stop.bmp" ) ) );
+			_ilState.Images.Add( Image.FromStream( this.GetType().Assembly.GetManifestResourceStream( "NProf.GUI.Resources.initializing.bmp" ) ) );
 			_ilState.Images.Add( Image.FromStream( this.GetType().Assembly.GetManifestResourceStream( "NProf.GUI.Resources.go.bmp" ) ) );
+			_ilState.Images.Add( Image.FromStream( this.GetType().Assembly.GetManifestResourceStream( "NProf.GUI.Resources.stop.bmp" ) ) );
 
 			_tvProjects.ImageList = _ilState;
 		}

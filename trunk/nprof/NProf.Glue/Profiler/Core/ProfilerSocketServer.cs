@@ -6,6 +6,7 @@ using System.Threading;
 using System.Collections;
 using System.Runtime.InteropServices;
 using NProf.Glue.Profiler.Info;
+using NProf.Glue.Profiler.Project;
 
 namespace NProf.Glue.Profiler.Core
 {
@@ -14,13 +15,15 @@ namespace NProf.Glue.Profiler.Core
 	/// </summary>
 	public class ProfilerSocketServer
 	{
-		public ProfilerSocketServer( Project.Options po )
+		public ProfilerSocketServer( Project.Options po, Run run )
 		{
 			_fsm = new FunctionSignatureMap();
-			_tic = new ThreadInfoCollection();
+			_run = run;
+			_tic = run.ThreadInfoCollection;
 			_nStopFlag = 0;
 			_po = po;
-			_alMessages = new ArrayList();
+			
+			_run.Messages.AddMessage( "Waiting for application..." );
 		}
 
 		public void Start()
@@ -41,11 +44,6 @@ namespace NProf.Glue.Profiler.Core
 		public ThreadInfoCollection ThreadInfoCollection
 		{
 			get { return _tic; }
-		}
-
-		public string[] Messages
-		{
-			get { return ( string[] )_alMessages.ToArray( typeof( string ) ); }
 		}
 
 		public FunctionSignatureMap FunctionSignatureMap
@@ -166,12 +164,18 @@ namespace NProf.Glue.Profiler.Core
 
 								UInt32 nProcessID = br.ReadUInt32();
 								string strProcessName = ReadLengthEncodedASCIIString( br );
+
+								_run.Messages.AddMessage( "Connected to " + strProcessName + " with process ID " + nProcessID );
 							}
+
+							// We're off!
+							_run.State = Run.RunState.Running;
 							break;
 						}
 
 						case NetworkMessage.SHUTDOWN:
 						{
+							_run.Messages.AddMessage( "Profiling completed." );
 							if ( Exited != null )
 								Exited( this, EventArgs.Empty );
 							break;
@@ -180,22 +184,27 @@ namespace NProf.Glue.Profiler.Core
 						case NetworkMessage.APPDOMAIN_CREATE:
 						{
 							nAppDomainID = br.ReadInt32();
+							_run.Messages.AddMessage( "AppDomain created: " + nAppDomainID );
 							break;
 						}
 
 						case NetworkMessage.THREAD_CREATE:
 							nThreadID = br.ReadInt32();
+							_run.Messages.AddMessage( "Thread created: " + nThreadID );
 							break;
 
 						case NetworkMessage.THREAD_END:
 							nThreadID = br.ReadInt32();
 							_tic[ nThreadID ].StartTime = br.ReadInt64();
 							_tic[ nThreadID ].EndTime = br.ReadInt64();
+							_run.Messages.AddMessage( "Thread completed: " + nThreadID );
 							break;
 
 						case NetworkMessage.FUNCTION_DATA:
 						{
 							nThreadID = br.ReadInt32();
+							_run.Messages.AddMessage( "Receiving function data for thread  " + nThreadID + "..." );
+
 							nFunctionID = br.ReadInt32();
 							int nIndex = 0;
 
@@ -240,14 +249,14 @@ namespace NProf.Glue.Profiler.Core
 								nFunctionID = br.ReadInt32();
 								nIndex++;
 							}
+
+							_run.Messages.AddMessage( "Received " + nIndex + " item(s) for thread  " + nThreadID );
 							break;
 						}
 
 						case NetworkMessage.PROFILER_MESSAGE:
 							string strMessage = ReadLengthEncodedASCIIString( br );
-							_alMessages.Add( strMessage );
-							if ( Message != null )
-								Message( strMessage );
+							_run.Messages.AddMessage( strMessage );
 
 							break;
 					}
@@ -295,6 +304,6 @@ namespace NProf.Glue.Profiler.Core
 		private Thread					_t;
 		private Socket					_s;
 		private Project.Options			_po;
-		private ArrayList				_alMessages;
+		private Run						_run;
 	}
 }

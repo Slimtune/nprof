@@ -14,32 +14,26 @@ namespace NProf.Glue.Profiler.Project
 			_dtStart = DateTime.Now;
 			_dtEnd = DateTime.MaxValue;
 			_rs = RunState.Initializing;
-			_tic = null;
+			_tic = new ThreadInfoCollection();
 			_pi = pi;
+			_rmcMessages = new RunMessageCollection();
 		}
 
-		public Run( DateTime dtStart, DateTime dtEnd, RunState rs, ThreadInfoCollection tic )
+		/*public Run( DateTime dtStart, DateTime dtEnd, RunState rs, ThreadInfoCollection tic )
 		{
+			// When is this called?
+			throw new NotImplementedException( "Fix me!" );
 			_dtStart = dtStart;
 			_dtEnd = dtEnd;
 			_rs = rs;
 			_tic = tic;
-		}
+		}*/
 
 		public bool Start()
 		{
 			_dtStart = DateTime.Now;
-			switch ( _pi.ProjectType )
-			{
-				case ProjectType.File:
-					return _p.Start( _pi, this, new Profiler.ProcessCompletedHandler( OnProfileComplete ) );
-				case ProjectType.AspNet:
-					return _p.EnableAndStartIIS( _pi, this, new Profiler.ProcessCompletedHandler( OnProfileComplete ) );
-				case ProjectType.VSNet:
-					return _p.EnableAndStart( _pi, this, new Profiler.ProcessCompletedHandler( OnProfileComplete ) );
-			}
 
-			throw new InvalidOperationException( "Unknown project type: " + _pi.ProjectType );
+			return _p.Start( _pi, this, new Profiler.ProcessCompletedHandler( OnProfileComplete ) );
 		}
 
 		public ProjectInfo Project
@@ -71,10 +65,10 @@ namespace NProf.Glue.Profiler.Project
 			}
 		}
 
-		public string[] Messages
+		public RunMessageCollection Messages
 		{
-			get { return _astrMessages; }
-			set { _astrMessages = value; }
+			get { return _rmcMessages; }
+			set { _rmcMessages = value; }
 		}
 
 		public ThreadInfoCollection ThreadInfoCollection
@@ -111,6 +105,6 @@ namespace NProf.Glue.Profiler.Project
 		private ThreadInfoCollection _tic;
 		private ProjectInfo _pi;
 		private Profiler _p;
-		private string[] _astrMessages;
+		private RunMessageCollection _rmcMessages;
 	}
 }

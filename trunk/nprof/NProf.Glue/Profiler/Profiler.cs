@@ -44,96 +44,71 @@ namespace NProf.Glue.Profiler
 			return true;
 		}
 
-		public bool Start( ProjectInfo p, Run run, ProcessCompletedHandler pch )
+		public bool Start( ProjectInfo pi, Run run, ProcessCompletedHandler pch )
 		{
 			_dtStart = DateTime.Now;
 			_pch = pch;
 			_run = run;
-			_run.State = Run.RunState.Running;
+			_run.State = Run.RunState.Initializing;
 
-			return Start( p.ApplicationName, p.Arguments, p.WorkingDirectory, p.Options );
-		}
-
-		public bool Start( string strApplication, string strArguments, string strWorkingDirectory )
-		{
-			Options po = new Options();
-
-			return Start( strApplication, strArguments, strWorkingDirectory, po );
-		}
-
-		public bool EnableAndStartIIS( ProjectInfo pi, Run run, ProcessCompletedHandler pch )
-		{
-			_run = run;
-			_run.State = Run.RunState.Running;
-			_pch = pch;
-
-			_pss = new ProfilerSocketServer( pi.Options );
+			_pss = new ProfilerSocketServer( pi.Options, run );
 			_pss.Start();
 			_pss.Exited += new EventHandler( OnProcessExited );
 			_pss.Error += new ProfilerSocketServer.ErrorHandler( OnError );
 			_pss.Message += new ProfilerSocketServer.MessageHandler( OnMessage );
 
-			using ( RegistryKey rk = Registry.LocalMachine.OpenSubKey( @"SYSTEM\CurrentControlSet\Services\W3SVC", true ) )
+			switch ( pi.ProjectType )
 			{
-				SetRegistryKeys( rk );
+				case ProjectType.File:
+				{
+					_p = new Process();
+					_p.StartInfo = new ProcessStartInfo( pi.ApplicationName, pi.Arguments );
+					_p.StartInfo.EnvironmentVariables[ "COR_ENABLE_PROFILING" ] = "0x1";
+					_p.StartInfo.EnvironmentVariables[ "COR_PROFILER" ] = PROFILER_GUID;
+					_p.StartInfo.EnvironmentVariables[ "NPROF_PROFILING_SOCKET" ] = _pss.Port.ToString();
+					_p.StartInfo.UseShellExecute = false;
+					_p.StartInfo.Arguments = pi.Arguments;
+					_p.StartInfo.WorkingDirectory = pi.WorkingDirectory;
+					_p.EnableRaisingEvents = true;
+
+					return _p.Start();
+				}
+
+				case ProjectType.AspNet:
+				{
+					using ( RegistryKey rk = Registry.LocalMachine.OpenSubKey( @"SYSTEM\CurrentControlSet\Services\W3SVC", true ) )
+					{
+						SetRegistryKeys( rk );
+					}
+
+					using ( RegistryKey rk = Registry.LocalMachine.OpenSubKey( @"SYSTEM\CurrentControlSet\Services\IISADMIN", true ) )
+					{
+						SetRegistryKeys( rk );
+					}
+
+					Process p = Process.Start( "iisreset.exe", "" );
+					p.WaitForExit();
+
+					return true;
+				}
+
+				case ProjectType.VSNet:
+				{
+					SetEnvironmentVariable( "COR_ENABLE_PROFILING", "0x1" );
+					SetEnvironmentVariable( "COR_PROFILER", PROFILER_GUID );
+					SetEnvironmentVariable( "NPROF_PROFILING_SOCKET", _pss.Port.ToString() );
+
+					return true;
+				}
+
+				default:
+					throw new InvalidOperationException( "Unknown project type: " + pi.ProjectType );
 			}
-
-			using ( RegistryKey rk = Registry.LocalMachine.OpenSubKey( @"SYSTEM\CurrentControlSet\Services\IISADMIN", true ) )
-			{
-				SetRegistryKeys( rk );
-			}
-
-			Process p = Process.Start( "iisreset.exe", "" );
-			p.WaitForExit();
-
-			return true;
-		}
-
-		public bool EnableAndStart( ProjectInfo pi, Run run, ProcessCompletedHandler pch )
-		{
-			_run = run;
-			_run.State = Run.RunState.Running;
-			_pch = pch;
-
-			_pss = new ProfilerSocketServer( pi.Options );
-			_pss.Start();
-			_pss.Exited += new EventHandler( OnProcessExited );
-			_pss.Error += new ProfilerSocketServer.ErrorHandler( OnError );
-			_pss.Message += new ProfilerSocketServer.MessageHandler( OnMessage );
-
-			SetEnvironmentVariable( "COR_ENABLE_PROFILING", "0x1" );
-			SetEnvironmentVariable( "COR_PROFILER", PROFILER_GUID );
-			SetEnvironmentVariable( "NPROF_PROFILING_SOCKET", _pss.Port.ToString() );
-
-			return true;
 		}
 
 		public void Disable()
 		{
 			SetEnvironmentVariable( "COR_ENABLE_PROFILING", "0x0" );
-		}
-
-		public bool Start( string strApplication, string strArguments, string strWorkingDirectory, Project.Options po )
-		{
-			_pss = new ProfilerSocketServer( po );
-			_pss.Start();
-			_pss.Exited += new EventHandler( OnProcessExited );
-			_pss.Error += new ProfilerSocketServer.ErrorHandler( OnError );
-			_pss.Message += new ProfilerSocketServer.MessageHandler( OnMessage );
-
-			_p = new Process();
-			_p.StartInfo = new ProcessStartInfo( strApplication, strArguments );
-			_p.StartInfo.EnvironmentVariables[ "COR_ENABLE_PROFILING" ] = "0x1";
-			_p.StartInfo.EnvironmentVariables[ "COR_PROFILER" ] = PROFILER_GUID;
-			_p.StartInfo.EnvironmentVariables[ "NPROF_PROFILING_SOCKET" ] = _pss.Port.ToString();
-			_p.StartInfo.UseShellExecute = false;
-			_p.StartInfo.Arguments = strArguments;
-			_p.StartInfo.WorkingDirectory = strWorkingDirectory;
-			_p.EnableRaisingEvents = true;
-
-			//_p.Exited += new EventHandler( OnProcessExited );
-
-			return _p.Start();
 		}
 
 		public void Stop()
@@ -151,7 +126,6 @@ namespace NProf.Glue.Profiler
 
 			_run.EndTime = _dtEnd;
 			_run.ThreadInfoCollection = _pss.ThreadInfoCollection;
-			_run.Messages = _pss.Messages;
 
 			_pch( _run );
 		}
