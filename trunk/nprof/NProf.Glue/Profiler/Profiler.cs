@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Diagnostics;
 using System.Collections;
 using System.Reflection;
+using System.ServiceProcess;
 using NProf.Glue.Profiler.Core;
 using NProf.Glue.Profiler.Info;
 using NProf.Glue.Profiler.Project;
@@ -63,6 +64,7 @@ namespace NProf.Glue.Profiler
 		public bool EnableAndStartIIS( ProjectInfo pi, Run run, ProcessCompletedHandler pch )
 		{
 			_run = run;
+			_run.State = Run.RunState.Running;
 			_pch = pch;
 
 			_pss = new ProfilerSocketServer( pi.Options );
@@ -71,36 +73,18 @@ namespace NProf.Glue.Profiler
 			_pss.Error += new ProfilerSocketServer.ErrorHandler( OnError );
 			_pss.Message += new ProfilerSocketServer.MessageHandler( OnMessage );
 
-			using ( RegistryKey rk = Registry.LocalMachine.OpenSubKey( @"SYSTEM\CurrentControlSet\Services\W3SVC" ) )
+			using ( RegistryKey rk = Registry.LocalMachine.OpenSubKey( @"SYSTEM\CurrentControlSet\Services\W3SVC", true ) )
 			{
-				ArrayList alItems = new ArrayList( ( string[] )rk.GetValue( "Environment" ) );
-				
-				for ( int nIndex = 0; nIndex < alItems.Count; nIndex++ )
-				{
-					string[] astrItemComponents = ( ( string )alItems[ nIndex ] ).Split( '=' );
-					string strItemName = astrItemComponents[ 0 ].Trim().ToUpper();
-					
-					// Remove any of the entries we're going to add back
-					if ( strItemName == "COR_ENABLE_PROFILING" || strItemName == "COR_PROFILER" || strItemName == "NPROF_PROFILING_SOCKET" )
-					{
-						alItems.RemoveAt( nIndex );
-						nIndex--;
-					}
-				}
-
-				alItems.Add( "COR_ENABLE_PROFILING=0x1" );
-				alItems.Add( "COR_PROFILER=" + PROFILER_GUID );
-				alItems.Add( "NPROF_PROFILING_SOCKET=" + _pss.Port.ToString() );
-
-				rk.SetValue( "Environment", alItems.ToArray( typeof( string ) ) );
-
-				Process p = Process.Start( "iisreset" );
-				p.WaitForExit();
-				int nExitCode = p.ExitCode;
-
-				if ( nExitCode != 0 )
-					return false;
+				SetRegistryKeys( rk );
 			}
+
+			using ( RegistryKey rk = Registry.LocalMachine.OpenSubKey( @"SYSTEM\CurrentControlSet\Services\IISADMIN", true ) )
+			{
+				SetRegistryKeys( rk );
+			}
+
+			Process p = Process.Start( "iisreset.exe", "" );
+			p.WaitForExit();
 
 			return true;
 		}
@@ -108,6 +92,7 @@ namespace NProf.Glue.Profiler
 		public bool EnableAndStart( ProjectInfo pi, Run run, ProcessCompletedHandler pch )
 		{
 			_run = run;
+			_run.State = Run.RunState.Running;
 			_pch = pch;
 
 			_pss = new ProfilerSocketServer( pi.Options );
@@ -191,6 +176,30 @@ namespace NProf.Glue.Profiler
 		public string GetFunctionSignature( int nFunctionID )
 		{
 			return ( string )_htFunctionMap[ nFunctionID ];
+		}
+
+		private void SetRegistryKeys( RegistryKey rk )
+		{
+			ArrayList alItems = new ArrayList( ( string[] )rk.GetValue( "Environment" ) );
+				
+			for ( int nIndex = 0; nIndex < alItems.Count; nIndex++ )
+			{
+				string[] astrItemComponents = ( ( string )alItems[ nIndex ] ).Split( '=' );
+				string strItemName = astrItemComponents[ 0 ].Trim().ToUpper();
+					
+				// Remove any of the entries we're going to add back
+				if ( strItemName == "COR_ENABLE_PROFILING" || strItemName == "COR_PROFILER" || strItemName == "NPROF_PROFILING_SOCKET" )
+				{
+					alItems.RemoveAt( nIndex );
+					nIndex--;
+				}
+			}
+
+			alItems.Add( "COR_ENABLE_PROFILING=0x1" );
+			alItems.Add( "COR_PROFILER=" + PROFILER_GUID );
+			alItems.Add( "NPROF_PROFILING_SOCKET=" + _pss.Port.ToString() );
+
+			rk.SetValue( "Environment", ( string[] )alItems.ToArray( typeof( string ) ) );
 		}
 
 		public delegate void ProcessCompletedHandler( Run run );

@@ -79,6 +79,11 @@
                     AssemblyName = "System.Xml"
                     HintPath = "..\..\..\..\WINNT2\Microsoft.NET\Framework\v1.0.3705\System.XML.dll"
                 />
+                <Reference
+                    Name = "System.ServiceProcess"
+                    AssemblyName = "System.ServiceProcess"
+                    HintPath = "..\..\..\..\WINNT\Microsoft.NET\Framework\v1.1.4322\System.ServiceProcess.dll"
+                />
             </References>
         </Build>
         <Files>
