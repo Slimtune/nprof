@@ -7,11 +7,12 @@ namespace NProf.Glue.Profiler.Info
 	/// </summary>
 	public class CalleeFunctionInfo
 	{
-		public CalleeFunctionInfo( FunctionSignatureMap fsm, int nID, int nCalls, long lTotalTime )
+		public CalleeFunctionInfo( FunctionSignatureMap fsm, int nID, int nCalls, long lTotalTime, long lTotalRecursiveTime )
 		{
 			_nID = nID;
 			_nCalls = nCalls;
 			_lTotalTime = lTotalTime;
+			_lTotalRecursiveTime = lTotalRecursiveTime;
 			_fsm = fsm;
 		}
 
@@ -35,6 +36,11 @@ namespace NProf.Glue.Profiler.Info
 			get { return _lTotalTime; }
 		}
 
+		public long TotalRecursiveTime
+		{
+			get { return _lTotalRecursiveTime; }
+		}
+
 		public double PercentOfTotalTimeInMethod
 		{
 			get { return ( double )_lTotalTime / ( double )_fi.ThreadTotalTicks * 100; }
@@ -55,5 +61,6 @@ namespace NProf.Glue.Profiler.Info
 		private FunctionInfo _fi;
 		private FunctionSignatureMap _fsm;
 		private long _lTotalTime;
+		private long _lTotalRecursiveTime;
 	}
 }

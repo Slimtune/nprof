@@ -61,6 +61,12 @@ namespace NProf.Glue.Profiler.Project
 			}
 		}
 
+		public string[] Messages
+		{
+			get { return _astrMessages; }
+			set { _astrMessages = value; }
+		}
+
 		public ThreadInfoCollection ThreadInfoCollection
 		{
 			get { return _tic; }
@@ -90,5 +96,6 @@ namespace NProf.Glue.Profiler.Project
 		private ThreadInfoCollection _tic;
 		private ProjectInfo _pi;
 		private Profiler _p;
+		private string[] _astrMessages;
 	}
 }

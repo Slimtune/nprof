@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Diagnostics;
 using System.Collections;
+using System.Reflection;
 using NProf.Glue.Profiler.Core;
 using NProf.Glue.Profiler.Info;
 using NProf.Glue.Profiler.Project;
@@ -60,6 +61,7 @@ namespace NProf.Glue.Profiler
 			_pss.Start();
 			_pss.Exited += new EventHandler( OnProcessExited );
 			_pss.Error += new ProfilerSocketServer.ErrorHandler( OnError );
+			_pss.Message += new ProfilerSocketServer.MessageHandler( OnMessage );
 
 			SetEnvironmentVariable( "COR_ENABLE_PROFILING", "0x1" );
 			SetEnvironmentVariable( "COR_PROFILER", PROFILER_GUID );
@@ -79,7 +81,8 @@ namespace NProf.Glue.Profiler
 			_pss.Start();
 			_pss.Exited += new EventHandler( OnProcessExited );
 			_pss.Error += new ProfilerSocketServer.ErrorHandler( OnError );
-			
+			_pss.Message += new ProfilerSocketServer.MessageHandler( OnMessage );
+
 			_p = new Process();
 			_p.StartInfo = new ProcessStartInfo( strApplication, strArguments );
 			_p.StartInfo.EnvironmentVariables.Add( "COR_ENABLE_PROFILING", "0x1" );
@@ -110,6 +113,7 @@ namespace NProf.Glue.Profiler
 
 			_run.EndTime = _dtEnd;
 			_run.ThreadInfoCollection = _pss.ThreadInfoCollection;
+			_run.Messages = _pss.Messages;
 
 			_pch( _run );
 		}
@@ -118,6 +122,12 @@ namespace NProf.Glue.Profiler
 		{
 			if ( Error != null )
 				Error( e );
+		}
+
+		private void OnMessage( string strMessage )
+		{
+			if ( Message != null )
+				Message( strMessage );
 		}
 
 		public int[] GetFunctionIDs()
@@ -134,6 +144,8 @@ namespace NProf.Glue.Profiler
 		public event ProcessCompletedHandler ProcessCompleted;
 		public delegate void ErrorHandler( Exception e );
 		public event ErrorHandler Error;
+		public delegate void MessageHandler( string strMessage );
+		public event MessageHandler Message;
 
 		private ProcessCompletedHandler _pch;
 		private DateTime _dtStart;

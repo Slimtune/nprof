@@ -7,13 +7,14 @@ namespace NProf.Glue.Profiler.Info
 	/// </summary>
 	public class FunctionInfo
 	{
-		public FunctionInfo( ThreadInfo ti, int nID, FunctionSignature fs, int nCalls, long lTotalTime, long lTotalSuspendedTime, CalleeFunctionInfo[] acfi )
+		public FunctionInfo( ThreadInfo ti, int nID, FunctionSignature fs, int nCalls, long lTotalTime, long lTotalRecursiveTime, long lTotalSuspendedTime, CalleeFunctionInfo[] acfi )
 		{
 			_ti = ti;
 			_nID = nID;
 			_fs = fs;
 			_nCalls = nCalls;
 			_lTotalTime = lTotalTime;
+			_lTotalRecursiveTime = lTotalRecursiveTime;
 			_lTotalSuspendedTime = lTotalSuspendedTime;
 			_acfi = acfi;
 
@@ -51,9 +52,38 @@ namespace NProf.Glue.Profiler.Info
 			get { return _lTotalTime; }
 		}
 
+		public long TotalRecursiveTicks
+		{
+			get { return _lTotalRecursiveTime; }
+		}
+
 		public long TotalSuspendedTicks
 		{
 			get { return _lTotalSuspendedTime; }
+		}
+
+		public long TotalChildrenTicks
+		{
+			get
+			{
+				long lTotalChildrenTime = 0;
+				foreach ( CalleeFunctionInfo cfi in _acfi )
+					lTotalChildrenTime += cfi.TotalTime;
+
+				return lTotalChildrenTime;
+			}
+		}
+
+		public long TotalChildrenRecursiveTicks
+		{
+			get
+			{
+				long lTotalChildrenRecursiveTime = 0;
+				foreach ( CalleeFunctionInfo cfi in _acfi )
+					lTotalChildrenRecursiveTime += cfi.TotalRecursiveTime;
+
+				return lTotalChildrenRecursiveTime;
+			}
 		}
 
 		/// <summary>
@@ -66,21 +96,27 @@ namespace NProf.Glue.Profiler.Info
 				if ( ThreadTotalTicks == 0 )
 					return 0;
 
-				return ( ( double )_lTotalSuspendedTime / ( double )ThreadTotalTicks ) * 100;
+				return ( 
+					( double )_lTotalSuspendedTime 
+					/ 
+					( double )ThreadTotalTicks ) * 100;
 			}
 		}
 
 		/// <summary>
 		/// Percent on time, based on method ticks (not thread ticks), that method is suspended.
 		/// </summary>
-		public double PercentOfTimeSuspended
+		public double PercentOfMethodTimeSuspended
 		{
 			get 
 			{
 				if ( TotalTicks == 0 )
 					return 0;
 
-				return ( ( double )_lTotalSuspendedTime / ( double )TotalTicks ) * 100;
+				return ( 
+					( double )_lTotalSuspendedTime 
+					/ 
+					( double )TotalTicks ) * 100;
 			}
 		}
 		
@@ -94,11 +130,10 @@ namespace NProf.Glue.Profiler.Info
 				if ( ThreadTotalTicks == 0 )
 					return 0;
 
-				long lTotalChildrenTime = 0;
-				foreach ( CalleeFunctionInfo cfi in _acfi )
-					lTotalChildrenTime += cfi.TotalTime;
-
-				return ( ( ( double )_lTotalTime - ( double )lTotalChildrenTime ) / ( double )ThreadTotalTicks ) * 100;
+				return ( 
+					( double )( TotalTicks + TotalRecursiveTicks - TotalChildrenTicks - TotalChildrenRecursiveTicks ) 
+					/ 
+					( double )ThreadTotalTicks ) * 100;
 			}
 		}
 
@@ -112,14 +147,34 @@ namespace NProf.Glue.Profiler.Info
 				if ( ThreadTotalTicks == 0 )
 					return 0;
 
-				return ( ( double )_lTotalTime / ( double )ThreadTotalTicks ) * 100;
+				return ( 
+					( double )TotalTicks 
+					/ 
+					( double )ThreadTotalTicks ) * 100;
 			}
 		}
 
 		/// <summary>
 		/// Percent of time, based on method ticks (not thread ticks), spent in children.
 		/// </summary>
-		public double PercentOfTimeInChildren
+		public double PercentOfMethodTimeInChildren
+		{
+			get
+			{
+				if ( TotalTicks == 0 )
+					return 0;
+
+				return ( 
+					( double )( TotalChildrenTicks ) 
+					/ 
+					( double )( TotalTicks + TotalRecursiveTicks ) ) * 100;
+			}
+		}
+
+		/// <summary>
+		/// Percent of time, based on thread ticks, spent in children.
+		/// </summary>
+		public double PercentOfTotalTimeInChildren
 		{
 			get
 			{
@@ -130,13 +185,17 @@ namespace NProf.Glue.Profiler.Info
 				foreach ( CalleeFunctionInfo cfi in _acfi )
 					lTotalChildrenTime += cfi.TotalTime;
 
-				return ( ( double )lTotalChildrenTime / ( double )TotalTicks ) * 100;
+				return ( ( 
+					( double )( TotalChildrenTicks + TotalChildrenRecursiveTicks - TotalRecursiveTicks ) ) 
+					/ 
+					( double )ThreadTotalTicks ) * 100;
 			}
 		}
 
 		private int _nID;
 		private int _nCalls;
 		private long _lTotalTime;
+		private long _lTotalRecursiveTime;
 		private long _lTotalSuspendedTime;
 		private FunctionSignature _fs;
 		private CalleeFunctionInfo[] _acfi;

@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Collections;
+using System.Runtime.InteropServices;
 using NProf.Glue.Profiler.Info;
 
 namespace NProf.Glue.Profiler.Core
@@ -19,6 +20,7 @@ namespace NProf.Glue.Profiler.Core
 			_tic = new ThreadInfoCollection();
 			_nStopFlag = 0;
 			_po = po;
+			_alMessages = new ArrayList();
 		}
 
 		public void Start()
@@ -31,13 +33,19 @@ namespace NProf.Glue.Profiler.Core
 
 		public void Stop()
 		{
-			Interlocked.Increment( ref _nStopFlag );
+			lock ( _s )
+				Interlocked.Increment( ref _nStopFlag );
 			_s.Close();
 		}
 
 		public ThreadInfoCollection ThreadInfoCollection
 		{
 			get { return _tic; }
+		}
+
+		public string[] Messages
+		{
+			get { return ( string[] )_alMessages.ToArray( typeof( string ) ); }
 		}
 
 		public FunctionSignatureMap FunctionSignatureMap
@@ -57,9 +65,13 @@ namespace NProf.Glue.Profiler.Core
 					_nPort = ( ( IPEndPoint )_s.LocalEndPoint ).Port;
 					_mreStarted.Set();
 					_s.Listen( 100 );
+
 					while ( true )
 					{
 						_mreReceivedMessage.Reset();
+						lock ( _s )
+							if ( _nStopFlag == 1 )
+								break;
 						_s.BeginAccept( new AsyncCallback( AcceptConnection ), _s );
 						_mreReceivedMessage.WaitOne();
 					}
@@ -92,10 +104,13 @@ namespace NProf.Glue.Profiler.Core
 
 		private void AcceptConnection( IAsyncResult ar )
 		{
-			if ( _nStopFlag > 0 )
+			lock ( _s )
 			{
-				_mreReceivedMessage.Set();
-				return;
+				if ( _nStopFlag == 1 )
+				{
+					_mreReceivedMessage.Set();
+					return;
+				}
 			}
 
 			// Note that this fails if you call EndAccept on a closed socket
@@ -181,6 +196,7 @@ namespace NProf.Glue.Profiler.Core
 
 								int nCalls = br.ReadInt32();
 								long lTotalTime = br.ReadInt64();
+								long lTotalRecursiveTime = br.ReadInt64();
 								long lTotalSuspendTime = br.ReadInt64();
 								ArrayList alCallees = new ArrayList();
 								int nCalleeFunctionID = br.ReadInt32();
@@ -189,18 +205,27 @@ namespace NProf.Glue.Profiler.Core
 								{
 									int nCalleeCalls = br.ReadInt32();
 									long lCalleeTotalTime = br.ReadInt64();
+									long lCalleeRecursiveTime = br.ReadInt64();
 
-									alCallees.Add( new CalleeFunctionInfo( _fsm, nCalleeFunctionID, nCalleeCalls, lCalleeTotalTime ) );
+									alCallees.Add( new CalleeFunctionInfo( _fsm, nCalleeFunctionID, nCalleeCalls, lCalleeTotalTime, lCalleeRecursiveTime ) );
 									nCalleeFunctionID = br.ReadInt32();
 								}
 								CalleeFunctionInfo[] acfi = ( CalleeFunctionInfo[] )alCallees.ToArray( typeof( CalleeFunctionInfo ) );
 
-								FunctionInfo fi = new FunctionInfo( _tic[ nThreadID ], nFunctionID, fs, nCalls, lTotalTime, lTotalSuspendTime, acfi );
+								FunctionInfo fi = new FunctionInfo( _tic[ nThreadID ], nFunctionID, fs, nCalls, lTotalTime, lTotalRecursiveTime, lTotalSuspendTime, acfi );
 								_tic[ nThreadID ].FunctionInfoCollection.Add( fi );
 								nFunctionID = br.ReadInt32();
 							}
 							break;
 						}
+
+						case NetworkMessage.PROFILER_MESSAGE:
+							string strMessage = ReadLengthEncodedASCIIString( br );
+							_alMessages.Add( strMessage );
+							if ( Message != null )
+								Message( strMessage );
+
+							break;
 					}
 				}
 			}
@@ -218,8 +243,10 @@ namespace NProf.Glue.Profiler.Core
 
 		public event EventHandler Exited;
 		public event ErrorHandler Error;
+		public event MessageHandler Message;
 
 		public delegate void ErrorHandler( Exception e );
+		public delegate void MessageHandler( string strMessage );
 
 		// Sync with profiler_socket.h
 		enum NetworkMessage
@@ -230,9 +257,10 @@ namespace NProf.Glue.Profiler.Core
 			THREAD_CREATE,
 			THREAD_END,
 			FUNCTION_DATA,
+			PROFILER_MESSAGE,
 		};
 
-		const int NETWORK_PROTOCOL_VERSION = 1;
+		const int NETWORK_PROTOCOL_VERSION = 2;
 
 		private int						_nPort;
 		private int						_nStopFlag;
@@ -243,5 +271,6 @@ namespace NProf.Glue.Profiler.Core
 		private Thread					_t;
 		private Socket					_s;
 		private Project.Options			_po;
+		private ArrayList				_alMessages;
 	}
 }
