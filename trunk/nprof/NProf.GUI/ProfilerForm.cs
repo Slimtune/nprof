@@ -58,6 +58,8 @@ namespace NProf.GUI
 		private Crownwood.Magic.Menus.MenuCommand _cmdProjectRunCopy;
 		private Crownwood.Magic.Menus.MenuCommand _cmdProjectStop;
 		private Crownwood.Magic.Menus.MenuCommand _cmdClose;
+		private Crownwood.Magic.Menus.MenuCommand _cmdRecentProjects;
+		private Crownwood.Magic.Menus.MenuCommand _sep3;
 
 		/// <summary>
 		/// Required designer variable.
@@ -109,12 +111,12 @@ namespace NProf.GUI
 			this._menuFile = new Crownwood.Magic.Menus.MenuCommand();
 			this._cmdNew = new Crownwood.Magic.Menus.MenuCommand();
 			this._cmdOpen = new Crownwood.Magic.Menus.MenuCommand();
+			this._cmdClose = new Crownwood.Magic.Menus.MenuCommand();
 			this._sep1 = new Crownwood.Magic.Menus.MenuCommand();
 			this._cmdSave = new Crownwood.Magic.Menus.MenuCommand();
 			this._cmdSaveAll = new Crownwood.Magic.Menus.MenuCommand();
 			this._sep2 = new Crownwood.Magic.Menus.MenuCommand();
 			this._cmdExit = new Crownwood.Magic.Menus.MenuCommand();
-			this._cmdClose = new Crownwood.Magic.Menus.MenuCommand();
 			this._menuEdit = new Crownwood.Magic.Menus.MenuCommand();
 			this._menuProject = new Crownwood.Magic.Menus.MenuCommand();
 			this._cmdProjectRun = new Crownwood.Magic.Menus.MenuCommand();
@@ -135,6 +137,8 @@ namespace NProf.GUI
 			this.menuCommand3 = new Crownwood.Magic.Menus.MenuCommand();
 			this.menuCommand4 = new Crownwood.Magic.Menus.MenuCommand();
 			this.menuCommand6 = new Crownwood.Magic.Menus.MenuCommand();
+			this._cmdRecentProjects = new Crownwood.Magic.Menus.MenuCommand();
+			this._sep3 = new Crownwood.Magic.Menus.MenuCommand();
 			((System.ComponentModel.ISupportInitialize)(this._sbpMessage)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -177,8 +181,11 @@ namespace NProf.GUI
 																													  this._cmdSave,
 																													  this._cmdSaveAll,
 																													  this._sep2,
+																													  this._cmdRecentProjects,
+																													  this._sep3,
 																													  this._cmdExit});
 			this._menuFile.Text = "&File";
+			this._menuFile.PopupStart += new Crownwood.Magic.Menus.CommandHandler(this._menuFile_PopupStart);
 			// 
 			// _cmdNew
 			// 
@@ -192,6 +199,12 @@ namespace NProf.GUI
 			this._cmdOpen.Description = "Open a profile project";
 			this._cmdOpen.Enabled = false;
 			this._cmdOpen.Text = "&Open";
+			// 
+			// _cmdClose
+			// 
+			this._cmdClose.Description = "Close the project";
+			this._cmdClose.Text = "&Close";
+			this._cmdClose.Click += new System.EventHandler(this._cmdClose_Click);
 			// 
 			// _sep1
 			// 
@@ -223,12 +236,6 @@ namespace NProf.GUI
 			this._cmdExit.Shortcut = System.Windows.Forms.Shortcut.AltF4;
 			this._cmdExit.Text = "E&xit";
 			this._cmdExit.Click += new System.EventHandler(this._cmdExit_Click);
-			// 
-			// _cmdClose
-			// 
-			this._cmdClose.Description = "Close the project";
-			this._cmdClose.Text = "&Close";
-			this._cmdClose.Click += new System.EventHandler(this._cmdClose_Click);
 			// 
 			// _menuEdit
 			// 
@@ -360,6 +367,16 @@ namespace NProf.GUI
 			// menuCommand6
 			// 
 			this.menuCommand6.Description = "MenuItem";
+			// 
+			// _cmdRecentProjects
+			// 
+			this._cmdRecentProjects.Description = "Opens a recent project";
+			this._cmdRecentProjects.Text = "Recent Pro&jects";
+			// 
+			// _sep3
+			// 
+			this._sep3.Description = "MenuItem";
+			this._sep3.Text = "-";
 			// 
 			// ProfilerForm
 			// 
@@ -707,6 +724,45 @@ namespace NProf.GUI
 
 		private void _cmdClose_Click(object sender, System.EventArgs e)
 		{
+		}
+
+		private void _menuFile_PopupStart(Crownwood.Magic.Menus.MenuCommand item)
+		{
+			_cmdRecentProjects.MenuCommands.Clear();
+
+			int count = 1;
+			foreach(ProjectInfo info in SerializationHandler.GetSavedProjectInfos())
+			{
+				if(count > 10)
+					break;
+
+				string label = (count == 10 ? "1&0" : "&" + count.ToString()) + " " + info.Name;
+
+				Crownwood.Magic.Menus.MenuCommand pInfo = new Crownwood.Magic.Menus.MenuCommand(label);
+				pInfo.Tag = info;
+				pInfo.Click += new EventHandler(pInfo_Click);
+				_cmdRecentProjects.MenuCommands.Add(pInfo);
+
+				++count;
+			}
+		}
+
+		private void pInfo_Click(object sender, EventArgs e)
+		{
+			Crownwood.Magic.Menus.MenuCommand pInfo = (Crownwood.Magic.Menus.MenuCommand)sender;
+			ProjectInfo info = (ProjectInfo)pInfo.Tag;
+
+			ProfilerProjectOptionsForm frm = new ProfilerProjectOptionsForm();
+			frm.Mode = ProfilerProjectOptionsForm.ProfilerProjectMode.CreateProject;
+
+			frm.Project = info;
+
+			DialogResult dr = frm.ShowDialog( this );
+			if ( dr == DialogResult.OK )
+			{
+				_pic.Add( frm.Project );
+				_pt.SelectProject( frm.Project );
+			}
 		}
 	}
 }
