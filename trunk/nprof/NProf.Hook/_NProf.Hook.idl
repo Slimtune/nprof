@@ -1,14 +1,14 @@
-import "C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\include\prsht.idl";
-import "C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\include\mshtml.idl";
-import "c:\program files\microsoft visual studio .net\vc7\platformsdk\include\dimm.idl";
-import "C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\include\mshtmhst.idl";
-import "c:\program files\microsoft visual studio .net\vc7\platformsdk\include\docobj.idl";
-import "C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\include\exdisp.idl";
-import "C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\include\objsafe.idl";
-import "C:\Program Files\Microsoft Visual Studio .NET\FrameworkSDK\include\corsym.idl";
-import "C:\Program Files\Microsoft Visual Studio .NET\FrameworkSDK\include\corpub.idl";
-import "C:\Program Files\Microsoft Visual Studio .NET\FrameworkSDK\include\corsvc.idl";
-import "C:\Program Files\Microsoft Visual Studio .NET\FrameworkSDK\include\corprof.idl";
+import "C:\Program Files\Microsoft Visual Studio .NET 2003\Vc7\PlatformSDK\include\prsht.idl";
+import "C:\Program Files\Microsoft Visual Studio .NET 2003\Vc7\PlatformSDK\include\mshtml.idl";
+import "c:\program files\microsoft visual studio .net 2003\vc7\platformsdk\include\dimm.idl";
+import "C:\Program Files\Microsoft Visual Studio .NET 2003\Vc7\PlatformSDK\include\mshtmhst.idl";
+import "c:\program files\microsoft visual studio .net 2003\vc7\platformsdk\include\docobj.idl";
+import "C:\Program Files\Microsoft Visual Studio .NET 2003\Vc7\PlatformSDK\include\exdisp.idl";
+import "C:\Program Files\Microsoft Visual Studio .NET 2003\Vc7\PlatformSDK\include\objsafe.idl";
+import "C:\Program Files\Microsoft Visual Studio .NET 2003\SDK\v1.1\include\corsym.idl";
+import "C:\Program Files\Microsoft Visual Studio .NET 2003\SDK\v1.1\include\corpub.idl";
+import "C:\Program Files\Microsoft Visual Studio .NET 2003\SDK\v1.1\include\corsvc.idl";
+import "C:\Program Files\Microsoft Visual Studio .NET 2003\SDK\v1.1\include\corprof.idl";
 
 [
 	object,
@@ -17,7 +17,7 @@ import "C:\Program Files\Microsoft Visual Studio .NET\FrameworkSDK\include\corpr
 	helpstring("INProfCORHook Interface"),
 	pointer_default(unique)
 ] 
-#line 20 "c:\\aclaro.net\\testing\\nprof\\nprof.hook\\NProfCORHook.h"
+#line 20 "c:\\aclaro.net\\testing\\nprof\\nprof.hook\\nprofcorhook.h"
 interface INProfCORHook : IDispatch {
 };
 
@@ -33,7 +33,7 @@ library NProfHook
 		uuid(791DA9FE-05A0-495E-94BF-9AD875C4DF0F),
 		helpstring("nprof COR Profiling Hook Class")
 	] 
-#line 36 "c:\\aclaro.net\\testing\\nprof\\nprof.hook\\NProfCORHook.h"
+#line 36 "c:\\aclaro.net\\testing\\nprof\\nprof.hook\\nprofcorhook.h"
 	coclass CNProfCORHook {
 		interface INProfCORHook;
 	};

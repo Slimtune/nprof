@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding = "Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="7.10"
 	Name="NProf.Hook"
 	ProjectGUID="{4DAE8B45-A01C-456E-8AFE-E7D6C596F205}"
 	Keyword="AtlProj">
@@ -80,7 +80,13 @@
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
@@ -148,24 +154,32 @@
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
+	<References>
+	</References>
 	<Files>
 		<Filter
 			Name="Source Files"
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm">
 			<File
-				RelativePath="NProf.Hook.cpp">
-			</File>
-			<File
-				RelativePath="NProfCORHook.cpp">
-			</File>
-			<File
 				RelativePath="calleefunctioninfo.cpp">
 			</File>
 			<File
 				RelativePath="functioninfo.cpp">
+			</File>
+			<File
+				RelativePath="NProf.Hook.cpp">
+			</File>
+			<File
+				RelativePath="NProfCORHook.cpp">
 			</File>
 			<File
 				RelativePath="profiler.cpp">
@@ -208,16 +222,13 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc">
 			<File
-				RelativePath="NProfCORHook.h">
-			</File>
-			<File
-				RelativePath="Resource.h">
-			</File>
-			<File
 				RelativePath="calleefunctioninfo.h">
 			</File>
 			<File
 				RelativePath="functioninfo.h">
+			</File>
+			<File
+				RelativePath="NProfCORHook.h">
 			</File>
 			<File
 				RelativePath="profiler.h">
@@ -227,6 +238,9 @@
 			</File>
 			<File
 				RelativePath="profiler_socket.h">
+			</File>
+			<File
+				RelativePath="Resource.h">
 			</File>
 			<File
 				RelativePath="stackentryinfo.h">

@@ -1,15 +1,14 @@
 
-#pragma warning( disable: 4049 )  /* more than 64k source lines */
 
 /* this ALWAYS GENERATED file contains the proxy stub code */
 
 
- /* File created by MIDL compiler version 6.00.0347 */
-/* at Sat Jun 14 14:57:46 2003
+ /* File created by MIDL compiler version 6.00.0361 */
+/* at Fri Dec 26 13:14:41 2003
  */
 /* Compiler settings for _NProf.Hook.idl:
-    Os, W1, Zp8, env=Win32 (32b run)
-    protocol : dce , ms_ext, c_ext
+    Oicf, W1, Zp8, env=Win32 (32b run)
+    protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
          __declspec(uuid()), __declspec(selectany), __declspec(novtable)
@@ -19,9 +18,20 @@
 
 #if !defined(_M_IA64) && !defined(_M_AMD64)
 
+
+#pragma warning( disable: 4049 )  /* more than 64k source lines */
+#if _MSC_VER >= 1200
+#pragma warning(push)
+#endif
+#pragma warning( disable: 4100 ) /* unreferenced arguments in x86 call */
+#pragma warning( disable: 4211 )  /* redefine extent to static */
+#pragma warning( disable: 4232 )  /* dllimport identity*/
+#define USE_STUBLESS_PROXY
+
+
 /* verify that the <rpcproxy.h> version is high enough to compile this file*/
 #ifndef __REDQ_RPCPROXY_H_VERSION__
-#define __REQUIRED_RPCPROXY_H_VERSION__ 440
+#define __REQUIRED_RPCPROXY_H_VERSION__ 475
 #endif
 
 
@@ -71,9 +81,9 @@ extern const MIDL_STUBLESS_PROXY_INFO INProfCORHook_ProxyInfo;
 #error  Invalid build platform for this stub.
 #endif
 
-#if !(TARGET_IS_NT40_OR_LATER)
-#error You need a Windows NT 4.0 or later to run this stub because it uses these features:
-#error   more than 64 delegated procs.
+#if !(TARGET_IS_NT50_OR_LATER)
+#error You need a Windows 2000 or later to run this stub because it uses these features:
+#error   /robust command line switch.
 #error However, your C/C++ compilation flags indicate you intend to run this app on earlier systems.
 #error This app will die there with the RPC_X_WRONG_STUB_VERSION error.
 #endif
@@ -143,13 +153,14 @@ static const MIDL_SERVER_INFO INProfCORHook_ServerInfo =
     0};
 CINTERFACE_PROXY_VTABLE(7) _INProfCORHookProxyVtbl = 
 {
+    0,
     &IID_INProfCORHook,
     IUnknown_QueryInterface_Proxy,
     IUnknown_AddRef_Proxy,
     IUnknown_Release_Proxy ,
-    0 /* IDispatch_GetTypeInfoCount_Proxy */ ,
-    0 /* IDispatch_GetTypeInfo_Proxy */ ,
-    0 /* IDispatch_GetIDsOfNames_Proxy */ ,
+    0 /* (void *) (INT_PTR) -1 /* IDispatch::GetTypeInfoCount */ ,
+    0 /* (void *) (INT_PTR) -1 /* IDispatch::GetTypeInfo */ ,
+    0 /* (void *) (INT_PTR) -1 /* IDispatch::GetIDsOfNames */ ,
     0 /* IDispatch_Invoke_Proxy */
 };
 
@@ -183,9 +194,9 @@ static const MIDL_STUB_DESC Object_StubDesc =
     0,
     __MIDL_TypeFormatString.Format,
     1, /* -error bounds_check flag */
-    0x20000, /* Ndr library version */
+    0x50002, /* Ndr library version */
     0,
-    0x600015b, /* MIDL Version 6.0.347 */
+    0x6000169, /* MIDL Version 6.0.361 */
     0,
     0,
     0,  /* notify & notify_flag routine table */
@@ -242,12 +253,15 @@ const ExtendedProxyFileInfo _NProf2EHook_ProxyFileInfo =
     (const IID ** ) & __NProf2EHook_BaseIIDList,
     & __NProf2EHook_IID_Lookup, 
     1,
-    1,
+    2,
     0, /* table of [async_uuid] interfaces */
     0, /* Filler1 */
     0, /* Filler2 */
     0  /* Filler3 */
 };
+#if _MSC_VER >= 1200
+#pragma warning(pop)
+#endif
 
 
 #endif /* !defined(_M_IA64) && !defined(_M_AMD64)*/
