@@ -115,6 +115,9 @@ namespace NProf.GUI
 			this._menuProject = new Crownwood.Magic.Menus.MenuCommand();
 			this._cmdProjectRun = new Crownwood.Magic.Menus.MenuCommand();
 			this._cmdProjectOptions = new Crownwood.Magic.Menus.MenuCommand();
+			this.menuCommand5 = new Crownwood.Magic.Menus.MenuCommand();
+			this._cmdProjectRunViewMessages = new Crownwood.Magic.Menus.MenuCommand();
+			this._cmdProjectRunCopy = new Crownwood.Magic.Menus.MenuCommand();
 			this._menuView = new Crownwood.Magic.Menus.MenuCommand();
 			this._cmdProjectView = new Crownwood.Magic.Menus.MenuCommand();
 			this._menuHelp = new Crownwood.Magic.Menus.MenuCommand();
@@ -126,10 +129,7 @@ namespace NProf.GUI
 			this.menuCommand2 = new Crownwood.Magic.Menus.MenuCommand();
 			this.menuCommand3 = new Crownwood.Magic.Menus.MenuCommand();
 			this.menuCommand4 = new Crownwood.Magic.Menus.MenuCommand();
-			this._cmdProjectRunViewMessages = new Crownwood.Magic.Menus.MenuCommand();
-			this.menuCommand5 = new Crownwood.Magic.Menus.MenuCommand();
 			this.menuCommand6 = new Crownwood.Magic.Menus.MenuCommand();
-			this._cmdProjectRunCopy = new Crownwood.Magic.Menus.MenuCommand();
 			((System.ComponentModel.ISupportInitialize)(this._sbpMessage)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -149,11 +149,11 @@ namespace NProf.GUI
 			this._menuMain.HighlightTextColor = System.Drawing.SystemColors.MenuText;
 			this._menuMain.Location = new System.Drawing.Point(0, 0);
 			this._menuMain.MenuCommands.AddRange(new Crownwood.Magic.Menus.MenuCommand[] {
-																							 this._menuFile,
-																							 this._menuEdit,
-																							 this._menuProject,
-																							 this._menuView,
-																							 this._menuHelp});
+																													  this._menuFile,
+																													  this._menuEdit,
+																													  this._menuProject,
+																													  this._menuView,
+																													  this._menuHelp});
 			this._menuMain.Name = "_menuMain";
 			this._menuMain.Size = new System.Drawing.Size(920, 25);
 			this._menuMain.Style = Crownwood.Magic.Common.VisualStyle.IDE;
@@ -165,13 +165,13 @@ namespace NProf.GUI
 			// 
 			this._menuFile.Description = "File";
 			this._menuFile.MenuCommands.AddRange(new Crownwood.Magic.Menus.MenuCommand[] {
-																							 this._cmdNew,
-																							 this._cmdOpen,
-																							 this._sep1,
-																							 this._cmdSave,
-																							 this._cmdSaveAll,
-																							 this._sep2,
-																							 this._cmdExit});
+																													  this._cmdNew,
+																													  this._cmdOpen,
+																													  this._sep1,
+																													  this._cmdSave,
+																													  this._cmdSaveAll,
+																													  this._sep2,
+																													  this._cmdExit});
 			this._menuFile.Text = "&File";
 			// 
 			// _cmdNew
@@ -224,11 +224,11 @@ namespace NProf.GUI
 			// 
 			this._menuProject.Description = "Project commands";
 			this._menuProject.MenuCommands.AddRange(new Crownwood.Magic.Menus.MenuCommand[] {
-																								this._cmdProjectRun,
-																								this._cmdProjectOptions,
-																								this.menuCommand5,
-																								this._cmdProjectRunViewMessages,
-																								this._cmdProjectRunCopy});
+																														  this._cmdProjectRun,
+																														  this._cmdProjectOptions,
+																														  this.menuCommand5,
+																														  this._cmdProjectRunViewMessages,
+																														  this._cmdProjectRunCopy});
 			this._menuProject.Text = "&Project";
 			// 
 			// _cmdProjectRun
@@ -245,11 +245,27 @@ namespace NProf.GUI
 			this._cmdProjectOptions.Click += new System.EventHandler(this._cmdProjectOptions_Click);
 			this._cmdProjectOptions.Update += new System.EventHandler(this.UpdateProjectItems);
 			// 
+			// menuCommand5
+			// 
+			this.menuCommand5.Description = "-";
+			this.menuCommand5.Text = "-";
+			// 
+			// _cmdProjectRunViewMessages
+			// 
+			this._cmdProjectRunViewMessages.Description = "View the Messages from the current profiler run...";
+			this._cmdProjectRunViewMessages.Text = "View Run Messages...";
+			this._cmdProjectRunViewMessages.Click += new System.EventHandler(this._cmdProjectRunViewMessages_Click);
+			// 
+			// _cmdProjectRunCopy
+			// 
+			this._cmdProjectRunCopy.Description = "Copy the project run data to the clipboard";
+			this._cmdProjectRunCopy.Text = "Copy Project Run Data";
+			// 
 			// _menuView
 			// 
 			this._menuView.Description = "View";
 			this._menuView.MenuCommands.AddRange(new Crownwood.Magic.Menus.MenuCommand[] {
-																							 this._cmdProjectView});
+																													  this._cmdProjectView});
 			this._menuView.Text = "&View";
 			// 
 			// _cmdProjectView
@@ -263,7 +279,7 @@ namespace NProf.GUI
 			// 
 			this._menuHelp.Description = "Help";
 			this._menuHelp.MenuCommands.AddRange(new Crownwood.Magic.Menus.MenuCommand[] {
-																							 this._cmdHelpAbout});
+																													  this._cmdHelpAbout});
 			this._menuHelp.Text = "&Help";
 			// 
 			// _cmdHelpAbout
@@ -288,7 +304,7 @@ namespace NProf.GUI
 			this._sbStatusBar.Location = new System.Drawing.Point(0, 655);
 			this._sbStatusBar.Name = "_sbStatusBar";
 			this._sbStatusBar.Panels.AddRange(new System.Windows.Forms.StatusBarPanel[] {
-																							this._sbpMessage});
+																													 this._sbpMessage});
 			this._sbStatusBar.ShowPanels = true;
 			this._sbStatusBar.Size = new System.Drawing.Size(920, 22);
 			this._sbStatusBar.TabIndex = 3;
@@ -317,28 +333,13 @@ namespace NProf.GUI
 			// 
 			this.menuCommand4.Description = "MenuItem";
 			// 
-			// _cmdProjectRunViewMessages
-			// 
-			this._cmdProjectRunViewMessages.Description = "View the Messages from the current profiler run...";
-			this._cmdProjectRunViewMessages.Text = "View Run Messages...";
-			this._cmdProjectRunViewMessages.Click += new System.EventHandler(this._cmdProjectRunViewMessages_Click);
-			// 
-			// menuCommand5
-			// 
-			this.menuCommand5.Description = "-";
-			this.menuCommand5.Text = "-";
-			// 
 			// menuCommand6
 			// 
 			this.menuCommand6.Description = "MenuItem";
 			// 
-			// _cmdProjectRunCopy
-			// 
-			this._cmdProjectRunCopy.Description = "Copy the project run data to the clipboard";
-			this._cmdProjectRunCopy.Text = "Copy Project Run Data";
-			// 
 			// ProfilerForm
 			// 
+			this.AllowDrop = true;
 			this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
 			this.ClientSize = new System.Drawing.Size(920, 677);
 			this.Controls.Add(this._tcProfilers);
@@ -506,6 +507,7 @@ namespace NProf.GUI
 			_pt.Projects = _pic;
 			_pt.ProjectDoubleClicked += new ProjectTree.ProjectDoubleClickedHandler( _pt_ProjectDoubleClicked );
 			_pt.RunDoubleClicked += new ProjectTree.RunDoubleClickedHandler( _pt_RunDoubleClicked );
+			_pt.ExecutablesDropped +=new ProjectTree.ExecutablesDroppedHandler( _pt_ExecutableDropped );
 
 			_dock = new Crownwood.Magic.Docking.DockingManager( this, Crownwood.Magic.Common.VisualStyle.IDE );
 			_dock.OuterControl = _menuMain;
@@ -618,6 +620,26 @@ namespace NProf.GUI
 			}
 
 			CreateTabPage( run );
+		}
+
+		private void _pt_ExecutableDropped( string[] fileNames )
+		{
+			foreach ( string fileName in fileNames )
+			{
+				ProfilerProjectOptionsForm frm = new ProfilerProjectOptionsForm();
+				frm.Mode = ProfilerProjectOptionsForm.ProfilerProjectMode.CreateProject;
+
+				// prepoulate from drag operation
+				frm.Project.ApplicationName = fileName;
+				frm.Project.WorkingDirectory = Path.GetDirectoryName(fileName);
+
+				DialogResult dr = frm.ShowDialog( this );
+				if ( dr == DialogResult.OK )
+				{
+					_pic.Add( frm.Project );
+					_pt.SelectProject( frm.Project );
+				}
+			}
 		}
 	}
 }

@@ -3,6 +3,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Drawing;
 using System.Data;
+using System.IO;
 using System.Windows.Forms;
 using System.Resources;
 using NProf.Glue.Profiler.Project;
@@ -56,6 +57,7 @@ namespace NProf.GUI
 			// 
 			// _tvProjects
 			// 
+			this._tvProjects.AllowDrop = true;
 			this._tvProjects.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._tvProjects.HideSelection = false;
 			this._tvProjects.ImageIndex = -1;
@@ -64,6 +66,9 @@ namespace NProf.GUI
 			this._tvProjects.SelectedImageIndex = -1;
 			this._tvProjects.Size = new System.Drawing.Size(344, 464);
 			this._tvProjects.TabIndex = 0;
+			this._tvProjects.DoubleClick += new System.EventHandler(this.ProjectTree_DoubleClick);
+			this._tvProjects.DragEnter += new System.Windows.Forms.DragEventHandler(this._tvProjects_DragEnter);
+			this._tvProjects.DragDrop += new System.Windows.Forms.DragEventHandler(this._tvProjects_DragDrop);
 			// 
 			// ProjectTree
 			// 
@@ -71,7 +76,6 @@ namespace NProf.GUI
 			this.Name = "ProjectTree";
 			this.Size = new System.Drawing.Size(344, 464);
 			this.Load += new System.EventHandler(this.ProjectTree_Load);
-			this._tvProjects.DoubleClick += new System.EventHandler(this.ProjectTree_DoubleClick);
 			this.ResumeLayout(false);
 
 		}
@@ -261,11 +265,43 @@ namespace NProf.GUI
 			}
 		}
 
+		private void _tvProjects_DragEnter(object sender, System.Windows.Forms.DragEventArgs e)
+		{
+			e.Effect = DragDropEffects.None;
+
+			// we only want to concern ourselves with file drops
+			if(e.Data.GetDataPresent(DataFormats.FileDrop))
+			{
+				string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+				e.Effect = DragDropEffects.All;
+
+				foreach(string fileName in files)
+				{
+					if(Path.GetExtension(fileName) != ".exe")
+					{
+						e.Effect = DragDropEffects.None;
+						return;
+					}
+				}
+			}		
+		}
+
+		private void _tvProjects_DragDrop( object sender, System.Windows.Forms.DragEventArgs e )
+		{
+			string[] files = ( string[] )e.Data.GetData( DataFormats.FileDrop );
+
+			if( ExecutablesDropped != null )
+				ExecutablesDropped( files );
+		}
+
 		public event ProjectDoubleClickedHandler ProjectDoubleClicked;
 		public event RunDoubleClickedHandler RunDoubleClicked;
+		public event ExecutablesDroppedHandler ExecutablesDropped;
 
 		public delegate void ProjectDoubleClickedHandler( ProjectInfo proj );
 		public delegate void RunDoubleClickedHandler( Run run );
+		public delegate void ExecutablesDroppedHandler( string[] fileNames );
 
 		private delegate TreeNode TreeNodeAdd( TreeNodeCollection tncParent, string strLabel, int nImageIndex, object oTag );
 		private delegate void TreeNodeRemove( TreeNode tnChild );
