@@ -214,7 +214,6 @@ namespace NProf.GUI
 			// 
 			// _rbAspNet
 			// 
-			this._rbAspNet.Enabled = false;
 			this._rbAspNet.Location = new System.Drawing.Point(8, 176);
 			this._rbAspNet.Name = "_rbAspNet";
 			this._rbAspNet.TabIndex = 21;
@@ -265,7 +264,6 @@ namespace NProf.GUI
 			// 
 			// _lblAspNet
 			// 
-			this._lblAspNet.Enabled = false;
 			this._lblAspNet.Location = new System.Drawing.Point(24, 200);
 			this._lblAspNet.Name = "_lblAspNet";
 			this._lblAspNet.Size = new System.Drawing.Size(264, 23);
