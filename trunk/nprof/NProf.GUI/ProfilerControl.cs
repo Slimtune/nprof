@@ -24,25 +24,7 @@ namespace NProf.GUI
 	{
 		private System.Windows.Forms.Panel panel1;
 		private System.Windows.Forms.Splitter splitter1;
-		private System.Windows.Forms.Panel panel2;
-		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.TreeView _tvNamespaceInfo;
-		private System.Windows.Forms.ComboBox _cbCurrentThread;
-		private DotNetLib.Windows.Forms.ContainerListView _lvFunctionInfo;
-		private DotNetLib.Windows.Forms.ContainerListView _lvChildInfo;
-		private System.Windows.Forms.Splitter splitter2;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader toggleColumnHeader1;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader toggleColumnHeader2;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader toggleColumnHeader3;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader toggleColumnHeader4;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader toggleColumnHeader5;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader toggleColumnHeader6;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader toggleColumnHeader7;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader toggleColumnHeader8;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader toggleColumnHeader9;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader toggleColumnHeader10;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader toggleColumnHeader11;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader toggleColumnHeader12;
 		private DotNetLib.Windows.Forms.ToggleColumnHeader colFunctionID;
 		private DotNetLib.Windows.Forms.ToggleColumnHeader colFunctionSignature;
 		private DotNetLib.Windows.Forms.ToggleColumnHeader colFunctionCalls;
@@ -50,14 +32,30 @@ namespace NProf.GUI
 		private DotNetLib.Windows.Forms.ToggleColumnHeader colFunctionMethod;
 		private DotNetLib.Windows.Forms.ToggleColumnHeader colFunctionChildren;
 		private DotNetLib.Windows.Forms.ToggleColumnHeader colFunctionSuspended;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader colChildID;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader colChildSignature;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader colChildCalls;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader colChildTotal;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader colChildParent;
+		private DotNetLib.Windows.Forms.ToggleColumnHeader colCalleeID;
+		private DotNetLib.Windows.Forms.ToggleColumnHeader colCalleeSignature;
+		private DotNetLib.Windows.Forms.ToggleColumnHeader colCalleeCalls;
+		private DotNetLib.Windows.Forms.ToggleColumnHeader colCalleeTotal;
+		private DotNetLib.Windows.Forms.ToggleColumnHeader colCalleeParent;
+		private DotNetLib.Windows.Forms.ToggleColumnHeader colCallerID;
+		private DotNetLib.Windows.Forms.ToggleColumnHeader colCallerSignature;
+		private DotNetLib.Windows.Forms.ToggleColumnHeader colCallerCalls;
+		private DotNetLib.Windows.Forms.ToggleColumnHeader colCallerTotal;
+		private DotNetLib.Windows.Forms.ToggleColumnHeader colCallerParent;
+		private System.Windows.Forms.Timer _tmrFilterThrottle;
+		private System.Windows.Forms.Panel panel2;
 		private System.Windows.Forms.Label _lblFilterSignatures;
 		private System.Windows.Forms.TextBox _txtFilterBar;
-		private System.Windows.Forms.Timer _tmrFilterThrottle;
+		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.ComboBox _cbCurrentThread;
+		private System.Windows.Forms.Panel panel3;
+		private DotNetLib.Windows.Forms.ContainerListView _lvFunctionInfo;
+		private System.Windows.Forms.Splitter splitter2;
+		private System.Windows.Forms.TabControl _tcCalls;
+		private System.Windows.Forms.TabPage _tpCallees;
+		private DotNetLib.Windows.Forms.ContainerListView _lvCalleesInfo;
+		private System.Windows.Forms.TabPage _tcCallers;
+		private DotNetLib.Windows.Forms.ContainerListView _lvCallersInfo;
 		private System.ComponentModel.IContainer components;
 
 		public ProfilerControl()
@@ -94,20 +92,8 @@ namespace NProf.GUI
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
-			this.toggleColumnHeader1 = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.toggleColumnHeader2 = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.toggleColumnHeader3 = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.toggleColumnHeader4 = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.toggleColumnHeader5 = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.toggleColumnHeader6 = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.toggleColumnHeader7 = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.toggleColumnHeader8 = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.toggleColumnHeader9 = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.toggleColumnHeader10 = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.toggleColumnHeader11 = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.toggleColumnHeader12 = new DotNetLib.Windows.Forms.ToggleColumnHeader();
 			this.panel1 = new System.Windows.Forms.Panel();
-			this.splitter2 = new System.Windows.Forms.Splitter();
+			this.panel3 = new System.Windows.Forms.Panel();
 			this._lvFunctionInfo = new DotNetLib.Windows.Forms.ContainerListView();
 			this.colFunctionID = new DotNetLib.Windows.Forms.ToggleColumnHeader();
 			this.colFunctionSignature = new DotNetLib.Windows.Forms.ToggleColumnHeader();
@@ -116,12 +102,22 @@ namespace NProf.GUI
 			this.colFunctionMethod = new DotNetLib.Windows.Forms.ToggleColumnHeader();
 			this.colFunctionChildren = new DotNetLib.Windows.Forms.ToggleColumnHeader();
 			this.colFunctionSuspended = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this._lvChildInfo = new DotNetLib.Windows.Forms.ContainerListView();
-			this.colChildID = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.colChildSignature = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.colChildCalls = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.colChildTotal = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.colChildParent = new DotNetLib.Windows.Forms.ToggleColumnHeader();
+			this.splitter2 = new System.Windows.Forms.Splitter();
+			this._tcCalls = new System.Windows.Forms.TabControl();
+			this._tpCallees = new System.Windows.Forms.TabPage();
+			this._lvCalleesInfo = new DotNetLib.Windows.Forms.ContainerListView();
+			this.colCalleeID = new DotNetLib.Windows.Forms.ToggleColumnHeader();
+			this.colCalleeSignature = new DotNetLib.Windows.Forms.ToggleColumnHeader();
+			this.colCalleeCalls = new DotNetLib.Windows.Forms.ToggleColumnHeader();
+			this.colCalleeTotal = new DotNetLib.Windows.Forms.ToggleColumnHeader();
+			this.colCalleeParent = new DotNetLib.Windows.Forms.ToggleColumnHeader();
+			this._tcCallers = new System.Windows.Forms.TabPage();
+			this._lvCallersInfo = new DotNetLib.Windows.Forms.ContainerListView();
+			this.colCallerID = new DotNetLib.Windows.Forms.ToggleColumnHeader();
+			this.colCallerSignature = new DotNetLib.Windows.Forms.ToggleColumnHeader();
+			this.colCallerCalls = new DotNetLib.Windows.Forms.ToggleColumnHeader();
+			this.colCallerTotal = new DotNetLib.Windows.Forms.ToggleColumnHeader();
+			this.colCallerParent = new DotNetLib.Windows.Forms.ToggleColumnHeader();
 			this.splitter1 = new System.Windows.Forms.Splitter();
 			this._tvNamespaceInfo = new System.Windows.Forms.TreeView();
 			this.panel2 = new System.Windows.Forms.Panel();
@@ -131,14 +127,16 @@ namespace NProf.GUI
 			this._cbCurrentThread = new System.Windows.Forms.ComboBox();
 			this._tmrFilterThrottle = new System.Windows.Forms.Timer(this.components);
 			this.panel1.SuspendLayout();
+			this.panel3.SuspendLayout();
+			this._tcCalls.SuspendLayout();
+			this._tpCallees.SuspendLayout();
+			this._tcCallers.SuspendLayout();
 			this.panel2.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// panel1
 			// 
-			this.panel1.Controls.Add(this.splitter2);
-			this.panel1.Controls.Add(this._lvFunctionInfo);
-			this.panel1.Controls.Add(this._lvChildInfo);
+			this.panel1.Controls.Add(this.panel3);
 			this.panel1.Controls.Add(this.splitter1);
 			this.panel1.Controls.Add(this._tvNamespaceInfo);
 			this.panel1.Controls.Add(this.panel2);
@@ -148,19 +146,22 @@ namespace NProf.GUI
 			this.panel1.Size = new System.Drawing.Size(872, 456);
 			this.panel1.TabIndex = 10;
 			// 
-			// splitter2
+			// panel3
 			// 
-			this.splitter2.Dock = System.Windows.Forms.DockStyle.Bottom;
-			this.splitter2.Location = new System.Drawing.Point(195, 261);
-			this.splitter2.Name = "splitter2";
-			this.splitter2.Size = new System.Drawing.Size(677, 3);
-			this.splitter2.TabIndex = 15;
-			this.splitter2.TabStop = false;
+			this.panel3.Controls.Add(this._lvFunctionInfo);
+			this.panel3.Controls.Add(this.splitter2);
+			this.panel3.Controls.Add(this._tcCalls);
+			this.panel3.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.panel3.Location = new System.Drawing.Point(195, 24);
+			this.panel3.Name = "panel3";
+			this.panel3.Size = new System.Drawing.Size(677, 432);
+			this.panel3.TabIndex = 13;
 			// 
 			// _lvFunctionInfo
 			// 
 			this._lvFunctionInfo.AllowColumnReorder = true;
-			this._lvFunctionInfo.BackColor = System.Drawing.SystemColors.Window;
+			this._lvFunctionInfo.AllowMultiSelect = true;
+			this._lvFunctionInfo.CaptureFocusClick = false;
 			this._lvFunctionInfo.Columns.AddRange(new DotNetLib.Windows.Forms.ToggleColumnHeader[] {
 																																	this.colFunctionID,
 																																	this.colFunctionSignature,
@@ -170,22 +171,16 @@ namespace NProf.GUI
 																																	this.colFunctionChildren,
 																																	this.colFunctionSuspended});
 			this._lvFunctionInfo.ColumnSortColor = System.Drawing.Color.WhiteSmoke;
-			this._lvFunctionInfo.ColumnTrackingColor = System.Drawing.Color.WhiteSmoke;
 			this._lvFunctionInfo.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._lvFunctionInfo.GridLineColor = System.Drawing.Color.WhiteSmoke;
 			this._lvFunctionInfo.HeaderHeight = 33;
 			this._lvFunctionInfo.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Clickable;
 			this._lvFunctionInfo.HideSelection = false;
-			this._lvFunctionInfo.Location = new System.Drawing.Point(195, 24);
+			this._lvFunctionInfo.Location = new System.Drawing.Point(0, 0);
 			this._lvFunctionInfo.MultipleColumnSort = true;
-			this._lvFunctionInfo.MultiSelect = true;
 			this._lvFunctionInfo.Name = "_lvFunctionInfo";
-			this._lvFunctionInfo.RowSelectedColor = System.Drawing.SystemColors.Highlight;
-			this._lvFunctionInfo.RowTrackingColor = System.Drawing.Color.WhiteSmoke;
-			this._lvFunctionInfo.Size = new System.Drawing.Size(677, 240);
-			this._lvFunctionInfo.TabIndex = 14;
-			this._lvFunctionInfo.HeaderMenuEvent += new DotNetLib.Windows.Forms.HeaderMenuEventHandler(this._lv_HeaderMenuEvent);
-			this._lvFunctionInfo.SelectedIndexChanged += new System.EventHandler(this._lvFunctionInfo_SelectedIndexChanged);
+			this._lvFunctionInfo.Size = new System.Drawing.Size(677, 253);
+			this._lvFunctionInfo.TabIndex = 24;
+			this._lvFunctionInfo.SelectedItemsChanged += new System.EventHandler(this._lvFunctionInfo_SelectedItemsChanged);
 			// 
 			// colFunctionID
 			// 
@@ -204,6 +199,7 @@ namespace NProf.GUI
 			// 
 			// colFunctionCalls
 			// 
+			this.colFunctionCalls.DefaultSortOrder = System.Windows.Forms.SortOrder.Descending;
 			this.colFunctionCalls.DisplayIndex = 2;
 			this.colFunctionCalls.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
 			this.colFunctionCalls.Text = "# of Calls";
@@ -213,6 +209,7 @@ namespace NProf.GUI
 			// 
 			// colFunctionTotal
 			// 
+			this.colFunctionTotal.DefaultSortOrder = System.Windows.Forms.SortOrder.Descending;
 			this.colFunctionTotal.DisplayIndex = 3;
 			this.colFunctionTotal.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
 			this.colFunctionTotal.Text = "% of Total";
@@ -222,6 +219,7 @@ namespace NProf.GUI
 			// 
 			// colFunctionMethod
 			// 
+			this.colFunctionMethod.DefaultSortOrder = System.Windows.Forms.SortOrder.Descending;
 			this.colFunctionMethod.DisplayIndex = 4;
 			this.colFunctionMethod.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
 			this.colFunctionMethod.Text = "% in\nMethod";
@@ -231,6 +229,7 @@ namespace NProf.GUI
 			// 
 			// colFunctionChildren
 			// 
+			this.colFunctionChildren.DefaultSortOrder = System.Windows.Forms.SortOrder.Descending;
 			this.colFunctionChildren.DisplayIndex = 5;
 			this.colFunctionChildren.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
 			this.colFunctionChildren.Text = "% in\nChildren";
@@ -240,6 +239,7 @@ namespace NProf.GUI
 			// 
 			// colFunctionSuspended
 			// 
+			this.colFunctionSuspended.DefaultSortOrder = System.Windows.Forms.SortOrder.Descending;
 			this.colFunctionSuspended.DisplayIndex = 6;
 			this.colFunctionSuspended.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
 			this.colFunctionSuspended.Text = "% Suspended";
@@ -247,73 +247,175 @@ namespace NProf.GUI
 			this.colFunctionSuspended.ToolTip = "% Suspended Tool Tip";
 			this.colFunctionSuspended.Width = 70;
 			// 
-			// _lvChildInfo
+			// splitter2
 			// 
-			this._lvChildInfo.AllowColumnReorder = true;
-			this._lvChildInfo.BackColor = System.Drawing.SystemColors.Window;
-			this._lvChildInfo.Columns.AddRange(new DotNetLib.Windows.Forms.ToggleColumnHeader[] {
-																																this.colChildID,
-																																this.colChildSignature,
-																																this.colChildCalls,
-																																this.colChildTotal,
-																																this.colChildParent});
-			this._lvChildInfo.ColumnSortColor = System.Drawing.Color.WhiteSmoke;
-			this._lvChildInfo.ColumnTrackingColor = System.Drawing.Color.WhiteSmoke;
-			this._lvChildInfo.Dock = System.Windows.Forms.DockStyle.Bottom;
-			this._lvChildInfo.GridLineColor = System.Drawing.Color.WhiteSmoke;
-			this._lvChildInfo.HeaderHeight = 33;
-			this._lvChildInfo.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Clickable;
-			this._lvChildInfo.HideSelection = false;
-			this._lvChildInfo.Location = new System.Drawing.Point(195, 264);
-			this._lvChildInfo.Name = "_lvChildInfo";
-			this._lvChildInfo.RowSelectedColor = System.Drawing.SystemColors.Highlight;
-			this._lvChildInfo.RowTrackingColor = System.Drawing.Color.WhiteSmoke;
-			this._lvChildInfo.Size = new System.Drawing.Size(677, 192);
-			this._lvChildInfo.TabIndex = 13;
-			this._lvChildInfo.DoubleClick += new System.EventHandler(this._lvChildInfo_DoubleClick);
-			this._lvChildInfo.HeaderMenuEvent += new DotNetLib.Windows.Forms.HeaderMenuEventHandler(this._lv_HeaderMenuEvent);
+			this.splitter2.Dock = System.Windows.Forms.DockStyle.Bottom;
+			this.splitter2.Location = new System.Drawing.Point(0, 253);
+			this.splitter2.Name = "splitter2";
+			this.splitter2.Size = new System.Drawing.Size(677, 3);
+			this.splitter2.TabIndex = 23;
+			this.splitter2.TabStop = false;
 			// 
-			// colChildID
+			// _tcCalls
 			// 
-			this.colChildID.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Integer;
-			this.colChildID.Text = "ID";
-			this.colChildID.ToolTip = "ID Tool Tip";
-			this.colChildID.Width = 100;
+			this._tcCalls.Controls.Add(this._tpCallees);
+			this._tcCalls.Controls.Add(this._tcCallers);
+			this._tcCalls.Dock = System.Windows.Forms.DockStyle.Bottom;
+			this._tcCalls.Location = new System.Drawing.Point(0, 256);
+			this._tcCalls.Name = "_tcCalls";
+			this._tcCalls.SelectedIndex = 0;
+			this._tcCalls.Size = new System.Drawing.Size(677, 176);
+			this._tcCalls.TabIndex = 22;
 			// 
-			// colChildSignature
+			// _tpCallees
 			// 
-			this.colChildSignature.DisplayIndex = 1;
-			this.colChildSignature.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.String;
-			this.colChildSignature.Text = "Signature";
-			this.colChildSignature.ToolTip = "Signature Tool Tip";
-			this.colChildSignature.Width = 400;
+			this._tpCallees.Controls.Add(this._lvCalleesInfo);
+			this._tpCallees.Location = new System.Drawing.Point(4, 22);
+			this._tpCallees.Name = "_tpCallees";
+			this._tpCallees.Size = new System.Drawing.Size(669, 150);
+			this._tpCallees.TabIndex = 0;
+			this._tpCallees.Text = "Callees";
 			// 
-			// colChildCalls
+			// _lvCalleesInfo
 			// 
-			this.colChildCalls.DisplayIndex = 2;
-			this.colChildCalls.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
-			this.colChildCalls.Text = "# of Calls";
-			this.colChildCalls.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-			this.colChildCalls.ToolTip = "# of Calls Tool Tip";
-			this.colChildCalls.Width = 70;
+			this._lvCalleesInfo.AllowColumnReorder = true;
+			this._lvCalleesInfo.CaptureFocusClick = false;
+			this._lvCalleesInfo.Columns.AddRange(new DotNetLib.Windows.Forms.ToggleColumnHeader[] {
+																																  this.colCalleeID,
+																																  this.colCalleeSignature,
+																																  this.colCalleeCalls,
+																																  this.colCalleeTotal,
+																																  this.colCalleeParent});
+			this._lvCalleesInfo.ColumnSortColor = System.Drawing.Color.WhiteSmoke;
+			this._lvCalleesInfo.Dock = System.Windows.Forms.DockStyle.Fill;
+			this._lvCalleesInfo.HeaderHeight = 33;
+			this._lvCalleesInfo.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Clickable;
+			this._lvCalleesInfo.HideSelection = false;
+			this._lvCalleesInfo.Location = new System.Drawing.Point(0, 0);
+			this._lvCalleesInfo.Name = "_lvCalleesInfo";
+			this._lvCalleesInfo.Size = new System.Drawing.Size(669, 150);
+			this._lvCalleesInfo.TabIndex = 17;
+			this._lvCalleesInfo.DoubleClick += new System.EventHandler(this._lvChildInfo_DoubleClick);
 			// 
-			// colChildTotal
+			// colCalleeID
 			// 
-			this.colChildTotal.DisplayIndex = 3;
-			this.colChildTotal.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
-			this.colChildTotal.Text = "% of Total";
-			this.colChildTotal.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-			this.colChildTotal.ToolTip = "% of Total Tool Tip";
-			this.colChildTotal.Width = 70;
+			this.colCalleeID.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Integer;
+			this.colCalleeID.Text = "ID";
+			this.colCalleeID.ToolTip = "ID Tool Tip";
+			this.colCalleeID.Width = 100;
 			// 
-			// colChildParent
+			// colCalleeSignature
 			// 
-			this.colChildParent.DisplayIndex = 4;
-			this.colChildParent.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
-			this.colChildParent.Text = "% of Parent";
-			this.colChildParent.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-			this.colChildParent.ToolTip = "% of Parent Tool Tip";
-			this.colChildParent.Width = 70;
+			this.colCalleeSignature.DisplayIndex = 1;
+			this.colCalleeSignature.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.String;
+			this.colCalleeSignature.Text = "Signature";
+			this.colCalleeSignature.ToolTip = "Signature Tool Tip";
+			this.colCalleeSignature.Width = 400;
+			// 
+			// colCalleeCalls
+			// 
+			this.colCalleeCalls.DefaultSortOrder = System.Windows.Forms.SortOrder.Descending;
+			this.colCalleeCalls.DisplayIndex = 2;
+			this.colCalleeCalls.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
+			this.colCalleeCalls.Text = "# of Calls";
+			this.colCalleeCalls.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.colCalleeCalls.ToolTip = "# of Calls Tool Tip";
+			this.colCalleeCalls.Width = 70;
+			// 
+			// colCalleeTotal
+			// 
+			this.colCalleeTotal.DefaultSortOrder = System.Windows.Forms.SortOrder.Descending;
+			this.colCalleeTotal.DisplayIndex = 3;
+			this.colCalleeTotal.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
+			this.colCalleeTotal.Text = "% of Total";
+			this.colCalleeTotal.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.colCalleeTotal.ToolTip = "% of Total Tool Tip";
+			this.colCalleeTotal.Width = 70;
+			// 
+			// colCalleeParent
+			// 
+			this.colCalleeParent.DefaultSortOrder = System.Windows.Forms.SortOrder.Descending;
+			this.colCalleeParent.DisplayIndex = 4;
+			this.colCalleeParent.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
+			this.colCalleeParent.Text = "% of Parent";
+			this.colCalleeParent.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.colCalleeParent.ToolTip = "% of Parent Tool Tip";
+			this.colCalleeParent.Width = 70;
+			// 
+			// _tcCallers
+			// 
+			this._tcCallers.Controls.Add(this._lvCallersInfo);
+			this._tcCallers.Location = new System.Drawing.Point(4, 22);
+			this._tcCallers.Name = "_tcCallers";
+			this._tcCallers.Size = new System.Drawing.Size(669, 150);
+			this._tcCallers.TabIndex = 1;
+			this._tcCallers.Text = "Callers";
+			// 
+			// _lvCallersInfo
+			// 
+			this._lvCallersInfo.AllowColumnReorder = true;
+			this._lvCallersInfo.CaptureFocusClick = false;
+			this._lvCallersInfo.Columns.AddRange(new DotNetLib.Windows.Forms.ToggleColumnHeader[] {
+																																  this.colCallerID,
+																																  this.colCallerSignature,
+																																  this.colCallerCalls,
+																																  this.colCallerTotal,
+																																  this.colCallerParent});
+			this._lvCallersInfo.ColumnSortColor = System.Drawing.Color.WhiteSmoke;
+			this._lvCallersInfo.Dock = System.Windows.Forms.DockStyle.Fill;
+			this._lvCallersInfo.HeaderHeight = 33;
+			this._lvCallersInfo.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Clickable;
+			this._lvCallersInfo.HideSelection = false;
+			this._lvCallersInfo.Location = new System.Drawing.Point(0, 0);
+			this._lvCallersInfo.Name = "_lvCallersInfo";
+			this._lvCallersInfo.Size = new System.Drawing.Size(669, 150);
+			this._lvCallersInfo.TabIndex = 18;
+			this._lvCallersInfo.DoubleClick += new System.EventHandler(this._lvChildInfo_DoubleClick);
+			// 
+			// colCallerID
+			// 
+			this.colCallerID.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Integer;
+			this.colCallerID.Text = "ID";
+			this.colCallerID.ToolTip = "ID Tool Tip";
+			this.colCallerID.Width = 100;
+			// 
+			// colCallerSignature
+			// 
+			this.colCallerSignature.DisplayIndex = 1;
+			this.colCallerSignature.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.String;
+			this.colCallerSignature.Text = "Signature";
+			this.colCallerSignature.ToolTip = "Signature Tool Tip";
+			this.colCallerSignature.Width = 400;
+			// 
+			// colCallerCalls
+			// 
+			this.colCallerCalls.DefaultSortOrder = System.Windows.Forms.SortOrder.Descending;
+			this.colCallerCalls.DisplayIndex = 2;
+			this.colCallerCalls.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
+			this.colCallerCalls.Text = "# of Calls";
+			this.colCallerCalls.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.colCallerCalls.ToolTip = "# of Calls Tool Tip";
+			this.colCallerCalls.Width = 70;
+			// 
+			// colCallerTotal
+			// 
+			this.colCallerTotal.DefaultSortOrder = System.Windows.Forms.SortOrder.Descending;
+			this.colCallerTotal.DisplayIndex = 3;
+			this.colCallerTotal.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
+			this.colCallerTotal.Text = "% of Total";
+			this.colCallerTotal.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.colCallerTotal.ToolTip = "% of Total Tool Tip";
+			this.colCallerTotal.Width = 70;
+			// 
+			// colCallerParent
+			// 
+			this.colCallerParent.DefaultSortOrder = System.Windows.Forms.SortOrder.Descending;
+			this.colCallerParent.DisplayIndex = 4;
+			this.colCallerParent.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
+			this.colCallerParent.Text = "% of Parent";
+			this.colCallerParent.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.colCallerParent.ToolTip = "% of Parent Tool Tip";
+			this.colCallerParent.Width = 70;
 			// 
 			// splitter1
 			// 
@@ -327,6 +429,7 @@ namespace NProf.GUI
 			// 
 			this._tvNamespaceInfo.CheckBoxes = true;
 			this._tvNamespaceInfo.Dock = System.Windows.Forms.DockStyle.Left;
+			this._tvNamespaceInfo.FullRowSelect = true;
 			this._tvNamespaceInfo.ImageIndex = -1;
 			this._tvNamespaceInfo.Location = new System.Drawing.Point(0, 24);
 			this._tvNamespaceInfo.Name = "_tvNamespaceInfo";
@@ -398,6 +501,10 @@ namespace NProf.GUI
 			this.Size = new System.Drawing.Size(872, 456);
 			this.Load += new System.EventHandler(this.ProfilerControl_Load);
 			this.panel1.ResumeLayout(false);
+			this.panel3.ResumeLayout(false);
+			this._tcCalls.ResumeLayout(false);
+			this._tpCallees.ResumeLayout(false);
+			this._tcCallers.ResumeLayout(false);
 			this.panel2.ResumeLayout(false);
 			this.ResumeLayout(false);
 
@@ -505,7 +612,8 @@ namespace NProf.GUI
 		private void UpdateFilters()
 		{
 			_lvFunctionInfo.Items.Clear();
-			_lvChildInfo.Items.Clear();
+			_lvCalleesInfo.Items.Clear();
+			_lvCallersInfo.Items.Clear();
 
 			Hashtable htNamespaces = new Hashtable();
 			foreach ( TreeNode tn in _htCheckedItems.Keys )
@@ -575,32 +683,132 @@ namespace NProf.GUI
 			UpdateFilters();
 		}
 
-		private void _lvFunctionInfo_SelectedIndexChanged(object sender, System.EventArgs e)
+		private void _lvFunctionInfo_SelectedItemsChanged(object sender, System.EventArgs e)
 		{
+			_lvCalleesInfo.Items.Clear();
+			_lvCallersInfo.Items.Clear();
+
 			if ( _lvFunctionInfo.SelectedItems.Count == 0 )
-			{
-				_lvChildInfo.Items.Clear();
 				return;
-			}
-			FunctionInfo fi = ( FunctionInfo )_lvFunctionInfo.SelectedItems[ 0 ].Tag;
-			_lvChildInfo.Items.Clear();
 
 			// somebody clicked! empty the forward stack and push this click on the "Back" stack.
-			if (!_bNavigating) 
+			if ( !_bNavigating )
 			{
 				_navStackForward.Clear();
-				if (_navCurrent != null) 
-					_navStackBack.Push(_navCurrent);
+				if ( _navCurrent != null )
+					_navStackBack.Push( _navCurrent );
 
-				_navCurrent = fi;
+				ArrayList lst = new ArrayList();
+
+				for( int idx = 0; idx < _lvFunctionInfo.SelectedItems.Count; ++idx )
+					if( _lvFunctionInfo.SelectedItems[idx].Tag != null )
+						lst.Add( ( _lvFunctionInfo.SelectedItems[idx].Tag as FunctionInfo ).ID );
+
+				_navCurrent = ( int[] )lst.ToArray( typeof( int ) );
 			}
 
-			try
+			UpdateCalleeList();
+			UpdateCallerList();
+		}
+
+		private void UpdateCallerList()
+		{
+			_lvCallersInfo.BeginUpdate();
+
+			bool multipleSelected = (_lvFunctionInfo.SelectedItems.Count > 1);
+			_lvCallersInfo.ShowPlusMinus = multipleSelected;
+			_lvCallersInfo.ShowRootTreeLines = multipleSelected;
+			_lvCallersInfo.ShowTreeLines = multipleSelected;
+
+			ThreadInfo tiCurrentThread = _tic[ ( ( ThreadInfo )_cbCurrentThread.SelectedItem ).ID ];
+			foreach ( ContainerListViewItem item in _lvFunctionInfo.SelectedItems )
 			{
+				FunctionInfo mfi = ( FunctionInfo )item.Tag;
+
+				foreach ( FunctionInfo fi in tiCurrentThread.FunctionInfoCollection )
+					foreach ( CalleeFunctionInfo cfi in fi.CalleeInfo )
+						if ( cfi.ID == mfi.ID )
+						{
+							ContainerListViewItem parentItem = null;
+
+							foreach ( ContainerListViewItem pitem in _lvCallersInfo.Items )
+								if ( ( pitem.Tag as CalleeFunctionInfo ).ID == fi.ID )
+									parentItem = pitem;
+
+							if ( parentItem == null ) // don't have it
+							{
+								parentItem = _lvCallersInfo.Items.Add( fi.ID.ToString() );
+								parentItem.SubItems[ 1 ].Text = fi.Signature.Signature;
+								parentItem.SubItems[ 2 ].Text = cfi.Calls.ToString();
+								parentItem.SubItems[ 3 ].Text = cfi.PercentOfTotalTimeInMethod.ToString( "0.00;-0.00;0" );
+								parentItem.SubItems[ 4 ].Text = cfi.PercentOfParentTimeInMethod.ToString( "0.00;-0.00;0" );
+								parentItem.Tag = cfi;
+							}
+							else // do, update totals
+							{
+								parentItem.SubItems[ 2 ].Text = (int.Parse( parentItem.SubItems[ 2 ].Text ) + cfi.Calls ).ToString();
+								parentItem.SubItems[ 3 ].Text = "-";
+								parentItem.SubItems[ 4 ].Text = "-";
+							}
+
+							// either way, add a child pointing back to the parent
+							ContainerListViewItem lvi = parentItem.Items.Add( cfi.ID.ToString() );
+							lvi.SubItems[ 1 ].Text = cfi.Signature;
+							lvi.SubItems[ 2 ].Text = cfi.Calls.ToString();
+							lvi.SubItems[ 3 ].Text = cfi.PercentOfTotalTimeInMethod.ToString( "0.00;-0.00;0" );
+							lvi.SubItems[ 4 ].Text = cfi.PercentOfParentTimeInMethod.ToString( "0.00;-0.00;0" );
+							lvi.Tag = cfi;
+						}
+			}
+
+			_lvCallersInfo.Sort();
+			_lvCallersInfo.EndUpdate();
+		}
+
+		private void UpdateCalleeList()
+		{
+			_lvCalleesInfo.BeginUpdate();
+
+			bool multipleSelected = (_lvFunctionInfo.SelectedItems.Count > 1);
+			_lvCalleesInfo.ShowPlusMinus = multipleSelected;
+			_lvCalleesInfo.ShowRootTreeLines = multipleSelected;
+			_lvCalleesInfo.ShowTreeLines = multipleSelected;
+
+			ContainerListViewItem lviSuspend = null;
+
+			foreach ( ContainerListViewItem item in _lvFunctionInfo.SelectedItems )
+			{
+				FunctionInfo fi = ( FunctionInfo )item.Tag;
+
 				foreach ( CalleeFunctionInfo cfi in fi.CalleeInfo )
 				{
-					ContainerListViewItem lvi = _lvChildInfo.Items.Add( cfi.ID.ToString() );
-					lvi.SubItems[ 1 ].Text = cfi.Signature;
+					ContainerListViewItem parentItem = null;
+
+					foreach ( ContainerListViewItem pitem in _lvCalleesInfo.Items )
+						if( pitem.Tag != null)
+							if ( ( pitem.Tag as CalleeFunctionInfo ).ID == cfi.ID )
+								parentItem = pitem;
+
+
+					if ( parentItem == null ) // don't have it
+					{
+						parentItem = _lvCalleesInfo.Items.Add( cfi.ID.ToString() );
+						parentItem.SubItems[ 1 ].Text = cfi.Signature;
+						parentItem.SubItems[ 2 ].Text = cfi.Calls.ToString();
+						parentItem.SubItems[ 3 ].Text = cfi.PercentOfTotalTimeInMethod.ToString( "0.00;-0.00;0" );
+						parentItem.SubItems[ 4 ].Text = cfi.PercentOfParentTimeInMethod.ToString( "0.00;-0.00;0" );
+						parentItem.Tag = cfi;
+					}
+					else // do, update totals
+					{
+						parentItem.SubItems[ 2 ].Text = (int.Parse( parentItem.SubItems[ 2 ].Text ) + cfi.Calls ).ToString();
+						parentItem.SubItems[ 3 ].Text = "-";
+						parentItem.SubItems[ 4 ].Text = "-";
+					}
+
+					// either way, add a child pointing back to the parent
+					ContainerListViewItem lvi = parentItem.Items.Add( fi.ID.ToString() );
+					lvi.SubItems[ 1 ].Text = fi.Signature.Signature;
 					lvi.SubItems[ 2 ].Text = cfi.Calls.ToString();
 					lvi.SubItems[ 3 ].Text = cfi.PercentOfTotalTimeInMethod.ToString( "0.00;-0.00;0" );
 					lvi.SubItems[ 4 ].Text = cfi.PercentOfParentTimeInMethod.ToString( "0.00;-0.00;0" );
@@ -609,32 +817,47 @@ namespace NProf.GUI
 
 				if ( fi.TotalSuspendedTicks > 0 )
 				{
-					ContainerListViewItem lviSuspend = _lvChildInfo.Items.Add( "(suspend)" );
-					lviSuspend.SubItems[ 1 ].Text = "(thread suspended)";
-					lviSuspend.SubItems[ 2 ].Text = "-";
-					lviSuspend.SubItems[ 3 ].Text = fi.PercentOfTotalTimeSuspended.ToString( "0.00;-0.00;0" );
-					lviSuspend.SubItems[ 4 ].Text = fi.PercentOfMethodTimeSuspended.ToString( "0.00;-0.00;0" );
+					if ( lviSuspend == null) // don't have it
+					{
+						lviSuspend = _lvCalleesInfo.Items.Add( "(suspend)" );
+						lviSuspend.SubItems[ 1 ].Text = "(thread suspended)";
+						lviSuspend.SubItems[ 2 ].Text = "-";
+						lviSuspend.SubItems[ 3 ].Text = fi.PercentOfTotalTimeSuspended.ToString( "0.00;-0.00;0" );
+						lviSuspend.SubItems[ 4 ].Text = fi.PercentOfMethodTimeSuspended.ToString( "0.00;-0.00;0" );
+					}
+					else // do, update totals
+					{
+						lviSuspend.SubItems[ 3 ].Text = "-";
+						lviSuspend.SubItems[ 4 ].Text = "-";
+					}
+
+					// either way, add a child pointing back to the parent
+					ContainerListViewItem lvi = lviSuspend.Items.Add( fi.ID.ToString() );
+					lvi.SubItems[ 1 ].Text = fi.Signature.Signature;
+					lvi.SubItems[ 2 ].Text = "-";
+					lvi.SubItems[ 3 ].Text = fi.PercentOfTotalTimeSuspended.ToString( "0.00;-0.00;0" );
+					lvi.SubItems[ 4 ].Text = fi.PercentOfMethodTimeSuspended.ToString( "0.00;-0.00;0" );
 				}
 			}
-			finally
-			{
-				_lvChildInfo.Sort();
-				_lvChildInfo.Refresh();
-			}
+
+			_lvCalleesInfo.Sort();
+			_lvCalleesInfo.EndUpdate();
 		}
 
 		private void ProfilerControl_Load(object sender, System.EventArgs e)
 		{
 			_lvFunctionInfo.Sort(1, true, true);
-			_lvChildInfo.Sort(1, true, true);
+			_lvCalleesInfo.Sort(1, true, true);
 		}
 
 		private void _lvChildInfo_DoubleClick(object sender, System.EventArgs e)
 		{
-			if ( _lvChildInfo.SelectedItems.Count == 0 )
+			ContainerListView ctl = sender as ContainerListView;
+
+			if ( ctl.SelectedItems.Count == 0 )
 				return;
 
-			CalleeFunctionInfo cfi = ( CalleeFunctionInfo )_lvChildInfo.SelectedItems[ 0 ].Tag;
+			CalleeFunctionInfo cfi = ( CalleeFunctionInfo )ctl.SelectedItems[ 0 ].Tag;
 			if ( cfi == null )
 				MessageBox.Show( "No information available for this item" );
 			else
@@ -650,7 +873,7 @@ namespace NProf.GUI
 		private void _tmrFilterThrottle_Tick(object sender, System.EventArgs e)
 		{
 			_tmrFilterThrottle.Enabled = false;
-			_lvFunctionInfo.Filter(1, _txtFilterBar.Text);
+			_lvFunctionInfo.Filter( 1, _txtFilterBar.Text );
 		}
 
 		public void  NavigateBackward()
@@ -659,58 +882,66 @@ namespace NProf.GUI
 				return;
 
 			_navStackForward.Push(_navCurrent);
-			_navCurrent = (FunctionInfo) _navStackBack.Pop();
+			_navCurrent = ( int[] ) _navStackBack.Pop();
 
 			_bNavigating = true;
-			JumpToID(_navCurrent.ID);
+			JumpToID( _navCurrent );
 			_bNavigating = false;
 		}
 
 		public void NavigateForward()
 		{
-			if (_navStackForward.Count == 0)
+			if ( _navStackForward.Count == 0 )
 				return;
 
-			_navStackBack.Push(_navCurrent);
-			_navCurrent = (FunctionInfo) _navStackForward.Pop();
+			_navStackBack.Push( _navCurrent );
+			_navCurrent = ( int[] ) _navStackForward.Pop();
 
 			_bNavigating = true;
-			JumpToID(_navCurrent.ID);
+			JumpToID( _navCurrent );
 			_bNavigating = false;
 		}
 
 		private void JumpToID( int nID )
 		{
-			foreach( ContainerListViewItem lvi in _lvFunctionInfo.Items )
-			{
-				FunctionInfo fi = ( FunctionInfo )lvi.Tag;
-				if ( fi.ID == nID )
+			JumpToID( new int[] { nID } );
+		}
+
+		private void JumpToID( int[] ids )
+		{
+			_lvFunctionInfo.SelectedItems.Clear();
+
+			foreach( int id in ids )
+				foreach( ContainerListViewItem lvi in _lvFunctionInfo.Items )
 				{
-					if(!lvi.Selected)
+					FunctionInfo fi = ( FunctionInfo )lvi.Tag;
+
+					if ( fi.ID == id )
 					{
-						if(_lvFunctionInfo.FilteredItems[lvi] == -1)
+						if(!lvi.Selected)
 						{
-							if(MessageBox.Show("Cannot navigate to that function because it is being filtered.  Would you like to remove the filter and continue to that function?", "Filtered Item", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
-								return;
-							else
-								_txtFilterBar.Text = string.Empty;
+							if(lvi.IsFiltered)
+							{
+								if(MessageBox.Show("Cannot navigate to that function because it is being filtered.  Would you like to remove the filter and continue to that function?", "Filtered Item", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
+									return;
+								else
+									_txtFilterBar.Text = string.Empty;
+							}
+
+							lvi.Selected = true;
+							lvi.Focused = true;
 						}
-
-						_lvFunctionInfo.SelectedItems.Clear();
-
-						lvi.Selected = true;
-						lvi.Focused = true;
-						_lvFunctionInfo.EnsureVisible();
-						_lvFunctionInfo.Focus();
+						break;
 					}
-					break;
 				}
-			}
+
+			_lvFunctionInfo.EnsureVisible();
+			_lvFunctionInfo.Focus();
 		}
 
 		private int GetSelectedID()
 		{
-			if ( _lvChildInfo.SelectedItems.Count == 0 )
+			if ( _lvCalleesInfo.SelectedItems.Count == 0 )
 				return -1;
 
 			return ( ( FunctionInfo )_lvFunctionInfo.SelectedItems[ 0 ].Tag ).ID;
@@ -721,8 +952,8 @@ namespace NProf.GUI
 		private Hashtable _htCheckedItems;
 		private Stack _navStackBack = new Stack();
 		private Stack _navStackForward = new Stack();
-		private FunctionInfo _navCurrent = null;
-		private bool  _bNavigating = false;
+		private int[] _navCurrent = null;
+		private bool _bNavigating = false;
 
 		#region Context Menus
 
@@ -748,7 +979,7 @@ namespace NProf.GUI
 				sortByItem.RadioCheck = true;
 				sortByItem.Checked = hdr.SortingOrder != SortOrder.None;
 				sortByItem.Tag = new object[] { listView, idx };
-//				sortByItem.Click += new EventHandler(sortByItem_Click);
+				//				sortByItem.Click += new EventHandler(sortByItem_Click);
 
 				if(sortByItem.Checked)
 					isAscending = hdr.SortingOrder == SortOrder.Ascending;
@@ -761,13 +992,13 @@ namespace NProf.GUI
 			ascending.RadioCheck = true;
 			ascending.Checked = isAscending;
 			ascending.Tag = new object[] { listView, SortOrder.Ascending };
-//			ascending.Click += new EventHandler(sortOrder_Click);
+			//			ascending.Click += new EventHandler(sortOrder_Click);
 
 			MenuCommand descending = sortBy.MenuCommands.Add(new MenuCommand("&Descending"));
 			descending.RadioCheck = true;
 			descending.Checked = !isAscending;
 			descending.Tag = new object[] { listView, SortOrder.Descending };
-//			descending.Click += new EventHandler(sortOrder_Click);
+			//			descending.Click += new EventHandler(sortOrder_Click);
 
 			bool allShown = true;
 			for(int idx = 0; idx < listView.Columns.Count; ++idx)
@@ -791,25 +1022,25 @@ namespace NProf.GUI
 				(result.Tag as ToggleColumnHeader).Visible = !result.Checked;
 		}
 
-//		private void sortOrder_Click(object sender, EventArgs e)
-//		{
-//			MenuCommand cmd = sender as MenuCommand;
-//
-//			object[] objs = (cmd.Tag as object[]);
-//			ContainerListView listView = objs[0] as ContainerListView;
-//
-//			listView.Sort((SortOrder)objs[1]);
-//		}
+		//		private void sortOrder_Click(object sender, EventArgs e)
+		//		{
+		//			MenuCommand cmd = sender as MenuCommand;
+		//
+		//			object[] objs = (cmd.Tag as object[]);
+		//			ContainerListView listView = objs[0] as ContainerListView;
+		//
+		//			listView.Sort((SortOrder)objs[1]);
+		//		}
 
-//		private void sortByItem_Click(object sender, EventArgs e)
-//		{
-//			MenuCommand cmd = sender as MenuCommand;
-//
-//			object[] objs = (cmd.Tag as object[]);
-//			ContainerListView listView = objs[0] as ContainerListView;
-//
-//			listView.Sort((int)objs[1], false);
-//		}
+		//		private void sortByItem_Click(object sender, EventArgs e)
+		//		{
+		//			MenuCommand cmd = sender as MenuCommand;
+		//
+		//			object[] objs = (cmd.Tag as object[]);
+		//			ContainerListView listView = objs[0] as ContainerListView;
+		//
+		//			listView.Sort((int)objs[1], false);
+		//		}
 
 		#endregion
 
