@@ -7,6 +7,10 @@ namespace NProf.Glue.Profiler.Info
 	/// </summary>
 	public class FunctionSignature
 	{
+		public FunctionSignature()
+		{
+		}
+
 		public FunctionSignature( UInt32 uiMethodAttributes, string strReturnType, string strClassName, string strFunctionName, string strParameters )
 		{
 			CorMethodAttr cma = ( CorMethodAttr )uiMethodAttributes;
@@ -18,6 +22,48 @@ namespace NProf.Glue.Profiler.Info
 			_strClassName = strClassName;
 			_strFunctionName = strFunctionName;
 			_strParameters = strParameters;
+		}
+
+		public bool IsPInvoke
+		{
+			get { return _bIsPInvoke; }
+			set { _bIsPInvoke = value; }
+		}
+
+		public bool IsStatic
+		{
+			get { return _bIsStatic; }
+			set { _bIsStatic = value; }
+		}
+
+		public bool IsExtern
+		{
+			get { return _bIsExtern; }
+			set { _bIsExtern = value; }
+		}
+
+		public string ReturnType
+		{
+			get { return _strReturnType; }
+			set { _strReturnType = value; }
+		}
+
+		public string ClassName
+		{
+			get { return _strClassName; }
+			set { _strClassName = value; }
+		}
+
+		public string FunctionName
+		{
+			get { return _strFunctionName; }
+			set { _strFunctionName = value; }
+		}
+
+		public string Parameters
+		{
+			get { return _strParameters; }
+			set { _strParameters = value; }
 		}
 
 		public string[] Namespace

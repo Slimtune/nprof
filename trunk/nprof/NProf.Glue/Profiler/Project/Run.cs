@@ -1,4 +1,5 @@
 using System;
+using System.Xml.Serialization;
 using NProf.Glue.Profiler.Info;
 
 namespace NProf.Glue.Profiler.Project
@@ -6,15 +7,22 @@ namespace NProf.Glue.Profiler.Project
 	/// <summary>
 	/// Summary description for ProfilerRun.
 	/// </summary>
+	[XmlInclude( typeof( ProcessInfo ) )]
 	public class Run
 	{
+		public Run()
+		{
+			_rmcMessages = new RunMessageCollection();
+			_pic = new ProcessInfoCollection();
+		}
+
 		public Run( Profiler p, ProjectInfo pi )
 		{
 			_p = p;
 			_dtStart = DateTime.Now;
 			_dtEnd = DateTime.MaxValue;
 			_rs = RunState.Initializing;
-			_tic = new ThreadInfoCollection();
+			_pic = new ProcessInfoCollection();
 			_pi = pi;
 			_rmcMessages = new RunMessageCollection();
 			_bSuccess = false;
@@ -50,6 +58,7 @@ namespace NProf.Glue.Profiler.Project
 			return true;
 		}
 
+		[XmlIgnore]
 		public ProjectInfo Project
 		{
 			get { return _pi; }
@@ -85,10 +94,10 @@ namespace NProf.Glue.Profiler.Project
 			set { _rmcMessages = value; }
 		}
 
-		public ThreadInfoCollection ThreadInfoCollection
+		public ProcessInfoCollection Processes
 		{
-			get { return _tic; }
-			set { _tic = value; }
+			get { return _pic; }
+			set { _pic = value; }
 		}
 
 		public bool Success
@@ -104,6 +113,7 @@ namespace NProf.Glue.Profiler.Project
 			Finished,
 		}
 
+		[XmlIgnore]
 		public Profiler.ProcessCompletedHandler ProcessCompletedHandler
 		{
 			get { return new Profiler.ProcessCompletedHandler( OnProfileComplete ); }
@@ -123,9 +133,9 @@ namespace NProf.Glue.Profiler.Project
 		private DateTime _dtStart;
 		private DateTime _dtEnd;
 		private RunState _rs;
-		private ThreadInfoCollection _tic;
 		private ProjectInfo _pi;
 		private Profiler _p;
 		private RunMessageCollection _rmcMessages;
+		private ProcessInfoCollection _pic;
 	}
 }

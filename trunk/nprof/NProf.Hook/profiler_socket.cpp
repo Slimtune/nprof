@@ -36,9 +36,13 @@
 		} \
 	}
 
-ProfilerSocket::ProfilerSocket(void)
+bool ProfilerSocket::_bInitialized = false;
+int ProfilerSocket::_nApplicationID = -1;
+
+ProfilerSocket::ProfilerSocket()
 {
 	_szOperation = "ctor";
+	_bSentApplicationID = false;
 
 	sockaddr_in sa;
 	sa.sin_family = AF_INET;
@@ -101,22 +105,45 @@ void ProfilerSocket::SendInitialize()
 		if ( b == 1 )
 		{
 			cout << "Successfully initialized profiler socket!" << endl;
+			ReadByte( b );
+			_nApplicationID = b;
+
+			cout << "Application ID = " << _nApplicationID << endl;
+
 			SendUINT32( ::GetCurrentProcessId() );
-			SendString( ::GetCommandLine() );
+			
+			int nArgs;
+			LPWSTR* pstrCmdLine = ::CommandLineToArgvW( ::GetCommandLineW(), &nArgs );
+
+			SendUINT32( nArgs );
+
+			for ( int nArg = 0; nArg < nArgs; nArg++ )
+			{
+				string strArg = CW2A( pstrCmdLine[ nArg ] );
+				SendString( strArg );
+			}
+			
+			::GlobalFree( pstrCmdLine );
+
+			_bInitialized = true;
 		}
 		else
 		{
 			cout << "We weren't allowed to initialize!" << endl;
+			_bInitialized = false;
 		}
 	}
 	else
 	{
 		cout << "Could not initialize!" << endl;
+		_bInitialized = false;
 	}
 }
 
 void ProfilerSocket::SendShutdown()
 {
+	if ( !_bInitialized )
+		return;
 	_szOperation = "SendShutdown";
 
 	SendNetworkMessage( SHUTDOWN );
@@ -239,6 +266,14 @@ void ProfilerSocket::SendNetworkMessage( NetworkMessage nm )
 {
 	UINT16 mess = nm;
 	SAFE_SEND( _s, mess );
+
+	if ( !_bSentApplicationID )
+	{
+		if ( nm != INITIALIZE )
+			SendUINT32( _nApplicationID );
+
+		_bSentApplicationID = true;
+	}
 }
 
 void ProfilerSocket::SendAppDomainID( AppDomainID aid )

@@ -41,8 +41,7 @@ namespace NProf.GUI
 		private System.Windows.Forms.Label _lblAspNet;
 		private System.Windows.Forms.Label label6;
 		private System.Windows.Forms.GroupBox groupBox2;
-		private System.Windows.Forms.Label label7;
-		private System.Windows.Forms.ComboBox _cboProjectName;
+		private System.Windows.Forms.CheckBox _cbProfileOtherApps;
 		private ProfilerProjectMode _ppm;
 
 		public ProfilerProjectOptionsForm()
@@ -96,7 +95,6 @@ namespace NProf.GUI
 			this._btnCreateProject = new System.Windows.Forms.Button();
 			this._btnCancel = new System.Windows.Forms.Button();
 			this._ttToolTips = new System.Windows.Forms.ToolTip(this.components);
-			this._cboProjectName = new System.Windows.Forms.ComboBox();
 			this.label5 = new System.Windows.Forms.Label();
 			this._rbAspNet = new System.Windows.Forms.RadioButton();
 			this._rbFile = new System.Windows.Forms.RadioButton();
@@ -106,7 +104,7 @@ namespace NProf.GUI
 			this._lblAspNet = new System.Windows.Forms.Label();
 			this.label6 = new System.Windows.Forms.Label();
 			this.groupBox2 = new System.Windows.Forms.GroupBox();
-			this.label7 = new System.Windows.Forms.Label();
+			this._cbProfileOtherApps = new System.Windows.Forms.CheckBox();
 			this.groupBox1.SuspendLayout();
 			this.groupBox2.SuspendLayout();
 			this.SuspendLayout();
@@ -199,7 +197,7 @@ namespace NProf.GUI
 			// 
 			this._btnCreateProject.DialogResult = System.Windows.Forms.DialogResult.OK;
 			this._btnCreateProject.FlatStyle = System.Windows.Forms.FlatStyle.System;
-			this._btnCreateProject.Location = new System.Drawing.Point(192, 432);
+			this._btnCreateProject.Location = new System.Drawing.Point(192, 400);
 			this._btnCreateProject.Name = "_btnCreateProject";
 			this._btnCreateProject.Size = new System.Drawing.Size(96, 24);
 			this._btnCreateProject.TabIndex = 4;
@@ -210,22 +208,11 @@ namespace NProf.GUI
 			// 
 			this._btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
 			this._btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.System;
-			this._btnCancel.Location = new System.Drawing.Point(320, 432);
+			this._btnCancel.Location = new System.Drawing.Point(320, 400);
 			this._btnCancel.Name = "_btnCancel";
 			this._btnCancel.Size = new System.Drawing.Size(96, 24);
 			this._btnCancel.TabIndex = 5;
 			this._btnCancel.Text = "Cancel";
-			// 
-			// _cboProjectName
-			// 
-			this._cboProjectName.Location = new System.Drawing.Point(88, 8);
-			this._cboProjectName.Name = "_cboProjectName";
-			this._cboProjectName.Size = new System.Drawing.Size(544, 21);
-			this._cboProjectName.TabIndex = 1;
-			this._ttToolTips.SetToolTip(this._cboProjectName, "The name of your project, choose an existing name to load the settings for that p" +
-				"roject");
-			this._cboProjectName.TextChanged += new System.EventHandler(this._cboProjectName_TextChanged);
-			this._cboProjectName.SelectedIndexChanged += new System.EventHandler(this._cboProjectName_SelectedIndexChanged);
 			// 
 			// label5
 			// 
@@ -258,9 +245,10 @@ namespace NProf.GUI
 			// 
 			// groupBox1
 			// 
+			this.groupBox1.Controls.Add(this._cbProfileOtherApps);
 			this.groupBox1.Controls.Add(this.checkBox1);
 			this.groupBox1.Controls.Add(this._cbDebugProfilee);
-			this.groupBox1.Location = new System.Drawing.Point(8, 352);
+			this.groupBox1.Location = new System.Drawing.Point(8, 320);
 			this.groupBox1.Name = "groupBox1";
 			this.groupBox1.Size = new System.Drawing.Size(624, 72);
 			this.groupBox1.TabIndex = 3;
@@ -294,9 +282,10 @@ namespace NProf.GUI
 			// 
 			this._lblAspNet.Location = new System.Drawing.Point(32, 216);
 			this._lblAspNet.Name = "_lblAspNet";
-			this._lblAspNet.Size = new System.Drawing.Size(264, 23);
+			this._lblAspNet.Size = new System.Drawing.Size(584, 23);
 			this._lblAspNet.TabIndex = 12;
-			this._lblAspNet.Text = "ASP.NET will be profiled when this project is run.";
+			this._lblAspNet.Text = "ASP.NET will be profiled when this project is run.  Please read the documentation" +
+				" for special setup requirements.";
 			// 
 			// label6
 			// 
@@ -324,30 +313,27 @@ namespace NProf.GUI
 			this.groupBox2.Controls.Add(this.label1);
 			this.groupBox2.Controls.Add(this._txtApplicationName);
 			this.groupBox2.Controls.Add(this._btnBrowseApplication);
-			this.groupBox2.Location = new System.Drawing.Point(8, 40);
+			this.groupBox2.Location = new System.Drawing.Point(8, 8);
 			this.groupBox2.Name = "groupBox2";
 			this.groupBox2.Size = new System.Drawing.Size(624, 296);
 			this.groupBox2.TabIndex = 2;
 			this.groupBox2.TabStop = false;
 			this.groupBox2.Text = "Project Type";
 			// 
-			// label7
+			// _cbProfileOtherApps
 			// 
-			this.label7.AutoSize = true;
-			this.label7.Location = new System.Drawing.Point(8, 8);
-			this.label7.Name = "label7";
-			this.label7.Size = new System.Drawing.Size(73, 16);
-			this.label7.TabIndex = 0;
-			this.label7.Text = "Project Name";
+			this._cbProfileOtherApps.Location = new System.Drawing.Point(192, 16);
+			this._cbProfileOtherApps.Name = "_cbProfileOtherApps";
+			this._cbProfileOtherApps.Size = new System.Drawing.Size(192, 24);
+			this._cbProfileOtherApps.TabIndex = 2;
+			this._cbProfileOtherApps.Text = "Profile Started Applications";
 			// 
 			// ProfilerProjectOptionsForm
 			// 
 			this.AcceptButton = this._btnCreateProject;
 			this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
 			this.CancelButton = this._btnCancel;
-			this.ClientSize = new System.Drawing.Size(642, 463);
-			this.Controls.Add(this._cboProjectName);
-			this.Controls.Add(this.label7);
+			this.ClientSize = new System.Drawing.Size(642, 431);
 			this.Controls.Add(this.groupBox2);
 			this.Controls.Add(this.groupBox1);
 			this.Controls.Add(this._btnCancel);
@@ -428,7 +414,6 @@ namespace NProf.GUI
 				_btnCreateProject.Text = "Save Project";
 			}
 
-			_cboProjectName.Text = _p.Name;
 			_txtApplicationName.Text = _p.ApplicationName;
 			_txtArguments.Text = _p.Arguments;
 			_txtWorkingDirectory.Text = _p.WorkingDirectory;
@@ -448,10 +433,6 @@ namespace NProf.GUI
 
 		private void _btnCreateProject_Click(object sender, System.EventArgs e)
 		{
-			if(_cboProjectName.SelectedItem != null)
-				_p = (ProjectInfo)_cboProjectName.SelectedItem;
-
-			_p.Name = _cboProjectName.Text;
 			_p.ApplicationName = _txtApplicationName.Text;
 			_p.Arguments = _txtArguments.Text;
 			_p.WorkingDirectory = _txtWorkingDirectory.Text;
@@ -470,42 +451,6 @@ namespace NProf.GUI
 			_txtWorkingDirectory.Enabled = _rbFile.Checked;
 			_btnBrowseApplication.Enabled = _rbFile.Checked;
 			_btnBrowseWorkingDirectory.Enabled = _rbFile.Checked;
-		}
-
-		private void _cboProjectName_SelectedIndexChanged(object sender, System.EventArgs e)
-		{
-			if(_cboProjectName.SelectedIndex == -1)
-				return;
-
-			ProjectInfo info = (ProjectInfo)_cboProjectName.SelectedItem;
-			if(info == null)
-				return;
-
-			_txtApplicationName.Text = info.ApplicationName;
-			_txtArguments.Text = info.Arguments;
-			_txtWorkingDirectory.Text = info.WorkingDirectory;
-			_cbDebugProfilee.Checked = info.Options.Debug;
-
-			switch(info.ProjectType)
-			{
-				case ProjectType.AspNet:
-					_rbAspNet.Checked = true;
-					break;
-				case ProjectType.File:
-					_rbFile.Checked = true;
-					break;
-			}
-		}
-
-		private void _cboProjectName_TextChanged(object sender, System.EventArgs e)
-		{
-			int idx = _cboProjectName.FindStringExact(_cboProjectName.Text);
-
-			if(idx != -1)
-			{
-				_cboProjectName.SelectedIndex = idx;
-				_cboProjectName.Select(_cboProjectName.Text.Length, 1);
-			}
 		}
 
 		public enum ProfilerProjectMode

@@ -10,6 +10,7 @@ using NProf.Glue.Profiler.Info;
 using NProf.Glue.Profiler.Project;
 using NProf.Utilities.DataStore;
 using Genghis.Windows.Forms;
+using Reflector.UserInterface;
 
 namespace NProf.GUI
 {
@@ -58,6 +59,9 @@ namespace NProf.GUI
 		private Crownwood.Magic.Menus.MenuCommand _cmdViewNavForward;
 		private Crownwood.Magic.Menus.MenuCommand _sep4;
 		private Crownwood.Magic.Menus.MenuCommand _sep3;
+		private Reflector.UserInterface.CommandBarManager commandBarManager1;
+		private Reflector.UserInterface.CommandBar commandBar1;
+		private Reflector.UserInterface.CommandBar commandBar2;
 
 		/// <summary>
 		/// Required designer variable.
@@ -135,6 +139,8 @@ namespace NProf.GUI
 			this._tcProfilers = new Crownwood.Magic.Controls.TabControl();
 			this._sbStatusBar = new System.Windows.Forms.StatusBar();
 			this._sbpMessage = new System.Windows.Forms.StatusBarPanel();
+			this.commandBarManager1 = new Reflector.UserInterface.CommandBarManager();
+			this.commandBar1 = new Reflector.UserInterface.CommandBar();
 			((System.ComponentModel.ISupportInitialize)(this._sbpMessage)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -154,11 +160,11 @@ namespace NProf.GUI
 			this._menuMain.HighlightTextColor = System.Drawing.SystemColors.MenuText;
 			this._menuMain.Location = new System.Drawing.Point(0, 0);
 			this._menuMain.MenuCommands.AddRange(new Crownwood.Magic.Menus.MenuCommand[] {
-																													  this._menuFile,
-																													  this._menuEdit,
-																													  this._menuProject,
-																													  this._menuView,
-																													  this._menuHelp});
+																							 this._menuFile,
+																							 this._menuEdit,
+																							 this._menuProject,
+																							 this._menuView,
+																							 this._menuHelp});
 			this._menuMain.Name = "_menuMain";
 			this._menuMain.Size = new System.Drawing.Size(920, 25);
 			this._menuMain.Style = Crownwood.Magic.Common.VisualStyle.IDE;
@@ -170,17 +176,17 @@ namespace NProf.GUI
 			// 
 			this._menuFile.Description = "File";
 			this._menuFile.MenuCommands.AddRange(new Crownwood.Magic.Menus.MenuCommand[] {
-																													  this._cmdFileNew,
-																													  this._cmdFileOpen,
-																													  this._cmdFileClose,
-																													  this._sep1,
-																													  this._cmdFileSave,
-																													  this._cmdFileSaveAs,
-																													  this._cmdFileSaveAll,
-																													  this._sep2,
-																													  this._cmdFileRecentProjects,
-																													  this._sep3,
-																													  this._cmdFileExit});
+																							 this._cmdFileNew,
+																							 this._cmdFileOpen,
+																							 this._cmdFileClose,
+																							 this._sep1,
+																							 this._cmdFileSave,
+																							 this._cmdFileSaveAs,
+																							 this._cmdFileSaveAll,
+																							 this._sep2,
+																							 this._cmdFileRecentProjects,
+																							 this._sep3,
+																							 this._cmdFileExit});
 			this._menuFile.Text = "&File";
 			// 
 			// _cmdFileNew
@@ -253,18 +259,19 @@ namespace NProf.GUI
 			// _menuEdit
 			// 
 			this._menuEdit.Description = "Edit";
+			this._menuEdit.Enabled = false;
 			this._menuEdit.Text = "&Edit";
 			// 
 			// _menuProject
 			// 
 			this._menuProject.Description = "Project commands";
 			this._menuProject.MenuCommands.AddRange(new Crownwood.Magic.Menus.MenuCommand[] {
-																														  this._cmdProjectRun,
-																														  this._cmdProjectStop,
-																														  this._cmdProjectOptions,
-																														  this._sep4,
-																														  this._cmdProjectRunViewMessages,
-																														  this._cmdProjectRunCopy});
+																								this._cmdProjectRun,
+																								this._cmdProjectStop,
+																								this._cmdProjectOptions,
+																								this._sep4,
+																								this._cmdProjectRunViewMessages,
+																								this._cmdProjectRunCopy});
 			this._menuProject.Text = "&Project";
 			// 
 			// _cmdProjectRun
@@ -308,9 +315,9 @@ namespace NProf.GUI
 			// 
 			this._menuView.Description = "View";
 			this._menuView.MenuCommands.AddRange(new Crownwood.Magic.Menus.MenuCommand[] {
-																													  this._cmdViewProjectView,
-																													  this._cmdViewNavBack,
-																													  this._cmdViewNavForward});
+																							 this._cmdViewProjectView,
+																							 this._cmdViewNavBack,
+																							 this._cmdViewNavForward});
 			this._menuView.Text = "&View";
 			// 
 			// _cmdViewProjectView
@@ -336,7 +343,7 @@ namespace NProf.GUI
 			// 
 			this._menuHelp.Description = "Help";
 			this._menuHelp.MenuCommands.AddRange(new Crownwood.Magic.Menus.MenuCommand[] {
-																													  this._cmdHelpAbout});
+																							 this._cmdHelpAbout});
 			this._menuHelp.Text = "&Help";
 			// 
 			// _cmdHelpAbout
@@ -349,9 +356,9 @@ namespace NProf.GUI
 			// 
 			this._tcProfilers.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._tcProfilers.IDEPixelArea = true;
-			this._tcProfilers.Location = new System.Drawing.Point(0, 25);
+			this._tcProfilers.Location = new System.Drawing.Point(0, 26);
 			this._tcProfilers.Name = "_tcProfilers";
-			this._tcProfilers.Size = new System.Drawing.Size(920, 630);
+			this._tcProfilers.Size = new System.Drawing.Size(920, 629);
 			this._tcProfilers.TabIndex = 2;
 			this._tcProfilers.ClosePressed += new System.EventHandler(this._tcProfilers_ClosePressed);
 			// 
@@ -360,7 +367,7 @@ namespace NProf.GUI
 			this._sbStatusBar.Location = new System.Drawing.Point(0, 655);
 			this._sbStatusBar.Name = "_sbStatusBar";
 			this._sbStatusBar.Panels.AddRange(new System.Windows.Forms.StatusBarPanel[] {
-																													 this._sbpMessage});
+																							this._sbpMessage});
 			this._sbStatusBar.ShowPanels = true;
 			this._sbStatusBar.Size = new System.Drawing.Size(920, 22);
 			this._sbStatusBar.TabIndex = 3;
@@ -371,12 +378,35 @@ namespace NProf.GUI
 			this._sbpMessage.Text = "Ready.";
 			this._sbpMessage.Width = 904;
 			// 
+			// commandBarManager1
+			// 
+			this.commandBarManager1.Dock = System.Windows.Forms.DockStyle.Top;
+			this.commandBarManager1.Location = new System.Drawing.Point(0, 25);
+			this.commandBarManager1.Name = "commandBarManager1";
+			this.commandBarManager1.Size = new System.Drawing.Size(920, 1);
+			this.commandBarManager1.TabIndex = 3;
+			this.commandBarManager1.TabStop = false;
+			this.commandBarManager1.Text = "commandBarManager1";
+			// 
+			// commandBar1
+			// 
+			this.commandBar1.Dock = System.Windows.Forms.DockStyle.Top;
+			this.commandBar1.Font = new System.Drawing.Font("Tahoma", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.World, ((System.Byte)(0)));
+			this.commandBar1.Location = new System.Drawing.Point(0, 64);
+			this.commandBar1.Name = "commandBar1";
+			this.commandBar1.Size = new System.Drawing.Size(920, 64);
+			this.commandBar1.Style = Reflector.UserInterface.CommandBarStyle.ToolBar;
+			this.commandBar1.TabIndex = 4;
+			this.commandBar1.TabStop = false;
+			this.commandBar1.Text = "commandBar1";
+			// 
 			// ProfilerForm
 			// 
 			this.AllowDrop = true;
 			this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
 			this.ClientSize = new System.Drawing.Size(920, 677);
 			this.Controls.Add(this._tcProfilers);
+			this.Controls.Add(this.commandBarManager1);
 			this.Controls.Add(this._menuMain);
 			this.Controls.Add(this._sbStatusBar);
 			this.Name = "ProfilerForm";
@@ -454,6 +484,45 @@ namespace NProf.GUI
 		{
 			this.Icon = new Icon( this.GetType().Assembly.GetManifestResourceStream( "NProf.GUI.Resources.app-icon.ico" ) );
 
+			CommandBarItem item;
+			commandBar2 = new CommandBar();
+			commandBar2.Style = CommandBarStyle.ToolBar;
+
+			item = new CommandBarItem( Images.New, "New" );
+			_cmdFileNew.Image = Images.New;
+			commandBar2.Items.Add( item );
+
+			item = new CommandBarItem( Images.Open, "Open" );
+			_cmdFileOpen.Image = Images.Open;
+			commandBar2.Items.Add( item );
+
+			item = new CommandBarItem( Images.Save, "Save" );
+			_cmdFileSave.Image = Images.Save;
+			commandBar2.Items.Add( item );
+			
+			commandBar2.Items.AddSeparator();
+
+			item = new CommandBarItem( Images.Cut, "Cut" );
+			commandBar2.Items.Add( item );
+			
+			item = new CommandBarItem( Images.Copy, "Copy" );
+			commandBar2.Items.Add( item );
+
+			item = new CommandBarItem( Images.Paste, "Paste" );
+			commandBar2.Items.Add( item );
+
+			commandBar2.Items.AddSeparator();
+			
+			item = new CommandBarItem( Images.Back, "Back" );
+			_cmdViewNavBack.Image = Images.Back;
+			commandBar2.Items.Add( item );
+			
+			item = new CommandBarItem( Images.Forward, "Forward" );
+			_cmdViewNavForward.Image = Images.Forward;
+			commandBar2.Items.Add( item );
+
+			commandBarManager1.CommandBars.Add( commandBar2 );
+
 			_pic = new ProjectInfoCollection();
 			_pt = new ProjectTree();
 
@@ -465,7 +534,7 @@ namespace NProf.GUI
 			_pt.ExecutablesDropped +=new ProjectTree.ExecutablesDroppedHandler( _pt_ExecutableDropped );
 
 			_dock = new Crownwood.Magic.Docking.DockingManager( this, Crownwood.Magic.Common.VisualStyle.IDE );
-			_dock.OuterControl = _menuMain;
+			_dock.OuterControl = commandBarManager1;
 			_dock.InnerControl = _tcProfilers;
 			Crownwood.Magic.Docking.Content c = _dock.Contents.Add( _pt, "Projects" );
 			Crownwood.Magic.Docking.WindowContent wc = _dock.AddContentWithState( c, Crownwood.Magic.Docking.State.DockLeft );
@@ -778,6 +847,7 @@ namespace NProf.GUI
 				if( saveDlg.ShowDialog( this ) != DialogResult.OK )
 					return false;
 
+				project.Name = Path.GetFileNameWithoutExtension( saveDlg.FileName );
 				filename = saveDlg.FileName;
 			}
 
@@ -886,5 +956,63 @@ namespace NProf.GUI
 			_cmdViewNavBack.Enabled = ( !IsShowingBlankTab() );
 			_cmdViewNavForward.Enabled = ( !IsShowingBlankTab() );
 		}
+
+		private class Images
+		{
+			private static Image[] images = null;
+	
+			// ImageList.Images[int index] does not preserve alpha channel.
+			static Images()
+			{
+				// TODO alpha channel PNG loader is not working on .NET Service RC1
+				Bitmap bitmap = ( Bitmap )Bitmap.FromStream( typeof( Images ).Assembly.GetManifestResourceStream( "NProf.GUI.Resources.toolbar16.png" ) );
+				int count = (int) (bitmap.Width / bitmap.Height);
+				images = new Image[count];
+				Rectangle rectangle = new Rectangle(0, 0, bitmap.Height, bitmap.Height);
+				for (int i = 0; i < count; i++)
+				{
+					images[i] = bitmap.Clone(rectangle, bitmap.PixelFormat);
+					rectangle.X += bitmap.Height;
+				}
+			}	
+	
+			public static Image New               { get { return images[0];  } }
+			public static Image Open              { get { return images[1];  } }
+			public static Image Save              { get { return images[2];  } }
+			public static Image Cut               { get { return images[3];  } }
+			public static Image Copy              { get { return images[4];  } }
+			public static Image Paste             { get { return images[5];  } }
+			public static Image Delete            { get { return images[6];  } }
+			public static Image Properties        { get { return images[7];  } }
+			public static Image Undo              { get { return images[8];  } }
+			public static Image Redo              { get { return images[9];  } }
+			public static Image Preview           { get { return images[10]; } }
+			public static Image Print             { get { return images[11]; } }
+			public static Image Search            { get { return images[12]; } }
+			public static Image ReSearch          { get { return images[13]; } }
+			public static Image Help              { get { return images[14]; } }
+			public static Image ZoomIn            { get { return images[15]; } }
+			public static Image ZoomOut           { get { return images[16]; } }
+			public static Image Back              { get { return images[17]; } }
+			public static Image Forward           { get { return images[18]; } }
+			public static Image Favorites         { get { return images[19]; } }
+			public static Image AddToFavorites    { get { return images[20]; } }
+			public static Image Stop              { get { return images[21]; } }
+			public static Image Refresh           { get { return images[22]; } }
+			public static Image Home              { get { return images[23]; } }
+			public static Image Edit              { get { return images[24]; } }
+			public static Image Tools             { get { return images[25]; } }
+			public static Image Tiles             { get { return images[26]; } }
+			public static Image Icons             { get { return images[27]; } }
+			public static Image List              { get { return images[28]; } }
+			public static Image Details           { get { return images[29]; } }
+			public static Image Pane              { get { return images[30]; } }
+			public static Image Culture           { get { return images[31]; } }
+			public static Image Languages         { get { return images[32]; } }
+			public static Image History           { get { return images[33]; } }
+			public static Image Mail              { get { return images[34]; } }
+			public static Image Parent            { get { return images[35]; } }
+			public static Image FolderProperties  { get { return images[36]; } }
+		}			
 	}
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Xml.Serialization;
 
 namespace NProf.Glue.Profiler.Project
 {
@@ -16,7 +17,11 @@ namespace NProf.Glue.Profiler.Project
 			_alMessages = new ArrayList();
 		}
 
-		IEnumerator IEnumerable.GetEnumerator()
+		/// <summary>
+		/// Gets the enumerator.
+		/// </summary>
+		/// <returns>The enumerator</returns>
+		public IEnumerator GetEnumerator()
 		{
 			// Enumerate the current state of the messages
 			return AllMessages.GetEnumerator();
@@ -60,6 +65,12 @@ namespace NProf.Glue.Profiler.Project
 			{
 				Message -= handler;
 			}
+		}
+
+		public void Add( object oMessage )
+		{
+			// For XML serialization
+			AddMessage( ( string )oMessage );
 		}
 
 		public void AddMessage( string strMessage )

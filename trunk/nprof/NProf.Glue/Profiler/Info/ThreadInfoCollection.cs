@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Xml.Serialization;
 
 namespace NProf.Glue.Profiler.Info
 {
@@ -13,9 +14,15 @@ namespace NProf.Glue.Profiler.Info
 			_htThreadInfo = new Hashtable();
 		}
 
-		IEnumerator IEnumerable.GetEnumerator()
+		public IEnumerator GetEnumerator()
 		{
 			return _htThreadInfo.Values.GetEnumerator();
+		}
+
+		public void Add( object o )
+		{
+			ThreadInfo ti = ( ThreadInfo )o;
+			_htThreadInfo[ ti.ID ] = ti;
 		}
 
 		public ThreadInfo this[ int nThreadID ]

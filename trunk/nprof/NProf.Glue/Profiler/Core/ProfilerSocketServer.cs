@@ -17,12 +17,12 @@ namespace NProf.Glue.Profiler.Core
 	{
 		public ProfilerSocketServer( Project.Options po, Run run )
 		{
-			_fsm = new FunctionSignatureMap();
 			_run = run;
-			_tic = run.ThreadInfoCollection;
 			_nStopFlag = 0;
 			_po = po;
 			_bHasStopped = false;
+			_nCurrentApplicationID = 0;
+			_nProfileCount = 0;
 			
 			_run.Messages.AddMessage( "Waiting for application..." );
 		}
@@ -45,16 +45,6 @@ namespace NProf.Glue.Profiler.Core
 		public bool HasStoppedGracefully
 		{
 			get { return _bHasStopped; }
-		}
-
-		public ThreadInfoCollection ThreadInfoCollection
-		{
-			get { return _tic; }
-		}
-
-		public FunctionSignatureMap FunctionSignatureMap
-		{
-			get { return _fsm; }
 		}
 
 		private void ListenThread()
@@ -143,6 +133,25 @@ namespace NProf.Glue.Profiler.Core
 					NetworkMessage nm = ( NetworkMessage )br.ReadInt16();
 
 					int nAppDomainID, nThreadID, nFunctionID;
+					ProcessInfo piCurrent = null;
+					
+					// All socket connections send their application ID first for all messages
+					// except "INITIALIZE"
+					int nApplicationID = -1;
+					if ( nm != NetworkMessage.INITIALIZE )
+					{
+						nApplicationID = br.ReadInt32();
+						piCurrent = _run.Processes[ nApplicationID ];
+						
+						if ( piCurrent == null )
+						{
+							_run.Messages.AddMessage( "Invalid application ID from profilee: " + nApplicationID );
+							_run.Messages.AddMessage( "Closing socket connection" );
+							ns.Close();
+
+							return;
+						}
+					}
 
 					switch ( nm )
 					{
@@ -153,13 +162,19 @@ namespace NProf.Glue.Profiler.Core
 								// Prompt the user?
 							}
 
+							if ( _run.State == Run.RunState.Running )
+							{
+								//ns.WriteByte( 0 );
+							}
+
 							int nNetworkProtocolVersion = br.ReadInt32();
 							if ( nNetworkProtocolVersion != NETWORK_PROTOCOL_VERSION )
 							{
 								// Wrong version, write a negative byte
 								ns.WriteByte( 0 );
 								if ( Error != null )
-									Error( new InvalidOperationException( "Profiler hook is wrong version" ) );
+									Error( new InvalidOperationException( "Profiler hook is wrong version: was " 
+										+ nNetworkProtocolVersion + ", expected " + NETWORK_PROTOCOL_VERSION ) );
 							}
 							else
 							{
@@ -169,10 +184,32 @@ namespace NProf.Glue.Profiler.Core
 								else
 									ns.WriteByte( 1 );
 
-								UInt32 nProcessID = br.ReadUInt32();
-								string strProcessName = ReadLengthEncodedASCIIString( br );
+								// Set up the new application
+								nApplicationID = _nCurrentApplicationID++;
+								piCurrent = new ProcessInfo( nApplicationID );
+								_run.Processes.Add( piCurrent );
 
-								_run.Messages.AddMessage( "Connected to " + strProcessName + " with process ID " + nProcessID );
+								ns.WriteByte( ( byte )nApplicationID );
+
+								piCurrent.ProcessID = ( int )br.ReadUInt32();
+								int nArgs = ( int )br.ReadUInt32();
+
+								if ( nArgs > 0 )
+								{
+									string strFullFilename = ReadLengthEncodedASCIIString( br );
+									strFullFilename = strFullFilename.Replace( "\"", "" );
+
+									piCurrent.Name = Path.GetFileName( strFullFilename );
+								}
+
+								while ( nArgs > 1 )
+								{
+									nArgs--;
+									ReadLengthEncodedASCIIString( br );
+								}
+
+								_nProfileCount++;
+								_run.Messages.AddMessage( "Connected to " + piCurrent.Name + " with process ID " + piCurrent.ProcessID );
 							}
 
 							// We're off!
@@ -182,10 +219,17 @@ namespace NProf.Glue.Profiler.Core
 
 						case NetworkMessage.SHUTDOWN:
 						{
-							_bHasStopped = true;
-							_run.Messages.AddMessage( "Profiling completed." );
-							if ( Exited != null )
-								Exited( this, EventArgs.Empty );
+							_nProfileCount--;
+							_run.Messages.AddMessage( "Profiling completed for " + piCurrent.Name );
+
+							if ( _nProfileCount == 0 )
+							{
+								_bHasStopped = true;
+								_run.Messages.AddMessage( "Profiling completed." );
+								if ( Exited != null )
+									Exited( this, EventArgs.Empty );
+							}
+
 							break;
 						}
 
@@ -203,8 +247,8 @@ namespace NProf.Glue.Profiler.Core
 
 						case NetworkMessage.THREAD_END:
 							nThreadID = br.ReadInt32();
-							_tic[ nThreadID ].StartTime = br.ReadInt64();
-							_tic[ nThreadID ].EndTime = br.ReadInt64();
+							piCurrent.Threads[ nThreadID ].StartTime = br.ReadInt64();
+							piCurrent.Threads[ nThreadID ].EndTime = br.ReadInt64();
 							_run.Messages.AddMessage( "Thread completed: " + nThreadID );
 							break;
 
@@ -231,7 +275,7 @@ namespace NProf.Glue.Profiler.Core
 									strFnName,
 									strParameters
 								);
-								_fsm.MapSignature( nFunctionID, fs );
+								piCurrent.Functions.MapSignature( nFunctionID, fs );
 
 								int nCalls = br.ReadInt32();
 								long lTotalTime = br.ReadInt64();
@@ -246,13 +290,13 @@ namespace NProf.Glue.Profiler.Core
 									long lCalleeTotalTime = br.ReadInt64();
 									long lCalleeRecursiveTime = br.ReadInt64();
 
-									alCallees.Add( new CalleeFunctionInfo( _fsm, nCalleeFunctionID, nCalleeCalls, lCalleeTotalTime, lCalleeRecursiveTime ) );
+									alCallees.Add( new CalleeFunctionInfo( piCurrent.Functions, nCalleeFunctionID, nCalleeCalls, lCalleeTotalTime, lCalleeRecursiveTime ) );
 									nCalleeFunctionID = br.ReadInt32();
 								}
 								CalleeFunctionInfo[] acfi = ( CalleeFunctionInfo[] )alCallees.ToArray( typeof( CalleeFunctionInfo ) );
 
-								FunctionInfo fi = new FunctionInfo( _tic[ nThreadID ], nFunctionID, fs, nCalls, lTotalTime, lTotalRecursiveTime, lTotalSuspendTime, acfi );
-								_tic[ nThreadID ].FunctionInfoCollection.Add( fi );
+								FunctionInfo fi = new FunctionInfo( piCurrent.Threads[ nThreadID ], nFunctionID, fs, nCalls, lTotalTime, lTotalRecursiveTime, lTotalSuspendTime, acfi );
+								piCurrent.Threads[ nThreadID ].FunctionInfoCollection.Add( fi );
 								
 								nFunctionID = br.ReadInt32();
 								nIndex++;
@@ -301,14 +345,14 @@ namespace NProf.Glue.Profiler.Core
 			PROFILER_MESSAGE,
 		};
 
-		const int NETWORK_PROTOCOL_VERSION = 2;
+		const int NETWORK_PROTOCOL_VERSION = 3;
 
 		private int						_nPort;
 		private int						_nStopFlag;
+		private int						_nCurrentApplicationID;
+		private int						_nProfileCount;
 		private ManualResetEvent		_mreStarted;
 		private ManualResetEvent		_mreReceivedMessage;
-		private FunctionSignatureMap	_fsm;
-		private ThreadInfoCollection	_tic;
 		private Thread					_t;
 		private Socket					_s;
 		private Project.Options			_po;

@@ -120,6 +120,11 @@
                     AssemblyName = "DotNetLib.Windows.Forms"
                     HintPath = "..\Libraries\DotNetLib\DotNetLib.Windows.Forms.dll"
                 />
+                <Reference
+                    Name = "CommandBar"
+                    AssemblyName = "CommandBar"
+                    HintPath = "..\Libraries\CommandBar\CommandBar.dll"
+                />
             </References>
         </Build>
         <Files>
@@ -147,6 +152,16 @@
                 <File
                     RelPath = "NoProfilerRunsLoaded.resx"
                     DependentUpon = "NoProfilerRunsLoaded.cs"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "ProcessTree.cs"
+                    SubType = "UserControl"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "ProcessTree.resx"
+                    DependentUpon = "ProcessTree.cs"
                     BuildAction = "EmbeddedResource"
                 />
                 <File
@@ -226,6 +241,10 @@
                     BuildAction = "EmbeddedResource"
                 />
                 <File
+                    RelPath = "Resources\process.bmp"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
                     RelPath = "Resources\project.bmp"
                     BuildAction = "EmbeddedResource"
                 />
@@ -235,6 +254,18 @@
                 />
                 <File
                     RelPath = "Resources\stop-error.bmp"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "Resources\thread.bmp"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "Resources\toolbar16.png"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "Resources\toolbar24.png"
                     BuildAction = "EmbeddedResource"
                 />
             </Include>

@@ -134,6 +134,16 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "Profiler\Info\ProcessInfo.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Profiler\Info\ProcessInfoCollection.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "Profiler\Info\ThreadInfo.cs"
                     SubType = "Code"
                     BuildAction = "Compile"

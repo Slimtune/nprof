@@ -107,14 +107,17 @@ namespace NProf.Application
 				if ( upperArg.StartsWith( "/R:" ) )
 				{
 					pInfo.ApplicationName = Path.GetFullPath( arg.Substring( 3 ) );
+					Console.WriteLine( "Application: " + pInfo.ApplicationName );
 				} 
 				else if ( upperArg.StartsWith( "/W:" ) )
 				{
 					pInfo.WorkingDirectory = arg.Substring( 3 );
+					Console.WriteLine( "Working Directory: " + pInfo.WorkingDirectory );
 				} 
 				else if ( upperArg.StartsWith( "/A:" ) )
 				{
 					pInfo.Arguments = arg.Substring( 3 );
+					Console.WriteLine( "Arguments: " + pInfo.Arguments );
 				}
 				else if ( upperArg.Equals( "/V" ) )
 				{

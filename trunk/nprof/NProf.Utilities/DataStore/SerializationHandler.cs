@@ -32,19 +32,26 @@ namespace NProf.Utilities.DataStore
 		{
 			get
 			{
-				if( File.Exists( ProjectsHistoryPath ) )
+				try
 				{
-					FileStream inputFile = new FileStream( ProjectsHistoryPath, FileMode.Open );
-					XmlSerializer s = new XmlSerializer( typeof( UsedFile[] ) );
+					if( File.Exists( ProjectsHistoryPath ) )
+					{
+						FileStream inputFile = new FileStream( ProjectsHistoryPath, FileMode.Open );
+						XmlSerializer s = new XmlSerializer( typeof( UsedFile[] ) );
 
-					UsedFile[] usedFiles = ( UsedFile[] )s.Deserialize( inputFile );
+						UsedFile[] usedFiles = ( UsedFile[] )s.Deserialize( inputFile );
 
-					inputFile.Close();
+						inputFile.Close();
 
-					return usedFiles;
+						return usedFiles;
+					}
 				}
-				else
-					return new UsedFile[0];
+				catch ( Exception )
+				{
+					// Ignore errors for now.
+				}
+
+				return new UsedFile[0];
 			}
 		}
 
@@ -117,16 +124,37 @@ namespace NProf.Utilities.DataStore
 		/// <param name="fileName">The file to save it in</param>
 		public static void SaveProjectInfo( ProjectInfo info, string fileName )
 		{
-			// serialize the object into a buffer
-			MemoryStream memoryBuffer = new MemoryStream();
-			XmlSerializer s = new XmlSerializer( typeof( ProjectInfo ) );
-			s.Serialize( memoryBuffer, info );
-			memoryBuffer.Close();
+			ZipOutputStream zos = new ZipOutputStream( File.Create( fileName ) );
+			zos.SetLevel( 7 );
+
+			// Set the file format version
+			FileFormat ff = new FileFormat();
+			ff.Version = 0;
+			ff.Program = "NProf v0.8";
+
+			AddFileToZip( zos, "NProfFileFormat.xml" );
+			XmlSerializer sff = new XmlSerializer( typeof( FileFormat ) );
+			sff.Serialize( zos, ff );
 
 			// put that buffer as a file into a zip file
-			ZipOutputStream outputStream = new ZipOutputStream( File.Create( fileName ) );
-			AddFileToZip( memoryBuffer.GetBuffer(), outputStream, "ProjectInfo.xml" );
-			outputStream.Close();
+			AddFileToZip( zos, "ProjectInfo.xml" );
+			XmlSerializer s = new XmlSerializer( typeof( ProjectInfo ) );
+			s.Serialize( zos, info );
+
+			XmlSerializer xsRun = new XmlSerializer( typeof( Run ) );
+
+			int nIndex = 0;
+
+			foreach ( Run r in info.Runs )
+			{
+				string strFilename = String.Format( "Run-{0:00000000}.xml", nIndex );
+				AddFileToZip( zos, strFilename );
+				xsRun.Serialize( zos, r );
+
+				nIndex++;
+			}
+
+			zos.Close();
 
 			// remember for later
 			_projectInfoToFileNameMap[ info ] = fileName;
@@ -146,21 +174,14 @@ namespace NProf.Utilities.DataStore
 		}
 
 		#region Helper functions
-		private static void AddFileToZip( byte[] fileBuffer, ZipOutputStream outputStream, string fileName )
+		private static void AddFileToZip( ZipOutputStream outputStream, string fileName )
 		{
 			ZipEntry entry = new ZipEntry( fileName );
 
 			entry.CompressionMethod = CompressionMethod.Deflated;
-			entry.Size = fileBuffer.Length;
 			entry.DateTime = DateTime.Now;
 
-			ICSharpCode.SharpZipLib.Checksums.Crc32 crc = new ICSharpCode.SharpZipLib.Checksums.Crc32();
-			crc.Update(fileBuffer);
-
-			entry.Crc  = crc.Value;
-
 			outputStream.PutNextEntry(entry);
-			outputStream.Write(fileBuffer, 0, fileBuffer.Length);
 		}
 
 		private static void MakeRecentlyUsed( ProjectInfo project, string fileName )

@@ -1,18 +1,25 @@
 using System;
+using System.Xml.Serialization;
 
 namespace NProf.Glue.Profiler.Info
 {
 	/// <summary>
 	/// Summary description for ThreadInfo.
 	/// </summary>
+	[XmlInclude( typeof( FunctionInfo ) )]
 	public class ThreadInfo
 	{
-		public ThreadInfo( int nThreadID )
+		public ThreadInfo()
 		{
 			_fic = new FunctionInfoCollection();
-			_nID = nThreadID;
+			_nID = 0;
 			_lStartTime = 0;
 			_lEndTime = 0;
+		}
+
+		public ThreadInfo( int nThreadID ) : this()
+		{
+			_nID = nThreadID;
 		}
 
 		public int ID

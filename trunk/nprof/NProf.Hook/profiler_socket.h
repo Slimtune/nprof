@@ -14,12 +14,12 @@ enum NetworkMessage
 	PROFILER_MESSAGE,
 };
 
-const int NETWORK_PROTOCOL_VERSION = 2;
+const int NETWORK_PROTOCOL_VERSION = 3;
 
 class ProfilerSocket
 {
 public:
-  ProfilerSocket(void);
+  ProfilerSocket();
   ~ProfilerSocket(void);
   static void Initialize();
   void SendShutdown();
@@ -52,4 +52,8 @@ private:
 private:
   SOCKET _s;
   const char* _szOperation;
+  bool _bSentApplicationID;
+
+  static bool _bInitialized;
+  static int _nApplicationID;
 };

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Xml.Serialization;
 
 namespace NProf.Glue.Profiler.Info
 {
@@ -13,6 +14,11 @@ namespace NProf.Glue.Profiler.Info
 			_htFunctionInfo = new Hashtable();
 		}
 
+		public void Add( object o )
+		{
+			Add( ( FunctionInfo )o );
+		}
+
 		public void Add( FunctionInfo fi )
 		{
 			_htFunctionInfo[ fi.ID ] = fi;
@@ -23,7 +29,7 @@ namespace NProf.Glue.Profiler.Info
 			get { return ( FunctionInfo )_htFunctionInfo[ nFunctionID ]; }
 		}
 
-		IEnumerator IEnumerable.GetEnumerator()
+		public IEnumerator GetEnumerator()
 		{
 			return _htFunctionInfo.Values.GetEnumerator();
 		}

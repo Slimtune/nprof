@@ -7,6 +7,10 @@ namespace NProf.Glue.Profiler.Info
 	/// </summary>
 	public class FunctionInfo
 	{
+		public FunctionInfo()
+		{
+		}
+
 		public FunctionInfo( ThreadInfo ti, int nID, FunctionSignature fs, int nCalls, long lTotalTime, long lTotalRecursiveTime, long lTotalSuspendedTime, CalleeFunctionInfo[] acfi )
 		{
 			_ti = ti;
@@ -25,16 +29,19 @@ namespace NProf.Glue.Profiler.Info
 		public int ID
 		{
 			get { return _nID; }
+			set { _nID = value; }
 		}
 
 		public FunctionSignature Signature
 		{
 			get { return _fs; }
+			set { _fs = value; }
 		}
 
 		public CalleeFunctionInfo[] CalleeInfo
 		{
 			get { return _acfi; }
+			set { _acfi = value; }
 		}
 
 		public int Calls

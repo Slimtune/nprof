@@ -191,6 +191,11 @@ namespace NProf.GUI
 			tnChild.Remove();
 		}
 
+		private void OnTreeNodeUpdate( TreeNode tn )
+		{
+			tn.Text = ( ( ProjectInfo )tn.Tag ).Name;
+		}
+
 		private void OnTreeNodeSetState( TreeNode tn, string strLabel, int nImageIndex )
 		{
 			tn.Text = strLabel;
@@ -200,12 +205,20 @@ namespace NProf.GUI
 
 		private void OnProjectAdded( ProjectInfoCollection projects, ProjectInfo pi, int nIndex )
 		{
+			pi.ProjectInfoChanged += new ProjectInfo.ProjectEventHandler( OnProjectChanged );
 			AddProjectNode( pi );
 		}
 
 		private void OnProjectRemoved( ProjectInfoCollection projects, ProjectInfo pi, int nIndex )
 		{
+			pi.ProjectInfoChanged -= new ProjectInfo.ProjectEventHandler( OnProjectChanged );
 			_tvProjects.Invoke( new TreeNodeRemove( OnTreeNodeRemove ), new object[]{ _tvProjects.Nodes[ nIndex ] } );
+		}
+
+		private void OnProjectChanged( ProjectInfo pi )
+		{
+			TreeNode tn = FindProjectNode( pi );
+			_tvProjects.Invoke( new TreeNodeUpdate( OnTreeNodeUpdate ), new object[] { tn } );
 		}
 
 		private void OnRunAdded( ProjectInfo pi, RunCollection runs, Run run, int nIndex )
@@ -310,5 +323,6 @@ namespace NProf.GUI
 		private delegate TreeNode TreeNodeAdd( TreeNodeCollection tncParent, string strLabel, int nImageIndex, object oTag );
 		private delegate void TreeNodeRemove( TreeNode tnChild );
 		private delegate void TreeNodeSetState( TreeNode tn, string strLabel, int nImageIndex );
+		private delegate void TreeNodeUpdate( TreeNode tn );
 	}
 }

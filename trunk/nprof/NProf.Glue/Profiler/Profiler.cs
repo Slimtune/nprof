@@ -26,7 +26,7 @@ namespace NProf.Glue.Profiler
 
 		public static string Version
 		{
-			get { return "0.8b-alpha"; }
+			get { return "0.9-alpha"; }
 		}
 
 		public bool CheckSetup( out string strMessage )
@@ -71,7 +71,7 @@ namespace NProf.Glue.Profiler
 					_p.StartInfo.Arguments = pi.Arguments;
 					_p.StartInfo.WorkingDirectory = pi.WorkingDirectory;
 					_p.EnableRaisingEvents = true;
-					_p.Exited += new EventHandler( OnProcessExited );
+					//_p.Exited += new EventHandler( OnProcessExited );
 
 					return _p.Start();
 				}
@@ -204,7 +204,6 @@ namespace NProf.Glue.Profiler
 //				ProcessCompleted( _pss.ThreadInfoCollection );
 
 			run.EndTime = _dtEnd;
-			run.ThreadInfoCollection = _pss.ThreadInfoCollection;
 
 			_pch( run );
 		}
