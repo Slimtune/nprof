@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Windows.Forms;
 using System.Data;
 using System.Runtime.InteropServices;
+using System.Reflection;
 using System.IO;
 using NProf.GUI;
 using NProf.Glue.Profiler;
@@ -23,6 +24,8 @@ namespace NProf.Application
 		[STAThread]
 		static void Main( string[] args ) 
 		{
+			EnableVisualStyles();
+
 			// Always print GPL notice
 			Console.WriteLine( "NProf version {0} (C) 2003 by Matthew Mastracci", Profiler.Version );
 			Console.WriteLine( "http://nprof.sourceforge.net" );
@@ -45,6 +48,23 @@ namespace NProf.Application
 			Console.Out.Flush();
 			System.Threading.Thread.CurrentThread.Name = "GUI Thread";
 			System.Windows.Forms.Application.Run( pf );
+		}
+
+		/// <summary>
+		/// Enables XP Visual Styles for those users running a framework that supports Application.EnableVisualStyles
+		/// </summary>
+		private static void EnableVisualStyles()
+		{
+			Type applicationType = typeof(System.Windows.Forms.Application);
+			MethodInfo styleMethod = applicationType.GetMethod("EnableVisualStyles");
+
+			// using .Net version 1.1 or higher
+			if(styleMethod != null)
+			{
+				styleMethod.Invoke(null, null);
+
+				System.Windows.Forms.Application.DoEvents(); // bug fix: http://www.codeproject.com/buglist/EnableVisualStylesBug.asp
+			}
 		}
 
 		/// <summary>
