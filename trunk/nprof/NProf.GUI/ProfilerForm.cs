@@ -8,6 +8,7 @@ using System.Data;
 using NProf.Glue.Profiler;
 using NProf.Glue.Profiler.Info;
 using NProf.Glue.Profiler.Project;
+using NProf.Utilities.DataStore;
 using Genghis.Windows.Forms;
 
 namespace NProf.GUI
@@ -56,6 +57,7 @@ namespace NProf.GUI
 		private Crownwood.Magic.Menus.MenuCommand menuCommand6;
 		private Crownwood.Magic.Menus.MenuCommand _cmdProjectRunCopy;
 		private Crownwood.Magic.Menus.MenuCommand _cmdProjectStop;
+		private Crownwood.Magic.Menus.MenuCommand _cmdClose;
 
 		/// <summary>
 		/// Required designer variable.
@@ -112,6 +114,7 @@ namespace NProf.GUI
 			this._cmdSaveAll = new Crownwood.Magic.Menus.MenuCommand();
 			this._sep2 = new Crownwood.Magic.Menus.MenuCommand();
 			this._cmdExit = new Crownwood.Magic.Menus.MenuCommand();
+			this._cmdClose = new Crownwood.Magic.Menus.MenuCommand();
 			this._menuEdit = new Crownwood.Magic.Menus.MenuCommand();
 			this._menuProject = new Crownwood.Magic.Menus.MenuCommand();
 			this._cmdProjectRun = new Crownwood.Magic.Menus.MenuCommand();
@@ -151,11 +154,11 @@ namespace NProf.GUI
 			this._menuMain.HighlightTextColor = System.Drawing.SystemColors.MenuText;
 			this._menuMain.Location = new System.Drawing.Point(0, 0);
 			this._menuMain.MenuCommands.AddRange(new Crownwood.Magic.Menus.MenuCommand[] {
-																							 this._menuFile,
-																							 this._menuEdit,
-																							 this._menuProject,
-																							 this._menuView,
-																							 this._menuHelp});
+																													  this._menuFile,
+																													  this._menuEdit,
+																													  this._menuProject,
+																													  this._menuView,
+																													  this._menuHelp});
 			this._menuMain.Name = "_menuMain";
 			this._menuMain.Size = new System.Drawing.Size(920, 25);
 			this._menuMain.Style = Crownwood.Magic.Common.VisualStyle.IDE;
@@ -167,26 +170,28 @@ namespace NProf.GUI
 			// 
 			this._menuFile.Description = "File";
 			this._menuFile.MenuCommands.AddRange(new Crownwood.Magic.Menus.MenuCommand[] {
-																							 this._cmdNew,
-																							 this._cmdOpen,
-																							 this._sep1,
-																							 this._cmdSave,
-																							 this._cmdSaveAll,
-																							 this._sep2,
-																							 this._cmdExit});
+																													  this._cmdNew,
+																													  this._cmdOpen,
+																													  this._cmdClose,
+																													  this._sep1,
+																													  this._cmdSave,
+																													  this._cmdSaveAll,
+																													  this._sep2,
+																													  this._cmdExit});
 			this._menuFile.Text = "&File";
 			// 
 			// _cmdNew
 			// 
 			this._cmdNew.Description = "New Profiler Project";
-			this._cmdNew.Text = "New...";
+			this._cmdNew.Shortcut = System.Windows.Forms.Shortcut.CtrlN;
+			this._cmdNew.Text = "&New...";
 			this._cmdNew.Click += new System.EventHandler(this._cmdNew_Click);
 			// 
 			// _cmdOpen
 			// 
 			this._cmdOpen.Description = "Open a profile project";
 			this._cmdOpen.Enabled = false;
-			this._cmdOpen.Text = "Open";
+			this._cmdOpen.Text = "&Open";
 			// 
 			// _sep1
 			// 
@@ -197,13 +202,15 @@ namespace NProf.GUI
 			// 
 			this._cmdSave.Description = "Save the active profiler project";
 			this._cmdSave.Enabled = false;
-			this._cmdSave.Text = "Save";
+			this._cmdSave.Shortcut = System.Windows.Forms.Shortcut.CtrlS;
+			this._cmdSave.Text = "&Save";
 			// 
 			// _cmdSaveAll
 			// 
 			this._cmdSaveAll.Description = "Save all open profiler projects";
 			this._cmdSaveAll.Enabled = false;
-			this._cmdSaveAll.Text = "Save All";
+			this._cmdSaveAll.Shortcut = System.Windows.Forms.Shortcut.CtrlShiftS;
+			this._cmdSaveAll.Text = "Save A&ll";
 			// 
 			// _sep2
 			// 
@@ -213,8 +220,15 @@ namespace NProf.GUI
 			// _cmdExit
 			// 
 			this._cmdExit.Description = "Exit the application";
+			this._cmdExit.Shortcut = System.Windows.Forms.Shortcut.AltF4;
 			this._cmdExit.Text = "E&xit";
 			this._cmdExit.Click += new System.EventHandler(this._cmdExit_Click);
+			// 
+			// _cmdClose
+			// 
+			this._cmdClose.Description = "Close the project";
+			this._cmdClose.Text = "&Close";
+			this._cmdClose.Click += new System.EventHandler(this._cmdClose_Click);
 			// 
 			// _menuEdit
 			// 
@@ -226,17 +240,18 @@ namespace NProf.GUI
 			// 
 			this._menuProject.Description = "Project commands";
 			this._menuProject.MenuCommands.AddRange(new Crownwood.Magic.Menus.MenuCommand[] {
-																								this._cmdProjectRun,
-																								this._cmdProjectStop,
-																								this._cmdProjectOptions,
-																								this.menuCommand5,
-																								this._cmdProjectRunViewMessages,
-																								this._cmdProjectRunCopy});
+																														  this._cmdProjectRun,
+																														  this._cmdProjectStop,
+																														  this._cmdProjectOptions,
+																														  this.menuCommand5,
+																														  this._cmdProjectRunViewMessages,
+																														  this._cmdProjectRunCopy});
 			this._menuProject.Text = "&Project";
 			// 
 			// _cmdProjectRun
 			// 
 			this._cmdProjectRun.Description = "Run the current project";
+			this._cmdProjectRun.Shortcut = System.Windows.Forms.Shortcut.F5;
 			this._cmdProjectRun.Text = "Start project run";
 			this._cmdProjectRun.Click += new System.EventHandler(this._cmdProjectRun_Click);
 			this._cmdProjectRun.Update += new System.EventHandler(this.UpdateProjectItems);
@@ -249,6 +264,7 @@ namespace NProf.GUI
 			// _cmdProjectOptions
 			// 
 			this._cmdProjectOptions.Description = "Modify the options for this project";
+			this._cmdProjectOptions.Shortcut = System.Windows.Forms.Shortcut.F2;
 			this._cmdProjectOptions.Text = "Options...";
 			this._cmdProjectOptions.Click += new System.EventHandler(this._cmdProjectOptions_Click);
 			this._cmdProjectOptions.Update += new System.EventHandler(this.UpdateProjectItems);
@@ -273,7 +289,7 @@ namespace NProf.GUI
 			// 
 			this._menuView.Description = "View";
 			this._menuView.MenuCommands.AddRange(new Crownwood.Magic.Menus.MenuCommand[] {
-																							 this._cmdProjectView});
+																													  this._cmdProjectView});
 			this._menuView.Text = "&View";
 			// 
 			// _cmdProjectView
@@ -287,7 +303,7 @@ namespace NProf.GUI
 			// 
 			this._menuHelp.Description = "Help";
 			this._menuHelp.MenuCommands.AddRange(new Crownwood.Magic.Menus.MenuCommand[] {
-																							 this._cmdHelpAbout});
+																													  this._cmdHelpAbout});
 			this._menuHelp.Text = "&Help";
 			// 
 			// _cmdHelpAbout
@@ -312,7 +328,7 @@ namespace NProf.GUI
 			this._sbStatusBar.Location = new System.Drawing.Point(0, 655);
 			this._sbStatusBar.Name = "_sbStatusBar";
 			this._sbStatusBar.Panels.AddRange(new System.Windows.Forms.StatusBarPanel[] {
-																							this._sbpMessage});
+																													 this._sbpMessage});
 			this._sbStatusBar.ShowPanels = true;
 			this._sbStatusBar.Size = new System.Drawing.Size(920, 22);
 			this._sbStatusBar.TabIndex = 3;
@@ -394,10 +410,6 @@ namespace NProf.GUI
 		private void OnError( Exception e )
 		{
 			MessageBox.Show( this, "An internal exception occurred:\n\n" + e.ToString(), "Error" );
-		}
-
-		private void button1_Click(object sender, System.EventArgs e)
-		{
 		}
 
 		private void OnProfileStateChange( Run run )
@@ -565,9 +577,11 @@ namespace NProf.GUI
 			_dock.InnerControl = _tcProfilers;
 			Crownwood.Magic.Docking.Content c = _dock.Contents.Add( _pt, "Projects" );
 			Crownwood.Magic.Docking.WindowContent wc = _dock.AddContentWithState( c, Crownwood.Magic.Docking.State.DockLeft );
-			
+
 			this.Text = "nprof Profiling Application - v" + Profiler.Version;
 			_tcProfilers.Appearance = Crownwood.Magic.Controls.TabControl.VisualAppearance.MultiDocument;
+
+			SerializationHandler.DataStoreDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\NProf\\" + Profiler.Version;
 
 			if ( _piInitialProject != null )
 			{
@@ -624,6 +638,7 @@ namespace NProf.GUI
 			_cmdProjectRun.Enabled = bCanRunOrEdit;
 			_cmdProjectStop.Enabled = bCanRunOrEdit && ( run != null && run.State == Run.RunState.Running );
 			_cmdProjectOptions.Enabled = bCanRunOrEdit;
+			_cmdClose.Enabled = bCanRunOrEdit;
 			_cmdProjectRunViewMessages.Enabled = ( !IsShowingBlankTab() );
 		}
 
@@ -632,7 +647,7 @@ namespace NProf.GUI
 			ProfilerProjectOptionsForm frm = new ProfilerProjectOptionsForm();
 			frm.Project = GetCurrentProject();
 			frm.Mode = ProfilerProjectOptionsForm.ProfilerProjectMode.ModifyProject;
-			
+
 			frm.ShowDialog( this );
 		}
 
@@ -688,6 +703,10 @@ namespace NProf.GUI
 					_pt.SelectProject( frm.Project );
 				}
 			}
+		}
+
+		private void _cmdClose_Click(object sender, System.EventArgs e)
+		{
 		}
 	}
 }
