@@ -185,7 +185,6 @@ namespace NProf.GUI
 																													  this._sep3,
 																													  this._cmdExit});
 			this._menuFile.Text = "&File";
-			this._menuFile.PopupStart += new Crownwood.Magic.Menus.CommandHandler(this._menuFile_PopupStart);
 			// 
 			// _cmdNew
 			// 
@@ -600,6 +599,25 @@ namespace NProf.GUI
 
 			SerializationHandler.DataStoreDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\NProf\\" + Profiler.Version;
 
+			_cmdRecentProjects.MenuCommands.Clear();
+
+			int count = 1;
+			foreach(ProjectInfo info in SerializationHandler.GetSavedProjectInfos())
+			{
+				if(count > 10)
+					break;
+
+				string label = (count == 10 ? "1&0" : "&" + count.ToString()) + " " + info.Name;
+
+				Crownwood.Magic.Menus.MenuCommand pInfo = new Crownwood.Magic.Menus.MenuCommand(label);
+				pInfo.Tag = info;
+				pInfo.Click += new EventHandler(pInfo_Click);
+				pInfo.Shortcut = Shortcut.CtrlShift1 + (count == 10 ? -1 : count - 1);
+				_cmdRecentProjects.MenuCommands.Add(pInfo);
+
+				++count;
+			}
+
 			if ( _piInitialProject != null )
 			{
 				_pic.Add( _piInitialProject );
@@ -724,27 +742,6 @@ namespace NProf.GUI
 
 		private void _cmdClose_Click(object sender, System.EventArgs e)
 		{
-		}
-
-		private void _menuFile_PopupStart(Crownwood.Magic.Menus.MenuCommand item)
-		{
-			_cmdRecentProjects.MenuCommands.Clear();
-
-			int count = 1;
-			foreach(ProjectInfo info in SerializationHandler.GetSavedProjectInfos())
-			{
-				if(count > 10)
-					break;
-
-				string label = (count == 10 ? "1&0" : "&" + count.ToString()) + " " + info.Name;
-
-				Crownwood.Magic.Menus.MenuCommand pInfo = new Crownwood.Magic.Menus.MenuCommand(label);
-				pInfo.Tag = info;
-				pInfo.Click += new EventHandler(pInfo_Click);
-				_cmdRecentProjects.MenuCommands.Add(pInfo);
-
-				++count;
-			}
 		}
 
 		private void pInfo_Click(object sender, EventArgs e)
