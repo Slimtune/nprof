@@ -92,13 +92,26 @@ namespace NProf.Glue.Profiler.Core
 				br.Read( abNextBytes, 0, 8 );
 				string strError = "Length was abnormally large or small (" + nLength.ToString( "x" ) + ").  Next bytes were ";
 				foreach ( byte b in abNextBytes )
-					strError += b.ToString( "x" ) + " (" + ( char )b + ") ";
+					strError += b.ToString( "x" ) + " (" + ( Char.IsControl( ( char )b ) ? '-' : ( char )b ) + ") ";
 
 				throw new InvalidOperationException( strError );
 			}
 
 			byte[] abString = new byte[ nLength ];
-			br.Read( abString, 0, nLength );
+			int nRead = 0;
+			
+			DateTime dt = DateTime.Now;
+
+			while ( nRead < nLength )
+			{
+				nRead += br.Read( abString, nRead, nLength - nRead );
+
+				// Make this loop finite (30 seconds)
+				TimeSpan ts = DateTime.Now - dt;
+				if ( ts.TotalSeconds > 30 )
+					throw new InvalidOperationException( "Timed out while waiting for length encoded string" );
+			}
+
 			return System.Text.ASCIIEncoding.ASCII.GetString( abString, 0, nLength );
 		}
 
@@ -150,6 +163,7 @@ namespace NProf.Glue.Profiler.Core
 									ns.WriteByte( 2 );
 								else
 									ns.WriteByte( 1 );
+
 								UInt32 nProcessID = br.ReadUInt32();
 								string strProcessName = ReadLengthEncodedASCIIString( br );
 							}
@@ -183,15 +197,23 @@ namespace NProf.Glue.Profiler.Core
 						{
 							nThreadID = br.ReadInt32();
 							nFunctionID = br.ReadInt32();
+							int nIndex = 0;
+
 							while ( nFunctionID != -1 )
 							{
+								UInt32 uiFlags = br.ReadUInt32();
+								string strReturn = ReadLengthEncodedASCIIString( br );
+								string strClassName = ReadLengthEncodedASCIIString( br );
+								string strFnName = ReadLengthEncodedASCIIString( br );
+								string strParameters = ReadLengthEncodedASCIIString( br );
+
 								FunctionSignature fs = new FunctionSignature( 
-									br.ReadUInt32(),
-									ReadLengthEncodedASCIIString( br ), 
-									ReadLengthEncodedASCIIString( br ), 
-									ReadLengthEncodedASCIIString( br ), 
-									ReadLengthEncodedASCIIString( br ) 
-									);
+									uiFlags,
+									strReturn, 
+									strClassName,
+									strFnName,
+									strParameters
+								);
 								_fsm.MapSignature( nFunctionID, fs );
 
 								int nCalls = br.ReadInt32();
@@ -214,7 +236,9 @@ namespace NProf.Glue.Profiler.Core
 
 								FunctionInfo fi = new FunctionInfo( _tic[ nThreadID ], nFunctionID, fs, nCalls, lTotalTime, lTotalRecursiveTime, lTotalSuspendTime, acfi );
 								_tic[ nThreadID ].FunctionInfoCollection.Add( fi );
+								
 								nFunctionID = br.ReadInt32();
+								nIndex++;
 							}
 							break;
 						}
