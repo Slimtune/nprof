@@ -270,10 +270,12 @@ namespace NProf.GUI
 			if ( _ppm == ProfilerProjectMode.CreateProject )
 			{
 				this.Text = "Create Profiler Project";
+				_btnCreateProject.Text = "Create Project";
 			}
 			else
 			{
 				this.Text = "Modify Profiler Project Options";
+				_btnCreateProject.Text = "Save Project";
 			}
 
 			_txtApplicationName.Text = _p.ApplicationName;

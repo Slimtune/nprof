@@ -51,8 +51,6 @@ namespace NProf.GUI
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.components = new System.ComponentModel.Container();
-			System.Resources.ResourceManager resources = new System.Resources.ResourceManager(typeof(ProjectTree));
 			this._tvProjects = new System.Windows.Forms.TreeView();
 			this.SuspendLayout();
 			// 
@@ -60,8 +58,10 @@ namespace NProf.GUI
 			// 
 			this._tvProjects.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._tvProjects.HideSelection = false;
+			this._tvProjects.ImageIndex = -1;
 			this._tvProjects.Location = new System.Drawing.Point(0, 0);
 			this._tvProjects.Name = "_tvProjects";
+			this._tvProjects.SelectedImageIndex = -1;
 			this._tvProjects.Size = new System.Drawing.Size(344, 464);
 			this._tvProjects.TabIndex = 0;
 			// 
@@ -71,6 +71,7 @@ namespace NProf.GUI
 			this.Name = "ProjectTree";
 			this.Size = new System.Drawing.Size(344, 464);
 			this.Load += new System.EventHandler(this.ProjectTree_Load);
+			this._tvProjects.DoubleClick += new System.EventHandler(this.ProjectTree_DoubleClick);
 			this.ResumeLayout(false);
 
 		}
@@ -92,6 +93,15 @@ namespace NProf.GUI
 				return ( ProjectInfo )tnSelected.Tag;
 
 			return ( tnSelected.Parent.Tag as ProjectInfo );
+		}
+
+		public Run GetSelectedRun()
+		{
+			TreeNode tnSelected = _tvProjects.SelectedNode;
+			if ( tnSelected == null || !( tnSelected.Tag is Run ) )
+				return null;
+
+			return ( tnSelected.Tag as Run );
 		}
 
 		public void SelectProject( ProjectInfo pi )
@@ -238,6 +248,24 @@ namespace NProf.GUI
 
 			_tvProjects.ImageList = _ilState;
 		}
+
+		private void ProjectTree_DoubleClick(object sender, System.EventArgs e)
+		{
+			Run r = GetSelectedRun();
+			if ( r != null )
+			{
+				if ( RunDoubleClicked != null )
+					RunDoubleClicked( r );
+
+				return;
+			}
+		}
+
+		public event ProjectDoubleClickedHandler ProjectDoubleClicked;
+		public event RunDoubleClickedHandler RunDoubleClicked;
+
+		public delegate void ProjectDoubleClickedHandler( ProjectInfo proj );
+		public delegate void RunDoubleClickedHandler( Run run );
 
 		private delegate TreeNode TreeNodeAdd( TreeNodeCollection tncParent, string strLabel, int nImageIndex, object oTag );
 		private delegate void TreeNodeRemove( TreeNode tnChild );

@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using NProf.Glue.Profiler;
 using NProf.Glue.Profiler.Info;
+using NProf.Glue.Profiler.Project;
 using Genghis.Windows.Forms;
 
 namespace NProf.GUI
@@ -257,6 +258,7 @@ namespace NProf.GUI
 			this.label1.Size = new System.Drawing.Size(48, 24);
 			this.label1.TabIndex = 12;
 			this.label1.Text = "Thread:";
+			this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			// 
 			// _cbCurrentThread
 			// 
@@ -281,11 +283,11 @@ namespace NProf.GUI
 		}
 		#endregion
 
-		public ThreadInfoCollection ThreadInfoCollection
+		public Run ProfilerRun
 		{
 			set 
 			{ 
-				_tic = value; 
+				_tic = value.ThreadInfoCollection; 
 				RefreshData(); 
 			}
 		}
@@ -378,7 +380,7 @@ namespace NProf.GUI
 			try
 			{
 				_lvFunctionInfo.BeginUpdate();
-				//_lvFunctionInfo.ListViewItemSorter = null;
+				_lvFunctionInfo.ListViewItemSorter = null;
 
 				ThreadInfo tiCurrentThread = _tic[ ( ( ThreadInfo )_cbCurrentThread.SelectedItem ).ID ];
 				foreach ( FunctionInfo fi in tiCurrentThread.FunctionInfoCollection )
@@ -391,7 +393,7 @@ namespace NProf.GUI
 					lvi.SubItems.Add( fi.Calls.ToString() );
 					lvi.SubItems.Add( fi.PercentOfTotalTimeInMethodAndChildren.ToString( "0.00;-0.00;0" ) );
 					lvi.SubItems.Add( fi.PercentOfTotalTimeInMethod.ToString( "0.00;-0.00;0" ) );
-					lvi.SubItems.Add( fi.PercentOfTimeInChildren.ToString( "0.00;-0.00;0" ) );
+					lvi.SubItems.Add( fi.PercentOfTotalTimeInChildren.ToString( "0.00;-0.00;0" ) );
 					lvi.SubItems.Add( fi.PercentOfTotalTimeSuspended.ToString( "0.00;-0.00;0" ) );
 					_lvFunctionInfo.Items.Add( lvi );
 					lvi.Tag = fi;
@@ -475,7 +477,7 @@ namespace NProf.GUI
 					lviSuspend.SubItems.Add( "(thread suspended)" );
 					lviSuspend.SubItems.Add( "-" );
 					lviSuspend.SubItems.Add( fi.PercentOfTotalTimeSuspended.ToString( "0.00;-0.00;0" ) );
-					lviSuspend.SubItems.Add( fi.PercentOfTimeSuspended.ToString( "0.00;-0.00;0" ) );
+					lviSuspend.SubItems.Add( fi.PercentOfMethodTimeSuspended.ToString( "0.00;-0.00;0" ) );
 					_lvChildInfo.Items.Add( lviSuspend );
 				}
 			}

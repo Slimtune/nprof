@@ -50,6 +50,10 @@ namespace NProf.GUI
 		private ProjectTree							_pt;
 		private ProjectInfoCollection				_pic;
 		private ProjectInfo							_piInitialProject;
+		private Crownwood.Magic.Menus.MenuCommand _cmdProjectRunViewMessages;
+		private Crownwood.Magic.Menus.MenuCommand menuCommand5;
+		private Crownwood.Magic.Menus.MenuCommand menuCommand6;
+		private Crownwood.Magic.Menus.MenuCommand _cmdProjectRunCopy;
 
 		/// <summary>
 		/// Required designer variable.
@@ -121,6 +125,10 @@ namespace NProf.GUI
 			this.menuCommand2 = new Crownwood.Magic.Menus.MenuCommand();
 			this.menuCommand3 = new Crownwood.Magic.Menus.MenuCommand();
 			this.menuCommand4 = new Crownwood.Magic.Menus.MenuCommand();
+			this._cmdProjectRunViewMessages = new Crownwood.Magic.Menus.MenuCommand();
+			this.menuCommand5 = new Crownwood.Magic.Menus.MenuCommand();
+			this.menuCommand6 = new Crownwood.Magic.Menus.MenuCommand();
+			this._cmdProjectRunCopy = new Crownwood.Magic.Menus.MenuCommand();
 			((System.ComponentModel.ISupportInitialize)(this._sbpMessage)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -216,7 +224,10 @@ namespace NProf.GUI
 			this._menuProject.Description = "Project commands";
 			this._menuProject.MenuCommands.AddRange(new Crownwood.Magic.Menus.MenuCommand[] {
 																								this._cmdProjectRun,
-																								this._cmdProjectOptions});
+																								this._cmdProjectOptions,
+																								this.menuCommand5,
+																								this._cmdProjectRunViewMessages,
+																								this._cmdProjectRunCopy});
 			this._menuProject.Text = "&Project";
 			// 
 			// _cmdProjectRun
@@ -268,6 +279,7 @@ namespace NProf.GUI
 			this._tcProfilers.Name = "_tcProfilers";
 			this._tcProfilers.Size = new System.Drawing.Size(920, 630);
 			this._tcProfilers.TabIndex = 2;
+			this._tcProfilers.SelectionChanged += new System.EventHandler(this._tcProfilers_SelectionChanged);
 			this._tcProfilers.ClosePressed += new System.EventHandler(this._tcProfilers_ClosePressed);
 			// 
 			// _sbStatusBar
@@ -303,6 +315,26 @@ namespace NProf.GUI
 			// menuCommand4
 			// 
 			this.menuCommand4.Description = "MenuItem";
+			// 
+			// _cmdProjectRunViewMessages
+			// 
+			this._cmdProjectRunViewMessages.Description = "View the Messages from the current profiler run...";
+			this._cmdProjectRunViewMessages.Text = "View Run Messages...";
+			this._cmdProjectRunViewMessages.Click += new System.EventHandler(this._cmdProjectRunViewMessages_Click);
+			// 
+			// menuCommand5
+			// 
+			this.menuCommand5.Description = "-";
+			this.menuCommand5.Text = "-";
+			// 
+			// menuCommand6
+			// 
+			this.menuCommand6.Description = "MenuItem";
+			// 
+			// _cmdProjectRunCopy
+			// 
+			this._cmdProjectRunCopy.Description = "Copy the project run data to the clipboard";
+			this._cmdProjectRunCopy.Text = "Copy Project Run Data";
 			// 
 			// ProfilerForm
 			// 
@@ -397,7 +429,7 @@ namespace NProf.GUI
 			
 			_tcProfilers.TabPages.Add( tp );
 			_tcProfilers.SelectedIndex = _tcProfilers.TabPages.Count - 1;
-			pc.ThreadInfoCollection = run.ThreadInfoCollection;
+			pc.ProfilerRun = run;
 
 			return tp;
 		}
@@ -420,10 +452,11 @@ namespace NProf.GUI
 			ProfilerProjectOptionsForm frm = new ProfilerProjectOptionsForm();
 			frm.Mode = ProfilerProjectOptionsForm.ProfilerProjectMode.CreateProject;
 			DialogResult dr = frm.ShowDialog( this );
-
-			_pic.Add( frm.Project );
-
-			_pt.SelectProject( frm.Project );
+			if ( dr == DialogResult.OK )
+			{
+				_pic.Add( frm.Project );
+				_pt.SelectProject( frm.Project );
+			}
 		}
 
 		private void _cmdProjectRun_Click(object sender, System.EventArgs e)
@@ -456,6 +489,8 @@ namespace NProf.GUI
 			_pic = new ProjectInfoCollection();
 			_pt = new ProjectTree();
 			_pt.Projects = _pic;
+			_pt.ProjectDoubleClicked += new ProjectTree.ProjectDoubleClickedHandler( _pt_ProjectDoubleClicked );
+			_pt.RunDoubleClicked += new ProjectTree.RunDoubleClickedHandler( _pt_RunDoubleClicked );
 
 			_dock = new Crownwood.Magic.Docking.DockingManager( this, Crownwood.Magic.Common.VisualStyle.IDE );
 			_dock.OuterControl = _menuMain;
@@ -515,6 +550,7 @@ namespace NProf.GUI
 		{
 			_cmdProjectRun.Enabled = ( _pt.GetSelectedProject() != null );
 			_cmdProjectOptions.Enabled = ( _pt.GetSelectedProject() != null );
+			_cmdProjectRunViewMessages.Enabled = ( !IsShowingBlankTab() );
 		}
 
 		private void _cmdProjectOptions_Click(object sender, System.EventArgs e)
@@ -530,6 +566,43 @@ namespace NProf.GUI
 		{
 			AboutForm frm = new AboutForm();
 			frm.ShowDialog( this );
+		}
+
+		private void _cmdProjectRunViewMessages_Click(object sender, System.EventArgs e)
+		{
+			Run r = ( Run )_tcProfilers.SelectedTab.Tag;
+			ProfilerRunMessagesForm frm = new ProfilerRunMessagesForm();
+			frm.ProfilerRun = r;
+			frm.ShowDialog( this );
+		}
+
+		private void _tcProfilers_SelectionChanged(object sender, System.EventArgs e)
+		{
+		}
+
+		private void _pt_ProjectDoubleClicked( ProjectInfo pi )
+		{
+			_cmdProjectOptions_Click( null, null );
+		}
+
+		private void _pt_RunDoubleClicked( Run run )
+		{
+			if ( run.State != Run.RunState.Finished )
+			{
+				MessageBox.Show( this, "The run has not completed", "Project Run in Progress", MessageBoxButtons.OK, MessageBoxIcon.Information );
+				return;
+			}
+
+			foreach ( Crownwood.Magic.Controls.TabPage tp in _tcProfilers.TabPages )
+			{
+				if ( tp.Tag == run )
+				{
+					_tcProfilers.SelectedTab = tp;
+					return;
+				}
+			}
+
+			CreateTabPage( run );
 		}
 	}
 }
