@@ -115,6 +115,11 @@
                     AssemblyName = "ExtendedListViews"
                     HintPath = "..\Libraries\ExtendedListViews\ExtendedListViews.dll"
                 />
+                <Reference
+                    Name = "NProf.Utilities"
+                    Project = "{A9BC618E-7E40-4D66-9BD5-837728424BEE}"
+                    Package = "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"
+                />
             </References>
         </Build>
         <Files>
