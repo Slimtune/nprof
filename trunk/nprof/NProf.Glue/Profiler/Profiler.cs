@@ -25,7 +25,7 @@ namespace NProf.Glue.Profiler
 
 		public static string Version
 		{
-			get { return "0.7-alpha"; }
+			get { return "0.8-alpha"; }
 		}
 
 		public bool CheckSetup( out string strMessage )
