@@ -8,7 +8,7 @@ using System.Data;
 using NProf.Glue.Profiler;
 using NProf.Glue.Profiler.Info;
 using NProf.Glue.Profiler.Project;
-using UtilityLibrary.WinControls;
+using Genghis.Windows.Forms;
 
 namespace NProf.GUI
 {
@@ -138,6 +138,7 @@ namespace NProf.GUI
 			this._menuMain.Dock = System.Windows.Forms.DockStyle.Top;
 			this._menuMain.Font = new System.Drawing.Font("Tahoma", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.World, ((System.Byte)(0)));
 			this._menuMain.HighlightTextColor = System.Drawing.SystemColors.MenuText;
+			this._menuMain.Location = new System.Drawing.Point(0, 0);
 			this._menuMain.MenuCommands.AddRange(new Crownwood.Magic.Menus.MenuCommand[] {
 																							 this._menuFile,
 																							 this._menuEdit,
@@ -257,6 +258,7 @@ namespace NProf.GUI
 			// 
 			this._cmdHelpAbout.Description = "About nprof";
 			this._cmdHelpAbout.Text = "About nprof...";
+			this._cmdHelpAbout.Click += new System.EventHandler(this._cmdHelpAbout_Click);
 			// 
 			// _tcProfilers
 			// 
@@ -306,10 +308,9 @@ namespace NProf.GUI
 			// 
 			this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
 			this.ClientSize = new System.Drawing.Size(920, 677);
-			this.Controls.AddRange(new System.Windows.Forms.Control[] {
-																		  this._tcProfilers,
-																		  this._menuMain,
-																		  this._sbStatusBar});
+			this.Controls.Add(this._tcProfilers);
+			this.Controls.Add(this._menuMain);
+			this.Controls.Add(this._sbStatusBar);
 			this.Name = "ProfilerForm";
 			this.Text = "nprof Profiling Application - Alpha v0.4";
 			this.Closing += new System.ComponentModel.CancelEventHandler(this.ProfilerForm_Closing);
@@ -522,6 +523,12 @@ namespace NProf.GUI
 			frm.Project = GetCurrentProject();
 			frm.Mode = ProfilerProjectOptionsForm.ProfilerProjectMode.ModifyProject;
 			
+			frm.ShowDialog( this );
+		}
+
+		private void _cmdHelpAbout_Click(object sender, System.EventArgs e)
+		{
+			AboutForm frm = new AboutForm();
 			frm.ShowDialog( this );
 		}
 	}

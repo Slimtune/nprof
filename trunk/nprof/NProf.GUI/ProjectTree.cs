@@ -61,21 +61,20 @@ namespace NProf.GUI
 			this._tvProjects.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._tvProjects.HideSelection = false;
 			this._tvProjects.ImageList = this._ilState;
+			this._tvProjects.Location = new System.Drawing.Point(0, 0);
 			this._tvProjects.Name = "_tvProjects";
 			this._tvProjects.Size = new System.Drawing.Size(344, 464);
 			this._tvProjects.TabIndex = 0;
 			// 
 			// _ilState
 			// 
-			this._ilState.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
 			this._ilState.ImageSize = new System.Drawing.Size(16, 16);
 			this._ilState.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("_ilState.ImageStream")));
 			this._ilState.TransparentColor = System.Drawing.Color.Magenta;
 			// 
 			// ProjectTree
 			// 
-			this.Controls.AddRange(new System.Windows.Forms.Control[] {
-																		  this._tvProjects});
+			this.Controls.Add(this._tvProjects);
 			this.Name = "ProjectTree";
 			this.Size = new System.Drawing.Size(344, 464);
 			this.ResumeLayout(false);

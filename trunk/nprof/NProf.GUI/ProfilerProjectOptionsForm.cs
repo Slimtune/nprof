@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Collections;
 using System.ComponentModel;
 using System.Windows.Forms;
-using UtilityLibrary.WinControls;
+using Genghis.Windows.Forms;
 using NProf.Glue.Profiler;
 using NProf.Glue.Profiler.Project;
 
@@ -243,23 +243,23 @@ namespace NProf.GUI
 
 		private void _btnBrowseWorkingDirectory_Click(object sender, System.EventArgs e)
 		{
-			ShellFolderBrowser fb = new ShellFolderBrowser();
+			FolderNameDialog fb = new FolderNameDialog();
 			if ( _txtWorkingDirectory.Text.Trim() == String.Empty )
 			{
 				if ( _txtApplicationName.Text.Trim() != String.Empty )
 				{
 					FileInfo fi = new FileInfo( _txtApplicationName.Text );
-					fb.FolderPath = fi.DirectoryName;
+					//fb.StartLocation = fi.DirectoryName;
 				}
 			}
 			else
 			{
-				fb.FolderPath = _txtWorkingDirectory.Text;
+				//fb.StartLocation = _txtWorkingDirectory.Text;
 			}
 
-			if ( fb.ShowDialog() )
+			if ( fb.ShowDialog( this ) == DialogResult.OK )
 			{
-				_txtWorkingDirectory.Text = fb.FolderPath;
+				_txtWorkingDirectory.Text = fb.DirectoryPath;
 				_txtWorkingDirectory.Focus();
 				_txtWorkingDirectory.SelectAll();
 			}

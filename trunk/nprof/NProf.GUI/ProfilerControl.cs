@@ -7,7 +7,7 @@ using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using NProf.Glue.Profiler;
 using NProf.Glue.Profiler.Info;
-using UtilityLibrary.WinControls;
+using Genghis.Windows.Forms;
 
 namespace NProf.GUI
 {
@@ -36,9 +36,9 @@ namespace NProf.GUI
 		private System.Windows.Forms.ColumnHeader colCalleeInParent;
 		private System.Windows.Forms.Panel panel2;
 		private System.Windows.Forms.Label label1;
-		private UtilityLibrary.WinControls.SortedListView _lvFunctionInfo;
-		private UtilityLibrary.WinControls.SortedListView _lvChildInfo;
-		private UtilityLibrary.WinControls.TreeViewEx _tvNamespaceInfo;
+		private System.Windows.Forms.ListView _lvFunctionInfo;
+		private System.Windows.Forms.ListView _lvChildInfo;
+		private Genghis.Windows.Forms.CustomStateTreeView _tvNamespaceInfo;
 		private System.Windows.Forms.ComboBox _cbCurrentThread;
 		/// <summary> 
 		/// Required designer variable.
@@ -80,7 +80,7 @@ namespace NProf.GUI
 		{
 			this.panel1 = new System.Windows.Forms.Panel();
 			this.splitter2 = new System.Windows.Forms.Splitter();
-			this._lvFunctionInfo = new UtilityLibrary.WinControls.SortedListView();
+			this._lvFunctionInfo = new System.Windows.Forms.ListView();
 			this.colID = new System.Windows.Forms.ColumnHeader();
 			this.colSignature = new System.Windows.Forms.ColumnHeader();
 			this.colCalls = new System.Windows.Forms.ColumnHeader();
@@ -88,14 +88,14 @@ namespace NProf.GUI
 			this.colTimeInMethod = new System.Windows.Forms.ColumnHeader();
 			this.colChildrenTime = new System.Windows.Forms.ColumnHeader();
 			this.colTimeSuspended = new System.Windows.Forms.ColumnHeader();
-			this._lvChildInfo = new UtilityLibrary.WinControls.SortedListView();
+			this._lvChildInfo = new System.Windows.Forms.ListView();
 			this.colCalleeID = new System.Windows.Forms.ColumnHeader();
 			this.colCalleeSignature = new System.Windows.Forms.ColumnHeader();
 			this.colCalleeCalls = new System.Windows.Forms.ColumnHeader();
 			this.colCalleeTotalTime = new System.Windows.Forms.ColumnHeader();
 			this.colCalleeInParent = new System.Windows.Forms.ColumnHeader();
 			this.splitter1 = new System.Windows.Forms.Splitter();
-			this._tvNamespaceInfo = new UtilityLibrary.WinControls.TreeViewEx();
+			this._tvNamespaceInfo = new Genghis.Windows.Forms.CustomStateTreeView();
 			this.panel2 = new System.Windows.Forms.Panel();
 			this.label1 = new System.Windows.Forms.Label();
 			this._cbCurrentThread = new System.Windows.Forms.ComboBox();
@@ -105,14 +105,14 @@ namespace NProf.GUI
 			// 
 			// panel1
 			// 
-			this.panel1.Controls.AddRange(new System.Windows.Forms.Control[] {
-																				 this.splitter2,
-																				 this._lvFunctionInfo,
-																				 this._lvChildInfo,
-																				 this.splitter1,
-																				 this._tvNamespaceInfo,
-																				 this.panel2});
+			this.panel1.Controls.Add(this.splitter2);
+			this.panel1.Controls.Add(this._lvFunctionInfo);
+			this.panel1.Controls.Add(this._lvChildInfo);
+			this.panel1.Controls.Add(this.splitter1);
+			this.panel1.Controls.Add(this._tvNamespaceInfo);
+			this.panel1.Controls.Add(this.panel2);
 			this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.panel1.Location = new System.Drawing.Point(0, 0);
 			this.panel1.Name = "panel1";
 			this.panel1.Size = new System.Drawing.Size(872, 456);
 			this.panel1.TabIndex = 10;
@@ -138,8 +138,6 @@ namespace NProf.GUI
 																							  this.colTimeSuspended});
 			this._lvFunctionInfo.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._lvFunctionInfo.FullRowSelect = true;
-			this._lvFunctionInfo.HeaderImageList = null;
-			this._lvFunctionInfo.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
 			this._lvFunctionInfo.HideSelection = false;
 			this._lvFunctionInfo.Location = new System.Drawing.Point(195, 24);
 			this._lvFunctionInfo.MultiSelect = false;
@@ -169,15 +167,15 @@ namespace NProf.GUI
 			// 
 			// colTimeInMethod
 			// 
-			this.colTimeInMethod.Text = "% in Me...";
+			this.colTimeInMethod.Text = "% in Method";
 			// 
 			// colChildrenTime
 			// 
-			this.colChildrenTime.Text = "% in Chil...";
+			this.colChildrenTime.Text = "% in Children";
 			// 
 			// colTimeSuspended
 			// 
-			this.colTimeSuspended.Text = "% Susp....";
+			this.colTimeSuspended.Text = "% Suspended";
 			// 
 			// _lvChildInfo
 			// 
@@ -189,8 +187,6 @@ namespace NProf.GUI
 																						   this.colCalleeInParent});
 			this._lvChildInfo.Dock = System.Windows.Forms.DockStyle.Bottom;
 			this._lvChildInfo.FullRowSelect = true;
-			this._lvChildInfo.HeaderImageList = null;
-			this._lvChildInfo.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
 			this._lvChildInfo.HideSelection = false;
 			this._lvChildInfo.Location = new System.Drawing.Point(195, 232);
 			this._lvChildInfo.MultiSelect = false;
@@ -220,7 +216,7 @@ namespace NProf.GUI
 			// 
 			// colCalleeInParent
 			// 
-			this.colCalleeInParent.Text = "% of Par...";
+			this.colCalleeInParent.Text = "% of Parent";
 			// 
 			// splitter1
 			// 
@@ -233,6 +229,7 @@ namespace NProf.GUI
 			// _tvNamespaceInfo
 			// 
 			this._tvNamespaceInfo.CheckBoxes = true;
+			this._tvNamespaceInfo.CheckStateImageList = null;
 			this._tvNamespaceInfo.Dock = System.Windows.Forms.DockStyle.Left;
 			this._tvNamespaceInfo.ImageIndex = -1;
 			this._tvNamespaceInfo.Location = new System.Drawing.Point(0, 24);
@@ -245,10 +242,10 @@ namespace NProf.GUI
 			// 
 			// panel2
 			// 
-			this.panel2.Controls.AddRange(new System.Windows.Forms.Control[] {
-																				 this.label1,
-																				 this._cbCurrentThread});
+			this.panel2.Controls.Add(this.label1);
+			this.panel2.Controls.Add(this._cbCurrentThread);
 			this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
+			this.panel2.Location = new System.Drawing.Point(0, 0);
 			this.panel2.Name = "panel2";
 			this.panel2.Size = new System.Drawing.Size(872, 24);
 			this.panel2.TabIndex = 12;
@@ -256,6 +253,7 @@ namespace NProf.GUI
 			// label1
 			// 
 			this.label1.Dock = System.Windows.Forms.DockStyle.Left;
+			this.label1.Location = new System.Drawing.Point(0, 0);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(48, 24);
 			this.label1.TabIndex = 12;
@@ -272,10 +270,10 @@ namespace NProf.GUI
 			// 
 			// ProfilerControl
 			// 
-			this.Controls.AddRange(new System.Windows.Forms.Control[] {
-																		  this.panel1});
+			this.Controls.Add(this.panel1);
 			this.Name = "ProfilerControl";
 			this.Size = new System.Drawing.Size(872, 456);
+			this.Load += new System.EventHandler(this.ProfilerControl_Load);
 			this.Layout += new System.Windows.Forms.LayoutEventHandler(this.ProfilerControl_Layout);
 			this.panel1.ResumeLayout(false);
 			this.panel2.ResumeLayout(false);
@@ -381,7 +379,7 @@ namespace NProf.GUI
 			try
 			{
 				_lvFunctionInfo.BeginUpdate();
-				_lvFunctionInfo.ListViewItemSorter = null;
+				//_lvFunctionInfo.ListViewItemSorter = null;
 
 				ThreadInfo tiCurrentThread = _tic[ ( ( ThreadInfo )_cbCurrentThread.SelectedItem ).ID ];
 				foreach ( FunctionInfo fi in tiCurrentThread.FunctionInfoCollection )
@@ -453,9 +451,13 @@ namespace NProf.GUI
 			}
 			FunctionInfo fi = ( FunctionInfo )_lvFunctionInfo.SelectedItems[ 0 ].Tag;
 			_lvChildInfo.Items.Clear();
+
+			IComparer pOldSorter = _lvChildInfo.ListViewItemSorter;
 			try
 			{
 				_lvChildInfo.BeginUpdate();
+				_lvChildInfo.ListViewItemSorter = null;
+
 				foreach ( CalleeFunctionInfo cfi in fi.CalleeInfo )
 				{
 					ListViewItem lvi = new ListViewItem( cfi.ID.ToString() );
@@ -473,32 +475,51 @@ namespace NProf.GUI
 					ListViewItem lviSuspend = new ListViewItem( "(suspend)" );
 					lviSuspend.SubItems.Add( "(thread suspended)" );
 					lviSuspend.SubItems.Add( "-" );
-					lviSuspend.SubItems.Add( fi.PercentOfTotalTimeSuspended.ToString() );
-					lviSuspend.SubItems.Add( fi.PercentOfTimeSuspended.ToString() );
+					lviSuspend.SubItems.Add( fi.PercentOfTotalTimeSuspended.ToString( "0.00;-0.00;0" ) );
+					lviSuspend.SubItems.Add( fi.PercentOfTimeSuspended.ToString( "0.00;-0.00;0" ) );
 					_lvChildInfo.Items.Add( lviSuspend );
 				}
 			}
 			finally
 			{
+				_lvChildInfo.ListViewItemSorter = pOldSorter;
 				_lvChildInfo.EndUpdate();
 			}
 		}
 
 		private void ProfilerControl_Layout(object sender, System.Windows.Forms.LayoutEventArgs e)
 		{
-			_lvFunctionInfo.SetColumnSortFormat( 0, SortedListViewFormatType.Numeric );
-			_lvFunctionInfo.SetColumnSortFormat( 1, SortedListViewFormatType.String );
-			_lvFunctionInfo.SetColumnSortFormat( 2, SortedListViewFormatType.Numeric );
-			_lvFunctionInfo.SetColumnSortFormat( 3, SortedListViewFormatType.Numeric );
-			_lvFunctionInfo.SetColumnSortFormat( 4, SortedListViewFormatType.Numeric );
-			_lvFunctionInfo.SetColumnSortFormat( 5, SortedListViewFormatType.Numeric );
-			_lvFunctionInfo.SetColumnSortFormat( 6, SortedListViewFormatType.Numeric );
 
-			_lvChildInfo.SetColumnSortFormat( 0, SortedListViewFormatType.Numeric );
-			_lvChildInfo.SetColumnSortFormat( 1, SortedListViewFormatType.String );
-			_lvChildInfo.SetColumnSortFormat( 2, SortedListViewFormatType.Numeric );
-			_lvChildInfo.SetColumnSortFormat( 3, SortedListViewFormatType.Numeric );
-			_lvChildInfo.SetColumnSortFormat( 4, SortedListViewFormatType.Numeric );
+		}
+
+		private void ProfilerControl_Load(object sender, System.EventArgs e)
+		{
+			_lvsFunction = new ListViewSorter();
+			_lvsFunction.SetColumns( new ListViewCompareType[] {
+				 
+					 ListViewCompareType.Float,
+					 ListViewCompareType.String,
+					 ListViewCompareType.Float,
+					 ListViewCompareType.Float,
+					 ListViewCompareType.Float,
+					 ListViewCompareType.Float,
+					 ListViewCompareType.Float,
+			} );
+			_lvsFunction.SortColumn( _lvFunctionInfo, 1 );
+			_lvFunctionInfo.ListViewItemSorter = _lvsFunction;
+			_lvFunctionInfo.ColumnClick += new ColumnClickEventHandler( _lvsFunction.OnListViewColumnClick );
+
+			_lvsCalleeFunction = new ListViewSorter();
+			_lvsCalleeFunction.SetColumns( new ListViewCompareType[] {
+					 ListViewCompareType.Float,
+					 ListViewCompareType.String,
+					 ListViewCompareType.Float,
+					 ListViewCompareType.Float,
+					 ListViewCompareType.Float,
+			} );		
+			_lvsCalleeFunction.SortColumn( _lvChildInfo, 1 );
+			_lvChildInfo.ListViewItemSorter = _lvsCalleeFunction;
+			_lvChildInfo.ColumnClick += new ColumnClickEventHandler( _lvsCalleeFunction.OnListViewColumnClick );
 		}
 
 		private void _lvChildInfo_DoubleClick(object sender, System.EventArgs e)
@@ -541,5 +562,7 @@ namespace NProf.GUI
 		private ThreadInfoCollection _tic;
 		private bool _bUpdating, _bInCheck;
 		private Hashtable _htCheckedItems;
+		private ListViewSorter _lvsFunction;
+		private ListViewSorter _lvsCalleeFunction;
 	}
 }
