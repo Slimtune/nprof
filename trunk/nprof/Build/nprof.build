@@ -1,5 +1,7 @@
 <?xml version="1.0" ?>
 <project name="nprof" basedir=".." default="build">
+	<property name="nant.settings.currentframework" value="net-1.0" />
+	
 	<echo message="Build version: ${build.version}" />
 	<echo message="Build configuration: ${build.configuration}" />
 
