@@ -87,13 +87,29 @@ namespace NProf.Utilities.DataStore
 
 			// open zip file and get a stream to the ProjectInfo file
 			ZipFile zipFile = new ZipFile( fileName );
-			ZipEntry entry = zipFile.GetEntry( "ProjectInfo.xml" );
-			Stream inputStream = zipFile.GetInputStream(entry);
+			ProjectInfo info = null;
 
+			ZipEntry entry = zipFile.GetEntry( "ProjectInfo.xml" );
+			Stream inputStream = zipFile.GetInputStream( entry );
 			// deserialize that into a new ProjectInfo
 			XmlSerializer s = new XmlSerializer( typeof( ProjectInfo ) );
-			ProjectInfo info = ( ProjectInfo )s.Deserialize( inputStream );
-			inputStream.Close();
+			info = ( ProjectInfo )s.Deserialize( inputStream );
+
+			int nIndex = 0;
+
+			ZipEntry zeRun;
+			XmlSerializer xsRun = new XmlSerializer( typeof( Run ) );
+
+			while ( ( zeRun = zipFile.GetEntry( String.Format( "Run-{0:00000000}.xml", nIndex ) ) ) != null )
+			{
+				Run r = ( Run )xsRun.Deserialize( zipFile.GetInputStream( zeRun ) );
+				r.Project = info;
+				info.Runs.Add( r );
+
+				nIndex++;
+			}
+
+			zipFile.Close();
 
 			// add this for looking up later
 			_projectInfoToFileNameMap[ info ] = fileName;
