@@ -1,9 +1,6 @@
 0.9
  - Load/save projects
-   - Load/save project info
    - Load/save project run data
-
- - Merge back/forward changes from mailinglist
 
 1.0
  - New version - Update notification
@@ -17,9 +14,6 @@
    - Code documentation
 
  - FAQ
-
- - Create Caller tab to the child info, have it show who called this method
-   And how many times they called it, etc.
 
  - Have hook process send raw data and not do any translations itself and have
    the glue process do this work instead
@@ -39,6 +33,6 @@ Beyond 1.0
  - Allow user to select C#/VB syntax for methods displayed in profiler run
 
  - Show profiling state of each thread in real-time
- 
+
  - Very detailed profiling: Specifc call graph, "drill into" a specifc
    method call and then "drill into" its children and so forth
