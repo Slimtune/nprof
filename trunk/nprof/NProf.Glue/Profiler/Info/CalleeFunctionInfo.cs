@@ -35,8 +35,24 @@ namespace NProf.Glue.Profiler.Info
 			get { return _lTotalTime; }
 		}
 
+		public double PercentOfTotalTimeInMethod
+		{
+			get { return ( double )_lTotalTime / ( double )_fi.ThreadTotalTicks * 100; }
+		}
+
+		public double PercentOfParentTimeInMethod
+		{
+			get { return ( double )_lTotalTime / ( double )_fi.TotalTicks * 100; }
+		}
+
+		internal FunctionInfo FunctionInfo
+		{
+			set { _fi = value; }
+		}
+
 		private int _nID;
 		private int _nCalls;
+		private FunctionInfo _fi;
 		private FunctionSignatureMap _fsm;
 		private long _lTotalTime;
 	}

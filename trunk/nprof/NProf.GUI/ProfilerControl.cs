@@ -392,10 +392,10 @@ namespace NProf.GUI
 					ListViewItem lvi = new ListViewItem( fi.ID.ToString() );
 					lvi.SubItems.Add( fi.Signature.Signature );
 					lvi.SubItems.Add( fi.Calls.ToString() );
-					lvi.SubItems.Add( fi.TimeInMethodAndChildren.ToString( "0.00;-0.00;0" ) );
-					lvi.SubItems.Add( fi.TimeInMethod.ToString( "0.00;-0.00;0" ) );
-					lvi.SubItems.Add( fi.TimeInChildren.ToString( "0.00;-0.00;0" ) );
-					lvi.SubItems.Add( fi.TimeSuspended.ToString( "0.00;-0.00;0" ) );
+					lvi.SubItems.Add( fi.PercentOfTotalTimeInMethodAndChildren.ToString( "0.00;-0.00;0" ) );
+					lvi.SubItems.Add( fi.PercentOfTotalTimeInMethod.ToString( "0.00;-0.00;0" ) );
+					lvi.SubItems.Add( fi.PercentOfTimeInChildren.ToString( "0.00;-0.00;0" ) );
+					lvi.SubItems.Add( fi.PercentOfTotalTimeSuspended.ToString( "0.00;-0.00;0" ) );
 					_lvFunctionInfo.Items.Add( lvi );
 					lvi.Tag = fi;
 				}
@@ -461,20 +461,21 @@ namespace NProf.GUI
 					ListViewItem lvi = new ListViewItem( cfi.ID.ToString() );
 					lvi.SubItems.Add( cfi.Signature );
 					lvi.SubItems.Add( cfi.Calls.ToString() );
-					lvi.SubItems.Add( cfi.TotalTime.ToString() );
-					lvi.SubItems.Add( cfi.TotalTime.ToString() );
+					lvi.SubItems.Add( cfi.PercentOfTotalTimeInMethod.ToString( "0.00;-0.00;0" ) );
+					lvi.SubItems.Add( cfi.PercentOfParentTimeInMethod.ToString( "0.00;-0.00;0" ) );
 
 					lvi.Tag = cfi;
 					_lvChildInfo.Items.Add( lvi );
 				}
 
-				if ( fi.TotalSuspendedTime > 0 )
+				if ( fi.TotalSuspendedTicks > 0 )
 				{
 					ListViewItem lviSuspend = new ListViewItem( "(suspend)" );
 					lviSuspend.SubItems.Add( "(thread suspended)" );
 					lviSuspend.SubItems.Add( "-" );
-					lviSuspend.SubItems.Add( fi.TimeSuspended.ToString() );
-					lviSuspend.SubItems.Add( fi.TimeSuspended.ToString() );
+					lviSuspend.SubItems.Add( fi.PercentOfTotalTimeSuspended.ToString() );
+					lviSuspend.SubItems.Add( fi.PercentOfTimeSuspended.ToString() );
+					_lvChildInfo.Items.Add( lviSuspend );
 				}
 			}
 			finally
@@ -506,7 +507,10 @@ namespace NProf.GUI
 				return;
 
 			CalleeFunctionInfo cfi = ( CalleeFunctionInfo )_lvChildInfo.SelectedItems[ 0 ].Tag;
-			JumpToID( cfi.ID );
+			if ( cfi == null )
+				MessageBox.Show( "No information available for this item" );
+			else
+				JumpToID( cfi.ID );
 		}
 
 		private void JumpToID( int nID )
