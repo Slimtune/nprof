@@ -67,12 +67,9 @@
 		<copy file="Build/SupportFiles/nprof.exe.config" 
 			tofile="${package.directory}/nprof/NProf.Application.exe.config" />
 
-		<copy todir="${package.directory}/nprof" flatten="true">
-			<fileset>
-				<includes name="Build/SupportFiles/*.bat" />
-				<includes name="Build/SupportFiles/*.reg" />
-				<includes name="Build/SupportFiles/*.txt" />
-				<includes name="Build/SupportFiles/*.exe" />
+		<copy todir="${package.directory}/nprof">
+			<fileset basedir="Build/SupportFiles">
+				<includes name="**" />
 			</fileset>
 		</copy>
 		
