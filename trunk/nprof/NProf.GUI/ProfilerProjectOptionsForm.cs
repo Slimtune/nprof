@@ -115,6 +115,7 @@ namespace NProf.GUI
 			// 
 			// _cbDebugProfilee
 			// 
+			this._cbDebugProfilee.FlatStyle = System.Windows.Forms.FlatStyle.System;
 			this._cbDebugProfilee.Location = new System.Drawing.Point(16, 16);
 			this._cbDebugProfilee.Name = "_cbDebugProfilee";
 			this._cbDebugProfilee.Size = new System.Drawing.Size(128, 24);
@@ -124,6 +125,7 @@ namespace NProf.GUI
 			// 
 			// _btnBrowseApplication
 			// 
+			this._btnBrowseApplication.FlatStyle = System.Windows.Forms.FlatStyle.System;
 			this._btnBrowseApplication.Location = new System.Drawing.Point(528, 104);
 			this._btnBrowseApplication.Name = "_btnBrowseApplication";
 			this._btnBrowseApplication.TabIndex = 5;
@@ -180,6 +182,7 @@ namespace NProf.GUI
 			// 
 			// _btnBrowseWorkingDirectory
 			// 
+			this._btnBrowseWorkingDirectory.FlatStyle = System.Windows.Forms.FlatStyle.System;
 			this._btnBrowseWorkingDirectory.Location = new System.Drawing.Point(528, 152);
 			this._btnBrowseWorkingDirectory.Name = "_btnBrowseWorkingDirectory";
 			this._btnBrowseWorkingDirectory.TabIndex = 10;
@@ -197,6 +200,7 @@ namespace NProf.GUI
 			// _btnCreateProject
 			// 
 			this._btnCreateProject.DialogResult = System.Windows.Forms.DialogResult.OK;
+			this._btnCreateProject.FlatStyle = System.Windows.Forms.FlatStyle.System;
 			this._btnCreateProject.Location = new System.Drawing.Point(192, 432);
 			this._btnCreateProject.Name = "_btnCreateProject";
 			this._btnCreateProject.Size = new System.Drawing.Size(96, 24);
@@ -207,6 +211,7 @@ namespace NProf.GUI
 			// _btnCancel
 			// 
 			this._btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+			this._btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.System;
 			this._btnCancel.Location = new System.Drawing.Point(320, 432);
 			this._btnCancel.Name = "_btnCancel";
 			this._btnCancel.Size = new System.Drawing.Size(96, 24);
@@ -235,6 +240,7 @@ namespace NProf.GUI
 			// 
 			// _rbAspNet
 			// 
+			this._rbAspNet.FlatStyle = System.Windows.Forms.FlatStyle.System;
 			this._rbAspNet.Location = new System.Drawing.Point(16, 192);
 			this._rbAspNet.Name = "_rbAspNet";
 			this._rbAspNet.TabIndex = 11;
@@ -244,6 +250,7 @@ namespace NProf.GUI
 			// _rbFile
 			// 
 			this._rbFile.Checked = true;
+			this._rbFile.FlatStyle = System.Windows.Forms.FlatStyle.System;
 			this._rbFile.Location = new System.Drawing.Point(16, 48);
 			this._rbFile.Name = "_rbFile";
 			this._rbFile.TabIndex = 1;
@@ -267,6 +274,7 @@ namespace NProf.GUI
 			this.checkBox1.Checked = true;
 			this.checkBox1.CheckState = System.Windows.Forms.CheckState.Checked;
 			this.checkBox1.Enabled = false;
+			this.checkBox1.FlatStyle = System.Windows.Forms.FlatStyle.System;
 			this.checkBox1.Location = new System.Drawing.Point(16, 40);
 			this.checkBox1.Name = "checkBox1";
 			this.checkBox1.Size = new System.Drawing.Size(168, 24);
@@ -276,6 +284,7 @@ namespace NProf.GUI
 			// _rbRemote
 			// 
 			this._rbRemote.Enabled = false;
+			this._rbRemote.FlatStyle = System.Windows.Forms.FlatStyle.System;
 			this._rbRemote.Location = new System.Drawing.Point(16, 248);
 			this._rbRemote.Name = "_rbRemote";
 			this._rbRemote.Size = new System.Drawing.Size(136, 24);

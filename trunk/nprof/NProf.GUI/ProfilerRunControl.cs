@@ -76,7 +76,7 @@ namespace NProf.GUI
 				| System.Windows.Forms.AnchorStyles.Left) 
 				| System.Windows.Forms.AnchorStyles.Right)));
 			this._lvMessages.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-																						  this._chMessage});
+																												  this._chMessage});
 			this._lvMessages.FullRowSelect = true;
 			this._lvMessages.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
 			this._lvMessages.Location = new System.Drawing.Point(8, 48);
@@ -96,6 +96,7 @@ namespace NProf.GUI
 			// _btnStop
 			// 
 			this._btnStop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this._btnStop.FlatStyle = System.Windows.Forms.FlatStyle.System;
 			this._btnStop.Location = new System.Drawing.Point(760, 8);
 			this._btnStop.Name = "_btnStop";
 			this._btnStop.TabIndex = 3;
