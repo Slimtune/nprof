@@ -107,7 +107,7 @@
                 />
                 <Reference
                     Name = "Genghis"
-                    AssemblyName = "Genghis"
+                    AssemblyName = "genghis"
                     HintPath = "..\Libraries\Genghis\Genghis.dll"
                 />
             </References>
@@ -185,15 +185,15 @@
                 />
                 <File
                     RelPath = "Resources\go.bmp"
-                    BuildAction = "Content"
+                    BuildAction = "EmbeddedResource"
                 />
                 <File
                     RelPath = "Resources\project.bmp"
-                    BuildAction = "Content"
+                    BuildAction = "EmbeddedResource"
                 />
                 <File
                     RelPath = "Resources\stop.bmp"
-                    BuildAction = "Content"
+                    BuildAction = "EmbeddedResource"
                 />
             </Include>
         </Files>

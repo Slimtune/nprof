@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
+using System.Resources;
 using NProf.Glue.Profiler.Project;
 
 namespace NProf.GUI
@@ -53,30 +54,23 @@ namespace NProf.GUI
 			this.components = new System.ComponentModel.Container();
 			System.Resources.ResourceManager resources = new System.Resources.ResourceManager(typeof(ProjectTree));
 			this._tvProjects = new System.Windows.Forms.TreeView();
-			this._ilState = new System.Windows.Forms.ImageList(this.components);
 			this.SuspendLayout();
 			// 
 			// _tvProjects
 			// 
 			this._tvProjects.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._tvProjects.HideSelection = false;
-			this._tvProjects.ImageList = this._ilState;
 			this._tvProjects.Location = new System.Drawing.Point(0, 0);
 			this._tvProjects.Name = "_tvProjects";
 			this._tvProjects.Size = new System.Drawing.Size(344, 464);
 			this._tvProjects.TabIndex = 0;
-			// 
-			// _ilState
-			// 
-			this._ilState.ImageSize = new System.Drawing.Size(16, 16);
-			this._ilState.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("_ilState.ImageStream")));
-			this._ilState.TransparentColor = System.Drawing.Color.Magenta;
 			// 
 			// ProjectTree
 			// 
 			this.Controls.Add(this._tvProjects);
 			this.Name = "ProjectTree";
 			this.Size = new System.Drawing.Size(344, 464);
+			this.Load += new System.EventHandler(this.ProjectTree_Load);
 			this.ResumeLayout(false);
 
 		}
@@ -149,6 +143,7 @@ namespace NProf.GUI
 		private void AddProjectNode( ProjectInfo pi )
 		{
 			TreeNode tn = ( TreeNode )_tvProjects.Invoke( new TreeNodeAdd( OnTreeNodeAdd ), new object[]{ _tvProjects.Nodes, pi.Name, 0, pi } );
+			tn.ImageIndex = 0;
 
 			pi.Runs.RunAdded += new RunCollection.RunEventHandler( OnRunAdded );
 			pi.Runs.RunRemoved += new RunCollection.RunEventHandler( OnRunRemoved );
@@ -230,6 +225,18 @@ namespace NProf.GUI
 			}
 
 			return 0;
+		}
+
+		private void ProjectTree_Load(object sender, System.EventArgs e)
+		{
+			_ilState = new ImageList();
+			_ilState.TransparentColor = Color.Magenta;
+			
+			_ilState.Images.Add( Image.FromStream( this.GetType().Assembly.GetManifestResourceStream( "NProf.GUI.Resources.project.bmp" ) ) );
+			_ilState.Images.Add( Image.FromStream( this.GetType().Assembly.GetManifestResourceStream( "NProf.GUI.Resources.stop.bmp" ) ) );
+			_ilState.Images.Add( Image.FromStream( this.GetType().Assembly.GetManifestResourceStream( "NProf.GUI.Resources.go.bmp" ) ) );
+
+			_tvProjects.ImageList = _ilState;
 		}
 
 		private delegate TreeNode TreeNodeAdd( TreeNodeCollection tncParent, string strLabel, int nImageIndex, object oTag );

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <project name="nprof" basedir=".." default="build">
-	<property name="nant.settings.currentframework" value="net-1.1" />
+	<property name="nant.settings.currentframework" value="net-1.0" />
 	
 	<echo message="Build configuration: ${build.configuration}" />
 
@@ -104,6 +104,6 @@ put ${package.source.zip}
 quit
 		</echo>
 		<property name="ftp.server" value="upload.sourceforge.net" />
-		<exec program="xftp.exe" commandline="-A -s:${package.directory}/ftp.commands upload.sourceforge.net"  />
+		<exec program="ftp.exe" commandline="-A -s:${package.directory}/ftp.commands upload.sourceforge.net"  />
 	</target>
 </project>
