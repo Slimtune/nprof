@@ -67,9 +67,9 @@ namespace NProf.GUI
 		private void InitializeComponent()
 		{
 			this._lvMessages = new System.Windows.Forms.ListView();
+			this._chMessage = new System.Windows.Forms.ColumnHeader();
 			this.label1 = new System.Windows.Forms.Label();
 			this._btnOK = new System.Windows.Forms.Button();
-			this._chMessage = new System.Windows.Forms.ColumnHeader();
 			this.SuspendLayout();
 			// 
 			// _lvMessages
@@ -78,7 +78,7 @@ namespace NProf.GUI
 				| System.Windows.Forms.AnchorStyles.Left) 
 				| System.Windows.Forms.AnchorStyles.Right)));
 			this._lvMessages.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-																						  this._chMessage});
+																												  this._chMessage});
 			this._lvMessages.FullRowSelect = true;
 			this._lvMessages.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
 			this._lvMessages.Location = new System.Drawing.Point(8, 32);
@@ -86,6 +86,11 @@ namespace NProf.GUI
 			this._lvMessages.Size = new System.Drawing.Size(720, 360);
 			this._lvMessages.TabIndex = 0;
 			this._lvMessages.View = System.Windows.Forms.View.Details;
+			// 
+			// _chMessage
+			// 
+			this._chMessage.Text = "Message";
+			this._chMessage.Width = 672;
 			// 
 			// label1
 			// 
@@ -98,15 +103,11 @@ namespace NProf.GUI
 			// 
 			this._btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this._btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
+			this._btnOK.FlatStyle = System.Windows.Forms.FlatStyle.System;
 			this._btnOK.Location = new System.Drawing.Point(640, 408);
 			this._btnOK.Name = "_btnOK";
 			this._btnOK.TabIndex = 2;
 			this._btnOK.Text = "OK";
-			// 
-			// _chMessage
-			// 
-			this._chMessage.Text = "Message";
-			this._chMessage.Width = 672;
 			// 
 			// ProfilerRunMessagesForm
 			// 

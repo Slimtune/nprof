@@ -86,6 +86,7 @@ namespace NProf.GUI
 			// button1
 			// 
 			this.button1.DialogResult = System.Windows.Forms.DialogResult.OK;
+			this.button1.FlatStyle = System.Windows.Forms.FlatStyle.System;
 			this.button1.Location = new System.Drawing.Point(268, 368);
 			this.button1.Name = "button1";
 			this.button1.TabIndex = 2;
