@@ -80,6 +80,11 @@ namespace NProf.Glue.Profiler.Project
 			Finished,
 		}
 
+		public Profiler.ProcessCompletedHandler ProcessCompletedHandler
+		{
+			get { return new Profiler.ProcessCompletedHandler( OnProfileComplete ); }
+		}
+
 		private void OnProfileComplete( Run run )
 		{
 			State = RunState.Finished;

@@ -364,8 +364,18 @@ namespace NProf.GUI
 
 		public void EnableAndStart()
 		{
-			_p.EnableAndStart( new Options() );
-			this.Text = "nprof GUI - [Running]";
+			ProjectInfo pi = new ProjectInfo();
+			pi.Name = "VS.NET Project";
+
+			Run run = pi.CreateRun( _p );
+			run.StateChanged += new Run.RunStateEventHandler( OnRunStateChanged );
+
+			_p.EnableAndStart( pi, run );
+		}
+
+		public void Disable()
+		{
+			_p.Disable();
 		}
 
 		private void OnError( Exception e )

@@ -55,9 +55,12 @@ namespace NProf.Glue.Profiler
 			return Start( strApplication, strArguments, strWorkingDirectory, po );
 		}
 
-		public bool EnableAndStart( Project.Options po )
+		public bool EnableAndStart( ProjectInfo pi, Run run )
 		{
-			_pss = new ProfilerSocketServer( po );
+			_run = run;
+			_pch = new ProcessCompletedHandler( _run.ProcessCompletedHandler );
+
+			_pss = new ProfilerSocketServer( pi.Options );
 			_pss.Start();
 			_pss.Exited += new EventHandler( OnProcessExited );
 			_pss.Error += new ProfilerSocketServer.ErrorHandler( OnError );
