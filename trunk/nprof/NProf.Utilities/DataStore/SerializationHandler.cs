@@ -56,6 +56,7 @@ namespace NProf.Utilities.DataStore
 				XmlSerializer s = new XmlSerializer( typeof( UsedFile[] ) );
 
 				Array.Sort( value );
+				Array.Reverse( value );
 
 				s.Serialize( outputFile, value );
 
