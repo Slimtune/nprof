@@ -8,7 +8,9 @@ using System.Runtime.InteropServices;
 using NProf.Glue.Profiler;
 using NProf.Glue.Profiler.Info;
 using NProf.Glue.Profiler.Project;
+using Crownwood.Magic.Menus;
 using Genghis.Windows.Forms;
+using SynapticEffect.Forms;
 
 namespace NProf.GUI
 {
@@ -16,13 +18,17 @@ namespace NProf.GUI
 	/// Summary description for ProfilerControl.
 	/// </summary>
 	[ProgId( "NProf.ProfilerControl" ), 
-		ClassInterface( ClassInterfaceType.AutoDual ),
-		Guid( "D34B8507-C286-4d40-83BC-0852E19DEC89" )]
+	ClassInterface( ClassInterfaceType.AutoDual ),
+	Guid( "D34B8507-C286-4d40-83BC-0852E19DEC89" )]
 	public class ProfilerControl : System.Windows.Forms.UserControl
 	{
 		private System.Windows.Forms.Panel panel1;
-		private System.Windows.Forms.Splitter splitter2;
 		private System.Windows.Forms.Splitter splitter1;
+		private System.Windows.Forms.Panel panel2;
+		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.TreeView _tvNamespaceInfo;
+		private System.Windows.Forms.ComboBox _cbCurrentThread;
+		private SynapticEffect.Forms.ContainerListView _lvFunctionInfo;
 		private System.Windows.Forms.ColumnHeader colID;
 		private System.Windows.Forms.ColumnHeader colSignature;
 		private System.Windows.Forms.ColumnHeader colCalls;
@@ -30,17 +36,8 @@ namespace NProf.GUI
 		private System.Windows.Forms.ColumnHeader colTimeInMethod;
 		private System.Windows.Forms.ColumnHeader colChildrenTime;
 		private System.Windows.Forms.ColumnHeader colTimeSuspended;
-		private System.Windows.Forms.ColumnHeader colCalleeID;
-		private System.Windows.Forms.ColumnHeader colCalleeSignature;
-		private System.Windows.Forms.ColumnHeader colCalleeCalls;
-		private System.Windows.Forms.ColumnHeader colCalleeTotalTime;
-		private System.Windows.Forms.ColumnHeader colCalleeInParent;
-		private System.Windows.Forms.Panel panel2;
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.ListView _lvFunctionInfo;
-		private System.Windows.Forms.ListView _lvChildInfo;
-		private System.Windows.Forms.TreeView _tvNamespaceInfo;
-		private System.Windows.Forms.ComboBox _cbCurrentThread;
+		private SynapticEffect.Forms.ContainerListView _lvChildInfo;
+		private System.Windows.Forms.Splitter splitter2;
 		/// <summary> 
 		/// Required designer variable.
 		/// </summary>
@@ -79,9 +76,27 @@ namespace NProf.GUI
 		/// </summary>
 		private void InitializeComponent()
 		{
+			SynapticEffect.Forms.ToggleColumnHeader toggleColumnHeader1 = new SynapticEffect.Forms.ToggleColumnHeader();
+			SynapticEffect.Forms.ToggleColumnHeader toggleColumnHeader2 = new SynapticEffect.Forms.ToggleColumnHeader();
+			SynapticEffect.Forms.ToggleColumnHeader toggleColumnHeader3 = new SynapticEffect.Forms.ToggleColumnHeader();
+			SynapticEffect.Forms.ToggleColumnHeader toggleColumnHeader4 = new SynapticEffect.Forms.ToggleColumnHeader();
+			SynapticEffect.Forms.ToggleColumnHeader toggleColumnHeader5 = new SynapticEffect.Forms.ToggleColumnHeader();
+			SynapticEffect.Forms.ToggleColumnHeader toggleColumnHeader6 = new SynapticEffect.Forms.ToggleColumnHeader();
+			SynapticEffect.Forms.ToggleColumnHeader toggleColumnHeader7 = new SynapticEffect.Forms.ToggleColumnHeader();
+			SynapticEffect.Forms.ToggleColumnHeader toggleColumnHeader8 = new SynapticEffect.Forms.ToggleColumnHeader();
+			SynapticEffect.Forms.ToggleColumnHeader toggleColumnHeader9 = new SynapticEffect.Forms.ToggleColumnHeader();
+			SynapticEffect.Forms.ToggleColumnHeader toggleColumnHeader10 = new SynapticEffect.Forms.ToggleColumnHeader();
+			SynapticEffect.Forms.ToggleColumnHeader toggleColumnHeader11 = new SynapticEffect.Forms.ToggleColumnHeader();
+			SynapticEffect.Forms.ToggleColumnHeader toggleColumnHeader12 = new SynapticEffect.Forms.ToggleColumnHeader();
 			this.panel1 = new System.Windows.Forms.Panel();
 			this.splitter2 = new System.Windows.Forms.Splitter();
-			this._lvFunctionInfo = new System.Windows.Forms.ListView();
+			this._lvFunctionInfo = new SynapticEffect.Forms.ContainerListView();
+			this._lvChildInfo = new SynapticEffect.Forms.ContainerListView();
+			this.splitter1 = new System.Windows.Forms.Splitter();
+			this._tvNamespaceInfo = new System.Windows.Forms.TreeView();
+			this.panel2 = new System.Windows.Forms.Panel();
+			this.label1 = new System.Windows.Forms.Label();
+			this._cbCurrentThread = new System.Windows.Forms.ComboBox();
 			this.colID = new System.Windows.Forms.ColumnHeader();
 			this.colSignature = new System.Windows.Forms.ColumnHeader();
 			this.colCalls = new System.Windows.Forms.ColumnHeader();
@@ -89,17 +104,6 @@ namespace NProf.GUI
 			this.colTimeInMethod = new System.Windows.Forms.ColumnHeader();
 			this.colChildrenTime = new System.Windows.Forms.ColumnHeader();
 			this.colTimeSuspended = new System.Windows.Forms.ColumnHeader();
-			this._lvChildInfo = new System.Windows.Forms.ListView();
-			this.colCalleeID = new System.Windows.Forms.ColumnHeader();
-			this.colCalleeSignature = new System.Windows.Forms.ColumnHeader();
-			this.colCalleeCalls = new System.Windows.Forms.ColumnHeader();
-			this.colCalleeTotalTime = new System.Windows.Forms.ColumnHeader();
-			this.colCalleeInParent = new System.Windows.Forms.ColumnHeader();
-			this.splitter1 = new System.Windows.Forms.Splitter();
-			this._tvNamespaceInfo = new System.Windows.Forms.TreeView();
-			this.panel2 = new System.Windows.Forms.Panel();
-			this.label1 = new System.Windows.Forms.Label();
-			this._cbCurrentThread = new System.Windows.Forms.ComboBox();
 			this.panel1.SuspendLayout();
 			this.panel2.SuspendLayout();
 			this.SuspendLayout();
@@ -121,103 +125,231 @@ namespace NProf.GUI
 			// splitter2
 			// 
 			this.splitter2.Dock = System.Windows.Forms.DockStyle.Bottom;
-			this.splitter2.Location = new System.Drawing.Point(195, 229);
+			this.splitter2.Location = new System.Drawing.Point(195, 261);
 			this.splitter2.Name = "splitter2";
 			this.splitter2.Size = new System.Drawing.Size(677, 3);
-			this.splitter2.TabIndex = 10;
+			this.splitter2.TabIndex = 15;
 			this.splitter2.TabStop = false;
 			// 
 			// _lvFunctionInfo
 			// 
-			this._lvFunctionInfo.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-																							  this.colID,
-																							  this.colSignature,
-																							  this.colCalls,
-																							  this.colTotalTime,
-																							  this.colTimeInMethod,
-																							  this.colChildrenTime,
-																							  this.colTimeSuspended});
+			this._lvFunctionInfo.AllowColumnReorder = true;
+			this._lvFunctionInfo.BackColor = System.Drawing.SystemColors.Window;
+			toggleColumnHeader1.Hovered = false;
+			toggleColumnHeader1.Image = null;
+			toggleColumnHeader1.Index = 0;
+			toggleColumnHeader1.Pressed = false;
+			toggleColumnHeader1.ScaleStyle = SynapticEffect.Forms.ColumnScaleStyle.Slide;
+			toggleColumnHeader1.Selected = false;
+			toggleColumnHeader1.SortingMethod = SynapticEffect.Forms.SortingMethod.None;
+			toggleColumnHeader1.SortingOrder = System.Windows.Forms.SortOrder.None;
+			toggleColumnHeader1.Text = "ID";
+			toggleColumnHeader1.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
+			toggleColumnHeader1.ToolTip = "ID Tip";
+			toggleColumnHeader1.Visible = true;
+			toggleColumnHeader1.Width = 100;
+			toggleColumnHeader2.Hovered = false;
+			toggleColumnHeader2.Image = null;
+			toggleColumnHeader2.Index = 0;
+			toggleColumnHeader2.Pressed = false;
+			toggleColumnHeader2.ScaleStyle = SynapticEffect.Forms.ColumnScaleStyle.Slide;
+			toggleColumnHeader2.Selected = false;
+			toggleColumnHeader2.SortingMethod = SynapticEffect.Forms.SortingMethod.None;
+			toggleColumnHeader2.SortingOrder = System.Windows.Forms.SortOrder.None;
+			toggleColumnHeader2.Text = "Signature";
+			toggleColumnHeader2.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
+			toggleColumnHeader2.ToolTip = "Signature Tip";
+			toggleColumnHeader2.Visible = true;
+			toggleColumnHeader2.Width = 350;
+			toggleColumnHeader3.Hovered = false;
+			toggleColumnHeader3.Image = null;
+			toggleColumnHeader3.Index = 0;
+			toggleColumnHeader3.Pressed = false;
+			toggleColumnHeader3.ScaleStyle = SynapticEffect.Forms.ColumnScaleStyle.Slide;
+			toggleColumnHeader3.Selected = false;
+			toggleColumnHeader3.SortingMethod = SynapticEffect.Forms.SortingMethod.None;
+			toggleColumnHeader3.SortingOrder = System.Windows.Forms.SortOrder.None;
+			toggleColumnHeader3.Text = "# of Calls";
+			toggleColumnHeader3.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
+			toggleColumnHeader3.ToolTip = "# of Calls Tip";
+			toggleColumnHeader3.Visible = true;
+			toggleColumnHeader3.Width = 70;
+			toggleColumnHeader4.Hovered = false;
+			toggleColumnHeader4.Image = null;
+			toggleColumnHeader4.Index = 0;
+			toggleColumnHeader4.Pressed = false;
+			toggleColumnHeader4.ScaleStyle = SynapticEffect.Forms.ColumnScaleStyle.Slide;
+			toggleColumnHeader4.Selected = false;
+			toggleColumnHeader4.SortingMethod = SynapticEffect.Forms.SortingMethod.None;
+			toggleColumnHeader4.SortingOrder = System.Windows.Forms.SortOrder.None;
+			toggleColumnHeader4.Text = "% of Total";
+			toggleColumnHeader4.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
+			toggleColumnHeader4.ToolTip = "% of Total Tip";
+			toggleColumnHeader4.Visible = true;
+			toggleColumnHeader4.Width = 70;
+			toggleColumnHeader5.Hovered = false;
+			toggleColumnHeader5.Image = null;
+			toggleColumnHeader5.Index = 0;
+			toggleColumnHeader5.Pressed = false;
+			toggleColumnHeader5.ScaleStyle = SynapticEffect.Forms.ColumnScaleStyle.Slide;
+			toggleColumnHeader5.Selected = false;
+			toggleColumnHeader5.SortingMethod = SynapticEffect.Forms.SortingMethod.None;
+			toggleColumnHeader5.SortingOrder = System.Windows.Forms.SortOrder.None;
+			toggleColumnHeader5.Text = "% in Method";
+			toggleColumnHeader5.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
+			toggleColumnHeader5.ToolTip = "% in Method Tip";
+			toggleColumnHeader5.Visible = true;
+			toggleColumnHeader5.Width = 70;
+			toggleColumnHeader6.Hovered = false;
+			toggleColumnHeader6.Image = null;
+			toggleColumnHeader6.Index = 0;
+			toggleColumnHeader6.Pressed = false;
+			toggleColumnHeader6.ScaleStyle = SynapticEffect.Forms.ColumnScaleStyle.Slide;
+			toggleColumnHeader6.Selected = false;
+			toggleColumnHeader6.SortingMethod = SynapticEffect.Forms.SortingMethod.None;
+			toggleColumnHeader6.SortingOrder = System.Windows.Forms.SortOrder.None;
+			toggleColumnHeader6.Text = "% in Children";
+			toggleColumnHeader6.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
+			toggleColumnHeader6.ToolTip = "% in Children Tip";
+			toggleColumnHeader6.Visible = true;
+			toggleColumnHeader6.Width = 70;
+			toggleColumnHeader7.Hovered = false;
+			toggleColumnHeader7.Image = null;
+			toggleColumnHeader7.Index = 0;
+			toggleColumnHeader7.Pressed = false;
+			toggleColumnHeader7.ScaleStyle = SynapticEffect.Forms.ColumnScaleStyle.Slide;
+			toggleColumnHeader7.Selected = false;
+			toggleColumnHeader7.SortingMethod = SynapticEffect.Forms.SortingMethod.None;
+			toggleColumnHeader7.SortingOrder = System.Windows.Forms.SortOrder.None;
+			toggleColumnHeader7.Text = "% Suspended";
+			toggleColumnHeader7.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
+			toggleColumnHeader7.ToolTip = "% Suspended Tip";
+			toggleColumnHeader7.Visible = true;
+			toggleColumnHeader7.Width = 70;
+			this._lvFunctionInfo.Columns.AddRange(new SynapticEffect.Forms.ToggleColumnHeader[] {
+																																toggleColumnHeader1,
+																																toggleColumnHeader2,
+																																toggleColumnHeader3,
+																																toggleColumnHeader4,
+																																toggleColumnHeader5,
+																																toggleColumnHeader6,
+																																toggleColumnHeader7});
+			this._lvFunctionInfo.ColumnSortColor = System.Drawing.Color.WhiteSmoke;
+			this._lvFunctionInfo.ColumnTrackColor = System.Drawing.Color.WhiteSmoke;
 			this._lvFunctionInfo.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._lvFunctionInfo.FullRowSelect = true;
+			this._lvFunctionInfo.GridLineColor = System.Drawing.Color.WhiteSmoke;
+			this._lvFunctionInfo.HeaderMenu = null;
+			this._lvFunctionInfo.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Clickable;
 			this._lvFunctionInfo.HideSelection = false;
+			this._lvFunctionInfo.ItemMenu = null;
+			this._lvFunctionInfo.LabelEdit = false;
 			this._lvFunctionInfo.Location = new System.Drawing.Point(195, 24);
-			this._lvFunctionInfo.MultiSelect = false;
 			this._lvFunctionInfo.Name = "_lvFunctionInfo";
-			this._lvFunctionInfo.Size = new System.Drawing.Size(677, 208);
-			this._lvFunctionInfo.TabIndex = 3;
-			this._lvFunctionInfo.View = System.Windows.Forms.View.Details;
+			this._lvFunctionInfo.RowSelectColor = System.Drawing.SystemColors.Highlight;
+			this._lvFunctionInfo.RowTrackColor = System.Drawing.Color.WhiteSmoke;
+			this._lvFunctionInfo.RowTracking = false;
+			this._lvFunctionInfo.Size = new System.Drawing.Size(677, 240);
+			this._lvFunctionInfo.SmallImageList = null;
+			this._lvFunctionInfo.StateImageList = null;
+			this._lvFunctionInfo.TabIndex = 14;
+			this._lvFunctionInfo.HeaderMenuEvent += new SynapticEffect.Forms.HeaderMenuEventHandler(this._lv_HeaderMenuEvent);
 			this._lvFunctionInfo.SelectedIndexChanged += new System.EventHandler(this._lvFunctionInfo_SelectedIndexChanged);
-			// 
-			// colID
-			// 
-			this.colID.Text = "ID";
-			this.colID.Width = 100;
-			// 
-			// colSignature
-			// 
-			this.colSignature.Text = "Signature";
-			this.colSignature.Width = 350;
-			// 
-			// colCalls
-			// 
-			this.colCalls.Text = "# of Calls";
-			// 
-			// colTotalTime
-			// 
-			this.colTotalTime.Text = "% of Total";
-			// 
-			// colTimeInMethod
-			// 
-			this.colTimeInMethod.Text = "% in Method";
-			// 
-			// colChildrenTime
-			// 
-			this.colChildrenTime.Text = "% in Children";
-			// 
-			// colTimeSuspended
-			// 
-			this.colTimeSuspended.Text = "% Suspended";
 			// 
 			// _lvChildInfo
 			// 
-			this._lvChildInfo.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-																						   this.colCalleeID,
-																						   this.colCalleeSignature,
-																						   this.colCalleeCalls,
-																						   this.colCalleeTotalTime,
-																						   this.colCalleeInParent});
+			this._lvChildInfo.AllowColumnReorder = true;
+			this._lvChildInfo.BackColor = System.Drawing.SystemColors.Window;
+			toggleColumnHeader8.Hovered = false;
+			toggleColumnHeader8.Image = null;
+			toggleColumnHeader8.Index = 0;
+			toggleColumnHeader8.Pressed = false;
+			toggleColumnHeader8.ScaleStyle = SynapticEffect.Forms.ColumnScaleStyle.Slide;
+			toggleColumnHeader8.Selected = false;
+			toggleColumnHeader8.SortingMethod = SynapticEffect.Forms.SortingMethod.None;
+			toggleColumnHeader8.SortingOrder = System.Windows.Forms.SortOrder.None;
+			toggleColumnHeader8.Text = "ID";
+			toggleColumnHeader8.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
+			toggleColumnHeader8.ToolTip = "ID Tip";
+			toggleColumnHeader8.Visible = true;
+			toggleColumnHeader8.Width = 100;
+			toggleColumnHeader9.Hovered = false;
+			toggleColumnHeader9.Image = null;
+			toggleColumnHeader9.Index = 0;
+			toggleColumnHeader9.Pressed = false;
+			toggleColumnHeader9.ScaleStyle = SynapticEffect.Forms.ColumnScaleStyle.Slide;
+			toggleColumnHeader9.Selected = false;
+			toggleColumnHeader9.SortingMethod = SynapticEffect.Forms.SortingMethod.None;
+			toggleColumnHeader9.SortingOrder = System.Windows.Forms.SortOrder.None;
+			toggleColumnHeader9.Text = "Signature";
+			toggleColumnHeader9.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
+			toggleColumnHeader9.ToolTip = "Signature Tip";
+			toggleColumnHeader9.Visible = true;
+			toggleColumnHeader9.Width = 400;
+			toggleColumnHeader10.Hovered = false;
+			toggleColumnHeader10.Image = null;
+			toggleColumnHeader10.Index = 0;
+			toggleColumnHeader10.Pressed = false;
+			toggleColumnHeader10.ScaleStyle = SynapticEffect.Forms.ColumnScaleStyle.Slide;
+			toggleColumnHeader10.Selected = false;
+			toggleColumnHeader10.SortingMethod = SynapticEffect.Forms.SortingMethod.None;
+			toggleColumnHeader10.SortingOrder = System.Windows.Forms.SortOrder.None;
+			toggleColumnHeader10.Text = "# of Calls";
+			toggleColumnHeader10.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
+			toggleColumnHeader10.ToolTip = "# of Calls Tip";
+			toggleColumnHeader10.Visible = true;
+			toggleColumnHeader10.Width = 70;
+			toggleColumnHeader11.Hovered = false;
+			toggleColumnHeader11.Image = null;
+			toggleColumnHeader11.Index = 0;
+			toggleColumnHeader11.Pressed = false;
+			toggleColumnHeader11.ScaleStyle = SynapticEffect.Forms.ColumnScaleStyle.Slide;
+			toggleColumnHeader11.Selected = false;
+			toggleColumnHeader11.SortingMethod = SynapticEffect.Forms.SortingMethod.None;
+			toggleColumnHeader11.SortingOrder = System.Windows.Forms.SortOrder.None;
+			toggleColumnHeader11.Text = "% of Total";
+			toggleColumnHeader11.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
+			toggleColumnHeader11.ToolTip = "% of Total Tip";
+			toggleColumnHeader11.Visible = true;
+			toggleColumnHeader11.Width = 70;
+			toggleColumnHeader12.Hovered = false;
+			toggleColumnHeader12.Image = null;
+			toggleColumnHeader12.Index = 0;
+			toggleColumnHeader12.Pressed = false;
+			toggleColumnHeader12.ScaleStyle = SynapticEffect.Forms.ColumnScaleStyle.Slide;
+			toggleColumnHeader12.Selected = false;
+			toggleColumnHeader12.SortingMethod = SynapticEffect.Forms.SortingMethod.None;
+			toggleColumnHeader12.SortingOrder = System.Windows.Forms.SortOrder.None;
+			toggleColumnHeader12.Text = "% of Parent";
+			toggleColumnHeader12.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
+			toggleColumnHeader12.ToolTip = "% of Parent Tip";
+			toggleColumnHeader12.Visible = true;
+			toggleColumnHeader12.Width = 70;
+			this._lvChildInfo.Columns.AddRange(new SynapticEffect.Forms.ToggleColumnHeader[] {
+																															toggleColumnHeader8,
+																															toggleColumnHeader9,
+																															toggleColumnHeader10,
+																															toggleColumnHeader11,
+																															toggleColumnHeader12});
+			this._lvChildInfo.ColumnSortColor = System.Drawing.Color.WhiteSmoke;
+			this._lvChildInfo.ColumnTrackColor = System.Drawing.Color.WhiteSmoke;
 			this._lvChildInfo.Dock = System.Windows.Forms.DockStyle.Bottom;
-			this._lvChildInfo.FullRowSelect = true;
+			this._lvChildInfo.GridLineColor = System.Drawing.Color.WhiteSmoke;
+			this._lvChildInfo.HeaderMenu = null;
+			this._lvChildInfo.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Clickable;
 			this._lvChildInfo.HideSelection = false;
-			this._lvChildInfo.Location = new System.Drawing.Point(195, 232);
-			this._lvChildInfo.MultiSelect = false;
+			this._lvChildInfo.ItemMenu = null;
+			this._lvChildInfo.LabelEdit = false;
+			this._lvChildInfo.Location = new System.Drawing.Point(195, 264);
 			this._lvChildInfo.Name = "_lvChildInfo";
-			this._lvChildInfo.Size = new System.Drawing.Size(677, 224);
-			this._lvChildInfo.TabIndex = 3;
-			this._lvChildInfo.View = System.Windows.Forms.View.Details;
+			this._lvChildInfo.RowSelectColor = System.Drawing.SystemColors.Highlight;
+			this._lvChildInfo.RowTrackColor = System.Drawing.Color.WhiteSmoke;
+			this._lvChildInfo.RowTracking = false;
+			this._lvChildInfo.Size = new System.Drawing.Size(677, 192);
+			this._lvChildInfo.SmallImageList = null;
+			this._lvChildInfo.StateImageList = null;
+			this._lvChildInfo.TabIndex = 13;
 			this._lvChildInfo.DoubleClick += new System.EventHandler(this._lvChildInfo_DoubleClick);
-			// 
-			// colCalleeID
-			// 
-			this.colCalleeID.Text = "ID";
-			this.colCalleeID.Width = 100;
-			// 
-			// colCalleeSignature
-			// 
-			this.colCalleeSignature.Text = "Signature";
-			this.colCalleeSignature.Width = 400;
-			// 
-			// colCalleeCalls
-			// 
-			this.colCalleeCalls.Text = "# of Calls";
-			// 
-			// colCalleeTotalTime
-			// 
-			this.colCalleeTotalTime.Text = "% of Total";
-			// 
-			// colCalleeInParent
-			// 
-			this.colCalleeInParent.Text = "% of Parent";
+			this._lvChildInfo.HeaderMenuEvent += new SynapticEffect.Forms.HeaderMenuEventHandler(this._lv_HeaderMenuEvent);
 			// 
 			// splitter1
 			// 
@@ -268,6 +400,36 @@ namespace NProf.GUI
 			this._cbCurrentThread.Size = new System.Drawing.Size(136, 21);
 			this._cbCurrentThread.TabIndex = 11;
 			this._cbCurrentThread.SelectedIndexChanged += new System.EventHandler(this._cbCurrentThread_SelectedIndexChanged);
+			// 
+			// colID
+			// 
+			this.colID.Text = "ID";
+			this.colID.Width = 100;
+			// 
+			// colSignature
+			// 
+			this.colSignature.Text = "Signature";
+			this.colSignature.Width = 350;
+			// 
+			// colCalls
+			// 
+			this.colCalls.Text = "# of Calls";
+			// 
+			// colTotalTime
+			// 
+			this.colTotalTime.Text = "% of Total";
+			// 
+			// colTimeInMethod
+			// 
+			this.colTimeInMethod.Text = "% in Method";
+			// 
+			// colChildrenTime
+			// 
+			this.colChildrenTime.Text = "% in Children";
+			// 
+			// colTimeSuspended
+			// 
+			this.colTimeSuspended.Text = "% Suspended";
 			// 
 			// ProfilerControl
 			// 
@@ -390,11 +552,9 @@ namespace NProf.GUI
 			foreach ( TreeNode tn in _htCheckedItems.Keys )
 				htNamespaces[ tn.Tag ] = null;
 
-			IComparer pOldSorter = _lvFunctionInfo.ListViewItemSorter;
 			try
 			{
 				_lvFunctionInfo.BeginUpdate();
-				_lvFunctionInfo.ListViewItemSorter = null;
 
 				ThreadInfo tiCurrentThread = _tic[ ( ( ThreadInfo )_cbCurrentThread.SelectedItem ).ID ];
 				foreach ( FunctionInfo fi in tiCurrentThread.FunctionInfoCollection )
@@ -402,7 +562,8 @@ namespace NProf.GUI
 					if ( !htNamespaces.Contains( fi.Signature.NamespaceString ) )
 						continue;
 
-					ListViewItem lvi = new ListViewItem( fi.ID.ToString() );
+					ContainerListViewItem lvi = new ContainerListViewItem();
+					lvi.Text = fi.ID.ToString();
 					lvi.SubItems.Add( fi.Signature.Signature );
 					lvi.SubItems.Add( fi.Calls.ToString() );
 					lvi.SubItems.Add( fi.PercentOfTotalTimeInMethodAndChildren.ToString( "0.00;-0.00;0" ) );
@@ -415,7 +576,7 @@ namespace NProf.GUI
 			}
 			finally
 			{
-				_lvFunctionInfo.ListViewItemSorter = pOldSorter;
+				_lvFunctionInfo.Sort(false);
 				_lvFunctionInfo.EndUpdate();
 			}
 		}
@@ -467,15 +628,12 @@ namespace NProf.GUI
 			FunctionInfo fi = ( FunctionInfo )_lvFunctionInfo.SelectedItems[ 0 ].Tag;
 			_lvChildInfo.Items.Clear();
 
-			IComparer pOldSorter = _lvChildInfo.ListViewItemSorter;
 			try
 			{
-				_lvChildInfo.BeginUpdate();
-				_lvChildInfo.ListViewItemSorter = null;
-
 				foreach ( CalleeFunctionInfo cfi in fi.CalleeInfo )
 				{
-					ListViewItem lvi = new ListViewItem( cfi.ID.ToString() );
+					ContainerListViewItem lvi = new ContainerListViewItem();
+					lvi.Text = cfi.ID.ToString();
 					lvi.SubItems.Add( cfi.Signature );
 					lvi.SubItems.Add( cfi.Calls.ToString() );
 					lvi.SubItems.Add( cfi.PercentOfTotalTimeInMethod.ToString( "0.00;-0.00;0" ) );
@@ -487,7 +645,8 @@ namespace NProf.GUI
 
 				if ( fi.TotalSuspendedTicks > 0 )
 				{
-					ListViewItem lviSuspend = new ListViewItem( "(suspend)" );
+					ContainerListViewItem lviSuspend = new ContainerListViewItem();
+					lviSuspend.Text = "(suspend)";
 					lviSuspend.SubItems.Add( "(thread suspended)" );
 					lviSuspend.SubItems.Add( "-" );
 					lviSuspend.SubItems.Add( fi.PercentOfTotalTimeSuspended.ToString( "0.00;-0.00;0" ) );
@@ -497,8 +656,8 @@ namespace NProf.GUI
 			}
 			finally
 			{
-				_lvChildInfo.ListViewItemSorter = pOldSorter;
-				_lvChildInfo.EndUpdate();
+				_lvChildInfo.Sort(false);
+				_lvChildInfo.Refresh();
 			}
 		}
 
@@ -509,32 +668,23 @@ namespace NProf.GUI
 
 		private void ProfilerControl_Load(object sender, System.EventArgs e)
 		{
-			_lvsFunction = new ListViewSorter();
-			_lvsFunction.SetColumns( new ListViewCompareType[] {
-				 
-					 ListViewCompareType.Float,
-					 ListViewCompareType.String,
-					 ListViewCompareType.Float,
-					 ListViewCompareType.Float,
-					 ListViewCompareType.Float,
-					 ListViewCompareType.Float,
-					 ListViewCompareType.Float,
-			} );
-			_lvsFunction.SortColumn( _lvFunctionInfo, 1 );
-			_lvFunctionInfo.ListViewItemSorter = _lvsFunction;
-			_lvFunctionInfo.ColumnClick += new ColumnClickEventHandler( _lvsFunction.OnListViewColumnClick );
+			_lvFunctionInfo.Columns[0].SortingMethod = SortingMethod.Float;
+			_lvFunctionInfo.Columns[1].SortingMethod = SortingMethod.String;
+			_lvFunctionInfo.Columns[2].SortingMethod = SortingMethod.Float;
+			_lvFunctionInfo.Columns[3].SortingMethod = SortingMethod.Float;
+			_lvFunctionInfo.Columns[4].SortingMethod = SortingMethod.Float;
+			_lvFunctionInfo.Columns[5].SortingMethod = SortingMethod.Float;
+			_lvFunctionInfo.Columns[6].SortingMethod = SortingMethod.Float;
 
-			_lvsCalleeFunction = new ListViewSorter();
-			_lvsCalleeFunction.SetColumns( new ListViewCompareType[] {
-					 ListViewCompareType.Float,
-					 ListViewCompareType.String,
-					 ListViewCompareType.Float,
-					 ListViewCompareType.Float,
-					 ListViewCompareType.Float,
-			} );		
-			_lvsCalleeFunction.SortColumn( _lvChildInfo, 1 );
-			_lvChildInfo.ListViewItemSorter = _lvsCalleeFunction;
-			_lvChildInfo.ColumnClick += new ColumnClickEventHandler( _lvsCalleeFunction.OnListViewColumnClick );
+			_lvFunctionInfo.Sort(1, false);
+
+			_lvChildInfo.Columns[0].SortingMethod = SortingMethod.Float;
+			_lvChildInfo.Columns[1].SortingMethod = SortingMethod.String;
+			_lvChildInfo.Columns[2].SortingMethod = SortingMethod.Float;
+			_lvChildInfo.Columns[3].SortingMethod = SortingMethod.Float;
+			_lvChildInfo.Columns[4].SortingMethod = SortingMethod.Float;
+
+			_lvChildInfo.Sort(1, false);
 		}
 
 		private void _lvChildInfo_DoubleClick(object sender, System.EventArgs e)
@@ -551,20 +701,19 @@ namespace NProf.GUI
 
 		private void JumpToID( int nID )
 		{
-			foreach ( ListViewItem lvi in _lvFunctionInfo.Items )
+			foreach ( ContainerListViewItem lvi in _lvFunctionInfo.Items )
 			{
 				FunctionInfo fi = ( FunctionInfo )lvi.Tag;
 				if ( fi.ID == nID )
 				{
-					_lvFunctionInfo.SelectedItems.Clear();
 					lvi.Selected = true;
-					lvi.EnsureVisible();
-					_lvFunctionInfo.Refresh();
+					lvi.Focused = true;
+					_lvFunctionInfo.EnsureVisible();
+					_lvFunctionInfo.Focus();
 					break;
 				}
 			}
 		}
-
 
 		private int GetSelectedID()
 		{
@@ -577,7 +726,106 @@ namespace NProf.GUI
 		private ThreadInfoCollection _tic;
 		private bool _bUpdating, _bInCheck;
 		private Hashtable _htCheckedItems;
-		private ListViewSorter _lvsFunction;
-		private ListViewSorter _lvsCalleeFunction;
+
+		#region "Context Menus"
+
+		#region "Headers"
+
+		private void _lv_HeaderMenuEvent(object sender, System.Windows.Forms.MouseEventArgs e)
+		{
+			ContainerListView listView = sender as ContainerListView;
+
+			PopupMenu pop = new PopupMenu();
+			pop.Selected += new CommandHandler(pop_Selected);
+			pop.Deselected += new CommandHandler(pop_Deselected);
+
+			MenuCommand sortBy = pop.MenuCommands.Add(new MenuCommand("Sort &By"));
+			pop.MenuCommands.Add(new MenuCommand("-"));
+			bool isAscending = true;
+			for(int idx = 0; idx < listView.Columns.Count; ++idx)
+			{
+				ToggleColumnHeader hdr = listView.Columns[idx];
+				MenuCommand sortByItem = new MenuCommand(hdr.Text);
+
+				sortByItem.Description = string.Format("Sort By the '{1}' column from this grid", (hdr.Visible ? "Shows" : "Hides"), hdr.Text);
+				sortByItem.RadioCheck = true;
+				sortByItem.Checked = hdr.SortingOrder != SortOrder.None;
+				sortByItem.Tag = new object[] { listView, idx };
+				sortByItem.Click += new EventHandler(sortByItem_Click);
+
+				if(sortByItem.Checked)
+					isAscending = hdr.SortingOrder == SortOrder.Ascending;
+
+				sortBy.MenuCommands.Add(sortByItem);
+			}
+
+			sortBy.MenuCommands.Add(new MenuCommand("-"));
+			MenuCommand ascending = sortBy.MenuCommands.Add(new MenuCommand("&Ascending"));
+			ascending.RadioCheck = true;
+			ascending.Checked = isAscending;
+			ascending.Tag = new object[] { listView, SortOrder.Ascending };
+			ascending.Click += new EventHandler(sortOrder_Click);
+
+			MenuCommand descending = sortBy.MenuCommands.Add(new MenuCommand("&Descending"));
+			descending.RadioCheck = true;
+			descending.Checked = !isAscending;
+			descending.Tag = new object[] { listView, SortOrder.Descending };
+			descending.Click += new EventHandler(sortOrder_Click);
+
+			bool allShown = true;
+			for(int idx = 0; idx < listView.Columns.Count; ++idx)
+			{
+				ToggleColumnHeader hdr = listView.Columns[idx];
+				MenuCommand checkable = new MenuCommand(hdr.Text);
+
+				checkable.Description = string.Format("{0} the '{1}' column from this grid", (hdr.Visible ? "Shows" : "Hides"), hdr.Text);
+				checkable.Checked = hdr.Visible;
+				checkable.Tag = hdr;
+
+				pop.MenuCommands.Add(checkable);
+				allShown &= hdr.Visible;
+			}
+
+			pop.MenuCommands.Add(new MenuCommand("-"));
+			pop.MenuCommands.Add(new MenuCommand("Show &All")).Enabled = !allShown;
+
+			MenuCommand result = pop.TrackPopup(listView.PointToScreen(new Point(e.X, e.Y)));
+			if(result != null && result.Tag is ToggleColumnHeader)
+				(result.Tag as ToggleColumnHeader).Visible = !result.Checked;
+		}
+
+		private void sortOrder_Click(object sender, EventArgs e)
+		{
+			MenuCommand cmd = sender as MenuCommand;
+
+			object[] objs = (cmd.Tag as object[]);
+			ContainerListView listView = objs[0] as ContainerListView;
+
+			listView.Sort((SortOrder)objs[1]);
+		}
+
+		private void sortByItem_Click(object sender, EventArgs e)
+		{
+			MenuCommand cmd = sender as MenuCommand;
+
+			object[] objs = (cmd.Tag as object[]);
+			ContainerListView listView = objs[0] as ContainerListView;
+
+			listView.Sort((int)objs[1], false);
+		}
+
+		#endregion
+
+		private void pop_Selected(MenuCommand item)
+		{
+			// TODO: Update status bar with item.Description
+		}
+
+		private void pop_Deselected(MenuCommand item)
+		{
+			// TODO: Update status bar with string.Empty
+		}
+
+		#endregion
 	}
 }

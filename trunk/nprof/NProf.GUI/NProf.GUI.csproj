@@ -110,6 +110,11 @@
                     AssemblyName = "genghis"
                     HintPath = "..\Libraries\Genghis\Genghis.dll"
                 />
+                <Reference
+                    Name = "ExtendedListViews"
+                    AssemblyName = "ExtendedListViews"
+                    HintPath = "..\Libraries\ExtendedListViews\ExtendedListViews.dll"
+                />
             </References>
         </Build>
         <Files>
