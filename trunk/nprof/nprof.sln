@@ -43,6 +43,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProfilee", "TestProfile
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NProf.Utilities", "NProf.Utilities\NProf.Utilities.csproj", "{A9BC618E-7E40-4D66-9BD5-837728424BEE}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -75,10 +79,14 @@ Global
 		{88F360B7-D917-4A8D-A3FB-BB12A3D5124A}.Debug.Build.0 = Debug|.NET
 		{88F360B7-D917-4A8D-A3FB-BB12A3D5124A}.Release.ActiveCfg = Release|.NET
 		{88F360B7-D917-4A8D-A3FB-BB12A3D5124A}.Release.Build.0 = Release|.NET
+		{A9BC618E-7E40-4D66-9BD5-837728424BEE}.Debug.ActiveCfg = Debug|.NET
+		{A9BC618E-7E40-4D66-9BD5-837728424BEE}.Debug.Build.0 = Debug|.NET
+		{A9BC618E-7E40-4D66-9BD5-837728424BEE}.Release.ActiveCfg = Release|.NET
+		{A9BC618E-7E40-4D66-9BD5-837728424BEE}.Release.Build.0 = Release|.NET
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		XCSharpSolutionEnabled = False
 		XCSharpProjectsDisabled = 
+		XCSharpSolutionEnabled = False
 	EndGlobalSection
 	GlobalSection(ExtensibilityAddIns) = postSolution
 	EndGlobalSection
