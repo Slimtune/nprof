@@ -868,7 +868,6 @@ namespace NProf.GUI
 
 		private void UpdateMenuItems(object sender, System.EventArgs e)
 		{
-			System.Diagnostics.Trace.WriteLine("here");
 			bool bCanRunOrEdit = _pt.GetSelectedProject() != null 
 				&& _pt.GetSelectedProject().ProjectType != ProjectType.VSNet;
 			Run run = _pt.GetSelectedRun();
