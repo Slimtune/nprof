@@ -1,4 +1,4 @@
-set VERSION=0.8-alpha
+set VERSION=0.8b-alpha
 set CONFIGURATION=release
 
 if "%1"=="upload" (
@@ -6,3 +6,5 @@ if "%1"=="upload" (
 ) else (
 	build\NAnt\NAnt -f:build\nprof.build -D:build.version=%VERSION% -D:build.configuration=%CONFIGURATION% package
 )
+
+if errorlevel 1 pause
