@@ -123,9 +123,9 @@ namespace NProf.Glue.Profiler
 
 			_p = new Process();
 			_p.StartInfo = new ProcessStartInfo( strApplication, strArguments );
-			_p.StartInfo.EnvironmentVariables.Add( "COR_ENABLE_PROFILING", "0x1" );
-			_p.StartInfo.EnvironmentVariables.Add( "COR_PROFILER", PROFILER_GUID );
-			_p.StartInfo.EnvironmentVariables.Add( "NPROF_PROFILING_SOCKET", _pss.Port.ToString() );
+			_p.StartInfo.EnvironmentVariables[ "COR_ENABLE_PROFILING" ] = "0x1";
+			_p.StartInfo.EnvironmentVariables[ "COR_PROFILER" ] = PROFILER_GUID;
+			_p.StartInfo.EnvironmentVariables[ "NPROF_PROFILING_SOCKET" ] = _pss.Port.ToString();
 			_p.StartInfo.UseShellExecute = false;
 			_p.StartInfo.Arguments = strArguments;
 			_p.StartInfo.WorkingDirectory = strWorkingDirectory;
