@@ -84,11 +84,24 @@ HRESULT ProfilerHelper::GetFunctionProperties(
 	    //
 		// Get the classID 
 		//
-	    hr = _pPrfInfo->GetFunctionInfo( functionID,
-									    &classID,
-                      &moduleID,
-                      &moduleToken );
-	    if ( SUCCEEDED( hr ) )
+		try
+		{
+			hr = _pPrfInfo->GetFunctionInfo( functionID,
+											&classID,
+						&moduleID,
+						&moduleToken );
+		}
+		catch ( ... )
+		{
+			hr = E_FAIL;
+		}
+
+	    if ( FAILED( hr ) )
+		{
+			hr = S_OK;
+			swprintf( funName, L"FAILED" );	
+		}
+		else
 		{
 		    //
 			// Get the MetadataImport interface and the metadata token 
@@ -230,7 +243,7 @@ HRESULT ProfilerHelper::GetFunctionProperties(
 
 				pMDImport->Release();
 			} 		
-		} 
+		}
 	}
 	//
 	// This corresponds to an unmanaged frame

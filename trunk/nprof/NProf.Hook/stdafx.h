@@ -54,6 +54,7 @@ using namespace ATL;
 #include <utility>
 #include <memory>
 #include <sstream>
+#include <fstream>
 using namespace std;
 
 // COR includes

@@ -34,6 +34,9 @@ public:
   void SendCalleeFunctionData( FunctionID fid, int nCalls, UINT64 llCycleCount, UINT64 llRecursiveCycleCount );
   void SendEndFunctionData();
   void SendEndCalleeFunctionData();
+  void HandleError( const char* szCaller, int nError );
+  void HandleWrongSentLength( const char* szCaller, int nExpected, int nSent );
+  void HandleWrongRecvLength( const char* szCaller, int nExpected, int nSent );
   int ReadByte( BYTE& b );
 
 private:
@@ -48,4 +51,5 @@ private:
 
 private:
   SOCKET _s;
+  const char* _szOperation;
 };
