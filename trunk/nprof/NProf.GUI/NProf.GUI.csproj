@@ -111,14 +111,14 @@
                     HintPath = "..\Libraries\Genghis\Genghis.dll"
                 />
                 <Reference
-                    Name = "ExtendedListViews"
-                    AssemblyName = "ExtendedListViews"
-                    HintPath = "..\Libraries\ExtendedListViews\ExtendedListViews.dll"
-                />
-                <Reference
                     Name = "NProf.Utilities"
                     Project = "{A9BC618E-7E40-4D66-9BD5-837728424BEE}"
                     Package = "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"
+                />
+                <Reference
+                    Name = "ExtendedListViews"
+                    AssemblyName = "ExtendedListViews"
+                    HintPath = "..\Libraries\ExtendedListViews\ExtendedListViews.dll"
                 />
             </References>
         </Build>
@@ -215,6 +215,10 @@
                 />
                 <File
                     RelPath = "Resources\go.bmp"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
+                    RelPath = "Resources\GPL.txt"
                     BuildAction = "EmbeddedResource"
                 />
                 <File
