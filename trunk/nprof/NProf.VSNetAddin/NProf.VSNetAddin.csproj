@@ -109,11 +109,6 @@
                     AssemblyName = "System.Windows.Forms"
                     HintPath = "..\..\..\..\WINNT2\Microsoft.NET\Framework\v1.0.3705\System.Windows.Forms.dll"
                 />
-                <Reference
-                    Name = "WBSVCLib"
-                    AssemblyName = "WBSVCLib"
-                    HintPath = "WBSVCLib.dll"
-                />
             </References>
         </Build>
         <Files>
