@@ -74,7 +74,7 @@ namespace NProf.Glue.Profiler.Core
 		private string ReadLengthEncodedASCIIString( BinaryReader br )
 		{
 			int nLength = br.ReadInt32();
-			if ( nLength > 1000 )
+			if ( nLength > 2000 )
 			{
 				byte[] abNextBytes = new byte[ 8 ];
 				br.Read( abNextBytes, 0, 8 );
