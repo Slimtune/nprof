@@ -838,6 +838,8 @@ namespace NProf.GUI
 			if ( project == null )
 				return true;
 
+			MessageBox.Show( this, "NOTE: You might not be able to load the data you're saving.  Please keep this in mind.", "Important Note", MessageBoxButtons.OK, MessageBoxIcon.Warning );
+
 			string filename = SerializationHandler.GetFilename( project );
 
 			if( forceSaveDialog || filename == string.Empty )

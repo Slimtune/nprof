@@ -151,9 +151,9 @@ namespace NProf.GUI
 			// 
 			// panel3
 			// 
+			this.panel3.Controls.Add(this._lvFunctionInfo);
 			this.panel3.Controls.Add(this.splitter2);
 			this.panel3.Controls.Add(this._tcCalls);
-			this.panel3.Controls.Add(this._lvFunctionInfo);
 			this.panel3.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.panel3.Location = new System.Drawing.Point(203, 24);
 			this.panel3.Name = "panel3";
@@ -351,7 +351,7 @@ namespace NProf.GUI
 			this._lvFunctionInfo.Location = new System.Drawing.Point(0, 0);
 			this._lvFunctionInfo.MultipleColumnSort = true;
 			this._lvFunctionInfo.Name = "_lvFunctionInfo";
-			this._lvFunctionInfo.Size = new System.Drawing.Size(693, 544);
+			this._lvFunctionInfo.Size = new System.Drawing.Size(693, 365);
 			this._lvFunctionInfo.TabIndex = 24;
 			this._lvFunctionInfo.SelectedItemsChanged += new System.EventHandler(this._lvFunctionInfo_SelectedItemsChanged);
 			// 

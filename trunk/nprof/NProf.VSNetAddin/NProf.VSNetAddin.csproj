@@ -80,24 +80,9 @@
                     HintPath = "..\..\..\..\WINNT2\Microsoft.NET\Framework\v1.0.3705\System.XML.dll"
                 />
                 <Reference
-                    Name = "envdte"
-                    AssemblyName = "EnvDTE"
-                    HintPath = "..\..\..\..\WINNT2\Microsoft.NET\Framework\v1.0.3705\envdte.dll"
-                />
-                <Reference
-                    Name = "extensibility"
-                    AssemblyName = "Extensibility"
-                    HintPath = "..\..\..\..\Program Files\Microsoft Visual Studio .NET\Common7\IDE\PublicAssemblies\extensibility.dll"
-                />
-                <Reference
                     Name = "NProf.Glue"
                     Project = "{0BBA8E95-3D0F-4366-8418-0A8947C8DBEF}"
                     Package = "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"
-                />
-                <Reference
-                    Name = "office"
-                    AssemblyName = "Office"
-                    HintPath = "..\..\..\..\WINNT2\Microsoft.NET\Framework\v1.0.3705\office.dll"
                 />
                 <Reference
                     Name = "NProf.GUI"
@@ -108,6 +93,21 @@
                     Name = "System.Windows.Forms"
                     AssemblyName = "System.Windows.Forms"
                     HintPath = "..\..\..\..\WINNT2\Microsoft.NET\Framework\v1.0.3705\System.Windows.Forms.dll"
+                />
+                <Reference
+                    Name = "envdte"
+                    AssemblyName = "envdte"
+                    HintPath = "..\Build\VS.NET 2002\envdte.dll"
+                />
+                <Reference
+                    Name = "extensibility"
+                    AssemblyName = "extensibility"
+                    HintPath = "..\Build\VS.NET 2002\extensibility.dll"
+                />
+                <Reference
+                    Name = "office"
+                    AssemblyName = "office"
+                    HintPath = "..\Build\VS.NET 2002\office.dll"
                 />
             </References>
         </Build>

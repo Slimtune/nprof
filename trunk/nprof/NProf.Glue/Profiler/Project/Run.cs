@@ -62,11 +62,13 @@ namespace NProf.Glue.Profiler.Project
 		public ProjectInfo Project
 		{
 			get { return _pi; }
+			set { _pi = value; }
 		}
 
 		public DateTime StartTime
 		{
 			get { return _dtStart; }
+			set { _dtStart = value; }
 		}
 
 		public DateTime EndTime
