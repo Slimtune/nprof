@@ -151,7 +151,7 @@ namespace NProf.GUI
 			}
 
 			_pic.ProjectAdded += new ProjectInfoCollection.ProjectEventHandler( OnProjectAdded );
-			_pic.ProjectRemoved += new ProjectInfoCollection.ProjectEventHandler( OnProjectAdded );
+			_pic.ProjectRemoved += new ProjectInfoCollection.ProjectEventHandler( OnProjectRemoved );
 		}
 
 		private void AddProjectNode( ProjectInfo pi )
@@ -296,7 +296,7 @@ namespace NProf.GUI
 			string[] files = ( string[] )e.Data.GetData( DataFormats.FileDrop );
 
 			if( ExecutablesDropped != null )
-				ExecutablesDropped( files );
+				ExecutablesDropped.BeginInvoke( files, null, null );
 		}
 
 		public event ProjectDoubleClickedHandler ProjectDoubleClicked;
