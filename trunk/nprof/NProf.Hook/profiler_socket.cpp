@@ -220,7 +220,6 @@ int ProfilerSocket::ReadByte( BYTE& b )
   return result;
 }
 
-
 ProfilerSocket::~ProfilerSocket(void)
 {
   closesocket( _s );

@@ -28,6 +28,7 @@ Profiler::Profiler( ICorProfilerInfo* pPrfInfo )
 Profiler::~Profiler()
 {
 }
+
 /** No descriptions */
 void Profiler::Enter( FunctionID fid )
 {
