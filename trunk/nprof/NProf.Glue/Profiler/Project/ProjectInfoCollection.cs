@@ -1,17 +1,31 @@
 using System;
 using System.Collections;
+using System.ComponentModel;
 
 namespace NProf.Glue.Profiler.Project
 {
 	/// <summary>
 	/// Summary description for ProjectInfoCollection.
 	/// </summary>
-	public class ProjectInfoCollection : IEnumerable
+	public class ProjectInfoCollection : IEnumerable, IListSource
 	{
 		public ProjectInfoCollection()
 		{
 			_nNewProjectIndex = 0;
 			_alItems = new ArrayList();
+		}
+
+		IList IListSource.GetList()
+		{
+			return _alItems;
+		}
+
+		bool IListSource.ContainsListCollection
+		{
+			get
+			{
+				return false;
+			}
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
