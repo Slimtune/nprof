@@ -253,6 +253,7 @@ namespace NProf.GUI
 																		  this.panel2});
 			this.Name = "ProfilerForm";
 			this.Text = "nprof GUI - Alpha v0.2";
+			this.Layout += new System.Windows.Forms.LayoutEventHandler(this.ProfilerForm_Layout);
 			this.Leave += new System.EventHandler(this.ProfilerForm_Leave);
 			this.Deactivate += new System.EventHandler(this.ProfilerForm_Deactivate);
 			this.panel1.ResumeLayout(false);
@@ -303,6 +304,8 @@ namespace NProf.GUI
 
 		private void OnUIThreadProfileComplete( ThreadInfoCollection tic )
 		{
+			CheckRemoveBlankTab();
+
 			TabPage tp = new TabPage( "Profiler [" + DateTime.Now + "]" );
 			_tcProfilers.TabPages.Add( tp );
 			ProfilerControl pc = new ProfilerControl();
@@ -347,6 +350,29 @@ namespace NProf.GUI
 			}
 		}
 
+		private void CheckAddBlankTab()
+		{
+			if ( _tcProfilers.TabPages.Count == 0 )
+			{
+				TabPage tp = new TabPage( "No profiler runs loaded" );
+				_tcProfilers.TabPages.Add( tp );
+				NoProfilerRunsLoaded np = new NoProfilerRunsLoaded();
+				tp.Controls.Add( np );
+				np.Dock = DockStyle.Fill;
+			}
+		}
+
+		private void CheckRemoveBlankTab()
+		{
+			if ( IsShowingBlankTab() )
+				_tcProfilers.TabPages.Clear();
+		}
+
+		private bool IsShowingBlankTab()
+		{
+			return ( _tcProfilers.TabPages[ 0 ].Text == "No profiler runs loaded" );
+		}
+
 		private void ProfilerForm_Leave(object sender, System.EventArgs e)
 		{
 		}
@@ -357,7 +383,16 @@ namespace NProf.GUI
 
 		private void menuItem1_Click(object sender, System.EventArgs e)
 		{
+			if ( IsShowingBlankTab() )
+				return;
+
 			_tcProfilers.TabPages.Remove( _tcProfilers.SelectedTab );
+			CheckAddBlankTab();
+		}
+
+		private void ProfilerForm_Layout(object sender, System.Windows.Forms.LayoutEventArgs e)
+		{
+			CheckAddBlankTab();
 		}
 	}
 }

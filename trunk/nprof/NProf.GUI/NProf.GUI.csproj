@@ -106,6 +106,16 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "NoProfilerRunsLoaded.cs"
+                    SubType = "UserControl"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "NoProfilerRunsLoaded.resx"
+                    DependentUpon = "NoProfilerRunsLoaded.cs"
+                    BuildAction = "EmbeddedResource"
+                />
+                <File
                     RelPath = "ProfilerControl.cs"
                     SubType = "UserControl"
                     BuildAction = "Compile"
