@@ -100,7 +100,7 @@ namespace UtilityLibrary.WinControls
 			// If this item has the focus draw the higlighting rectangle			
 			if (itemHasFocus)
 			{
-				using ( Brush brush = new SolidBrush(ColorUtil.VSNetSelectionColor))
+				using ( Brush brush = new SolidBrush(SystemColors.Highlight))
 				{
 					g.FillRectangle(brush, rect.Left, rect.Top, rect.Width-1, rect.Height-1);
 					g.DrawRectangle(SystemPens.Highlight, rect.Left, rect.Top, rect.Width-1, rect.Height-1);
@@ -110,8 +110,10 @@ namespace UtilityLibrary.WinControls
 			// Draw Text
 			string itemText = GetItemText(hNode);
 			Size textSize = TextUtil.GetTextSize(g, itemText, Font);
-			Point pos = new Point(rect.Left, rect.Top + (rect.Height - textSize.Height)/2);
-			g.DrawString(itemText, Font, SystemBrushes.ControlText, pos);
+			Point pos = new Point(rect.Left + 2, rect.Top + (rect.Height - textSize.Height)/2);
+			StringFormat sf = StringFormat.GenericTypographic;
+			sf.Trimming = StringTrimming.EllipsisCharacter;
+			g.DrawString(itemText, Font, itemHasFocus ? SystemBrushes.HighlightText : SystemBrushes.ControlText, pos, sf);
                         					            			
 			// Put structure back in the message
 			Marshal.StructureToPtr(tvcd, m.LParam, true);

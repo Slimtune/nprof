@@ -87,11 +87,6 @@
                     BuildAction = "Compile"
                 />
                 <File
-                    RelPath = "Profiler\ProfilerOptions.cs"
-                    SubType = "Code"
-                    BuildAction = "Compile"
-                />
-                <File
                     RelPath = "Profiler\Core\CorEventDispatcher.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
@@ -133,6 +128,31 @@
                 />
                 <File
                     RelPath = "Profiler\Info\ThreadInfoCollection.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Profiler\Project\Options.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Profiler\Project\ProjectInfo.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Profiler\Project\ProjectInfoCollection.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Profiler\Project\Run.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Profiler\Project\RunCollection.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

@@ -1,13 +1,13 @@
 using System;
 
-namespace NProf.Glue.Profiler
+namespace NProf.Glue.Profiler.Project
 {
 	/// <summary>
-	/// Summary description for ProfilerOptions.
+	/// Summary description for Options.
 	/// </summary>
-	public class ProfilerOptions
+	public class Options
 	{
-		public ProfilerOptions()
+		public Options()
 		{
 			_bDebug = false;
 		}

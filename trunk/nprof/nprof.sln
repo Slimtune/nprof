@@ -74,6 +74,8 @@ Global
 		{88F360B7-D917-4A8D-A3FB-BB12A3D5124A}.Release.Build.0 = Release|.NET
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
+		XCSharpSolutionEnabled = False
+		XCSharpProjectsDisabled = 
 	EndGlobalSection
 	GlobalSection(ExtensibilityAddIns) = postSolution
 	EndGlobalSection

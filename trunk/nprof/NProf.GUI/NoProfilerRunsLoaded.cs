@@ -58,7 +58,7 @@ namespace NProf.GUI
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(504, 368);
 			this.label1.TabIndex = 0;
-			this.label1.Text = "No profiler runs are currently loaded.";
+			this.label1.Text = "No profiler projects are currently loaded.\nUse the file menu to create a new or open an existing profiler project.";
 			this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			// 
 			// NoProfilerRunsLoaded

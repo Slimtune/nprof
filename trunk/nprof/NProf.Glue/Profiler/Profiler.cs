@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Collections;
 using NProf.Glue.Profiler.Core;
 using NProf.Glue.Profiler.Info;
+using NProf.Glue.Profiler.Project;
 using Microsoft.Win32;
 using System.Runtime.InteropServices;
 
@@ -36,14 +37,24 @@ namespace NProf.Glue.Profiler
 			return true;
 		}
 
+		public bool Start( ProjectInfo p, Run run, ProcessCompletedHandler pch )
+		{
+			_dtStart = DateTime.Now;
+			_pch = pch;
+			_run = run;
+			_run.State = Run.RunState.Running;
+
+			return Start( p.ApplicationName, p.Arguments, p.WorkingDirectory, p.Options );
+		}
+
 		public bool Start( string strApplication, string strArguments, string strWorkingDirectory )
 		{
-			ProfilerOptions po = new ProfilerOptions();
+			Options po = new Options();
 
 			return Start( strApplication, strArguments, strWorkingDirectory, po );
 		}
 
-		public bool EnableAndStart( ProfilerOptions po )
+		public bool EnableAndStart( Project.Options po )
 		{
 			_pss = new ProfilerSocketServer( po );
 			_pss.Start();
@@ -62,7 +73,7 @@ namespace NProf.Glue.Profiler
 			SetEnvironmentVariable( "COR_ENABLE_PROFILING", "0x0" );
 		}
 
-		public bool Start( string strApplication, string strArguments, string strWorkingDirectory, ProfilerOptions po )
+		public bool Start( string strApplication, string strArguments, string strWorkingDirectory, Project.Options po )
 		{
 			_pss = new ProfilerSocketServer( po );
 			_pss.Start();
@@ -86,14 +97,21 @@ namespace NProf.Glue.Profiler
 
 		public void Stop()
 		{
-			_pss.Stop();
+			if ( _pss != null )
+				_pss.Stop();
 		}
 
 		private void OnProcessExited( object oSender, EventArgs ea )
 		{
+			_dtEnd = DateTime.Now;
 			_pss.Stop();
-			if ( ProcessCompleted != null )
-				ProcessCompleted( _pss.ThreadInfoCollection );
+//			if ( ProcessCompleted != null )
+//				ProcessCompleted( _pss.ThreadInfoCollection );
+
+			_run.EndTime = _dtEnd;
+			_run.ThreadInfoCollection = _pss.ThreadInfoCollection;
+
+			_pch( _run );
 		}
 
 		private void OnError( Exception e )
@@ -112,10 +130,15 @@ namespace NProf.Glue.Profiler
 			return ( string )_htFunctionMap[ nFunctionID ];
 		}
 
-		public delegate void ProcessCompletedHandler( ThreadInfoCollection tic );
+		public delegate void ProcessCompletedHandler( Run run );
 		public event ProcessCompletedHandler ProcessCompleted;
 		public delegate void ErrorHandler( Exception e );
 		public event ErrorHandler Error;
+
+		private ProcessCompletedHandler _pch;
+		private DateTime _dtStart;
+		private DateTime _dtEnd;
+		private Run _run;
 
 		[DllImport("Kernel32.dll", CharSet = CharSet.Auto )]
 		private static extern bool SetEnvironmentVariable( string strVariable, string strNewValue );

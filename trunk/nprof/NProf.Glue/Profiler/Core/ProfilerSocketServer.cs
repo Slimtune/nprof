@@ -13,7 +13,7 @@ namespace NProf.Glue.Profiler.Core
 	/// </summary>
 	public class ProfilerSocketServer
 	{
-		public ProfilerSocketServer( ProfilerOptions po )
+		public ProfilerSocketServer( Project.Options po )
 		{
 			_fsm = new FunctionSignatureMap();
 			_tic = new ThreadInfoCollection();
@@ -75,7 +75,16 @@ namespace NProf.Glue.Profiler.Core
 		{
 			int nLength = br.ReadInt32();
 			if ( nLength > 1000 )
-				throw new Exception( "Length too big!" );
+			{
+				byte[] abNextBytes = new byte[ 8 ];
+				br.Read( abNextBytes, 0, 8 );
+				string strError = "Length was abnormally large (" + nLength.ToString( "x" ) + ").  Next bytes were ";
+				foreach ( byte b in abNextBytes )
+					strError += b.ToString( "x" ) + " (" + ( char )b + ") ";
+
+				throw new InvalidOperationException( strError );
+			}
+
 			byte[] abString = new byte[ nLength ];
 			br.Read( abString, 0, nLength );
 			return System.Text.ASCIIEncoding.ASCII.GetString( abString, 0, nLength );
@@ -233,6 +242,6 @@ namespace NProf.Glue.Profiler.Core
 		private ThreadInfoCollection	_tic;
 		private Thread					_t;
 		private Socket					_s;
-		private ProfilerOptions			_po;
+		private Project.Options			_po;
 	}
 }

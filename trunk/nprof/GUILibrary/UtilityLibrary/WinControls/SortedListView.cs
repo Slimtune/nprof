@@ -274,7 +274,7 @@ namespace UtilityLibrary.WinControls
 					subItemOffset = 3;
 				}
 						
-				g.FillRectangle(new SolidBrush(ColorUtil.VSNetSelectionColor), rc.Left+1, rc.Top+1, rc.Width-2, rc.Height-subItemOffset);
+				g.FillRectangle(new SolidBrush(SystemColors.Highlight), rc.Left+1, rc.Top+1, rc.Width-2, rc.Height-subItemOffset);
 				
 				// Draw Border
 				if ( col == 0 )
@@ -339,7 +339,13 @@ namespace UtilityLibrary.WinControls
 			}
 
 			Rectangle drawRect = new Rectangle(pos.X+2, pos.Y, rc.Width-gap-ellipsingTringgering, rc.Height);
-			TextUtil.DrawText(g, text, Font, drawRect);
+			using ( Brush b = new SolidBrush(IsRowSelected(row) ? SystemColors.HighlightText : SystemColors.WindowText) )
+			{
+				StringFormat sf = StringFormat.GenericTypographic;
+				sf.Trimming = StringTrimming.EllipsisCharacter;
+				g.DrawString( text, Font, b, drawRect, sf );
+			}
+			//TextUtil.DrawText(g, text, Font, drawRect);
 			g.Dispose();
 			
 			// Put structure back in the message
@@ -451,7 +457,10 @@ namespace UtilityLibrary.WinControls
 			// the DrawText API adds those blank spaces in between 
 			int ellipsingTringgering = 8;
 			Rectangle drawRect = new Rectangle(pos.X+2, pos.Y, rc.Width-gap-ellipsingTringgering, rc.Height);
-			TextUtil.DrawText(g, text, Font, drawRect);
+			StringFormat sf = StringFormat.GenericTypographic;
+			sf.Trimming = StringTrimming.EllipsisCharacter;
+			g.DrawString( text, Font, SystemBrushes.ControlText, drawRect, sf);
+			//TextUtil.DrawText(g, text, Font, drawRect);
 			g.Dispose();
           				
 			m.Result = 	(IntPtr)CustomDrawReturnFlags.CDRF_SKIPDEFAULT;
@@ -480,10 +489,10 @@ namespace UtilityLibrary.WinControls
 			int xTop = rc.Left + rc.Width/2;
 			int yTop = (rc.Height - 6)/2;
             
-			int xLeft = xTop - 6;
+			int xLeft = xTop - 4;
 			int yLeft = yTop + 6;
             
-			int xRight = xTop + 6;
+			int xRight = xTop + 4;
 			int yRight = yTop + 6;
 
 			g.DrawLine(new Pen(SystemColors.ControlDarkDark), xLeft, yLeft, xTop, yTop);
@@ -496,10 +505,10 @@ namespace UtilityLibrary.WinControls
 		{
 			int xBottom = rc.Left + rc.Width/2;
 			            
-			int xLeft = xBottom - 6;
+			int xLeft = xBottom - 4;
 			int yLeft = (rc.Height - 6)/2;;
             
-			int xRight = xBottom + 6;
+			int xRight = xBottom + 4;
 			int yRight = (rc.Height - 6)/2;
 
 			int yBottom = yRight + 6;
