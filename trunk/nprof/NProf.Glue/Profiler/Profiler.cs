@@ -115,6 +115,10 @@ namespace NProf.Glue.Profiler
 
 		public void Stop()
 		{
+			// Is there anything to stop?
+			if ( _run == null )
+				return;
+
 			// Stop the profiler socket server if profilee hasn't connected
 			if ( _run.State == Run.RunState.Initializing )
 			{
@@ -163,6 +167,7 @@ namespace NProf.Glue.Profiler
 			_run.ThreadInfoCollection = _pss.ThreadInfoCollection;
 
 			_pch( _run );
+			_run = null;
 		}
 
 		private void OnError( Exception e )

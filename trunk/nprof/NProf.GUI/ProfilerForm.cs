@@ -102,7 +102,6 @@ namespace NProf.GUI
 		/// </summary>
 		private void InitializeComponent()
 		{
-			System.Resources.ResourceManager resources = new System.Resources.ResourceManager(typeof(ProfilerForm));
 			this.menuItem1 = new System.Windows.Forms.MenuItem();
 			this._menuMain = new Crownwood.Magic.Menus.MenuControl();
 			this._menuFile = new Crownwood.Magic.Menus.MenuCommand();
@@ -116,6 +115,7 @@ namespace NProf.GUI
 			this._menuEdit = new Crownwood.Magic.Menus.MenuCommand();
 			this._menuProject = new Crownwood.Magic.Menus.MenuCommand();
 			this._cmdProjectRun = new Crownwood.Magic.Menus.MenuCommand();
+			this._cmdProjectStop = new Crownwood.Magic.Menus.MenuCommand();
 			this._cmdProjectOptions = new Crownwood.Magic.Menus.MenuCommand();
 			this.menuCommand5 = new Crownwood.Magic.Menus.MenuCommand();
 			this._cmdProjectRunViewMessages = new Crownwood.Magic.Menus.MenuCommand();
@@ -132,7 +132,6 @@ namespace NProf.GUI
 			this.menuCommand3 = new Crownwood.Magic.Menus.MenuCommand();
 			this.menuCommand4 = new Crownwood.Magic.Menus.MenuCommand();
 			this.menuCommand6 = new Crownwood.Magic.Menus.MenuCommand();
-			this._cmdProjectStop = new Crownwood.Magic.Menus.MenuCommand();
 			((System.ComponentModel.ISupportInitialize)(this._sbpMessage)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -242,6 +241,11 @@ namespace NProf.GUI
 			this._cmdProjectRun.Click += new System.EventHandler(this._cmdProjectRun_Click);
 			this._cmdProjectRun.Update += new System.EventHandler(this.UpdateProjectItems);
 			// 
+			// _cmdProjectStop
+			// 
+			this._cmdProjectStop.Description = "Stop the running project";
+			this._cmdProjectStop.Text = "Stop project run";
+			// 
 			// _cmdProjectOptions
 			// 
 			this._cmdProjectOptions.Description = "Modify the options for this project";
@@ -341,11 +345,6 @@ namespace NProf.GUI
 			// 
 			this.menuCommand6.Description = "MenuItem";
 			// 
-			// _cmdProjectStop
-			// 
-			this._cmdProjectStop.Description = "Stop the running project";
-			this._cmdProjectStop.Text = "Stop project run";
-			// 
 			// ProfilerForm
 			// 
 			this.AllowDrop = true;
@@ -354,7 +353,6 @@ namespace NProf.GUI
 			this.Controls.Add(this._tcProfilers);
 			this.Controls.Add(this._menuMain);
 			this.Controls.Add(this._sbStatusBar);
-			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Name = "ProfilerForm";
 			this.Text = "nprof Profiling Application - Alpha v0.6";
 			this.Closing += new System.ComponentModel.CancelEventHandler(this.ProfilerForm_Closing);
@@ -553,6 +551,8 @@ namespace NProf.GUI
 
 		private void ProfilerForm_Load(object sender, System.EventArgs e)
 		{
+			this.Icon = new Icon( this.GetType().Assembly.GetManifestResourceStream( "NProf.GUI.Resources.app-icon.ico" ) );
+
 			_pic = new ProjectInfoCollection();
 			_pt = new ProjectTree();
 			_pt.Projects = _pic;

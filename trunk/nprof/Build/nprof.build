@@ -47,6 +47,11 @@
 		<copy todir="${package.directory}/nprof" flatten="true">
 			<fileset>
 				<includes name="NProf.Application/bin/${build.configuration}/*.exe" />
+			</fileset>
+		</copy>
+
+		<copy todir="${package.directory}/nprof/TestProfilee" flatten="true">
+			<fileset>
 				<includes name="TestProfilee/bin/${build.configuration}/*.exe" />
 			</fileset>
 		</copy>
