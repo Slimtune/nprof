@@ -1,8 +1,11 @@
-1.0
+0.9
  - Load/save projects
    - Load/save project info
    - Load/save project run data
 
+ - Merge back/forward changes from mailinglist
+
+1.0
  - New version - Update notification
 
  - Copy profiler run data to clipboard
@@ -21,9 +24,13 @@
  - Have hook process send raw data and not do any translations itself and have
    the glue process do this work instead
 
- - Allow interactive filtering ("quickfilter") of signatures in function list
+ - Show time in method as special Callee
 
 Beyond 1.0
+ - Faster, less detailed profiler mode
+
+ - Slower, more detailed profiler mode
+
  - New project type of class library
    - Reflect the assembly and allow user to choose starting method
    - Provide means for user to enter method arguments
