@@ -25,23 +25,23 @@ namespace NProf.GUI
 		private System.Windows.Forms.Panel panel1;
 		private System.Windows.Forms.Splitter splitter1;
 		private System.Windows.Forms.TreeView _tvNamespaceInfo;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader colFunctionID;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader colFunctionSignature;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader colFunctionCalls;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader colFunctionTotal;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader colFunctionMethod;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader colFunctionChildren;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader colFunctionSuspended;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader colCalleeID;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader colCalleeSignature;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader colCalleeCalls;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader colCalleeTotal;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader colCalleeParent;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader colCallerID;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader colCallerSignature;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader colCallerCalls;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader colCallerTotal;
-		private DotNetLib.Windows.Forms.ToggleColumnHeader colCallerParent;
+		private DotNetLib.Windows.Forms.ContainerListViewColumnHeader colFunctionID;
+		private DotNetLib.Windows.Forms.ContainerListViewColumnHeader colFunctionSignature;
+		private DotNetLib.Windows.Forms.ContainerListViewColumnHeader colFunctionCalls;
+		private DotNetLib.Windows.Forms.ContainerListViewColumnHeader colFunctionTotal;
+		private DotNetLib.Windows.Forms.ContainerListViewColumnHeader colFunctionMethod;
+		private DotNetLib.Windows.Forms.ContainerListViewColumnHeader colFunctionChildren;
+		private DotNetLib.Windows.Forms.ContainerListViewColumnHeader colFunctionSuspended;
+		private DotNetLib.Windows.Forms.ContainerListViewColumnHeader colCalleeID;
+		private DotNetLib.Windows.Forms.ContainerListViewColumnHeader colCalleeSignature;
+		private DotNetLib.Windows.Forms.ContainerListViewColumnHeader colCalleeCalls;
+		private DotNetLib.Windows.Forms.ContainerListViewColumnHeader colCalleeTotal;
+		private DotNetLib.Windows.Forms.ContainerListViewColumnHeader colCalleeParent;
+		private DotNetLib.Windows.Forms.ContainerListViewColumnHeader colCallerID;
+		private DotNetLib.Windows.Forms.ContainerListViewColumnHeader colCallerSignature;
+		private DotNetLib.Windows.Forms.ContainerListViewColumnHeader colCallerCalls;
+		private DotNetLib.Windows.Forms.ContainerListViewColumnHeader colCallerTotal;
+		private DotNetLib.Windows.Forms.ContainerListViewColumnHeader colCallerParent;
 		private System.Windows.Forms.Timer _tmrFilterThrottle;
 		private System.Windows.Forms.Panel panel2;
 		private System.Windows.Forms.Label _lblFilterSignatures;
@@ -95,29 +95,29 @@ namespace NProf.GUI
 			this.panel1 = new System.Windows.Forms.Panel();
 			this.panel3 = new System.Windows.Forms.Panel();
 			this._lvFunctionInfo = new DotNetLib.Windows.Forms.ContainerListView();
-			this.colFunctionID = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.colFunctionSignature = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.colFunctionCalls = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.colFunctionTotal = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.colFunctionMethod = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.colFunctionChildren = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.colFunctionSuspended = new DotNetLib.Windows.Forms.ToggleColumnHeader();
+			this.colFunctionID = new DotNetLib.Windows.Forms.ContainerListViewColumnHeader();
+			this.colFunctionSignature = new DotNetLib.Windows.Forms.ContainerListViewColumnHeader();
+			this.colFunctionCalls = new DotNetLib.Windows.Forms.ContainerListViewColumnHeader();
+			this.colFunctionTotal = new DotNetLib.Windows.Forms.ContainerListViewColumnHeader();
+			this.colFunctionMethod = new DotNetLib.Windows.Forms.ContainerListViewColumnHeader();
+			this.colFunctionChildren = new DotNetLib.Windows.Forms.ContainerListViewColumnHeader();
+			this.colFunctionSuspended = new DotNetLib.Windows.Forms.ContainerListViewColumnHeader();
 			this.splitter2 = new System.Windows.Forms.Splitter();
 			this._tcCalls = new System.Windows.Forms.TabControl();
 			this._tpCallees = new System.Windows.Forms.TabPage();
 			this._lvCalleesInfo = new DotNetLib.Windows.Forms.ContainerListView();
-			this.colCalleeID = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.colCalleeSignature = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.colCalleeCalls = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.colCalleeTotal = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.colCalleeParent = new DotNetLib.Windows.Forms.ToggleColumnHeader();
+			this.colCalleeID = new DotNetLib.Windows.Forms.ContainerListViewColumnHeader();
+			this.colCalleeSignature = new DotNetLib.Windows.Forms.ContainerListViewColumnHeader();
+			this.colCalleeCalls = new DotNetLib.Windows.Forms.ContainerListViewColumnHeader();
+			this.colCalleeTotal = new DotNetLib.Windows.Forms.ContainerListViewColumnHeader();
+			this.colCalleeParent = new DotNetLib.Windows.Forms.ContainerListViewColumnHeader();
 			this._tcCallers = new System.Windows.Forms.TabPage();
 			this._lvCallersInfo = new DotNetLib.Windows.Forms.ContainerListView();
-			this.colCallerID = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.colCallerSignature = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.colCallerCalls = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.colCallerTotal = new DotNetLib.Windows.Forms.ToggleColumnHeader();
-			this.colCallerParent = new DotNetLib.Windows.Forms.ToggleColumnHeader();
+			this.colCallerID = new DotNetLib.Windows.Forms.ContainerListViewColumnHeader();
+			this.colCallerSignature = new DotNetLib.Windows.Forms.ContainerListViewColumnHeader();
+			this.colCallerCalls = new DotNetLib.Windows.Forms.ContainerListViewColumnHeader();
+			this.colCallerTotal = new DotNetLib.Windows.Forms.ContainerListViewColumnHeader();
+			this.colCallerParent = new DotNetLib.Windows.Forms.ContainerListViewColumnHeader();
 			this.splitter1 = new System.Windows.Forms.Splitter();
 			this._tvNamespaceInfo = new System.Windows.Forms.TreeView();
 			this.panel2 = new System.Windows.Forms.Panel();
@@ -162,7 +162,7 @@ namespace NProf.GUI
 			this._lvFunctionInfo.AllowColumnReorder = true;
 			this._lvFunctionInfo.AllowMultiSelect = true;
 			this._lvFunctionInfo.CaptureFocusClick = false;
-			this._lvFunctionInfo.Columns.AddRange(new DotNetLib.Windows.Forms.ToggleColumnHeader[] {
+			this._lvFunctionInfo.Columns.AddRange(new DotNetLib.Windows.Forms.ContainerListViewColumnHeader[] {
 																																	this.colFunctionID,
 																																	this.colFunctionSignature,
 																																	this.colFunctionCalls,
@@ -184,7 +184,7 @@ namespace NProf.GUI
 			// 
 			// colFunctionID
 			// 
-			this.colFunctionID.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Integer;
+			this.colFunctionID.SortDataType = DotNetLib.Windows.Forms.SortDataType.Integer;
 			this.colFunctionID.Text = "ID";
 			this.colFunctionID.ToolTip = "ID Tool Tip";
 			this.colFunctionID.Width = 100;
@@ -192,7 +192,7 @@ namespace NProf.GUI
 			// colFunctionSignature
 			// 
 			this.colFunctionSignature.DisplayIndex = 1;
-			this.colFunctionSignature.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.String;
+			this.colFunctionSignature.SortDataType = DotNetLib.Windows.Forms.SortDataType.String;
 			this.colFunctionSignature.Text = "Signature";
 			this.colFunctionSignature.ToolTip = "Signature Tool Tip";
 			this.colFunctionSignature.Width = 350;
@@ -201,9 +201,9 @@ namespace NProf.GUI
 			// 
 			this.colFunctionCalls.DefaultSortOrder = System.Windows.Forms.SortOrder.Descending;
 			this.colFunctionCalls.DisplayIndex = 2;
-			this.colFunctionCalls.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
+			this.colFunctionCalls.SortDataType = DotNetLib.Windows.Forms.SortDataType.Double;
 			this.colFunctionCalls.Text = "# of Calls";
-			this.colFunctionCalls.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.colFunctionCalls.ContentAlign = System.Drawing.ContentAlignment.MiddleRight;
 			this.colFunctionCalls.ToolTip = "# of Calls Tool Tip";
 			this.colFunctionCalls.Width = 70;
 			// 
@@ -211,9 +211,9 @@ namespace NProf.GUI
 			// 
 			this.colFunctionTotal.DefaultSortOrder = System.Windows.Forms.SortOrder.Descending;
 			this.colFunctionTotal.DisplayIndex = 3;
-			this.colFunctionTotal.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
+			this.colFunctionTotal.SortDataType = DotNetLib.Windows.Forms.SortDataType.Double;
 			this.colFunctionTotal.Text = "% of Total";
-			this.colFunctionTotal.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.colFunctionTotal.ContentAlign = System.Drawing.ContentAlignment.MiddleRight;
 			this.colFunctionTotal.ToolTip = "% of Total Tool Tip";
 			this.colFunctionTotal.Width = 70;
 			// 
@@ -221,9 +221,9 @@ namespace NProf.GUI
 			// 
 			this.colFunctionMethod.DefaultSortOrder = System.Windows.Forms.SortOrder.Descending;
 			this.colFunctionMethod.DisplayIndex = 4;
-			this.colFunctionMethod.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
+			this.colFunctionMethod.SortDataType = DotNetLib.Windows.Forms.SortDataType.Double;
 			this.colFunctionMethod.Text = "% in\nMethod";
-			this.colFunctionMethod.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.colFunctionMethod.ContentAlign = System.Drawing.ContentAlignment.MiddleRight;
 			this.colFunctionMethod.ToolTip = "% in Method Tool Tip";
 			this.colFunctionMethod.Width = 70;
 			// 
@@ -231,9 +231,9 @@ namespace NProf.GUI
 			// 
 			this.colFunctionChildren.DefaultSortOrder = System.Windows.Forms.SortOrder.Descending;
 			this.colFunctionChildren.DisplayIndex = 5;
-			this.colFunctionChildren.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
+			this.colFunctionChildren.SortDataType = DotNetLib.Windows.Forms.SortDataType.Double;
 			this.colFunctionChildren.Text = "% in\nChildren";
-			this.colFunctionChildren.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.colFunctionChildren.ContentAlign = System.Drawing.ContentAlignment.MiddleRight;
 			this.colFunctionChildren.ToolTip = "% in Children Tool Tip";
 			this.colFunctionChildren.Width = 70;
 			// 
@@ -241,9 +241,9 @@ namespace NProf.GUI
 			// 
 			this.colFunctionSuspended.DefaultSortOrder = System.Windows.Forms.SortOrder.Descending;
 			this.colFunctionSuspended.DisplayIndex = 6;
-			this.colFunctionSuspended.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
+			this.colFunctionSuspended.SortDataType = DotNetLib.Windows.Forms.SortDataType.Double;
 			this.colFunctionSuspended.Text = "% Suspended";
-			this.colFunctionSuspended.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.colFunctionSuspended.ContentAlign = System.Drawing.ContentAlignment.MiddleRight;
 			this.colFunctionSuspended.ToolTip = "% Suspended Tool Tip";
 			this.colFunctionSuspended.Width = 70;
 			// 
@@ -280,7 +280,7 @@ namespace NProf.GUI
 			// 
 			this._lvCalleesInfo.AllowColumnReorder = true;
 			this._lvCalleesInfo.CaptureFocusClick = false;
-			this._lvCalleesInfo.Columns.AddRange(new DotNetLib.Windows.Forms.ToggleColumnHeader[] {
+			this._lvCalleesInfo.Columns.AddRange(new DotNetLib.Windows.Forms.ContainerListViewColumnHeader[] {
 																																  this.colCalleeID,
 																																  this.colCalleeSignature,
 																																  this.colCalleeCalls,
@@ -299,7 +299,7 @@ namespace NProf.GUI
 			// 
 			// colCalleeID
 			// 
-			this.colCalleeID.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Integer;
+			this.colCalleeID.SortDataType = DotNetLib.Windows.Forms.SortDataType.Integer;
 			this.colCalleeID.Text = "ID";
 			this.colCalleeID.ToolTip = "ID Tool Tip";
 			this.colCalleeID.Width = 100;
@@ -307,7 +307,7 @@ namespace NProf.GUI
 			// colCalleeSignature
 			// 
 			this.colCalleeSignature.DisplayIndex = 1;
-			this.colCalleeSignature.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.String;
+			this.colCalleeSignature.SortDataType = DotNetLib.Windows.Forms.SortDataType.String;
 			this.colCalleeSignature.Text = "Signature";
 			this.colCalleeSignature.ToolTip = "Signature Tool Tip";
 			this.colCalleeSignature.Width = 400;
@@ -316,9 +316,9 @@ namespace NProf.GUI
 			// 
 			this.colCalleeCalls.DefaultSortOrder = System.Windows.Forms.SortOrder.Descending;
 			this.colCalleeCalls.DisplayIndex = 2;
-			this.colCalleeCalls.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
+			this.colCalleeCalls.SortDataType = DotNetLib.Windows.Forms.SortDataType.Double;
 			this.colCalleeCalls.Text = "# of Calls";
-			this.colCalleeCalls.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.colCalleeCalls.ContentAlign = System.Drawing.ContentAlignment.MiddleRight;
 			this.colCalleeCalls.ToolTip = "# of Calls Tool Tip";
 			this.colCalleeCalls.Width = 70;
 			// 
@@ -326,9 +326,9 @@ namespace NProf.GUI
 			// 
 			this.colCalleeTotal.DefaultSortOrder = System.Windows.Forms.SortOrder.Descending;
 			this.colCalleeTotal.DisplayIndex = 3;
-			this.colCalleeTotal.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
+			this.colCalleeTotal.SortDataType = DotNetLib.Windows.Forms.SortDataType.Double;
 			this.colCalleeTotal.Text = "% of Total";
-			this.colCalleeTotal.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.colCalleeTotal.ContentAlign = System.Drawing.ContentAlignment.MiddleRight;
 			this.colCalleeTotal.ToolTip = "% of Total Tool Tip";
 			this.colCalleeTotal.Width = 70;
 			// 
@@ -336,9 +336,9 @@ namespace NProf.GUI
 			// 
 			this.colCalleeParent.DefaultSortOrder = System.Windows.Forms.SortOrder.Descending;
 			this.colCalleeParent.DisplayIndex = 4;
-			this.colCalleeParent.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
+			this.colCalleeParent.SortDataType = DotNetLib.Windows.Forms.SortDataType.Double;
 			this.colCalleeParent.Text = "% of Parent";
-			this.colCalleeParent.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.colCalleeParent.ContentAlign = System.Drawing.ContentAlignment.MiddleRight;
 			this.colCalleeParent.ToolTip = "% of Parent Tool Tip";
 			this.colCalleeParent.Width = 70;
 			// 
@@ -355,7 +355,7 @@ namespace NProf.GUI
 			// 
 			this._lvCallersInfo.AllowColumnReorder = true;
 			this._lvCallersInfo.CaptureFocusClick = false;
-			this._lvCallersInfo.Columns.AddRange(new DotNetLib.Windows.Forms.ToggleColumnHeader[] {
+			this._lvCallersInfo.Columns.AddRange(new DotNetLib.Windows.Forms.ContainerListViewColumnHeader[] {
 																																  this.colCallerID,
 																																  this.colCallerSignature,
 																																  this.colCallerCalls,
@@ -374,7 +374,7 @@ namespace NProf.GUI
 			// 
 			// colCallerID
 			// 
-			this.colCallerID.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Integer;
+			this.colCallerID.SortDataType = DotNetLib.Windows.Forms.SortDataType.Integer;
 			this.colCallerID.Text = "ID";
 			this.colCallerID.ToolTip = "ID Tool Tip";
 			this.colCallerID.Width = 100;
@@ -382,7 +382,7 @@ namespace NProf.GUI
 			// colCallerSignature
 			// 
 			this.colCallerSignature.DisplayIndex = 1;
-			this.colCallerSignature.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.String;
+			this.colCallerSignature.SortDataType = DotNetLib.Windows.Forms.SortDataType.String;
 			this.colCallerSignature.Text = "Signature";
 			this.colCallerSignature.ToolTip = "Signature Tool Tip";
 			this.colCallerSignature.Width = 400;
@@ -391,9 +391,9 @@ namespace NProf.GUI
 			// 
 			this.colCallerCalls.DefaultSortOrder = System.Windows.Forms.SortOrder.Descending;
 			this.colCallerCalls.DisplayIndex = 2;
-			this.colCallerCalls.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
+			this.colCallerCalls.SortDataType = DotNetLib.Windows.Forms.SortDataType.Double;
 			this.colCallerCalls.Text = "# of Calls";
-			this.colCallerCalls.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.colCallerCalls.ContentAlign = System.Drawing.ContentAlignment.MiddleRight;
 			this.colCallerCalls.ToolTip = "# of Calls Tool Tip";
 			this.colCallerCalls.Width = 70;
 			// 
@@ -401,9 +401,9 @@ namespace NProf.GUI
 			// 
 			this.colCallerTotal.DefaultSortOrder = System.Windows.Forms.SortOrder.Descending;
 			this.colCallerTotal.DisplayIndex = 3;
-			this.colCallerTotal.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
+			this.colCallerTotal.SortDataType = DotNetLib.Windows.Forms.SortDataType.Double;
 			this.colCallerTotal.Text = "% of Total";
-			this.colCallerTotal.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.colCallerTotal.ContentAlign = System.Drawing.ContentAlignment.MiddleRight;
 			this.colCallerTotal.ToolTip = "% of Total Tool Tip";
 			this.colCallerTotal.Width = 70;
 			// 
@@ -411,9 +411,9 @@ namespace NProf.GUI
 			// 
 			this.colCallerParent.DefaultSortOrder = System.Windows.Forms.SortOrder.Descending;
 			this.colCallerParent.DisplayIndex = 4;
-			this.colCallerParent.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
+			this.colCallerParent.SortDataType = DotNetLib.Windows.Forms.SortDataType.Double;
 			this.colCallerParent.Text = "% of Parent";
-			this.colCallerParent.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.colCallerParent.ContentAlign = System.Drawing.ContentAlignment.MiddleRight;
 			this.colCallerParent.ToolTip = "% of Parent Tool Tip";
 			this.colCallerParent.Width = 70;
 			// 
@@ -972,17 +972,17 @@ namespace NProf.GUI
 			bool isAscending = true;
 			for(int idx = 0; idx < listView.Columns.Count; ++idx)
 			{
-				ToggleColumnHeader hdr = listView.Columns[idx];
+				ContainerListViewColumnHeader hdr = listView.Columns[idx];
 				MenuCommand sortByItem = new MenuCommand(hdr.Text);
 
 				sortByItem.Description = string.Format("Sort By the '{1}' column from this grid", (hdr.Visible ? "Shows" : "Hides"), hdr.Text);
 				sortByItem.RadioCheck = true;
-				sortByItem.Checked = hdr.SortingOrder != SortOrder.None;
+				sortByItem.Checked = hdr.SortOrder != SortOrder.None;
 				sortByItem.Tag = new object[] { listView, idx };
 				//				sortByItem.Click += new EventHandler(sortByItem_Click);
 
 				if(sortByItem.Checked)
-					isAscending = hdr.SortingOrder == SortOrder.Ascending;
+					isAscending = hdr.SortOrder == SortOrder.Ascending;
 
 				sortBy.MenuCommands.Add(sortByItem);
 			}
@@ -1003,7 +1003,7 @@ namespace NProf.GUI
 			bool allShown = true;
 			for(int idx = 0; idx < listView.Columns.Count; ++idx)
 			{
-				ToggleColumnHeader hdr = listView.Columns[idx];
+				ContainerListViewColumnHeader hdr = listView.Columns[idx];
 				MenuCommand checkable = new MenuCommand(hdr.Text);
 
 				checkable.Description = string.Format("{0} the '{1}' column from this grid", (hdr.Visible ? "Shows" : "Hides"), hdr.Text);
@@ -1018,8 +1018,8 @@ namespace NProf.GUI
 			pop.MenuCommands.Add(new MenuCommand("Show &All")).Enabled = !allShown;
 
 			MenuCommand result = pop.TrackPopup(listView.PointToScreen(new Point(e.X, e.Y)));
-			if(result != null && result.Tag is ToggleColumnHeader)
-				(result.Tag as ToggleColumnHeader).Visible = !result.Checked;
+			if(result != null && result.Tag is ContainerListViewColumnHeader)
+				(result.Tag as ContainerListViewColumnHeader).Visible = !result.Checked;
 		}
 
 		//		private void sortOrder_Click(object sender, EventArgs e)
