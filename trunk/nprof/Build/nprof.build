@@ -13,11 +13,18 @@
 	</if>
 
 	<target name="build-hook">
-		<solution configuration="${build.configuration}">		
+		<sysinfo />
+		<echo>This shells out to VS.NET 2003 to build the hook.</echo>
+		<echo>If you don't have VS.NET 2003, use NProf.Hook from the latest release.</echo>
+		<exec program="cmd">
+			<arg value="/c" />
+			<arg value="&quot;${string::replace(sys.env.VS71COMNTOOLS,'&quot;','')}..\IDE\devenv.com&quot; /build ${build.configuration} NProf.Hook\NProf.Hook.vcproj" />
+		</exec>
+<!--		<solution configuration="${build.configuration}">		
 			<projects>
 				<includes name="NProf.Hook/*.vcproj" />
 			</projects>
-		</solution>
+		</solution>-->
 	</target>
 
 	<target name="build">
