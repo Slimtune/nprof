@@ -2,8 +2,15 @@
 <project name="nprof" basedir=".." default="build">
 	<property name="nant.settings.currentframework" value="net-1.0" />
 	
-	<echo message="Build version: ${build.version}" />
 	<echo message="Build configuration: ${build.configuration}" />
+
+	<if test="${nant::property-exists('build.version')}">
+		<echo message="Build version: ${build.version}" />
+		<property name="package.directory" value="Releases/Unpackaged/nprof-${build.version}-${build.configuration}" />
+		<property name="package.complete.directory" value="Releases/Complete" />
+		<property name="package.zip" value="${package.complete.directory}/nprof-${build.version}.zip" />
+		<property name="package.source.zip" value="${package.complete.directory}/nprof-${build.version}-Source.zip" />
+	</if>
 
 	<target name="build-hook">
 		<solution configuration="${build.configuration}">		
@@ -21,18 +28,24 @@
 		</solution>
 	</target>
 	
-	<target name="package">
-		<delete dir="Releases/nprof-${build.version}-${build.configuration}" failonerror="false" />
-		<delete dir="Releases/Complete/nprof-${build.version}.zip" failonerror="false" />
+	<target name="package" depends="build">
+		<mkdir dir="Releases/Complete" />
+		<mkdir dir="Releases/Unpackaged" />
 
-		<copy todir="Releases/nprof-${build.version}-${build.configuration}/nprof" flatten="true">
+		<delete dir="${package.directory}" failonerror="false" />
+		<delete name="${package.zip}" failonerror="false" />
+		<delete name="${package.source.zip}" failonerror="false" />
+
+		<mkdir dir="${package.directory}" />
+
+		<copy todir="${package.directory}/nprof" flatten="true">
 			<fileset>
 				<includes name="NProf.Application/bin/${build.configuration}/*.exe" />
 				<includes name="TestProfilee/bin/${build.configuration}/*.exe" />
 			</fileset>
 		</copy>
 
-		<copy todir="Releases/nprof-${build.version}-${build.configuration}/nprof/bin" flatten="true">
+		<copy todir="${package.directory}/nprof/bin" flatten="true">
 			<fileset>
 				<includes name="NProf.Hook/bin/${build.configuration}/*.dll" />
 				<includes name="NProf.Application/bin/${build.configuration}/*.dll" />
@@ -41,9 +54,9 @@
 		</copy>
 		
 		<copy file="Build/SupportFiles/nprof.exe.config" 
-			tofile="Releases/nprof-${build.version}-${build.configuration}/nprof/NProf.Application.exe.config" />
+			tofile="${package.directory}/nprof/NProf.Application.exe.config" />
 
-		<copy todir="Releases/nprof-${build.version}-${build.configuration}/nprof" flatten="true">
+		<copy todir="${package.directory}/nprof" flatten="true">
 			<fileset>
 				<includes name="Build/SupportFiles/*.bat" />
 				<includes name="Build/SupportFiles/*.reg" />
@@ -53,9 +66,38 @@
 		</copy>
 		
 		<zip zipfile="Releases/Complete/nprof-${build.version}.zip">
-			<fileset basedir="Releases/nprof-${build.version}-${build.configuration}">
+			<fileset basedir="${package.directory}">
 				<includes name="**" />
 			</fileset>
 		</zip>
+
+		<zip zipfile="Releases/Complete/nprof-${build.version}-src.zip">
+			<fileset>
+				<includes name="**" />
+				<excludes name="Releases/**" />
+				<excludes name="**/CVS/**" />
+				<excludes name="**/obj/**" />
+				<excludes name="**/bin/**" />
+				<excludes name="**/#*" />
+				<excludes name="**/*.suo" />
+				<excludes name="**/*.user" />
+				<excludes name="**/*.ncb" />
+				<excludes name="**/*.pdb" />
+				<excludes name="NProf.Hook/Debug/**" />
+				<excludes name="NProf.Hook/Release/**" />
+			</fileset>
+		</zip>
+	</target>
+
+	<target name="upload" depends="package">
+		<echo file="${package.directory}/ftp.commands">
+binary
+cd incoming
+put ${package.zip}
+put ${package.source.zip}
+quit
+		</echo>
+		<property name="ftp.server" value="upload.sourceforge.net" />
+		<exec program="xftp.exe" commandline="-A -s:${package.directory}/ftp.commands upload.sourceforge.net"  />
 	</target>
 </project>
