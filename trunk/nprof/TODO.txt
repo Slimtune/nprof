@@ -20,3 +20,7 @@ Beyond 1.0
    - Reflect the assembly and allow user to choose starting method
    - Provide means for user to enter method arguments
    - Generate stub to launch the method
+
+ - Allow user to select C#/VB syntax for methods displayed in profiler run
+
+ - Show profiling state of each thread in real-time
