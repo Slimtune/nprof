@@ -873,7 +873,7 @@ namespace NProf.GUI
 		private void _tmrFilterThrottle_Tick(object sender, System.EventArgs e)
 		{
 			_tmrFilterThrottle.Enabled = false;
-			_lvFunctionInfo.Filter( 1, _txtFilterBar.Text );
+			_lvFunctionInfo.SetFilter( 1, _txtFilterBar.Text );
 		}
 
 		public void  NavigateBackward()
