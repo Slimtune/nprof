@@ -67,13 +67,13 @@ namespace NProf.Application
 		static ProjectInfo CreateProjectInfo( string[] args )
 		{
 			ProjectInfo pInfo = new ProjectInfo();
-			pInfo.Arguments = pInfo.WorkingDirectory = pInfo.Name = pInfo.ApplicationName = String.Empty;
+			pInfo.Arguments = pInfo.WorkingDirectory = pInfo.ApplicationName = String.Empty;
 			foreach ( string arg in args )
 			{
 				string upperArg = arg.ToUpper();
 				if ( upperArg.StartsWith( "/R:" ) )
 				{
-					pInfo.Name = pInfo.ApplicationName = arg.Substring( 3 );
+					pInfo.ApplicationName = arg.Substring( 3 );
 				} 
 				else if ( upperArg.StartsWith( "/W:" ) )
 				{
@@ -96,7 +96,7 @@ namespace NProf.Application
 			}
 			
 			// Check if the user has specified an application to run
-			if ( pInfo.Name.Length == 0 )
+			if ( pInfo.ApplicationName.Length == 0 )
 			{
 				Console.WriteLine("Error: You need to specify an application to run.");
 				return null;
@@ -106,7 +106,7 @@ namespace NProf.Application
 			if ( pInfo.WorkingDirectory.Length == 0 )
 			{
 				// Note: if the pInfo.Name is rooted, it will override the app startup path
-				pInfo.WorkingDirectory = Path.Combine( System.Windows.Forms.Application.StartupPath, Path.GetDirectoryName( pInfo.Name ) );
+				pInfo.WorkingDirectory = Path.Combine( Directory.GetCurrentDirectory(), Path.GetDirectoryName( pInfo.ApplicationName ) );
 			}
 
 			return pInfo;
