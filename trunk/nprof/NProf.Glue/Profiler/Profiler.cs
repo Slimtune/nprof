@@ -23,6 +23,11 @@ namespace NProf.Glue.Profiler
 			_htFunctionMap = new Hashtable();
 		}
 
+		public static string Version
+		{
+			get { return "0.7-alpha"; }
+		}
+
 		public bool CheckSetup( out string strMessage )
 		{
 			strMessage = String.Empty;
@@ -55,10 +60,55 @@ namespace NProf.Glue.Profiler
 			return Start( strApplication, strArguments, strWorkingDirectory, po );
 		}
 
-		public bool EnableAndStart( ProjectInfo pi, Run run )
+		public bool EnableAndStartIIS( ProjectInfo pi, Run run, ProcessCompletedHandler pch )
 		{
 			_run = run;
-			_pch = new ProcessCompletedHandler( _run.ProcessCompletedHandler );
+			_pch = pch;
+
+			_pss = new ProfilerSocketServer( pi.Options );
+			_pss.Start();
+			_pss.Exited += new EventHandler( OnProcessExited );
+			_pss.Error += new ProfilerSocketServer.ErrorHandler( OnError );
+			_pss.Message += new ProfilerSocketServer.MessageHandler( OnMessage );
+
+			using ( RegistryKey rk = Registry.LocalMachine.OpenSubKey( @"SYSTEM\CurrentControlSet\Services\W3SVC" ) )
+			{
+				ArrayList alItems = new ArrayList( ( string[] )rk.GetValue( "Environment" ) );
+				
+				for ( int nIndex = 0; nIndex < alItems.Count; nIndex++ )
+				{
+					string[] astrItemComponents = ( ( string )alItems[ nIndex ] ).Split( '=' );
+					string strItemName = astrItemComponents[ 0 ].Trim().ToUpper();
+					
+					// Remove any of the entries we're going to add back
+					if ( strItemName == "COR_ENABLE_PROFILING" || strItemName == "COR_PROFILER" || strItemName == "NPROF_PROFILING_SOCKET" )
+					{
+						alItems.RemoveAt( nIndex );
+						nIndex--;
+					}
+				}
+
+				alItems.Add( "COR_ENABLE_PROFILING=0x1" );
+				alItems.Add( "COR_PROFILER=" + PROFILER_GUID );
+				alItems.Add( "NPROF_PROFILING_SOCKET=" + _pss.Port.ToString() );
+
+				rk.SetValue( "Environment", alItems.ToArray( typeof( string ) ) );
+
+				Process p = Process.Start( "iisreset" );
+				p.WaitForExit();
+				int nExitCode = p.ExitCode;
+
+				if ( nExitCode != 0 )
+					return false;
+			}
+
+			return true;
+		}
+
+		public bool EnableAndStart( ProjectInfo pi, Run run, ProcessCompletedHandler pch )
+		{
+			_run = run;
+			_pch = pch;
 
 			_pss = new ProfilerSocketServer( pi.Options );
 			_pss.Start();

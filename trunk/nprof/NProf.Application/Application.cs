@@ -4,8 +4,10 @@ using System.Collections;
 using System.ComponentModel;
 using System.Windows.Forms;
 using System.Data;
+using System.Runtime.InteropServices;
 using System.IO;
 using NProf.GUI;
+using NProf.Glue.Profiler;
 using NProf.Glue.Profiler.Project;
 
 namespace NProf.Application
@@ -22,7 +24,7 @@ namespace NProf.Application
 		static void Main( string[] args ) 
 		{
 			// Always print GPL notice
-			Console.WriteLine( "NProf version 0.6 (C) 2003 by Matthew Mastracci" );
+			Console.WriteLine( "NProf version {0} (C) 2003 by Matthew Mastracci", Profiler.Version );
 			Console.WriteLine( "http://nprof.sourceforge.net" );
 			Console.WriteLine();
 			Console.WriteLine( "This is free software, and you are welcome to redistribute it under certain" );
@@ -40,6 +42,7 @@ namespace NProf.Application
 					return;
 			}
 
+			Console.Out.Flush();
 			System.Windows.Forms.Application.Run( pf );
 		}
 
@@ -48,15 +51,24 @@ namespace NProf.Application
 		/// </summary>
 		static void PrintUsage()
 		{
-			Console.WriteLine( "Usage: nprof [/r:<file> [/w:<workingdir>] [/a:<args>]] | [/help]" );
+			Console.WriteLine( "Usage: nprof [/r:<file> [/w:<workingdir>] [/a:<args>]] | [/help] | [/v]" );
 			Console.WriteLine();
 			Console.WriteLine( "Options (use quotes around any arguments containing spaces)");
 			Console.WriteLine( "  /r:<file>        The application to profile" );
 			Console.WriteLine( "  /w:<workingdir>  Specifies the working directory for the application" );
 			Console.WriteLine( "  /a:<args>        Specifies command line arguments" );
+			Console.WriteLine( "  /v               Returns the version of nprof and exists" );
 			Console.WriteLine();
 			Console.WriteLine( @"Example: Run testapp.exe in C:\Program Files\Test App with ""-i -q"" as arguments" );
 			Console.WriteLine( @"  nprof /r:testapp.exe ""/w:C:\Program Files\Test App"" ""/a:-i -q""" );
+		}
+
+		/// <summary>
+		/// Print the usage information for the program.
+		/// </summary>
+		static void PrintVersion()
+		{
+			Console.WriteLine( Profiler.Version );
 		}
 
 		/// <summary>
@@ -66,7 +78,7 @@ namespace NProf.Application
 		/// <returns>A <see cref="ProjectInfo"/> structure, or null if it could not be created</returns>
 		static ProjectInfo CreateProjectInfo( string[] args )
 		{
-			ProjectInfo pInfo = new ProjectInfo();
+			ProjectInfo pInfo = new ProjectInfo( ProjectType.File );
 			pInfo.Arguments = pInfo.WorkingDirectory = pInfo.ApplicationName = String.Empty;
 			foreach ( string arg in args )
 			{
@@ -83,7 +95,12 @@ namespace NProf.Application
 				{
 					pInfo.Arguments = arg.Substring( 3 );
 				}
-				else if ( upperArg.Equals( "/HELP" ) )
+				else if ( upperArg.Equals( "/V" ) )
+				{
+					PrintVersion();
+					return null;
+				}
+				else if ( upperArg.Equals( "/HELP" ) || upperArg.Equals( "/H" ) || upperArg.Equals( "/?" ) || upperArg.Equals( "-H" ) || upperArg.Equals( "-HELP" ) || upperArg.Equals( "--HELP" ) )
 				{
 					PrintUsage();
 					return null;
@@ -98,7 +115,7 @@ namespace NProf.Application
 			// Check if the user has specified an application to run
 			if ( pInfo.ApplicationName.Length == 0 )
 			{
-				Console.WriteLine("Error: You need to specify an application to run.");
+				Console.WriteLine( "Error: You need to specify an application to run." );
 				return null;
 			}
 			

@@ -7,17 +7,12 @@ namespace NProf.Glue.Profiler.Project
 	/// </summary>
 	public class ProjectInfo
 	{
-		public ProjectInfo()
+		public ProjectInfo( ProjectType pt )
 		{
 			_po = new Options();
 			_strName = null;
 			_rc = new RunCollection( this );
-			_bSpecial = false;
-		}
-
-		public ProjectInfo( bool bSpecial ) : this()
-		{
-			_bSpecial = true;
+			_pt = pt;
 		}
 
 		public Options Options
@@ -62,15 +57,16 @@ namespace NProf.Glue.Profiler.Project
 			return run;
 		}
 
-		public bool Special
+		public ProjectType ProjectType
 		{
-			get { return _bSpecial; }
+			get { return _pt; }
+			set { _pt = value; }
 		}
 
 		private Options _po;
 		private string _strAppName, _strArguments, _strWorkingDirectory;
 		private string _strName;
 		private RunCollection _rc;
-		private bool _bSpecial;
+		private ProjectType _pt;
 	}
 }

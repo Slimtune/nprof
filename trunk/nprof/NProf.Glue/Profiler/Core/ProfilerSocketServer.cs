@@ -86,11 +86,11 @@ namespace NProf.Glue.Profiler.Core
 		private string ReadLengthEncodedASCIIString( BinaryReader br )
 		{
 			int nLength = br.ReadInt32();
-			if ( nLength > 2000 )
+			if ( nLength > 2000 || nLength < 0 )
 			{
 				byte[] abNextBytes = new byte[ 8 ];
 				br.Read( abNextBytes, 0, 8 );
-				string strError = "Length was abnormally large (" + nLength.ToString( "x" ) + ").  Next bytes were ";
+				string strError = "Length was abnormally large or small (" + nLength.ToString( "x" ) + ").  Next bytes were ";
 				foreach ( byte b in abNextBytes )
 					strError += b.ToString( "x" ) + " (" + ( char )b + ") ";
 

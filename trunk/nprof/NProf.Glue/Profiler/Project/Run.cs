@@ -29,7 +29,17 @@ namespace NProf.Glue.Profiler.Project
 		public bool Start()
 		{
 			_dtStart = DateTime.Now;
-			return _p.Start( _pi, this, new Profiler.ProcessCompletedHandler( OnProfileComplete ) );
+			switch ( _pi.ProjectType )
+			{
+				case ProjectType.File:
+					return _p.Start( _pi, this, new Profiler.ProcessCompletedHandler( OnProfileComplete ) );
+				case ProjectType.AspNet:
+					return _p.EnableAndStartIIS( _pi, this, new Profiler.ProcessCompletedHandler( OnProfileComplete ) );
+				case ProjectType.VSNet:
+					return _p.EnableAndStart( _pi, this, new Profiler.ProcessCompletedHandler( OnProfileComplete ) );
+			}
+
+			throw new InvalidOperationException( "Unknown project type: " + _pi.ProjectType );
 		}
 
 		public ProjectInfo Project

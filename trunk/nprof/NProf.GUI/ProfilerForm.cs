@@ -368,15 +368,14 @@ namespace NProf.GUI
 		{
 			if ( _piVSNetProject == null )
 			{
-				_piVSNetProject = new ProjectInfo( true );
+				_piVSNetProject = new ProjectInfo( ProjectType.VSNet );
 				_piVSNetProject.Name = "VS.NET Project";
 				_pic.Add( _piVSNetProject );
 			}
 
-			Run run = _piVSNetProject.CreateRun( _p );
-			run.StateChanged += new Run.RunStateEventHandler( OnRunStateChanged );
-
-			_p.EnableAndStart( _piVSNetProject, run );
+			// Run the project
+			_pt.SelectProject( _piVSNetProject );
+			_cmdProjectRun_Click( null, null );
 		}
 
 		public void Disable()
@@ -515,6 +514,7 @@ namespace NProf.GUI
 			Crownwood.Magic.Docking.Content c = _dock.Contents.Add( _pt, "Projects" );
 			Crownwood.Magic.Docking.WindowContent wc = _dock.AddContentWithState( c, Crownwood.Magic.Docking.State.DockLeft );
 			
+			this.Text = "nprof Profiling Application - v" + Profiler.Version;
 			_tcProfilers.Appearance = Crownwood.Magic.Controls.TabControl.VisualAppearance.MultiDocument;
 
 			if ( _piInitialProject != null )
@@ -565,8 +565,11 @@ namespace NProf.GUI
 
 		private void UpdateProjectItems(object sender, System.EventArgs e)
 		{
-			_cmdProjectRun.Enabled = ( _pt.GetSelectedProject() != null && !_pt.GetSelectedProject().Special );
-			_cmdProjectOptions.Enabled = ( _pt.GetSelectedProject() != null && !_pt.GetSelectedProject().Special );
+			bool bCanRunOrEdit = _pt.GetSelectedProject() != null 
+				&& _pt.GetSelectedProject().ProjectType != ProjectType.VSNet;
+
+			_cmdProjectRun.Enabled = bCanRunOrEdit;
+			_cmdProjectOptions.Enabled = bCanRunOrEdit;
 			_cmdProjectRunViewMessages.Enabled = ( !IsShowingBlankTab() );
 		}
 

@@ -154,6 +154,11 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "Profiler\Project\ProjectType.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "Profiler\Project\Run.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
