@@ -9,7 +9,7 @@
 		<property name="package.directory" value="Releases/Unpackaged/nprof-${build.version}-${build.configuration}" />
 		<property name="package.complete.directory" value="Releases/Complete" />
 		<property name="package.zip" value="${package.complete.directory}/nprof-${build.version}.zip" />
-		<property name="package.source.zip" value="${package.complete.directory}/nprof-${build.version}-Source.zip" />
+		<property name="package.source.zip" value="${package.complete.directory}/nprof-${build.version}-src.zip" />
 	</if>
 
 	<target name="build-hook">
@@ -71,13 +71,13 @@
 			</fileset>
 		</copy>
 		
-		<zip zipfile="Releases/Complete/nprof-${build.version}.zip">
+		<zip zipfile="${package.zip}">
 			<fileset basedir="${package.directory}">
 				<includes name="**" />
 			</fileset>
 		</zip>
 
-		<zip zipfile="Releases/Complete/nprof-${build.version}-src.zip">
+		<zip zipfile="${package.source.zip}">
 			<fileset>
 				<includes name="**" />
 				<excludes name="Releases/**" />
