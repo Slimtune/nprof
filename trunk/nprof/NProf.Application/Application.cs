@@ -22,7 +22,7 @@ namespace NProf.Application
 		static void Main( string[] args ) 
 		{
 			// Always print GPL notice
-			Console.WriteLine( "NProf version 0.4.1 (C) 2003 by Matthew Mastracci" );
+			Console.WriteLine( "NProf version 0.6 (C) 2003 by Matthew Mastracci" );
 			Console.WriteLine( "http://nprof.sourceforge.net" );
 			Console.WriteLine();
 			Console.WriteLine( "This is free software, and you are welcome to redistribute it under certain" );
