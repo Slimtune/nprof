@@ -335,7 +335,9 @@ namespace NProf.GUI
 			// 
 			// ProfilerProjectOptionsForm
 			// 
+			this.AcceptButton = this._btnCreateProject;
 			this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
+			this.CancelButton = this._btnCancel;
 			this.ClientSize = new System.Drawing.Size(642, 463);
 			this.Controls.Add(this._cboProjectName);
 			this.Controls.Add(this.label7);
