@@ -38,7 +38,7 @@ namespace NProf.GUI
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.ListView _lvFunctionInfo;
 		private System.Windows.Forms.ListView _lvChildInfo;
-		private Genghis.Windows.Forms.CustomStateTreeView _tvNamespaceInfo;
+		private System.Windows.Forms.TreeView _tvNamespaceInfo;
 		private System.Windows.Forms.ComboBox _cbCurrentThread;
 		/// <summary> 
 		/// Required designer variable.
@@ -95,7 +95,7 @@ namespace NProf.GUI
 			this.colCalleeTotalTime = new System.Windows.Forms.ColumnHeader();
 			this.colCalleeInParent = new System.Windows.Forms.ColumnHeader();
 			this.splitter1 = new System.Windows.Forms.Splitter();
-			this._tvNamespaceInfo = new Genghis.Windows.Forms.CustomStateTreeView();
+			this._tvNamespaceInfo = new System.Windows.Forms.TreeView();
 			this.panel2 = new System.Windows.Forms.Panel();
 			this.label1 = new System.Windows.Forms.Label();
 			this._cbCurrentThread = new System.Windows.Forms.ComboBox();
@@ -229,7 +229,6 @@ namespace NProf.GUI
 			// _tvNamespaceInfo
 			// 
 			this._tvNamespaceInfo.CheckBoxes = true;
-			this._tvNamespaceInfo.CheckStateImageList = null;
 			this._tvNamespaceInfo.Dock = System.Windows.Forms.DockStyle.Left;
 			this._tvNamespaceInfo.ImageIndex = -1;
 			this._tvNamespaceInfo.Location = new System.Drawing.Point(0, 24);
