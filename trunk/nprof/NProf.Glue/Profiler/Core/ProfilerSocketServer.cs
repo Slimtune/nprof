@@ -22,6 +22,7 @@ namespace NProf.Glue.Profiler.Core
 			_tic = run.ThreadInfoCollection;
 			_nStopFlag = 0;
 			_po = po;
+			_bHasStopped = false;
 			
 			_run.Messages.AddMessage( "Waiting for application..." );
 		}
@@ -39,6 +40,11 @@ namespace NProf.Glue.Profiler.Core
 			lock ( _s )
 				Interlocked.Increment( ref _nStopFlag );
 			_s.Close();
+		}
+
+		public bool HasStoppedGracefully
+		{
+			get { return _bHasStopped; }
 		}
 
 		public ThreadInfoCollection ThreadInfoCollection
@@ -175,6 +181,7 @@ namespace NProf.Glue.Profiler.Core
 
 						case NetworkMessage.SHUTDOWN:
 						{
+							_bHasStopped = true;
 							_run.Messages.AddMessage( "Profiling completed." );
 							if ( Exited != null )
 								Exited( this, EventArgs.Empty );
@@ -305,5 +312,6 @@ namespace NProf.Glue.Profiler.Core
 		private Socket					_s;
 		private Project.Options			_po;
 		private Run						_run;
+		private bool					_bHasStopped;
 	}
 }

@@ -13,11 +13,11 @@ namespace NProf.GUI
 	/// </summary>
 	public class ProfilerRunControl : System.Windows.Forms.UserControl
 	{
-		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.Button _btnStop;
 		private System.Windows.Forms.ColumnHeader _chMessage;
 		private System.Windows.Forms.ListView _lvMessages;
+		private System.Windows.Forms.Label _lblState;
 		/// <summary> 
 		/// Required designer variable.
 		/// </summary>
@@ -54,20 +54,21 @@ namespace NProf.GUI
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.label1 = new System.Windows.Forms.Label();
+			this._lblState = new System.Windows.Forms.Label();
 			this._lvMessages = new System.Windows.Forms.ListView();
 			this._chMessage = new System.Windows.Forms.ColumnHeader();
 			this.label2 = new System.Windows.Forms.Label();
 			this._btnStop = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
-			// label1
+			// _lblState
 			// 
-			this.label1.Location = new System.Drawing.Point(8, 8);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(168, 16);
-			this.label1.TabIndex = 0;
-			this.label1.Text = "Current state:";
+			this._lblState.AutoSize = true;
+			this._lblState.Location = new System.Drawing.Point(8, 8);
+			this._lblState.Name = "_lblState";
+			this._lblState.Size = new System.Drawing.Size(73, 16);
+			this._lblState.TabIndex = 0;
+			this._lblState.Text = "Current state:";
 			// 
 			// _lvMessages
 			// 
@@ -76,6 +77,7 @@ namespace NProf.GUI
 				| System.Windows.Forms.AnchorStyles.Right)));
 			this._lvMessages.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
 																						  this._chMessage});
+			this._lvMessages.FullRowSelect = true;
 			this._lvMessages.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
 			this._lvMessages.Location = new System.Drawing.Point(8, 48);
 			this._lvMessages.Name = "_lvMessages";
@@ -98,13 +100,14 @@ namespace NProf.GUI
 			this._btnStop.Name = "_btnStop";
 			this._btnStop.TabIndex = 3;
 			this._btnStop.Text = "Stop Run";
+			this._btnStop.Click += new System.EventHandler(this._btnStop_Click);
 			// 
 			// ProfilerRunControl
 			// 
 			this.Controls.Add(this._btnStop);
 			this.Controls.Add(this.label2);
 			this.Controls.Add(this._lvMessages);
-			this.Controls.Add(this.label1);
+			this.Controls.Add(this._lblState);
 			this.Name = "ProfilerRunControl";
 			this.Size = new System.Drawing.Size(840, 456);
 			this.VisibleChanged += new System.EventHandler(this.ProfilerRunControl_VisibleChanged);
@@ -120,6 +123,11 @@ namespace NProf.GUI
 		{
 			_lvMessages.Invoke( new RunMessageCollection.MessageHandler( OnMessageUIThread ), new object[] { strMessage } );
 		}
+		
+		private void OnRunStateChanged( Run run, Run.RunState rsOld, Run.RunState rsNew )
+		{
+			_lvMessages.Invoke( new Run.RunStateEventHandler( OnRunStateChangedUIThread ), new object[] { run, rsOld, rsNew } );
+		}
 
 		private void OnMessageUIThread( string strMessage )
 		{
@@ -127,10 +135,19 @@ namespace NProf.GUI
 				_lvMessages.Items.Add( strMessage );
 		}
 
+		private void OnRunStateChangedUIThread( Run run, Run.RunState rsOld, Run.RunState rsNew )
+		{
+			_lblState.Text = "Current state: " + rsNew.ToString();
+			if ( rsNew == Run.RunState.Finished )
+				_lblState.Text += ( run.Success ) ? " successfully" : " unsuccessfully";
+			_btnStop.Enabled = _r.CanStop;
+		}
+
 		private void ProfilerRunControl_VisibleChanged(object sender, System.EventArgs e)
 		{
 			if ( !this.Visible )
 			{
+				_r.StateChanged -= new Run.RunStateEventHandler( OnRunStateChanged );
 				_r.Messages.StopListening( new RunMessageCollection.MessageHandler( OnMessage ) );
 			}
 		}
@@ -140,6 +157,8 @@ namespace NProf.GUI
 			set 
 			{ 
 				_r = value; 
+				OnRunStateChangedUIThread( _r, _r.State, _r.State );
+				_r.StateChanged += new Run.RunStateEventHandler( OnRunStateChanged );
 
 				lock ( _lvMessages )
 				{
@@ -153,6 +172,11 @@ namespace NProf.GUI
 		private void ProfilerRunControl_Resize(object sender, System.EventArgs e)
 		{
 			_lvMessages.Columns[ 0 ].Width = -2;
+		}
+
+		private void _btnStop_Click(object sender, System.EventArgs e)
+		{
+			_r.Stop();
 		}
 	}
 }

@@ -17,6 +17,7 @@ namespace NProf.Glue.Profiler.Project
 			_tic = new ThreadInfoCollection();
 			_pi = pi;
 			_rmcMessages = new RunMessageCollection();
+			_bSuccess = false;
 		}
 
 		/*public Run( DateTime dtStart, DateTime dtEnd, RunState rs, ThreadInfoCollection tic )
@@ -34,6 +35,19 @@ namespace NProf.Glue.Profiler.Project
 			_dtStart = DateTime.Now;
 
 			return _p.Start( _pi, this, new Profiler.ProcessCompletedHandler( OnProfileComplete ) );
+		}
+
+		public bool CanStop
+		{
+			get { return State == RunState.Initializing || 
+						( _pi.ProjectType == ProjectType.AspNet && State != RunState.Finished ); } 
+		}
+
+		public bool Stop()
+		{
+			_p.Stop();
+
+			return true;
 		}
 
 		public ProjectInfo Project
@@ -77,6 +91,12 @@ namespace NProf.Glue.Profiler.Project
 			set { _tic = value; }
 		}
 
+		public bool Success
+		{
+			get { return _bSuccess; }
+			set { _bSuccess = value; }
+		}
+
 		public enum RunState
 		{
 			Initializing,
@@ -99,6 +119,7 @@ namespace NProf.Glue.Profiler.Project
 
 		public delegate void RunStateEventHandler( Run run, RunState rsOld, RunState rsNew );
 
+		private bool _bSuccess;
 		private DateTime _dtStart;
 		private DateTime _dtEnd;
 		private RunState _rs;

@@ -223,6 +223,10 @@
                     RelPath = "Resources\stop.bmp"
                     BuildAction = "EmbeddedResource"
                 />
+                <File
+                    RelPath = "Resources\stop-error.bmp"
+                    BuildAction = "EmbeddedResource"
+                />
             </Include>
         </Files>
     </CSHARP>

@@ -170,7 +170,7 @@ namespace NProf.GUI
 
 		private void AddRunNode( TreeNode tnProject, Run run )
 		{
-			_tvProjects.Invoke( new TreeNodeAdd( OnTreeNodeAdd ), new object[]{ tnProject.Nodes, run.StartTime.ToString(), GetRunStateImage( run.State ), run } );
+			_tvProjects.Invoke( new TreeNodeAdd( OnTreeNodeAdd ), new object[]{ tnProject.Nodes, run.StartTime.ToString(), GetRunStateImage( run ), run } );
 
 			run.StateChanged += new Run.RunStateEventHandler( OnRunStateChanged );
 		}
@@ -225,19 +225,19 @@ namespace NProf.GUI
 		private void OnRunStateChanged( Run run, Run.RunState rsOld, Run.RunState rsNew )
 		{
 			TreeNode tn = FindRunNode( run );
-			_tvProjects.Invoke( new TreeNodeSetState( OnTreeNodeSetState ), new object[]{ tn, run.StartTime.ToString(), GetRunStateImage( run.State ) } );
+			_tvProjects.Invoke( new TreeNodeSetState( OnTreeNodeSetState ), new object[]{ tn, run.StartTime.ToString(), GetRunStateImage( run ) } );
 		}
 
-		private int GetRunStateImage( Run.RunState rs )
+		private int GetRunStateImage( Run r )
 		{
-			switch ( rs )
+			switch ( r.State )
 			{
 				case Run.RunState.Initializing:
 					return 1;
 				case Run.RunState.Running:
 					return 2;
 				case Run.RunState.Finished:
-					return 3;
+					return r.Success ? 3 : 4;
 			}
 
 			return 0;
@@ -252,6 +252,7 @@ namespace NProf.GUI
 			_ilState.Images.Add( Image.FromStream( this.GetType().Assembly.GetManifestResourceStream( "NProf.GUI.Resources.initializing.bmp" ) ) );
 			_ilState.Images.Add( Image.FromStream( this.GetType().Assembly.GetManifestResourceStream( "NProf.GUI.Resources.go.bmp" ) ) );
 			_ilState.Images.Add( Image.FromStream( this.GetType().Assembly.GetManifestResourceStream( "NProf.GUI.Resources.stop.bmp" ) ) );
+			_ilState.Images.Add( Image.FromStream( this.GetType().Assembly.GetManifestResourceStream( "NProf.GUI.Resources.stop-error.bmp" ) ) );
 
 			_tvProjects.ImageList = _ilState;
 		}

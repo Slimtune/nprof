@@ -467,7 +467,9 @@ namespace NProf.GUI
 				_tcProfilers.SelectedTab = tpActive;
 			}
 
-			if ( run.State == Run.RunState.Finished && ( tpActive.Controls.Count == 0 || !( tpActive.Controls[ 0 ] is ProfilerControl ) ) )
+			if ( run.State == Run.RunState.Finished
+				&& run.Success 
+				&& ( tpActive.Controls.Count == 0 || !( tpActive.Controls[ 0 ] is ProfilerControl ) ) )
 			{
 				tpActive.Controls.Clear();
 				ProfilerControl pc = new ProfilerControl();
@@ -476,7 +478,11 @@ namespace NProf.GUI
 				pc.ProfilerRun = run;
 			}
 
-			if ( ( run.State == Run.RunState.Running || run.State == Run.RunState.Initializing ) && ( tpActive.Controls.Count == 0 || !( tpActive.Controls[ 0 ] is ProfilerRunControl ) ) )
+			// Catch non-successful finished runs here too
+			if ( ( ( run.State == Run.RunState.Finished && !run.Success ) 
+						|| run.State == Run.RunState.Running 
+						|| run.State == Run.RunState.Initializing )
+				&& ( tpActive.Controls.Count == 0 || !( tpActive.Controls[ 0 ] is ProfilerRunControl ) ) )
 			{
 				tpActive.Controls.Clear();
 				ProfilerRunControl pc = new ProfilerRunControl();

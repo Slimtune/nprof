@@ -47,6 +47,7 @@ namespace NProf.Glue.Profiler
 		public bool Start( ProjectInfo pi, Run run, ProcessCompletedHandler pch )
 		{
 			_dtStart = DateTime.Now;
+			_pi = pi;
 			_pch = pch;
 			_run = run;
 			_run.State = Run.RunState.Initializing;
@@ -70,6 +71,7 @@ namespace NProf.Glue.Profiler
 					_p.StartInfo.Arguments = pi.Arguments;
 					_p.StartInfo.WorkingDirectory = pi.WorkingDirectory;
 					_p.EnableRaisingEvents = true;
+					_p.Exited += new EventHandler( OnProcessExited );
 
 					return _p.Start();
 				}
@@ -113,12 +115,45 @@ namespace NProf.Glue.Profiler
 
 		public void Stop()
 		{
-			if ( _pss != null )
+			// Stop the profiler socket server if profilee hasn't connected
+			if ( _run.State == Run.RunState.Initializing )
+			{
+				_run.Messages.AddMessage( "Shutting down profiler..." );
 				_pss.Stop();
+				_run.State = Run.RunState.Finished;
+				_run.Success = false;
+			}
+
+			if ( _pi.ProjectType == ProjectType.AspNet )
+			{
+				_run.Messages.AddMessage( "Terminating ASP.NET..." );
+				Process.Start( "iisreset.exe", "/stop" ).WaitForExit();
+			}
 		}
 
 		private void OnProcessExited( object oSender, EventArgs ea )
 		{
+			if ( !_pss.HasStoppedGracefully )
+			{
+				if ( _run.State == Run.RunState.Initializing )
+				{
+					_run.Messages.AddMessage( "No connection made with profiled application." );
+					_run.Messages.AddMessage( "Application might not support .NET." );
+				}
+				else
+				{
+					_run.Messages.AddMessage( "Application stopped before profiler information could be retrieved." );
+				}
+
+				_run.Success = false;
+				_run.State = Run.RunState.Finished;
+				_run.Messages.AddMessage( "Profiler run did not complete successfully." );
+			}
+			else
+			{
+				_run.Success = true;
+			}
+
 			_dtEnd = DateTime.Now;
 			_pss.Stop();
 //			if ( ProcessCompleted != null )
@@ -193,6 +228,7 @@ namespace NProf.Glue.Profiler
 
 		private Hashtable _htFunctionMap;
 		private Process _p;
+		private ProjectInfo _pi;
 		private ProfilerSocketServer _pss;
 	}
 }
