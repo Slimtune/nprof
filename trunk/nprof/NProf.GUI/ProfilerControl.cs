@@ -55,10 +55,10 @@ namespace NProf.GUI
 		private DotNetLib.Windows.Forms.ToggleColumnHeader colChildCalls;
 		private DotNetLib.Windows.Forms.ToggleColumnHeader colChildTotal;
 		private DotNetLib.Windows.Forms.ToggleColumnHeader colChildParent;
-		/// <summary> 
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.Container components = null;
+		private System.Windows.Forms.Label _lblFilterSignatures;
+		private System.Windows.Forms.TextBox _txtFilterBar;
+		private System.Windows.Forms.Timer _tmrFilterThrottle;
+		private System.ComponentModel.IContainer components;
 
 		public ProfilerControl()
 		{
@@ -93,6 +93,7 @@ namespace NProf.GUI
 		/// </summary>
 		private void InitializeComponent()
 		{
+			this.components = new System.ComponentModel.Container();
 			this.toggleColumnHeader1 = new DotNetLib.Windows.Forms.ToggleColumnHeader();
 			this.toggleColumnHeader2 = new DotNetLib.Windows.Forms.ToggleColumnHeader();
 			this.toggleColumnHeader3 = new DotNetLib.Windows.Forms.ToggleColumnHeader();
@@ -124,8 +125,11 @@ namespace NProf.GUI
 			this.splitter1 = new System.Windows.Forms.Splitter();
 			this._tvNamespaceInfo = new System.Windows.Forms.TreeView();
 			this.panel2 = new System.Windows.Forms.Panel();
+			this._lblFilterSignatures = new System.Windows.Forms.Label();
+			this._txtFilterBar = new System.Windows.Forms.TextBox();
 			this.label1 = new System.Windows.Forms.Label();
 			this._cbCurrentThread = new System.Windows.Forms.ComboBox();
+			this._tmrFilterThrottle = new System.Windows.Forms.Timer(this.components);
 			this.panel1.SuspendLayout();
 			this.panel2.SuspendLayout();
 			this.SuspendLayout();
@@ -169,9 +173,11 @@ namespace NProf.GUI
 			this._lvFunctionInfo.ColumnTrackingColor = System.Drawing.Color.WhiteSmoke;
 			this._lvFunctionInfo.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._lvFunctionInfo.GridLineColor = System.Drawing.Color.WhiteSmoke;
+			this._lvFunctionInfo.HeaderHeight = 33;
 			this._lvFunctionInfo.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Clickable;
 			this._lvFunctionInfo.HideSelection = false;
 			this._lvFunctionInfo.Location = new System.Drawing.Point(195, 24);
+			this._lvFunctionInfo.MultipleColumnSort = true;
 			this._lvFunctionInfo.MultiSelect = true;
 			this._lvFunctionInfo.Name = "_lvFunctionInfo";
 			this._lvFunctionInfo.RowSelectedColor = System.Drawing.SystemColors.Highlight;
@@ -201,6 +207,7 @@ namespace NProf.GUI
 			this.colFunctionCalls.DisplayIndex = 2;
 			this.colFunctionCalls.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
 			this.colFunctionCalls.Text = "# of Calls";
+			this.colFunctionCalls.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
 			this.colFunctionCalls.ToolTip = "# of Calls Tool Tip";
 			this.colFunctionCalls.Width = 70;
 			// 
@@ -209,6 +216,7 @@ namespace NProf.GUI
 			this.colFunctionTotal.DisplayIndex = 3;
 			this.colFunctionTotal.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
 			this.colFunctionTotal.Text = "% of Total";
+			this.colFunctionTotal.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
 			this.colFunctionTotal.ToolTip = "% of Total Tool Tip";
 			this.colFunctionTotal.Width = 70;
 			// 
@@ -216,7 +224,8 @@ namespace NProf.GUI
 			// 
 			this.colFunctionMethod.DisplayIndex = 4;
 			this.colFunctionMethod.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
-			this.colFunctionMethod.Text = "% in Method";
+			this.colFunctionMethod.Text = "% in\nMethod";
+			this.colFunctionMethod.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
 			this.colFunctionMethod.ToolTip = "% in Method Tool Tip";
 			this.colFunctionMethod.Width = 70;
 			// 
@@ -224,7 +233,8 @@ namespace NProf.GUI
 			// 
 			this.colFunctionChildren.DisplayIndex = 5;
 			this.colFunctionChildren.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
-			this.colFunctionChildren.Text = "% in Children";
+			this.colFunctionChildren.Text = "% in\nChildren";
+			this.colFunctionChildren.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
 			this.colFunctionChildren.ToolTip = "% in Children Tool Tip";
 			this.colFunctionChildren.Width = 70;
 			// 
@@ -233,6 +243,7 @@ namespace NProf.GUI
 			this.colFunctionSuspended.DisplayIndex = 6;
 			this.colFunctionSuspended.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
 			this.colFunctionSuspended.Text = "% Suspended";
+			this.colFunctionSuspended.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
 			this.colFunctionSuspended.ToolTip = "% Suspended Tool Tip";
 			this.colFunctionSuspended.Width = 70;
 			// 
@@ -250,6 +261,7 @@ namespace NProf.GUI
 			this._lvChildInfo.ColumnTrackingColor = System.Drawing.Color.WhiteSmoke;
 			this._lvChildInfo.Dock = System.Windows.Forms.DockStyle.Bottom;
 			this._lvChildInfo.GridLineColor = System.Drawing.Color.WhiteSmoke;
+			this._lvChildInfo.HeaderHeight = 33;
 			this._lvChildInfo.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Clickable;
 			this._lvChildInfo.HideSelection = false;
 			this._lvChildInfo.Location = new System.Drawing.Point(195, 264);
@@ -281,6 +293,7 @@ namespace NProf.GUI
 			this.colChildCalls.DisplayIndex = 2;
 			this.colChildCalls.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
 			this.colChildCalls.Text = "# of Calls";
+			this.colChildCalls.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
 			this.colChildCalls.ToolTip = "# of Calls Tool Tip";
 			this.colChildCalls.Width = 70;
 			// 
@@ -289,6 +302,7 @@ namespace NProf.GUI
 			this.colChildTotal.DisplayIndex = 3;
 			this.colChildTotal.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
 			this.colChildTotal.Text = "% of Total";
+			this.colChildTotal.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
 			this.colChildTotal.ToolTip = "% of Total Tool Tip";
 			this.colChildTotal.Width = 70;
 			// 
@@ -297,6 +311,7 @@ namespace NProf.GUI
 			this.colChildParent.DisplayIndex = 4;
 			this.colChildParent.SortingMethod = DotNetLib.Windows.Forms.SortingMethod.Float;
 			this.colChildParent.Text = "% of Parent";
+			this.colChildParent.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
 			this.colChildParent.ToolTip = "% of Parent Tool Tip";
 			this.colChildParent.Width = 70;
 			// 
@@ -323,6 +338,8 @@ namespace NProf.GUI
 			// 
 			// panel2
 			// 
+			this.panel2.Controls.Add(this._lblFilterSignatures);
+			this.panel2.Controls.Add(this._txtFilterBar);
 			this.panel2.Controls.Add(this.label1);
 			this.panel2.Controls.Add(this._cbCurrentThread);
 			this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
@@ -330,6 +347,25 @@ namespace NProf.GUI
 			this.panel2.Name = "panel2";
 			this.panel2.Size = new System.Drawing.Size(872, 24);
 			this.panel2.TabIndex = 12;
+			// 
+			// _lblFilterSignatures
+			// 
+			this._lblFilterSignatures.AutoSize = true;
+			this._lblFilterSignatures.Location = new System.Drawing.Point(200, 4);
+			this._lblFilterSignatures.Name = "_lblFilterSignatures";
+			this._lblFilterSignatures.Size = new System.Drawing.Size(88, 16);
+			this._lblFilterSignatures.TabIndex = 14;
+			this._lblFilterSignatures.Text = "Filter signatures:";
+			// 
+			// _txtFilterBar
+			// 
+			this._txtFilterBar.Location = new System.Drawing.Point(288, 0);
+			this._txtFilterBar.Multiline = true;
+			this._txtFilterBar.Name = "_txtFilterBar";
+			this._txtFilterBar.Size = new System.Drawing.Size(360, 20);
+			this._txtFilterBar.TabIndex = 13;
+			this._txtFilterBar.Text = "";
+			this._txtFilterBar.TextChanged += new System.EventHandler(this._txtFilterBar_TextChanged);
 			// 
 			// label1
 			// 
@@ -350,13 +386,17 @@ namespace NProf.GUI
 			this._cbCurrentThread.TabIndex = 11;
 			this._cbCurrentThread.SelectedIndexChanged += new System.EventHandler(this._cbCurrentThread_SelectedIndexChanged);
 			// 
+			// _tmrFilterThrottle
+			// 
+			this._tmrFilterThrottle.Interval = 300;
+			this._tmrFilterThrottle.Tick += new System.EventHandler(this._tmrFilterThrottle_Tick);
+			// 
 			// ProfilerControl
 			// 
 			this.Controls.Add(this.panel1);
 			this.Name = "ProfilerControl";
 			this.Size = new System.Drawing.Size(872, 456);
 			this.Load += new System.EventHandler(this.ProfilerControl_Load);
-			this.Layout += new System.Windows.Forms.LayoutEventHandler(this.ProfilerControl_Layout);
 			this.panel1.ResumeLayout(false);
 			this.panel2.ResumeLayout(false);
 			this.ResumeLayout(false);
@@ -482,18 +522,18 @@ namespace NProf.GUI
 						continue;
 
 					ContainerListViewItem lvi = _lvFunctionInfo.Items.Add( fi.ID.ToString() );
-					lvi.SubItems[ 0 ].Text = fi.Signature.Signature;
-					lvi.SubItems[ 1 ].Text = fi.Calls.ToString();
-					lvi.SubItems[ 2 ].Text = fi.PercentOfTotalTimeInMethodAndChildren.ToString( "0.00;-0.00;0" );
-					lvi.SubItems[ 3 ].Text = fi.PercentOfTotalTimeInMethod.ToString( "0.00;-0.00;0" );
-					lvi.SubItems[ 4 ].Text = fi.PercentOfTotalTimeInChildren.ToString( "0.00;-0.00;0" );
-					lvi.SubItems[ 5 ].Text = fi.PercentOfTotalTimeSuspended.ToString( "0.00;-0.00;0" );
+					lvi.SubItems[ 1 ].Text = fi.Signature.Signature;
+					lvi.SubItems[ 2 ].Text = fi.Calls.ToString();
+					lvi.SubItems[ 3 ].Text = fi.PercentOfTotalTimeInMethodAndChildren.ToString( "0.00;-0.00;0" );
+					lvi.SubItems[ 4 ].Text = fi.PercentOfTotalTimeInMethod.ToString( "0.00;-0.00;0" );
+					lvi.SubItems[ 5 ].Text = fi.PercentOfTotalTimeInChildren.ToString( "0.00;-0.00;0" );
+					lvi.SubItems[ 6 ].Text = fi.PercentOfTotalTimeSuspended.ToString( "0.00;-0.00;0" );
 					lvi.Tag = fi;
 				}
 			}
 			finally
 			{
-				_lvFunctionInfo.Sort(false);
+				_lvFunctionInfo.Sort();
 				_lvFunctionInfo.EndUpdate();
 			}
 		}
@@ -550,53 +590,33 @@ namespace NProf.GUI
 				foreach ( CalleeFunctionInfo cfi in fi.CalleeInfo )
 				{
 					ContainerListViewItem lvi = _lvChildInfo.Items.Add( cfi.ID.ToString() );
-					lvi.SubItems[ 0 ].Text = cfi.Signature;
-					lvi.SubItems[ 1 ].Text = cfi.Calls.ToString();
-					lvi.SubItems[ 2 ].Text = cfi.PercentOfTotalTimeInMethod.ToString( "0.00;-0.00;0" );
-					lvi.SubItems[ 3 ].Text = cfi.PercentOfParentTimeInMethod.ToString( "0.00;-0.00;0" );
+					lvi.SubItems[ 1 ].Text = cfi.Signature;
+					lvi.SubItems[ 2 ].Text = cfi.Calls.ToString();
+					lvi.SubItems[ 3 ].Text = cfi.PercentOfTotalTimeInMethod.ToString( "0.00;-0.00;0" );
+					lvi.SubItems[ 4 ].Text = cfi.PercentOfParentTimeInMethod.ToString( "0.00;-0.00;0" );
 					lvi.Tag = cfi;
 				}
 
 				if ( fi.TotalSuspendedTicks > 0 )
 				{
 					ContainerListViewItem lviSuspend = _lvChildInfo.Items.Add( "(suspend)" );
-					lviSuspend.SubItems[ 0 ].Text = "(thread suspended)";
-					lviSuspend.SubItems[ 1 ].Text = "-";
-					lviSuspend.SubItems[ 2 ].Text = fi.PercentOfTotalTimeSuspended.ToString( "0.00;-0.00;0" );
-					lviSuspend.SubItems[ 3 ].Text = fi.PercentOfMethodTimeSuspended.ToString( "0.00;-0.00;0" );
+					lviSuspend.SubItems[ 1 ].Text = "(thread suspended)";
+					lviSuspend.SubItems[ 2 ].Text = "-";
+					lviSuspend.SubItems[ 3 ].Text = fi.PercentOfTotalTimeSuspended.ToString( "0.00;-0.00;0" );
+					lviSuspend.SubItems[ 4 ].Text = fi.PercentOfMethodTimeSuspended.ToString( "0.00;-0.00;0" );
 				}
 			}
 			finally
 			{
-				_lvChildInfo.Sort(false);
+				_lvChildInfo.Sort();
 				_lvChildInfo.Refresh();
 			}
 		}
 
-		private void ProfilerControl_Layout(object sender, System.Windows.Forms.LayoutEventArgs e)
-		{
-
-		}
-
 		private void ProfilerControl_Load(object sender, System.EventArgs e)
 		{
-			_lvFunctionInfo.Columns[0].SortingMethod = SortingMethod.Float;
-			_lvFunctionInfo.Columns[1].SortingMethod = SortingMethod.String;
-			_lvFunctionInfo.Columns[2].SortingMethod = SortingMethod.Float;
-			_lvFunctionInfo.Columns[3].SortingMethod = SortingMethod.Float;
-			_lvFunctionInfo.Columns[4].SortingMethod = SortingMethod.Float;
-			_lvFunctionInfo.Columns[5].SortingMethod = SortingMethod.Float;
-			_lvFunctionInfo.Columns[6].SortingMethod = SortingMethod.Float;
-
-			_lvFunctionInfo.Sort(1, false);
-
-			_lvChildInfo.Columns[0].SortingMethod = SortingMethod.Float;
-			_lvChildInfo.Columns[1].SortingMethod = SortingMethod.String;
-			_lvChildInfo.Columns[2].SortingMethod = SortingMethod.Float;
-			_lvChildInfo.Columns[3].SortingMethod = SortingMethod.Float;
-			_lvChildInfo.Columns[4].SortingMethod = SortingMethod.Float;
-
-			_lvChildInfo.Sort(1, false);
+			_lvFunctionInfo.Sort(1, true, true);
+			_lvChildInfo.Sort(1, true, true);
 		}
 
 		private void _lvChildInfo_DoubleClick(object sender, System.EventArgs e)
@@ -611,6 +631,18 @@ namespace NProf.GUI
 				JumpToID( cfi.ID );
 		}
 
+		private void _txtFilterBar_TextChanged(object sender, System.EventArgs e)
+		{
+			_tmrFilterThrottle.Enabled = false;
+			_tmrFilterThrottle.Enabled = true;
+		}
+
+		private void _tmrFilterThrottle_Tick(object sender, System.EventArgs e)
+		{
+			_tmrFilterThrottle.Enabled = false;
+			_lvFunctionInfo.Filter(1, _txtFilterBar.Text);
+		}
+
 		private void JumpToID( int nID )
 		{
 			foreach( ContainerListViewItem lvi in _lvFunctionInfo.Items )
@@ -620,6 +652,14 @@ namespace NProf.GUI
 				{
 					if(!lvi.Selected)
 					{
+						if(_lvFunctionInfo.FilteredItems[lvi] == -1)
+						{
+							if(MessageBox.Show("Cannot navigate to that function because it is being filtered.  Would you like to remove the filter and continue to that function?", "Filtered Item", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
+								return;
+							else
+								_txtFilterBar.Text = string.Empty;
+						}
+
 						_lvFunctionInfo.SelectedItems.Clear();
 
 						lvi.Selected = true;
@@ -644,9 +684,9 @@ namespace NProf.GUI
 		private bool _bUpdating, _bInCheck;
 		private Hashtable _htCheckedItems;
 
-		#region "Context Menus"
+		#region Context Menus
 
-		#region "Headers"
+		#region Headers
 
 		private void _lv_HeaderMenuEvent(object sender, System.Windows.Forms.MouseEventArgs e)
 		{
@@ -668,7 +708,7 @@ namespace NProf.GUI
 				sortByItem.RadioCheck = true;
 				sortByItem.Checked = hdr.SortingOrder != SortOrder.None;
 				sortByItem.Tag = new object[] { listView, idx };
-				sortByItem.Click += new EventHandler(sortByItem_Click);
+//				sortByItem.Click += new EventHandler(sortByItem_Click);
 
 				if(sortByItem.Checked)
 					isAscending = hdr.SortingOrder == SortOrder.Ascending;
@@ -681,13 +721,13 @@ namespace NProf.GUI
 			ascending.RadioCheck = true;
 			ascending.Checked = isAscending;
 			ascending.Tag = new object[] { listView, SortOrder.Ascending };
-			ascending.Click += new EventHandler(sortOrder_Click);
+//			ascending.Click += new EventHandler(sortOrder_Click);
 
 			MenuCommand descending = sortBy.MenuCommands.Add(new MenuCommand("&Descending"));
 			descending.RadioCheck = true;
 			descending.Checked = !isAscending;
 			descending.Tag = new object[] { listView, SortOrder.Descending };
-			descending.Click += new EventHandler(sortOrder_Click);
+//			descending.Click += new EventHandler(sortOrder_Click);
 
 			bool allShown = true;
 			for(int idx = 0; idx < listView.Columns.Count; ++idx)
@@ -711,25 +751,25 @@ namespace NProf.GUI
 				(result.Tag as ToggleColumnHeader).Visible = !result.Checked;
 		}
 
-		private void sortOrder_Click(object sender, EventArgs e)
-		{
-			MenuCommand cmd = sender as MenuCommand;
+//		private void sortOrder_Click(object sender, EventArgs e)
+//		{
+//			MenuCommand cmd = sender as MenuCommand;
+//
+//			object[] objs = (cmd.Tag as object[]);
+//			ContainerListView listView = objs[0] as ContainerListView;
+//
+//			listView.Sort((SortOrder)objs[1]);
+//		}
 
-			object[] objs = (cmd.Tag as object[]);
-			ContainerListView listView = objs[0] as ContainerListView;
-
-			listView.Sort((SortOrder)objs[1]);
-		}
-
-		private void sortByItem_Click(object sender, EventArgs e)
-		{
-			MenuCommand cmd = sender as MenuCommand;
-
-			object[] objs = (cmd.Tag as object[]);
-			ContainerListView listView = objs[0] as ContainerListView;
-
-			listView.Sort((int)objs[1], false);
-		}
+//		private void sortByItem_Click(object sender, EventArgs e)
+//		{
+//			MenuCommand cmd = sender as MenuCommand;
+//
+//			object[] objs = (cmd.Tag as object[]);
+//			ContainerListView listView = objs[0] as ContainerListView;
+//
+//			listView.Sort((int)objs[1], false);
+//		}
 
 		#endregion
 
