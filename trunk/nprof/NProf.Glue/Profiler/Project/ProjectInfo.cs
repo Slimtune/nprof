@@ -1,4 +1,5 @@
 using System;
+using System.Xml.Serialization;
 
 namespace NProf.Glue.Profiler.Project
 {
@@ -7,6 +8,8 @@ namespace NProf.Glue.Profiler.Project
 	/// </summary>
 	public class ProjectInfo
 	{
+		public ProjectInfo() : this(ProjectType.File) { } // JC: added default constructor for serialization
+
 		public ProjectInfo( ProjectType pt )
 		{
 			_po = new Options();
@@ -18,6 +21,7 @@ namespace NProf.Glue.Profiler.Project
 		public Options Options
 		{
 			get { return _po; }
+			set { _po = value; } // JC: added for serialization support
 		}
 
 		public string Name
@@ -44,6 +48,7 @@ namespace NProf.Glue.Profiler.Project
 			set { _strWorkingDirectory = value; }
 		}
 
+		[XmlIgnore()] // JC: prevent saving of runs collection
 		public RunCollection Runs
 		{
 			get { return _rc; }
