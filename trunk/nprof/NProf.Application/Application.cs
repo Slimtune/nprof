@@ -73,7 +73,7 @@ namespace NProf.Application
 				string upperArg = arg.ToUpper();
 				if ( upperArg.StartsWith( "/R:" ) )
 				{
-					pInfo.ApplicationName = arg.Substring( 3 );
+					pInfo.ApplicationName = Path.GetFullPath( arg.Substring( 3 ) );
 				} 
 				else if ( upperArg.StartsWith( "/W:" ) )
 				{
