@@ -26,7 +26,7 @@ namespace NProf.Glue.Profiler
 
 		public static string Version
 		{
-			get { return "0.8-alpha"; }
+			get { return "0.8a-alpha"; }
 		}
 
 		public bool CheckSetup( out string strMessage )
@@ -80,12 +80,14 @@ namespace NProf.Glue.Profiler
 				{
 					using ( RegistryKey rk = Registry.LocalMachine.OpenSubKey( @"SYSTEM\CurrentControlSet\Services\W3SVC", true ) )
 					{
-						SetRegistryKeys( rk );
+						if ( rk != null )
+							SetRegistryKeys( rk );
 					}
 
 					using ( RegistryKey rk = Registry.LocalMachine.OpenSubKey( @"SYSTEM\CurrentControlSet\Services\IISADMIN", true ) )
 					{
-						SetRegistryKeys( rk );
+						if ( rk != null )
+							SetRegistryKeys( rk );
 					}
 
 					Process p = Process.Start( "iisreset.exe", "" );
@@ -202,6 +204,9 @@ namespace NProf.Glue.Profiler
 
 		private void SetRegistryKeys( RegistryKey rk )
 		{
+			if ( rk == null )
+				return;
+
 			object oKeys = rk.GetValue( "Environment" );
 			
 			// If it's not something we expected, fix it
