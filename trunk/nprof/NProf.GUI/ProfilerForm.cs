@@ -488,36 +488,39 @@ namespace NProf.GUI
 			commandBar2 = new CommandBar();
 			commandBar2.Style = CommandBarStyle.ToolBar;
 
-			item = new CommandBarItem( Images.New, "New" );
+			item = new CommandBarButton( Images.New, "New", new EventHandler( _cmdFileNew_Click ) );
 			_cmdFileNew.Image = Images.New;
 			commandBar2.Items.Add( item );
 
-			item = new CommandBarItem( Images.Open, "Open" );
+			item = new CommandBarButton( Images.Open, "Open", new EventHandler( _cmdFileOpen_Click ) );
 			_cmdFileOpen.Image = Images.Open;
 			commandBar2.Items.Add( item );
 
-			item = new CommandBarItem( Images.Save, "Save" );
+			item = new CommandBarButton( Images.Save, "Save", new EventHandler( _cmdFileSave_Click ) );
 			_cmdFileSave.Image = Images.Save;
 			commandBar2.Items.Add( item );
 			
 			commandBar2.Items.AddSeparator();
 
-			item = new CommandBarItem( Images.Cut, "Cut" );
+			item = new CommandBarButton( Images.Cut, "Cut", new EventHandler( _cmdFileNew_Click ) );
+			item.IsEnabled = false;
 			commandBar2.Items.Add( item );
 			
-			item = new CommandBarItem( Images.Copy, "Copy" );
+			item = new CommandBarButton( Images.Copy, "Copy", new EventHandler( _cmdFileNew_Click ) );
+			item.IsEnabled = false;
 			commandBar2.Items.Add( item );
 
-			item = new CommandBarItem( Images.Paste, "Paste" );
+			item = new CommandBarButton( Images.Paste, "Paste", new EventHandler( _cmdFileNew_Click ) );
+			item.IsEnabled = false;
 			commandBar2.Items.Add( item );
 
 			commandBar2.Items.AddSeparator();
 			
-			item = new CommandBarItem( Images.Back, "Back" );
+			item = new CommandBarButton( Images.Back, "Back", new EventHandler( _cmdViewNavBack_Click ) );
 			_cmdViewNavBack.Image = Images.Back;
 			commandBar2.Items.Add( item );
 			
-			item = new CommandBarItem( Images.Forward, "Forward" );
+			item = new CommandBarButton( Images.Forward, "Forward", new EventHandler( _cmdViewNavForward_Click ) );
 			_cmdViewNavForward.Image = Images.Forward;
 			commandBar2.Items.Add( item );
 
@@ -832,6 +835,9 @@ namespace NProf.GUI
 
 		private bool SaveProject( ProjectInfo project, bool forceSaveDialog )
 		{
+			if ( project == null )
+				return true;
+
 			string filename = SerializationHandler.GetFilename( project );
 
 			if( forceSaveDialog || filename == string.Empty )
@@ -1013,6 +1019,6 @@ namespace NProf.GUI
 			public static Image Mail              { get { return images[34]; } }
 			public static Image Parent            { get { return images[35]; } }
 			public static Image FolderProperties  { get { return images[36]; } }
-		}			
+		}
 	}
 }
