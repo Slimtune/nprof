@@ -290,8 +290,6 @@ namespace NProf.GUI
 			}
 			ProfilerOptions po = new ProfilerOptions();
 			po.Debug = checkBox1.Checked;
-			_p.ProcessCompleted += new Profiler.ProcessCompletedHandler( OnProfileComplete );
-			_p.Error += new Profiler.ErrorHandler( OnError );
 			_p.Start( textBox1.Text, textBox2.Text, textBox3.Text, po );
 			this.Text = "nprof GUI - [Running]";
 		}
