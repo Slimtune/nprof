@@ -45,8 +45,6 @@ namespace NProf.GUI
 		private System.Windows.Forms.ComboBox _cboProjectName;
 		private ProfilerProjectMode _ppm;
 
-		private ProjectInfoCollection _recentlyUsed;
-
 		public ProfilerProjectOptionsForm()
 		{
 			//
@@ -430,12 +428,6 @@ namespace NProf.GUI
 				_btnCreateProject.Text = "Save Project";
 			}
 
-			_recentlyUsed = SerializationHandler.GetSavedProjectInfos();
-
-			_cboProjectName.ValueMember = "Name";
-			_cboProjectName.DisplayMember = "Name";
-			_cboProjectName.DataSource = _recentlyUsed;
-
 			_cboProjectName.Text = _p.Name;
 			_txtApplicationName.Text = _p.ApplicationName;
 			_txtArguments.Text = _p.Arguments;
@@ -469,8 +461,6 @@ namespace NProf.GUI
 				_p.ProjectType = ProjectType.File;
 			else if ( _rbAspNet.Checked )
 				_p.ProjectType = ProjectType.AspNet;
-
-			SerializationHandler.SaveProjectInfo(_p);
 		}
 
 		private void _rbProjectType_CheckedChanged(object sender, System.EventArgs e)

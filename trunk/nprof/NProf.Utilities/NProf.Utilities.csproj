@@ -76,13 +76,18 @@
                 />
                 <Reference
                     Name = "System.XML"
-                    AssemblyName = "System.XML"
+                    AssemblyName = "System.Xml"
                     HintPath = "C:\WINDOWS\Microsoft.NET\Framework\v1.1.4322\System.XML.dll"
                 />
                 <Reference
                     Name = "NProf.Glue"
                     Project = "{0BBA8E95-3D0F-4366-8418-0A8947C8DBEF}"
                     Package = "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"
+                />
+                <Reference
+                    Name = "ICSharpCode.SharpZipLib"
+                    AssemblyName = "ICSharpCode.SharpZipLib"
+                    HintPath = "..\Libraries\#ZipLib\ICSharpCode.SharpZipLib.dll"
                 />
             </References>
         </Build>

@@ -1,8 +1,11 @@
+using NProf.Glue.Profiler.Project;
+
+using ICSharpCode.SharpZipLib.Zip;
+
 using System;
 using System.Collections;
 using System.IO;
 using System.Xml.Serialization;
-using NProf.Glue.Profiler.Project;
 
 namespace NProf.Utilities.DataStore
 {
@@ -10,140 +13,184 @@ namespace NProf.Utilities.DataStore
 	{
 		public static string DataStoreDirectory;
 
-		private static Hashtable _projectInfoToFileNameMap = new Hashtable();
-		private static Hashtable _fileNameToProjectInfoMap = new Hashtable();
+		private static Hashtable _projectInfoToFileNameMap = Hashtable.Synchronized( new Hashtable() );
 
-		private static string ProjectsDirectoryPath
-		{
-			get
-			{
-				string path = DataStoreDirectory + "\\Projects";
-				Directory.CreateDirectory(path);
-
-				return path;
-			}
-		}
+		#region Properties
 
 		private static string ProjectsHistoryPath
 		{
 			get
 			{
 				string path = DataStoreDirectory;
-				Directory.CreateDirectory(path);
+				Directory.CreateDirectory( path );
 
 				return path + "\\Projects.xml";
 			}
 		}
 
-		private static UsedFileCollection ProjectsHistory
+		public static UsedFile[] ProjectsHistory
 		{
 			get
 			{
-				if(File.Exists(ProjectsHistoryPath))
+				if( File.Exists( ProjectsHistoryPath ) )
 				{
-					FileStream inputFile = new FileStream(ProjectsHistoryPath, FileMode.Open);
-					XmlSerializer s = new XmlSerializer(typeof(UsedFileCollection));
+					FileStream inputFile = new FileStream( ProjectsHistoryPath, FileMode.Open );
+					XmlSerializer s = new XmlSerializer( typeof( UsedFile[] ) );
 
-					UsedFileCollection rv = (UsedFileCollection)s.Deserialize(inputFile);
+					UsedFile[] usedFiles = ( UsedFile[] )s.Deserialize( inputFile );
 
 					inputFile.Close();
 
-					return rv;
+					return usedFiles;
 				}
 				else
-					return new UsedFileCollection();
+					return new UsedFile[0];
 			}
+		}
+
+		private static UsedFile[] InternalProjectsHistory
+		{
 			set
 			{
-				FileStream outputFile = new FileStream(ProjectsHistoryPath, FileMode.Create);
-				XmlSerializer s = new XmlSerializer(typeof(UsedFileCollection));
+				FileStream outputFile = new FileStream( ProjectsHistoryPath, FileMode.Create );
+				XmlSerializer s = new XmlSerializer( typeof( UsedFile[] ) );
 
-				value.Sort();
-				s.Serialize(outputFile, value);
+				Array.Sort( value );
+
+				s.Serialize( outputFile, value );
 
 				outputFile.Close();
 			}
 		}
 
+		#endregion
+
 		static SerializationHandler() { }
 
-		private static string GetUniqueFileName(string path, string extension)
+		/// <summary>
+		/// Opens a ProjectInfo from the specified file location
+		/// </summary>
+		/// <param name="fileName">The absolute path to the file</param>
+		/// <returns>An instance of ProjectInfo if the file is valid, null if otherwise</returns>
+		public static ProjectInfo OpenProjectInfo( string fileName )
 		{
-			return path + (path.EndsWith("\\") ? string.Empty : "\\") +
-				Guid.NewGuid().ToString("D") + (extension.StartsWith(".") ? string.Empty : ".") + extension;
+			if( !File.Exists( fileName ) )
+				return null;
+
+			// open zip file and get a stream to the ProjectInfo file
+			ZipFile zipFile = new ZipFile( fileName );
+			ZipEntry entry = zipFile.GetEntry( "ProjectInfo.xml" );
+			Stream inputStream = zipFile.GetInputStream(entry);
+
+			// deserialize that into a new ProjectInfo
+			XmlSerializer s = new XmlSerializer( typeof( ProjectInfo ) );
+			ProjectInfo info = ( ProjectInfo )s.Deserialize( inputStream );
+			inputStream.Close();
+
+			// add this for looking up later
+			_projectInfoToFileNameMap[ info ] = fileName;
+
+			// make the file recently used and return
+			MakeRecentlyUsed( info, fileName );
+			return info;
 		}
 
-		public static void SaveProjectInfo(ProjectInfo info)
+		/// <summary>
+		/// Saves a ProjectInfo into the file it was originally opened in, to save a new ProjectInfo use the other overload
+		/// </summary>
+		/// <param name="info">The previously opened ProjectInfo</param>
+		public static void SaveProjectInfo( ProjectInfo info )
 		{
-			string fileName = string.Empty;
-
-			if(_projectInfoToFileNameMap.Contains(info)) // one that has already been opened
-				fileName = (string)_projectInfoToFileNameMap[info];
-			else // a new guy
+			if( _projectInfoToFileNameMap.Contains( info ) ) // one that has already been opened
 			{
-				fileName = GetUniqueFileName(ProjectsDirectoryPath, "xml");
-				_projectInfoToFileNameMap.Add(info, fileName);
-				_fileNameToProjectInfoMap.Add(fileName, info);
+				string fileName = ( string )_projectInfoToFileNameMap[ info ];
+
+				SaveProjectInfo( info, fileName );
 			}
-
-			FileStream outputFile = new FileStream(fileName, FileMode.Create);
-
-			XmlSerializer s = new XmlSerializer(typeof(ProjectInfo));
-			s.Serialize(outputFile, info);
-
-			outputFile.Close();
-
-			MakeRecentlyUsed(fileName);
 		}
 
-		public static void MakeRecentlyUsed(ProjectInfo info)
-		{ MakeRecentlyUsed(_projectInfoToFileNameMap[info] as ProjectInfo); }
-
-		private static void MakeRecentlyUsed(string fileName)
+		/// <summary>
+		/// Saves a ProjectInfo into the specified filename
+		/// </summary>
+		/// <param name="info">The ProjectInfo to save</param>
+		/// <param name="fileName">The file to save it in</param>
+		public static void SaveProjectInfo( ProjectInfo info, string fileName )
 		{
-			if(fileName == null || fileName == string.Empty)
-				return;
+			// serialize the object into a buffer
+			MemoryStream memoryBuffer = new MemoryStream();
+			XmlSerializer s = new XmlSerializer( typeof( ProjectInfo ) );
+			s.Serialize( memoryBuffer, info );
+			memoryBuffer.Close();
 
-			UsedFileCollection ufc = ProjectsHistory;
+			// put that buffer as a file into a zip file
+			ZipOutputStream outputStream = new ZipOutputStream( File.Create( fileName ) );
+			AddFileToZip( memoryBuffer.GetBuffer(), outputStream, "ProjectInfo.xml" );
+			outputStream.Close();
 
-			ufc[fileName].LastUsed = DateTime.Now;
+			// remember for later
+			_projectInfoToFileNameMap[ info ] = fileName;
 
-			ProjectsHistory = ufc;
+			// make it recently used
+			MakeRecentlyUsed( info, fileName );
 		}
 
-		public static ProjectInfoCollection GetSavedProjectInfos()
+		/// <summary>
+		/// Will return the filename of a ProjectInfo
+		/// </summary>
+		/// <param name="info">The ProjectInfo to lookup the filename for</param>
+		/// <returns>The filename of the ProjectInfo or empty string if not known</returns>
+		public static string GetFilename( ProjectInfo info )
 		{
-			SortedList list = new SortedList();
-			UsedFileCollection usf = ProjectsHistory;
+			return ( ( string )_projectInfoToFileNameMap[ info ] ) + string.Empty;
+		}
 
-			foreach(string fileName in Directory.GetFiles(ProjectsDirectoryPath))
+		#region Helper functions
+		private static void AddFileToZip( byte[] fileBuffer, ZipOutputStream outputStream, string fileName )
+		{
+			ZipEntry entry = new ZipEntry( fileName );
+
+			entry.CompressionMethod = CompressionMethod.Deflated;
+			entry.Size = fileBuffer.Length;
+			entry.DateTime = DateTime.Now;
+
+			ICSharpCode.SharpZipLib.Checksums.Crc32 crc = new ICSharpCode.SharpZipLib.Checksums.Crc32();
+			crc.Update(fileBuffer);
+
+			entry.Crc  = crc.Value;
+
+			outputStream.PutNextEntry(entry);
+			outputStream.Write(fileBuffer, 0, fileBuffer.Length);
+		}
+
+		private static void MakeRecentlyUsed( ProjectInfo project, string fileName )
+		{
+			UsedFile[] usedFiles = ProjectsHistory;
+
+			bool found = false;
+			foreach( UsedFile usedFile in usedFiles )
 			{
-				ProjectInfo info = null;
-
-				if(_fileNameToProjectInfoMap.Contains(fileName))
-					info = (ProjectInfo)_fileNameToProjectInfoMap[fileName];
-				else
+				if( usedFile.FileName == fileName )
 				{
-					FileStream inputFile = new FileStream(fileName, FileMode.Open);
-
-					XmlSerializer s = new XmlSerializer(typeof(ProjectInfo));
-					info = (ProjectInfo)s.Deserialize(inputFile);
-
-					inputFile.Close();
-
-					_projectInfoToFileNameMap.Add(info, fileName);
-					_fileNameToProjectInfoMap.Add(fileName, info);
+					usedFile.LastUsed = DateTime.Now;
+					usedFile.ProjectName = project.Name;
+					found = true;
+					break;
 				}
-
-				list.Add(DateTime.MaxValue - usf[fileName].LastUsed, info);
 			}
 
-			ProjectInfoCollection rv = new ProjectInfoCollection();
+			if( !found )
+			{
+				UsedFile[] temp = usedFiles;
+				usedFiles = new UsedFile[ usedFiles.Length + 1];
+				Array.Copy( temp, usedFiles, temp.Length );
 
-			foreach(ProjectInfo info in list.Values)
-				rv.Add(info);
+				UsedFile uf = new UsedFile( fileName, project.Name, DateTime.Now );
 
-			return rv;
+				usedFiles[ temp.Length ] = uf;
+			}
+
+			InternalProjectsHistory = usedFiles;
 		}
+		#endregion
 	}
 }

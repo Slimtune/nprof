@@ -3,51 +3,10 @@ using System.Collections;
 
 namespace NProf.Utilities.DataStore
 {
-	public class UsedFileCollection
-	{
-		private ArrayList _usedFiles = new ArrayList();
-		private Hashtable _fileNameMap = new Hashtable();
-
-		public UsedFile this[string fileName]
-		{
-			get
-			{
-				if(!_fileNameMap.Contains(fileName))
-				{
-					UsedFile uf = new UsedFile(fileName);
-					_fileNameMap.Add(fileName, uf);
-					_usedFiles.Add(uf);
-				}
-
-				return ((UsedFile)_fileNameMap[fileName]);
-			}
-		}
-
-		public UsedFile[] Data
-		{
-			get
-			{
-				return (UsedFile[])_usedFiles.ToArray(typeof(UsedFile));
-			}
-			set
-			{
-				foreach(UsedFile uf in value)
-				{
-					_usedFiles.Add(uf);
-					_fileNameMap.Add(uf.FileName, uf);
-				}
-			}
-		}
-
-		public void Sort()
-		{
-			_usedFiles.Sort();
-		}
-	}
-
 	public class UsedFile : IComparable
 	{
 		private string _fileName;
+		private string _projectName;
 		private DateTime _lastUsed;
 
 		public string FileName
@@ -59,6 +18,18 @@ namespace NProf.Utilities.DataStore
 			set
 			{
 				_fileName = value;
+			}
+		}
+
+		public string ProjectName
+		{
+			get
+			{
+				return _projectName;
+			}
+			set
+			{
+				_projectName = value;
 			}
 		}
 
@@ -75,11 +46,14 @@ namespace NProf.Utilities.DataStore
 		}
 
 		public UsedFile()
-		{ }
-		public UsedFile(string fileName)
+		{
+		}
+
+		internal UsedFile(string fileName, string projectName, DateTime lastUsed)
 		{
 			_fileName = fileName;
-			_lastUsed = DateTime.MinValue;
+			_projectName = projectName;
+			_lastUsed = lastUsed;
 		}
 	
 		public int CompareTo(object obj)
