@@ -312,7 +312,7 @@ namespace NProf.GUI
 			this.Controls.Add(this._menuMain);
 			this.Controls.Add(this._sbStatusBar);
 			this.Name = "ProfilerForm";
-			this.Text = "nprof Profiling Application - Alpha v0.4";
+			this.Text = "nprof Profiling Application - Alpha v0.5";
 			this.Closing += new System.ComponentModel.CancelEventHandler(this.ProfilerForm_Closing);
 			this.Load += new System.EventHandler(this.ProfilerForm_Load);
 			this.Layout += new System.Windows.Forms.LayoutEventHandler(this.ProfilerForm_Layout);

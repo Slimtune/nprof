@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <project name="nprof" basedir=".." default="build">
-	<property name="nant.settings.currentframework" value="net-1.0" />
+	<property name="nant.settings.currentframework" value="net-1.1" />
 	
 	<echo message="Build configuration: ${build.configuration}" />
 
@@ -21,9 +21,15 @@
 	</target>
 
 	<target name="build">
+		<delete>
+			<fileset>
+				<includes name="**/bin/${build.configuration}/**" />
+			</fileset>
+		</delete>
 		<solution configuration="${build.configuration}">		
 			<projects>
 				<includes name="**/*.csproj" />
+				<excludes name="Releases/**" />			
 			</projects>
 		</solution>
 	</target>
