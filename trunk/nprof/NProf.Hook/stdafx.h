@@ -67,7 +67,7 @@ using namespace std;
 
 #include "corsym.h"
 #include "corpub.h"
-#include "corsvc.h"
+//#include "corsvc.h"
 #include "corprof.h"
 //#include "cordebug.h"
 

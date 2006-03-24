@@ -431,12 +431,12 @@ PCCOR_SIGNATURE ProfilerHelper::ParseElementType( IMetaDataImport *pMDImport,
 						numlower = CorSigUncompressData( signature );	
 						if ( numlower <= rank )
 						{
-							for ( i = 0; i < numlower; i++)	
+							for (ULONG i = 0; i < numlower; i++)	
 								lower[i] = CorSigUncompressData( signature ); 
 							
                             
 							strcat( buffer, "[" );	
-							for ( i = 0; i < rank; i++ )	
+							for (ULONG i = 0; i < rank; i++ )	
 							{	
 								if ( (sizes[i] != 0) && (lower[i] != 0) )	
 								{	

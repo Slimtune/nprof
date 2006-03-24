@@ -3,8 +3,8 @@
 /* this ALWAYS GENERATED file contains the proxy stub code */
 
 
- /* File created by MIDL compiler version 6.00.0361 */
-/* at Wed Sep 22 08:31:10 2004
+ /* File created by MIDL compiler version 6.00.0366 */
+/* at Fri Mar 24 21:23:44 2006
  */
 /* Compiler settings for _NProf.Hook.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
@@ -26,6 +26,8 @@
 #pragma warning( disable: 4100 ) /* unreferenced arguments in x86 call */
 #pragma warning( disable: 4211 )  /* redefine extent to static */
 #pragma warning( disable: 4232 )  /* dllimport identity*/
+#pragma optimize("", off ) 
+
 #define USE_STUBLESS_PROXY
 
 
@@ -196,7 +198,7 @@ static const MIDL_STUB_DESC Object_StubDesc =
     1, /* -error bounds_check flag */
     0x50002, /* Ndr library version */
     0,
-    0x6000169, /* MIDL Version 6.0.361 */
+    0x600016e, /* MIDL Version 6.0.366 */
     0,
     0,
     0,  /* notify & notify_flag routine table */
@@ -259,6 +261,7 @@ const ExtendedProxyFileInfo _NProf2EHook_ProxyFileInfo =
     0, /* Filler2 */
     0  /* Filler3 */
 };
+#pragma optimize("", on )
 #if _MSC_VER >= 1200
 #pragma warning(pop)
 #endif

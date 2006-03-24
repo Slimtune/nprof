@@ -3,8 +3,8 @@
 /* this ALWAYS GENERATED file contains the definitions for the interfaces */
 
 
- /* File created by MIDL compiler version 6.00.0361 */
-/* at Wed Sep 22 08:31:10 2004
+ /* File created by MIDL compiler version 6.00.0366 */
+/* at Fri Mar 24 21:23:44 2006
  */
 /* Compiler settings for _NProf.Hook.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
@@ -71,7 +71,6 @@ typedef struct CNProfCORHook CNProfCORHook;
 #include "objsafe.h"
 #include "corsym.h"
 #include "corpub.h"
-#include "corsvc.h"
 #include "corprof.h"
 
 #ifdef __cplusplus

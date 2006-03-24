@@ -35,7 +35,7 @@ __interface INProfCORHook : IDispatch
 ]
 class ATL_NO_VTABLE CNProfCORHook : 
   public INProfCORHook,
-  public ICorProfilerCallback
+  public ICorProfilerCallback2
 {
 public:
   CNProfCORHook()
@@ -392,6 +392,39 @@ public:
     return E_NOTIMPL;
   }
   STDMETHOD(ExceptionCLRCatcherExecute)()
+  {
+    return E_NOTIMPL;
+  }
+  STDMETHOD(ThreadNameChanged)(ThreadID threadId, ULONG cchName, WCHAR name[])
+  {
+    return E_NOTIMPL;
+  }
+  STDMETHOD(GarbageCollectionStarted)(int cGenerations, BOOL generationCollected[], COR_PRF_GC_REASON reason)
+  {
+    return E_NOTIMPL;
+  }
+  STDMETHOD(SurvivingReferences) (ULONG cSurvivingObjectIDRanges,ObjectID objectIDRangeStart[],ULONG cObjectIDRangeLength[])
+  {
+    return E_NOTIMPL;
+  }
+  STDMETHOD(GarbageCollectionFinished)()
+  {
+    return E_NOTIMPL;
+  }
+  STDMETHOD(FinalizeableObjectQueued)(DWORD finalizerFlags,ObjectID objectID)
+  {
+    return E_NOTIMPL;
+  }
+  STDMETHOD(RootReferences2)(ULONG cRootRefs, ObjectID rootRefIds[], COR_PRF_GC_ROOT_KIND rootKinds[],
+              COR_PRF_GC_ROOT_FLAGS rootFlags[], UINT_PTR rootIds[])
+  {
+    return E_NOTIMPL;
+  }
+  STDMETHOD(HandleCreated)(GCHandleID handleId,ObjectID initialObjectId)
+  {
+    return E_NOTIMPL;
+  }
+  STDMETHOD(HandleDestroyed)(GCHandleID handleId)
   {
     return E_NOTIMPL;
   }

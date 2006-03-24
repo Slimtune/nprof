@@ -5,8 +5,8 @@
 /* link this file in with the server and any clients */
 
 
- /* File created by MIDL compiler version 6.00.0361 */
-/* at Wed Sep 22 08:31:10 2004
+ /* File created by MIDL compiler version 6.00.0366 */
+/* at Fri Mar 24 21:23:44 2006
  */
 /* Compiler settings for _NProf.Hook.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)
@@ -17,9 +17,6 @@
          DECLSPEC_UUID(), MIDL_INTERFACE()
 */
 //@@MIDL_FILE_HEADING(  )
-
-#if !defined(_M_IA64) && !defined(_M_AMD64)
-
 
 #pragma warning( disable: 4049 )  /* more than 64k source lines */
 
@@ -85,6 +82,4 @@ MIDL_DEFINE_GUID(CLSID, CLSID_CNProfCORHook,0x791DA9FE,0x05A0,0x495E,0x94,0xBF,0
 #endif
 
 
-
-#endif /* !defined(_M_IA64) && !defined(_M_AMD64)*/
 
