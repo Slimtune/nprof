@@ -1,0 +1,159 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectType>Local</ProjectType>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{0BBA8E95-3D0F-4366-8418-0A8947C8DBEF}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ApplicationIcon>
+    </ApplicationIcon>
+    <AssemblyKeyContainerName>
+    </AssemblyKeyContainerName>
+    <AssemblyName>NProf.Glue</AssemblyName>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
+    <DefaultClientScript>JScript</DefaultClientScript>
+    <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
+    <DefaultTargetSchema>IE50</DefaultTargetSchema>
+    <DelaySign>false</DelaySign>
+    <OutputType>Library</OutputType>
+    <RootNamespace>NProf.Glue</RootNamespace>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <StartupObject>
+    </StartupObject>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DocumentationFile>
+    </DocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <NoStdLib>false</NoStdLib>
+    <NoWarn>
+    </NoWarn>
+    <Optimize>false</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <DebugType>full</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>TRACE</DefineConstants>
+    <DocumentationFile>
+    </DocumentationFile>
+    <DebugSymbols>false</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <NoStdLib>false</NoStdLib>
+    <NoWarn>
+    </NoWarn>
+    <Optimize>true</Optimize>
+    <RegisterForComInterop>true</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <DebugType>none</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System">
+      <Name>System</Name>
+    </Reference>
+    <Reference Include="System.Data">
+      <Name>System.Data</Name>
+    </Reference>
+    <Reference Include="System.ServiceProcess">
+      <Name>System.ServiceProcess</Name>
+    </Reference>
+    <Reference Include="System.Xml">
+      <Name>System.XML</Name>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Profiler\Core\CorEventDispatcher.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Profiler\Core\ProfilerSocketServer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Profiler\Info\CalleeFunctionInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Profiler\Info\FunctionInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Profiler\Info\FunctionInfoCollection.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Profiler\Info\FunctionSignature.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Profiler\Info\FunctionSignatureMap.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Profiler\Info\ProcessInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Profiler\Info\ProcessInfoCollection.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Profiler\Info\ThreadInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Profiler\Info\ThreadInfoCollection.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Profiler\Profiler.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Profiler\Project\Options.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Profiler\Project\ProjectInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Profiler\Project\ProjectInfoCollection.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Profiler\Project\ProjectType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Profiler\Project\Run.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Profiler\Project\RunCollection.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Profiler\Project\RunMessageCollection.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>
