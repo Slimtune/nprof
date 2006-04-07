@@ -7,6 +7,7 @@ namespace NProf.Glue.Profiler.Info
 	/// <summary>
 	/// Summary description for Threads.
 	/// </summary>
+	[Serializable]
 	public class ThreadInfoCollection : IEnumerable
 	{
 		public ThreadInfoCollection()

@@ -6,6 +6,7 @@ namespace NProf.Glue.Profiler.Project
 	/// <summary>
 	/// Summary description for RunCollection.
 	/// </summary>
+	[Serializable]
 	public class RunCollection : IEnumerable
 	{
 		public RunCollection( ProjectInfo pi )
@@ -43,8 +44,9 @@ namespace NProf.Glue.Profiler.Project
 		{
 			get { return ( Run )_alItems[ nIndex ]; }
 		}
-
+		[field:NonSerialized]
 		public event RunEventHandler RunAdded;
+		[field:NonSerialized]
 		public event RunEventHandler RunRemoved;
 
 		public delegate void RunEventHandler( ProjectInfo pi, RunCollection runs, Run run, int nIndex );

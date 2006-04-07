@@ -7,6 +7,7 @@ namespace NProf.Glue.Profiler.Info
 	/// <summary>
 	/// Summary description for FunctionCollection.
 	/// </summary>
+	[Serializable]
 	public class FunctionInfoCollection : IEnumerable
 	{
 		public FunctionInfoCollection()

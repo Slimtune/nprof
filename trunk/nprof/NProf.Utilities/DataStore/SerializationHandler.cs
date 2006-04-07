@@ -1,4 +1,5 @@
 using NProf.Glue.Profiler.Project;
+using NProf.Glue.Profiler.Info;
 
 using ICSharpCode.SharpZipLib.Zip;
 
@@ -6,6 +7,8 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Xml.Serialization;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace NProf.Utilities.DataStore
 {
@@ -80,42 +83,22 @@ namespace NProf.Utilities.DataStore
 		/// </summary>
 		/// <param name="fileName">The absolute path to the file</param>
 		/// <returns>An instance of ProjectInfo if the file is valid, null if otherwise</returns>
-		public static ProjectInfo OpenProjectInfo( string fileName )
+		public static ProjectInfo OpenProjectInfo(string fileName)
 		{
-			if( !File.Exists( fileName ) )
+			if (!File.Exists(fileName))
 				return null;
 
-			// open zip file and get a stream to the ProjectInfo file
-			ZipFile zipFile = new ZipFile( fileName );
-			ProjectInfo info = null;
-
-			ZipEntry entry = zipFile.GetEntry( "ProjectInfo.xml" );
-			Stream inputStream = zipFile.GetInputStream( entry );
-			// deserialize that into a new ProjectInfo
-			XmlSerializer s = new XmlSerializer( typeof( ProjectInfo ) );
-			info = ( ProjectInfo )s.Deserialize( inputStream );
-
-			int nIndex = 0;
-
-			ZipEntry zeRun;
-			XmlSerializer xsRun = new XmlSerializer( typeof( Run ) );
-
-			while ( ( zeRun = zipFile.GetEntry( String.Format( "Run-{0:00000000}.xml", nIndex ) ) ) != null )
-			{
-				Run r = ( Run )xsRun.Deserialize( zipFile.GetInputStream( zeRun ) );
-				r.Project = info;
-				info.Runs.Add( r );
-
-				nIndex++;
-			}
-
-			zipFile.Close();
+			FileInfo f = new FileInfo(fileName);
+			Stream s = f.Open(FileMode.Open);
+			BinaryFormatter b = new BinaryFormatter();
+			ProjectInfo info=(ProjectInfo)b.Deserialize(s);
+			s.Close();
 
 			// add this for looking up later
-			_projectInfoToFileNameMap[ info ] = fileName;
+			_projectInfoToFileNameMap[info] = fileName;
 
 			// make the file recently used and return
-			MakeRecentlyUsed( info, fileName );
+			MakeRecentlyUsed(info, fileName);
 			return info;
 		}
 
@@ -138,45 +121,18 @@ namespace NProf.Utilities.DataStore
 		/// </summary>
 		/// <param name="info">The ProjectInfo to save</param>
 		/// <param name="fileName">The file to save it in</param>
-		public static void SaveProjectInfo( ProjectInfo info, string fileName )
+		public static void SaveProjectInfo(ProjectInfo info, string fileName)
 		{
-			ZipOutputStream zos = new ZipOutputStream( File.Create( fileName ) );
-			zos.SetLevel( 7 );
-
-			// Set the file format version
-			FileFormat ff = new FileFormat();
-			ff.Version = 0;
-			ff.Program = "NProf v0.8";
-
-			AddFileToZip( zos, "NProfFileFormat.xml" );
-			XmlSerializer sff = new XmlSerializer( typeof( FileFormat ) );
-			sff.Serialize( zos, ff );
-
-			// put that buffer as a file into a zip file
-			AddFileToZip( zos, "ProjectInfo.xml" );
-			XmlSerializer s = new XmlSerializer( typeof( ProjectInfo ) );
-			s.Serialize( zos, info );
-
-			XmlSerializer xsRun = new XmlSerializer( typeof( Run ) );
-
-			int nIndex = 0;
-
-			foreach ( Run r in info.Runs )
-			{
-				string strFilename = String.Format( "Run-{0:00000000}.xml", nIndex );
-				AddFileToZip( zos, strFilename );
-				xsRun.Serialize( zos, r );
-
-				nIndex++;
-			}
-
-			zos.Close();
-
+			FileInfo f = new FileInfo(fileName);
+			Stream s = f.Open(FileMode.Create);
+			BinaryFormatter b = new BinaryFormatter();
+			b.Serialize(s, info);
+			s.Close();
 			// remember for later
-			_projectInfoToFileNameMap[ info ] = fileName;
+			_projectInfoToFileNameMap[info] = fileName;
 
 			// make it recently used
-			MakeRecentlyUsed( info, fileName );
+			MakeRecentlyUsed(info, fileName);
 		}
 
 		/// <summary>

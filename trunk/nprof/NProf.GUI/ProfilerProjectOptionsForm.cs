@@ -99,12 +99,12 @@ namespace NProf.GUI
 			this._rbAspNet = new System.Windows.Forms.RadioButton();
 			this._rbFile = new System.Windows.Forms.RadioButton();
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
+			this._cbProfileOtherApps = new System.Windows.Forms.CheckBox();
 			this.checkBox1 = new System.Windows.Forms.CheckBox();
 			this._rbRemote = new System.Windows.Forms.RadioButton();
 			this._lblAspNet = new System.Windows.Forms.Label();
 			this.label6 = new System.Windows.Forms.Label();
 			this.groupBox2 = new System.Windows.Forms.GroupBox();
-			this._cbProfileOtherApps = new System.Windows.Forms.CheckBox();
 			this.groupBox1.SuspendLayout();
 			this.groupBox2.SuspendLayout();
 			this.SuspendLayout();
@@ -124,7 +124,8 @@ namespace NProf.GUI
 			this._btnBrowseApplication.FlatStyle = System.Windows.Forms.FlatStyle.System;
 			this._btnBrowseApplication.Location = new System.Drawing.Point(528, 104);
 			this._btnBrowseApplication.Name = "_btnBrowseApplication";
-			this._btnBrowseApplication.TabIndex = 5;
+			this._btnBrowseApplication.Size = new System.Drawing.Size(75, 23);
+			this._btnBrowseApplication.TabIndex = 7;
 			this._btnBrowseApplication.Text = "Browse...";
 			this._btnBrowseApplication.Click += new System.EventHandler(this._btnBrowseApplication_Click);
 			// 
@@ -134,13 +135,13 @@ namespace NProf.GUI
 			this._txtApplicationName.Name = "_txtApplicationName";
 			this._txtApplicationName.Size = new System.Drawing.Size(392, 20);
 			this._txtApplicationName.TabIndex = 4;
-			this._txtApplicationName.Text = "";
 			this._ttToolTips.SetToolTip(this._txtApplicationName, "Locate the execute to profile");
 			// 
 			// label1
 			// 
 			this.label1.Location = new System.Drawing.Point(24, 104);
 			this.label1.Name = "label1";
+			this.label1.Size = new System.Drawing.Size(100, 23);
 			this.label1.TabIndex = 3;
 			this.label1.Text = "Application to run:";
 			// 
@@ -149,14 +150,14 @@ namespace NProf.GUI
 			this._txtArguments.Location = new System.Drawing.Point(128, 128);
 			this._txtArguments.Name = "_txtArguments";
 			this._txtArguments.Size = new System.Drawing.Size(392, 20);
-			this._txtArguments.TabIndex = 7;
-			this._txtArguments.Text = "";
+			this._txtArguments.TabIndex = 5;
 			this._ttToolTips.SetToolTip(this._txtArguments, "Enter any command line arguments to pass to the above executable");
 			// 
 			// label3
 			// 
 			this.label3.Location = new System.Drawing.Point(24, 128);
 			this.label3.Name = "label3";
+			this.label3.Size = new System.Drawing.Size(100, 23);
 			this.label3.TabIndex = 6;
 			this.label3.Text = "Arguments:";
 			// 
@@ -165,14 +166,14 @@ namespace NProf.GUI
 			this._txtWorkingDirectory.Location = new System.Drawing.Point(128, 152);
 			this._txtWorkingDirectory.Name = "_txtWorkingDirectory";
 			this._txtWorkingDirectory.Size = new System.Drawing.Size(392, 20);
-			this._txtWorkingDirectory.TabIndex = 9;
-			this._txtWorkingDirectory.Text = "";
+			this._txtWorkingDirectory.TabIndex = 6;
 			this._ttToolTips.SetToolTip(this._txtWorkingDirectory, "Select the directory to start the program in");
 			// 
 			// label4
 			// 
 			this.label4.Location = new System.Drawing.Point(24, 152);
 			this.label4.Name = "label4";
+			this.label4.Size = new System.Drawing.Size(100, 23);
 			this.label4.TabIndex = 8;
 			this.label4.Text = "Working directory:";
 			// 
@@ -181,7 +182,8 @@ namespace NProf.GUI
 			this._btnBrowseWorkingDirectory.FlatStyle = System.Windows.Forms.FlatStyle.System;
 			this._btnBrowseWorkingDirectory.Location = new System.Drawing.Point(528, 152);
 			this._btnBrowseWorkingDirectory.Name = "_btnBrowseWorkingDirectory";
-			this._btnBrowseWorkingDirectory.TabIndex = 10;
+			this._btnBrowseWorkingDirectory.Size = new System.Drawing.Size(75, 23);
+			this._btnBrowseWorkingDirectory.TabIndex = 8;
 			this._btnBrowseWorkingDirectory.Text = "Browse...";
 			this._btnBrowseWorkingDirectory.Click += new System.EventHandler(this._btnBrowseWorkingDirectory_Click);
 			// 
@@ -228,6 +230,7 @@ namespace NProf.GUI
 			this._rbAspNet.FlatStyle = System.Windows.Forms.FlatStyle.System;
 			this._rbAspNet.Location = new System.Drawing.Point(16, 192);
 			this._rbAspNet.Name = "_rbAspNet";
+			this._rbAspNet.Size = new System.Drawing.Size(104, 24);
 			this._rbAspNet.TabIndex = 11;
 			this._rbAspNet.Text = "ASP.NET";
 			this._rbAspNet.CheckedChanged += new System.EventHandler(this._rbProjectType_CheckedChanged);
@@ -238,6 +241,7 @@ namespace NProf.GUI
 			this._rbFile.FlatStyle = System.Windows.Forms.FlatStyle.System;
 			this._rbFile.Location = new System.Drawing.Point(16, 48);
 			this._rbFile.Name = "_rbFile";
+			this._rbFile.Size = new System.Drawing.Size(104, 24);
 			this._rbFile.TabIndex = 1;
 			this._rbFile.TabStop = true;
 			this._rbFile.Text = "File";
@@ -254,6 +258,14 @@ namespace NProf.GUI
 			this.groupBox1.TabIndex = 3;
 			this.groupBox1.TabStop = false;
 			this.groupBox1.Text = "Common Options";
+			// 
+			// _cbProfileOtherApps
+			// 
+			this._cbProfileOtherApps.Location = new System.Drawing.Point(192, 16);
+			this._cbProfileOtherApps.Name = "_cbProfileOtherApps";
+			this._cbProfileOtherApps.Size = new System.Drawing.Size(192, 24);
+			this._cbProfileOtherApps.TabIndex = 2;
+			this._cbProfileOtherApps.Text = "Profile Started Applications";
 			// 
 			// checkBox1
 			// 
@@ -320,14 +332,6 @@ namespace NProf.GUI
 			this.groupBox2.TabStop = false;
 			this.groupBox2.Text = "Project Type";
 			// 
-			// _cbProfileOtherApps
-			// 
-			this._cbProfileOtherApps.Location = new System.Drawing.Point(192, 16);
-			this._cbProfileOtherApps.Name = "_cbProfileOtherApps";
-			this._cbProfileOtherApps.Size = new System.Drawing.Size(192, 24);
-			this._cbProfileOtherApps.TabIndex = 2;
-			this._cbProfileOtherApps.Text = "Profile Started Applications";
-			// 
 			// ProfilerProjectOptionsForm
 			// 
 			this.AcceptButton = this._btnCreateProject;
@@ -347,6 +351,7 @@ namespace NProf.GUI
 			this.Load += new System.EventHandler(this.ProfilerProjectOptionsForm_Load);
 			this.groupBox1.ResumeLayout(false);
 			this.groupBox2.ResumeLayout(false);
+			this.groupBox2.PerformLayout();
 			this.ResumeLayout(false);
 
 		}

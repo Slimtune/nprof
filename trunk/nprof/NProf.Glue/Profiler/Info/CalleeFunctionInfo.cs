@@ -5,6 +5,7 @@ namespace NProf.Glue.Profiler.Info
 	/// <summary>
 	/// Summary description for FunctionInfo.
 	/// </summary>
+	[Serializable]
 	public class CalleeFunctionInfo
 	{
 		public CalleeFunctionInfo()

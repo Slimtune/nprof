@@ -7,6 +7,7 @@ namespace NProf.Glue.Profiler.Project
 	/// <summary>
 	/// Summary description for RunMessageCollection.
 	/// </summary>
+	[Serializable]
 	public class RunMessageCollection : IEnumerable
 	{
 		/// <summary>
@@ -86,6 +87,7 @@ namespace NProf.Glue.Profiler.Project
 		private ArrayList _alMessages;
 
 		public delegate void MessageHandler( string strMessage );
+		[field:NonSerialized]
 		private event MessageHandler Message;
 	}
 }

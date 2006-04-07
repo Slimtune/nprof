@@ -32,14 +32,15 @@ Profiler::~Profiler()
 /** No descriptions */
 void Profiler::Enter( FunctionID fid )
 {
-  FunctionInfo* pFunctionInfo = GetCurrentThreadInfo()->GetFunctionInfo( fid );
-  GetCurrentThreadInfo()->GetStackInfo()->PushFunction( pFunctionInfo, rdtsc() );
+  ThreadInfo* pThreadInfo=GetCurrentThreadInfo();
+  FunctionInfo* pFunctionInfo = pThreadInfo->GetFunctionInfo( fid );
+  pThreadInfo->GetStackInfo()->PushFunction( pFunctionInfo, rdtsc() );
 }
 
 /** No descriptions */
 void Profiler::Leave( FunctionID fid )
 {
-  INT64 ll = GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
+  GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
 }
 
 /** No descriptions */
@@ -50,8 +51,9 @@ void Profiler::TailCall( FunctionID fid )
 
 void Profiler::UnmanagedToManagedCall( FunctionID fid )
 {
-  FunctionInfo* pFunctionInfo = GetCurrentThreadInfo()->GetFunctionInfo( fid );
-  GetCurrentThreadInfo()->GetStackInfo()->PushFunction( pFunctionInfo, rdtsc() );
+  ThreadInfo* pThreadInfo=GetCurrentThreadInfo();
+  FunctionInfo* pFunctionInfo = pThreadInfo->GetFunctionInfo( fid );
+  pThreadInfo->GetStackInfo()->PushFunction( pFunctionInfo, rdtsc() );
 }
 
 void Profiler::ManagedToUnmanagedCall( FunctionID fid )

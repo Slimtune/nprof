@@ -5,6 +5,7 @@ namespace NProf.Glue.Profiler.Info
 	/// <summary>
 	/// Summary description for FunctionSignature.
 	/// </summary>
+	[Serializable]
 	public class FunctionSignature
 	{
 		public FunctionSignature()

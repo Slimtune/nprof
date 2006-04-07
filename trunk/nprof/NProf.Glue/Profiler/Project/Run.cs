@@ -8,6 +8,7 @@ namespace NProf.Glue.Profiler.Project
 	/// Summary description for ProfilerRun.
 	/// </summary>
 	[XmlInclude( typeof( ProcessInfo ) )]
+	[Serializable]
 	public class Run
 	{
 		public Run()
@@ -108,6 +109,7 @@ namespace NProf.Glue.Profiler.Project
 			set { _bSuccess = value; }
 		}
 
+		[Serializable]
 		public enum RunState
 		{
 			Initializing,
@@ -127,6 +129,7 @@ namespace NProf.Glue.Profiler.Project
 			_dtEnd = DateTime.Now;
 		}
 
+		[field:NonSerialized]
 		public event RunStateEventHandler StateChanged;
 
 		public delegate void RunStateEventHandler( Run run, RunState rsOld, RunState rsNew );

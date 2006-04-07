@@ -7,6 +7,7 @@ namespace NProf.Glue.Profiler.Info
 	/// <summary>
 	/// Summary description for ProcessInfoCollection.
 	/// </summary>
+	[Serializable]
 	public class ProcessInfoCollection : IEnumerable
 	{
 		public ProcessInfoCollection()

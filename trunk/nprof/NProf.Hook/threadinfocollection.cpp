@@ -44,14 +44,15 @@ void ThreadInfoCollection::EndThread( ProfilerHelper& ph, ThreadID tid )
 
 ThreadInfo* ThreadInfoCollection::GetThreadInfo( ThreadID tid )
 {
-  if ( _mThreadInfo.find( tid ) == _mThreadInfo.end() )
+  map< ThreadID, ThreadInfo* >::iterator found = _mThreadInfo.find( tid );
+  if ( found == _mThreadInfo.end() )
   {
     ThreadInfo* pThreadInfo = new ThreadInfo();
     _mThreadInfo.insert( make_pair( tid, pThreadInfo ) );
     return pThreadInfo;
   }
   
-  return _mThreadInfo[ tid ];
+  return found->second;
 }
 
 /** No descriptions */

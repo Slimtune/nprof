@@ -34,14 +34,15 @@ FunctionInfo::~FunctionInfo()
 
 CalleeFunctionInfo* FunctionInfo::GetCalleeFunctionInfo( FunctionID fid )
 {
-  if ( _mCalleeInfo.find( fid ) == _mCalleeInfo.end() )
+  map< FunctionID, CalleeFunctionInfo* >::iterator found = _mCalleeInfo.find( fid );
+  if ( found == _mCalleeInfo.end() )
   {
     CalleeFunctionInfo* pFunctionInfo = new CalleeFunctionInfo();
     _mCalleeInfo.insert( make_pair( fid, pFunctionInfo ) );
     return pFunctionInfo;
   }
-
-  return _mCalleeInfo[ fid ];
+  
+  return found->second;
 }
 
 /** No descriptions */

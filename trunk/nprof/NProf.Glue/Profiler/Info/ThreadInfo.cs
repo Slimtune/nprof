@@ -7,6 +7,7 @@ namespace NProf.Glue.Profiler.Info
 	/// Summary description for ThreadInfo.
 	/// </summary>
 	[XmlInclude( typeof( FunctionInfo ) )]
+	[Serializable]
 	public class ThreadInfo
 	{
 		public ThreadInfo()

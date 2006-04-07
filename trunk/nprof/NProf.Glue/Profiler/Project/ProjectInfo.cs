@@ -6,6 +6,7 @@ namespace NProf.Glue.Profiler.Project
 	/// <summary>
 	/// Summary description for ProjectInfo.
 	/// </summary>
+	[Serializable]
 	public class ProjectInfo
 	{
 		public ProjectInfo() : this(ProjectType.File) { } // JC: added default constructor for serialization
@@ -73,7 +74,7 @@ namespace NProf.Glue.Profiler.Project
 			if ( ProjectInfoChanged != null )
 				ProjectInfoChanged( this );
 		}
-
+		[field:NonSerialized]
 		public event ProjectEventHandler ProjectInfoChanged;
 
 		public delegate void ProjectEventHandler( ProjectInfo project );

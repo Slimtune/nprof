@@ -5,6 +5,7 @@ namespace NProf.Glue.Profiler.Project
 	/// <summary>
 	/// Specifies a type of project.
 	/// </summary>
+	[Serializable]
 	public enum ProjectType
 	{
 		/// <summary>

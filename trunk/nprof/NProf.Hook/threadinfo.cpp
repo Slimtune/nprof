@@ -55,14 +55,15 @@ StackInfo* ThreadInfo::GetStackInfo()
 
 FunctionInfo* ThreadInfo::GetFunctionInfo( FunctionID fid )
 {
-  if ( _mFunctionInfo.find( fid ) == _mFunctionInfo.end() )
+  map< FunctionID, FunctionInfo* >::iterator found = _mFunctionInfo.find( fid );
+  if ( found == _mFunctionInfo.end() )
   {
     FunctionInfo* pFunctionInfo = new FunctionInfo( fid );
     _mFunctionInfo.insert( make_pair( fid, pFunctionInfo ) );
     return pFunctionInfo;
   }
 
-  return _mFunctionInfo[ fid ];
+  return found->second;
 }
 
 /** No descriptions */

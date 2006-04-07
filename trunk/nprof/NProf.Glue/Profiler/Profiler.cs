@@ -16,6 +16,7 @@ namespace NProf.Glue.Profiler
 	/// <summary>
 	/// Summary description for Profiler.
 	/// </summary>
+	[Serializable]
 	public class Profiler
 	{
 		private const string PROFILER_GUID = "{791DA9FE-05A0-495E-94BF-9AD875C4DF0F}";
@@ -281,12 +282,16 @@ namespace NProf.Glue.Profiler
 		}
 
 		public delegate void ProcessCompletedHandler( Run run );
+		[field:NonSerialized]
 		public event ProcessCompletedHandler ProcessCompleted;
 		public delegate void ErrorHandler( Exception e );
+		[field:NonSerialized]
 		public event ErrorHandler Error;
 		public delegate void MessageHandler( string strMessage );
+		[field:NonSerialized]
 		public event MessageHandler Message;
 
+		[NonSerialized]
 		private ProcessCompletedHandler _pch;
 		private DateTime _dtStart;
 		private DateTime _dtEnd;
@@ -297,8 +302,10 @@ namespace NProf.Glue.Profiler
 		private static extern bool SetEnvironmentVariable( string strVariable, string strNewValue );
 
 		private Hashtable _htFunctionMap;
+		[NonSerialized]
 		private Process _p;
 		private ProjectInfo _pi;
+		[NonSerialized]
 		private ProfilerSocketServer _pss;
 	}
 }

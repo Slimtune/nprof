@@ -1,10 +1,12 @@
 using System;
+using System.Xml.Serialization;
 
 namespace NProf.Glue.Profiler.Info
 {
 	/// <summary>
 	/// Summary description for FunctionInfo.
 	/// </summary>
+	[Serializable]
 	public class FunctionInfo
 	{
 		public FunctionInfo()
@@ -175,6 +177,23 @@ namespace NProf.Glue.Profiler.Info
 					( double )( TotalChildrenTicks ) 
 					/ 
 					( double )( TotalTicks + TotalRecursiveTicks ) ) * 100;
+			}
+		}
+
+		/// <summary>
+		/// Percent of time, based on method ticks (not thread ticks), spent in method.
+		/// </summary>
+		public double PercentOfMethodTimeInMethod
+		{
+			get
+			{
+				if (TotalTicks == 0)
+					return 0;
+
+				return (
+					(double)(TotalTicks + TotalRecursiveTicks - TotalChildrenTicks - TotalChildrenRecursiveTicks)
+					/
+					(double)(TotalTicks + TotalRecursiveTicks)) * 100;
 			}
 		}
 
