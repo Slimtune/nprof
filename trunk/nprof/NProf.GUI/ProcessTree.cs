@@ -214,7 +214,10 @@ namespace NProf.GUI
 		private void OnRunStateChanged(Run run, Run.RunState rsOld, Run.RunState rsNew)
 		{
 			TreeNode tn = FindRunNode(run);
-			processView.Invoke(new TreeNodeSetState(OnTreeNodeSetState), new object[] { tn, run.StartTime.ToString(), GetRunStateImage(run) });
+			if (tn != null) // why?
+			{
+				processView.Invoke(new TreeNodeSetState(OnTreeNodeSetState), new object[] { tn, run.StartTime.ToString(), GetRunStateImage(run) });
+			}
 			//_tvProjects.Invoke(new TreeNodeSetState(OnTreeNodeSetState), new object[] { tn, run.StartTime.ToString(), GetRunStateImage(run) });
 
 			//TreeNode tn = FindRunNode(run);

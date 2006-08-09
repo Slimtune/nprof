@@ -2073,13 +2073,21 @@ namespace NProf.GUI
 					if ( !htNamespaces.Contains( fi.Signature.NamespaceString ) )
 						continue;
 
-					ContainerListViewItem lvi = _lvFunctionInfo.Items.Add( fi.ID.ToString() );
-					lvi.SubItems[ 1 ].Text = fi.Signature.Signature;
-					lvi.SubItems[ 2 ].Text = fi.Calls.ToString();
-					lvi.SubItems[ 3 ].Text = fi.PercentOfTotalTimeInMethodAndChildren.ToString( "0.00;-0.00;0" );
-					lvi.SubItems[ 4 ].Text = fi.PercentOfTotalTimeInChildren.ToString( "0.00;-0.00;0" );
-					lvi.SubItems[ 5 ].Text = fi.PercentOfTotalTimeSuspended.ToString( "0.00;-0.00;0" );
+					ContainerListViewItem lvi = new MethodItem(fi);
+					_lvFunctionInfo.Items.Add(lvi);
+					//lvi.SubItems[1].Text = fi.Signature.Signature;
+					//lvi.SubItems[2].Text = fi.Calls.ToString();
+					//lvi.SubItems[3].Text = fi.PercentOfTotalTimeInMethodAndChildren.ToString("0.00;-0.00;0");
+					//lvi.SubItems[4].Text = fi.PercentOfTotalTimeInChildren.ToString("0.00;-0.00;0");
+					//lvi.SubItems[5].Text = fi.PercentOfTotalTimeSuspended.ToString("0.00;-0.00;0");
 					lvi.Tag = fi;
+					//ContainerListViewItem lvi = _lvFunctionInfo.Items.Add( fi.ID.ToString() );
+					//lvi.SubItems[ 1 ].Text = fi.Signature.Signature;
+					//lvi.SubItems[ 2 ].Text = fi.Calls.ToString();
+					//lvi.SubItems[ 3 ].Text = fi.PercentOfTotalTimeInMethodAndChildren.ToString( "0.00;-0.00;0" );
+					//lvi.SubItems[ 4 ].Text = fi.PercentOfTotalTimeInChildren.ToString( "0.00;-0.00;0" );
+					//lvi.SubItems[ 5 ].Text = fi.PercentOfTotalTimeSuspended.ToString( "0.00;-0.00;0" );
+					//lvi.Tag = fi;
 				}
 			}
 			finally
@@ -2144,8 +2152,8 @@ namespace NProf.GUI
 				_navCurrent = ( int[] )lst.ToArray( typeof( int ) );
 			}
 
-			UpdateCalleeList();
-			UpdateCallerList();
+			//UpdateCalleeList();
+			//UpdateCallerList();
 		}
 
 		private void UpdateCallerList()
@@ -2174,12 +2182,28 @@ namespace NProf.GUI
 
 							if ( parentItem == null ) // don't have it
 							{
-								parentItem = _lvCallersInfo.Items.Add( fi.ID.ToString() );
-								parentItem.SubItems[ 1 ].Text = fi.Signature.Signature;
-								parentItem.SubItems[ 2 ].Text = cfi.Calls.ToString();
-								parentItem.SubItems[ 3 ].Text = cfi.PercentOfTotalTimeInMethod.ToString( "0.00;-0.00;0" );
-								parentItem.SubItems[ 4 ].Text = cfi.PercentOfParentTimeInMethod.ToString( "0.00;-0.00;0" );
+								ContainerListViewItem i = new MethodItem(fi);
+								_lvCallersInfo.Items.Add(i);
+								//parentItem.SubItems[1].Text = fi.Signature.Signature;
+								//parentItem.SubItems[2].Text = cfi.Calls.ToString();
+								//parentItem.SubItems[3].Text = cfi.PercentOfTotalTimeInMethod.ToString("0.00;-0.00;0");
+								//parentItem.SubItems[4].Text = cfi.PercentOfParentTimeInMethod.ToString("0.00;-0.00;0");
 								parentItem.Tag = fi;
+
+
+								//parentItem = _lvCallersInfo.Items.Add(fi.ID.ToString());
+								//parentItem.SubItems[1].Text = fi.Signature.Signature;
+								//parentItem.SubItems[2].Text = cfi.Calls.ToString();
+								//parentItem.SubItems[3].Text = cfi.PercentOfTotalTimeInMethod.ToString("0.00;-0.00;0");
+								//parentItem.SubItems[4].Text = cfi.PercentOfParentTimeInMethod.ToString("0.00;-0.00;0");
+								//parentItem.Tag = fi;
+
+								//parentItem = _lvCallersInfo.Items.Add( fi.ID.ToString() );
+								//parentItem.SubItems[ 1 ].Text = fi.Signature.Signature;
+								//parentItem.SubItems[ 2 ].Text = cfi.Calls.ToString();
+								//parentItem.SubItems[ 3 ].Text = cfi.PercentOfTotalTimeInMethod.ToString( "0.00;-0.00;0" );
+								//parentItem.SubItems[ 4 ].Text = cfi.PercentOfParentTimeInMethod.ToString( "0.00;-0.00;0" );
+								//parentItem.Tag = fi;
 							}
 							else // do, update totals
 							{
@@ -2202,93 +2226,93 @@ namespace NProf.GUI
 			_lvCallersInfo.EndUpdate();
 		}
 
-		private void UpdateCalleeList()
-		{
-			_lvCalleesInfo.BeginUpdate();
+		//private void UpdateCalleeList()
+		//{
+		//    _lvCalleesInfo.BeginUpdate();
 
-			bool multipleSelected = (_lvFunctionInfo.SelectedItems.Count > 1);
-			_lvCalleesInfo.ShowPlusMinus = multipleSelected;
-			_lvCalleesInfo.ShowRootTreeLines = multipleSelected;
-			_lvCalleesInfo.ShowTreeLines = multipleSelected;
+		//    bool multipleSelected = (_lvFunctionInfo.SelectedItems.Count > 1);
+		//    _lvCalleesInfo.ShowPlusMinus = multipleSelected;
+		//    _lvCalleesInfo.ShowRootTreeLines = multipleSelected;
+		//    _lvCalleesInfo.ShowTreeLines = multipleSelected;
 
-			ContainerListViewItem lviSuspend = null;
+		//    ContainerListViewItem lviSuspend = null;
 
-			foreach ( ContainerListViewItem item in _lvFunctionInfo.SelectedItems )
-			{
-				FunctionInfo fi = ( FunctionInfo )item.Tag;
+		//    foreach ( ContainerListViewItem item in _lvFunctionInfo.SelectedItems )
+		//    {
+		//        FunctionInfo fi = ( FunctionInfo )item.Tag;
 
-				foreach ( CalleeFunctionInfo cfi in fi.CalleeInfo )
-				{
-					ContainerListViewItem parentItem = null;
+		//        foreach ( CalleeFunctionInfo cfi in fi.CalleeInfo )
+		//        {
+		//            ContainerListViewItem parentItem = null;
 
-					foreach ( ContainerListViewItem pitem in _lvCalleesInfo.Items )
-						if( pitem.Tag != null)
-							if ( ( pitem.Tag as CalleeFunctionInfo ).ID == cfi.ID )
-								parentItem = pitem;
-
-
-					if ( parentItem == null ) // don't have it
-					{
-						parentItem = _lvCalleesInfo.Items.Add( cfi.ID.ToString() );
-						parentItem.SubItems[ 1 ].Text = cfi.Signature;
-						parentItem.SubItems[ 2 ].Text = cfi.Calls.ToString();
-						parentItem.SubItems[ 3 ].Text = cfi.PercentOfTotalTimeInMethod.ToString( "0.00;-0.00;0" );
-						parentItem.SubItems[ 4 ].Text = cfi.PercentOfParentTimeInMethod.ToString( "0.00;-0.00;0" );
-						parentItem.Tag = cfi;
-					}
-					else // do, update totals
-					{
-						parentItem.SubItems[ 2 ].Text = (int.Parse( parentItem.SubItems[ 2 ].Text ) + cfi.Calls ).ToString();
-						parentItem.SubItems[ 3 ].Text = "-";
-						parentItem.SubItems[ 4 ].Text = "-";
-					}
-
-					// either way, add a child pointing back to the parent
-					ContainerListViewItem lvi = parentItem.Items.Add( fi.ID.ToString() );
-					lvi.SubItems[ 1 ].Text = fi.Signature.Signature;
-					lvi.SubItems[ 2 ].Text = cfi.Calls.ToString();
-					lvi.SubItems[ 3 ].Text = cfi.PercentOfTotalTimeInMethod.ToString( "0.00;-0.00;0" );
-					lvi.SubItems[ 4 ].Text = cfi.PercentOfParentTimeInMethod.ToString( "0.00;-0.00;0" );
-					lvi.Tag = fi;
-				}
-
-				ContainerListViewItem inMethod = _lvCalleesInfo.Items.Add("(in method)");
-				inMethod.SubItems[1].Text = "(in method)";
-				inMethod.SubItems[2].Text = fi.Calls.ToString();
-				inMethod.SubItems[3].Text = fi.PercentOfTotalTimeInMethod.ToString("0.00;-0.00;0");
-				inMethod.SubItems[4].Text = fi.PercentOfMethodTimeInMethod.ToString("0.00;-0.00;0");
-				inMethod.Tag = fi;
+		//            foreach ( ContainerListViewItem pitem in _lvCalleesInfo.Items )
+		//                if( pitem.Tag != null)
+		//                    if ( ( pitem.Tag as CalleeFunctionInfo ).ID == cfi.ID )
+		//                        parentItem = pitem;
 
 
+		//            if ( parentItem == null ) // don't have it
+		//            {
+		//                parentItem = _lvCalleesInfo.Items.Add( cfi.ID.ToString() );
+		//                parentItem.SubItems[ 1 ].Text = cfi.Signature;
+		//                parentItem.SubItems[ 2 ].Text = cfi.Calls.ToString();
+		//                parentItem.SubItems[ 3 ].Text = cfi.PercentOfTotalTimeInMethod.ToString( "0.00;-0.00;0" );
+		//                parentItem.SubItems[ 4 ].Text = cfi.PercentOfParentTimeInMethod.ToString( "0.00;-0.00;0" );
+		//                parentItem.Tag = cfi;
+		//            }
+		//            else // do, update totals
+		//            {
+		//                parentItem.SubItems[ 2 ].Text = (int.Parse( parentItem.SubItems[ 2 ].Text ) + cfi.Calls ).ToString();
+		//                parentItem.SubItems[ 3 ].Text = "-";
+		//                parentItem.SubItems[ 4 ].Text = "-";
+		//            }
 
-				if ( fi.TotalSuspendedTicks > 0 )
-				{
-					if ( lviSuspend == null) // don't have it
-					{
-						lviSuspend = _lvCalleesInfo.Items.Add( "(suspend)" );
-						lviSuspend.SubItems[ 1 ].Text = "(thread suspended)";
-						lviSuspend.SubItems[ 2 ].Text = "-";
-						lviSuspend.SubItems[ 3 ].Text = fi.PercentOfTotalTimeSuspended.ToString( "0.00;-0.00;0" );
-						lviSuspend.SubItems[ 4 ].Text = fi.PercentOfMethodTimeSuspended.ToString( "0.00;-0.00;0" );
-					}
-					else // do, update totals
-					{
-						lviSuspend.SubItems[ 3 ].Text = "-";
-						lviSuspend.SubItems[ 4 ].Text = "-";
-					}
+		//            // either way, add a child pointing back to the parent
+		//            ContainerListViewItem lvi = parentItem.Items.Add( fi.ID.ToString() );
+		//            lvi.SubItems[ 1 ].Text = fi.Signature.Signature;
+		//            lvi.SubItems[ 2 ].Text = cfi.Calls.ToString();
+		//            lvi.SubItems[ 3 ].Text = cfi.PercentOfTotalTimeInMethod.ToString( "0.00;-0.00;0" );
+		//            lvi.SubItems[ 4 ].Text = cfi.PercentOfParentTimeInMethod.ToString( "0.00;-0.00;0" );
+		//            lvi.Tag = fi;
+		//        }
 
-					// either way, add a child pointing back to the parent
-					ContainerListViewItem lvi = lviSuspend.Items.Add( fi.ID.ToString() );
-					lvi.SubItems[ 1 ].Text = fi.Signature.Signature;
-					lvi.SubItems[ 2 ].Text = "-";
-					lvi.SubItems[ 3 ].Text = fi.PercentOfTotalTimeSuspended.ToString( "0.00;-0.00;0" );
-					lvi.SubItems[ 4 ].Text = fi.PercentOfMethodTimeSuspended.ToString( "0.00;-0.00;0" );
-				}
-			}
+		//        ContainerListViewItem inMethod = _lvCalleesInfo.Items.Add("in method");
+		//        inMethod.SubItems[1].Text = "(in method)";
+		//        inMethod.SubItems[2].Text = fi.Calls.ToString();
+		//        inMethod.SubItems[3].Text = fi.PercentOfTotalTimeInMethod.ToString("0.00;-0.00;0");
+		//        inMethod.SubItems[4].Text = fi.PercentOfMethodTimeInMethod.ToString("0.00;-0.00;0");
+		//        inMethod.Tag = fi;
 
-			_lvCalleesInfo.Sort();
-			_lvCalleesInfo.EndUpdate();
-		}
+
+
+		//        if ( fi.TotalSuspendedTicks > 0 )
+		//        {
+		//            if ( lviSuspend == null) // don't have it
+		//            {
+		//                lviSuspend = _lvCalleesInfo.Items.Add( "(suspend)" );
+		//                lviSuspend.SubItems[ 1 ].Text = "(thread suspended)";
+		//                lviSuspend.SubItems[ 2 ].Text = "-";
+		//                lviSuspend.SubItems[ 3 ].Text = fi.PercentOfTotalTimeSuspended.ToString( "0.00;-0.00;0" );
+		//                lviSuspend.SubItems[ 4 ].Text = fi.PercentOfMethodTimeSuspended.ToString( "0.00;-0.00;0" );
+		//            }
+		//            else // do, update totals
+		//            {
+		//                lviSuspend.SubItems[ 3 ].Text = "-";
+		//                lviSuspend.SubItems[ 4 ].Text = "-";
+		//            }
+
+		//            // either way, add a child pointing back to the parent
+		//            ContainerListViewItem lvi = lviSuspend.Items.Add( fi.ID.ToString() );
+		//            lvi.SubItems[ 1 ].Text = fi.Signature.Signature;
+		//            lvi.SubItems[ 2 ].Text = "-";
+		//            lvi.SubItems[ 3 ].Text = fi.PercentOfTotalTimeSuspended.ToString( "0.00;-0.00;0" );
+		//            lvi.SubItems[ 4 ].Text = fi.PercentOfMethodTimeSuspended.ToString( "0.00;-0.00;0" );
+		//        }
+		//    }
+
+		//    _lvCalleesInfo.Sort();
+		//    _lvCalleesInfo.EndUpdate();
+		//}
 
 		private void ProfilerControl_Load(object sender, System.EventArgs e)
 		{

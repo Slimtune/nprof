@@ -102,17 +102,31 @@ namespace NProf.Glue.Profiler.Info
 		[XmlIgnore]
 		public double PercentOfTotalTimeSuspended
 		{
-			get 
+			get
 			{
-				if ( ThreadTotalTicks == 0 )
+				if (ThreadTotalTicks == 0)
 					return 0;
 
-				return ( 
-					( double )totalSuspendedTime 
-					/ 
-					( double )ThreadTotalTicks ) * 100;
+				return (
+					(double)totalSuspendedTime
+					/
+					(double)ThreadTotalTicks);
 			}
 		}
+		//[XmlIgnore]
+		//public double PercentOfTotalTimeSuspended
+		//{
+		//    get 
+		//    {
+		//        if ( ThreadTotalTicks == 0 )
+		//            return 0;
+
+		//        return ( 
+		//            ( double )totalSuspendedTime 
+		//            / 
+		//            ( double )ThreadTotalTicks ) * 100;
+		//    }
+		//}
 
 		/// <summary>
 		/// Percent on time, based on method ticks (not thread ticks), that method is suspended.
@@ -120,17 +134,31 @@ namespace NProf.Glue.Profiler.Info
 		[XmlIgnore]
 		public double PercentOfMethodTimeSuspended
 		{
-			get 
+			get
 			{
-				if ( TotalTicks == 0 )
+				if (TotalTicks == 0)
 					return 0;
 
-				return ( 
-					( double )totalSuspendedTime 
-					/ 
-					( double )TotalTicks ) * 100;
+				return (
+					(double)totalSuspendedTime
+					/
+					(double)TotalTicks);
 			}
 		}
+		//[XmlIgnore]
+		//public double PercentOfMethodTimeSuspended
+		//{
+		//    get 
+		//    {
+		//        if ( TotalTicks == 0 )
+		//            return 0;
+
+		//        return ( 
+		//            ( double )totalSuspendedTime 
+		//            / 
+		//            ( double )TotalTicks ) * 100;
+		//    }
+		//}
 		
 		/// <summary>
 		/// Percent of time, based on total thread ticks, spent in method (not including children).
@@ -140,15 +168,29 @@ namespace NProf.Glue.Profiler.Info
 		{
 			get
 			{
-				if ( ThreadTotalTicks == 0 )
+				if (ThreadTotalTicks == 0)
 					return 0;
 
-				return ( 
-					( double )( TotalTicks + TotalRecursiveTicks - TotalChildrenTicks - TotalChildrenRecursiveTicks ) 
-					/ 
-					( double )ThreadTotalTicks ) * 100;
+				return (
+					(double)(TotalTicks + TotalRecursiveTicks - TotalChildrenTicks - TotalChildrenRecursiveTicks)
+					/
+					(double)ThreadTotalTicks);
 			}
 		}
+		//[XmlIgnore]
+		//public double PercentOfTotalTimeInMethod
+		//{
+		//    get
+		//    {
+		//        if ( ThreadTotalTicks == 0 )
+		//            return 0;
+
+		//        return ( 
+		//            ( double )( TotalTicks + TotalRecursiveTicks - TotalChildrenTicks - TotalChildrenRecursiveTicks ) 
+		//            / 
+		//            ( double )ThreadTotalTicks ) * 100;
+		//    }
+		//}
 
 		/// <summary>
 		/// Percent of time, based on total thread ticks, spent in method and children.
@@ -158,15 +200,29 @@ namespace NProf.Glue.Profiler.Info
 		{
 			get
 			{
-				if ( ThreadTotalTicks == 0 )
+				if (ThreadTotalTicks == 0)
 					return 0;
 
-				return ( 
-					( double )TotalTicks 
-					/ 
-					( double )ThreadTotalTicks ) * 100;
+				return (
+					(double)TotalTicks
+					/
+					(double)ThreadTotalTicks);
 			}
 		}
+		//[XmlIgnore]
+		//public double PercentOfTotalTimeInMethodAndChildren
+		//{
+		//    get
+		//    {
+		//        if ( ThreadTotalTicks == 0 )
+		//            return 0;
+
+		//        return ( 
+		//            ( double )TotalTicks 
+		//            / 
+		//            ( double )ThreadTotalTicks ) * 100;
+		//    }
+		//}
 
 		/// <summary>
 		/// Percent of time, based on method ticks (not thread ticks), spent in children.
@@ -176,15 +232,29 @@ namespace NProf.Glue.Profiler.Info
 		{
 			get
 			{
-				if ( TotalTicks == 0 )
+				if (TotalTicks == 0)
 					return 0;
 
-				return ( 
-					( double )( TotalChildrenTicks ) 
-					/ 
-					( double )( TotalTicks + TotalRecursiveTicks ) ) * 100;
+				return (
+					(double)(TotalChildrenTicks)
+					/
+					(double)(TotalTicks + TotalRecursiveTicks));
 			}
 		}
+		//[XmlIgnore]
+		//public double PercentOfMethodTimeInChildren
+		//{
+		//    get
+		//    {
+		//        if ( TotalTicks == 0 )
+		//            return 0;
+
+		//        return ( 
+		//            ( double )( TotalChildrenTicks ) 
+		//            / 
+		//            ( double )( TotalTicks + TotalRecursiveTicks ) ) * 100;
+		//    }
+		//}
 
 		/// <summary>
 		/// Percent of time, based on method ticks (not thread ticks), spent in method.
@@ -200,9 +270,23 @@ namespace NProf.Glue.Profiler.Info
 				return (
 					(double)(TotalTicks + TotalRecursiveTicks - TotalChildrenTicks - TotalChildrenRecursiveTicks)
 					/
-					(double)(TotalTicks + TotalRecursiveTicks)) * 100;
+					(double)(TotalTicks + TotalRecursiveTicks));
 			}
 		}
+		//[XmlIgnore]
+		//public double PercentOfMethodTimeInMethod
+		//{
+		//    get
+		//    {
+		//        if (TotalTicks == 0)
+		//            return 0;
+
+		//        return (
+		//            (double)(TotalTicks + TotalRecursiveTicks - TotalChildrenTicks - TotalChildrenRecursiveTicks)
+		//            /
+		//            (double)(TotalTicks + TotalRecursiveTicks)) * 100;
+		//    }
+		//}
 
 		/// <summary>
 		/// Percent of time, based on thread ticks, spent in children.
@@ -212,19 +296,37 @@ namespace NProf.Glue.Profiler.Info
 		{
 			get
 			{
-				if ( TotalTicks == 0 )
+				if (TotalTicks == 0)
 					return 0;
 
 				long totalChildrenTime = 0;
-				foreach ( CalleeFunctionInfo callee in callees )
+				foreach (CalleeFunctionInfo callee in callees)
 					totalChildrenTime += callee.TotalTime;
 
-				return ( ( 
-					( double )( TotalChildrenTicks + TotalChildrenRecursiveTicks - TotalRecursiveTicks ) ) 
-					/ 
-					( double )ThreadTotalTicks ) * 100;
+				return ((
+					(double)(TotalChildrenTicks + TotalChildrenRecursiveTicks - TotalRecursiveTicks))
+					/
+					(double)ThreadTotalTicks);
 			}
 		}
+		//[XmlIgnore]
+		//public double PercentOfTotalTimeInChildren
+		//{
+		//    get
+		//    {
+		//        if ( TotalTicks == 0 )
+		//            return 0;
+
+		//        long totalChildrenTime = 0;
+		//        foreach ( CalleeFunctionInfo callee in callees )
+		//            totalChildrenTime += callee.TotalTime;
+
+		//        return ( ( 
+		//            ( double )( TotalChildrenTicks + TotalChildrenRecursiveTicks - TotalRecursiveTicks ) ) 
+		//            / 
+		//            ( double )ThreadTotalTicks ) * 100;
+		//    }
+		//}
 
 		private int id;
 		private int calls;

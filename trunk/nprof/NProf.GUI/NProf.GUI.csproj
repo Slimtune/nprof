@@ -122,6 +122,10 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="MethodItem.cs" />
+    <Compile Include="MethodView.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="ProcessTree.cs">
       <SubType>UserControl</SubType>
     </Compile>

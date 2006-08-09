@@ -50,13 +50,23 @@ namespace NProf.Glue.Profiler.Info
 		[XmlIgnore]
 		public double PercentOfTotalTimeInMethod
 		{
-			get { return ( double )totalTime / ( double )function.ThreadTotalTicks * 100; }
+			get { return (double)totalTime / (double)function.ThreadTotalTicks; }
 		}
+		//[XmlIgnore]
+		//public double PercentOfTotalTimeInMethod
+		//{
+		//    get { return ( double )totalTime / ( double )function.ThreadTotalTicks * 100; }
+		//}
 		[XmlIgnore]
 		public double PercentOfParentTimeInMethod
 		{
-			get { return ( double )totalTime / ( double )function.TotalTicks * 100; }
+			get { return (double)totalTime / (double)function.TotalTicks; }
 		}
+		//[XmlIgnore]
+		//public double PercentOfParentTimeInMethod
+		//{
+		//    get { return ( double )totalTime / ( double )function.TotalTicks * 100; }
+		//}
 		internal FunctionInfo FunctionInfo
 		{
 			set { function = value; }
