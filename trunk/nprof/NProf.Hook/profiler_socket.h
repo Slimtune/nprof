@@ -24,36 +24,36 @@ public:
   static void Initialize();
   void SendShutdown();
   void SendInitialize();
-  void SendAppDomainCreate( AppDomainID aid );
-  void SendThreadCreate( ThreadID tid );
-  void SendThreadEnd( ThreadID tid, UINT64 llThreadStartTime, UINT64 llThreadEndTime );
-  void SendStartFunctionData( ThreadID tid );
-  void SendFunctionData( ProfilerHelper& ph, FunctionID fid );
-  void SendProfilerMessage( const string& strMessage );
-  void SendFunctionTimingData( int nCalls, UINT64 llCycleCount, UINT64 llRecursiveCycleCount, UINT64 llSuspendCycleCount );
-  void SendCalleeFunctionData( FunctionID fid, int nCalls, UINT64 llCycleCount, UINT64 llRecursiveCycleCount );
+  void SendAppDomainCreate( AppDomainID appDomainId );
+  void SendThreadCreate( ThreadID threadId );
+  void SendThreadEnd( ThreadID threadId, UINT64 threadStartTime, UINT64 threadEndTime );
+  void SendStartFunctionData( ThreadID threadId );
+  void SendFunctionData( ProfilerHelper& profilerHelper, FunctionID functionId );
+  void SendProfilerMessage( const string& message );
+  void SendFunctionTimingData( int calls, UINT64 cycleCount, UINT64 recursiveCycleCount, UINT64 suspendCycleCount );
+  void SendCalleeFunctionData( FunctionID functionId, int calls, UINT64 cycleCount, UINT64 recursiveCycleCount );
   void SendEndFunctionData();
   void SendEndCalleeFunctionData();
-  void HandleError( const char* szCaller, int nError );
-  void HandleWrongSentLength( const char* szCaller, int nExpected, int nSent );
-  void HandleWrongRecvLength( const char* szCaller, int nExpected, int nSent );
+  void HandleError( const char* caller, int errorNumber );
+  void HandleWrongSentLength( const char* caller, int expected, int sent );
+  void HandleWrongRecvLength( const char* caller, int expected, int sent );
   int ReadByte( BYTE& b );
 
 private:
-  inline void SendBool( bool b );
-  inline void SendUINT32( UINT32 ui );
-  inline void SendUINT64( UINT64 ui );
-  inline void SendString( const string& strFunctionSignature );
-  inline void SendNetworkMessage( NetworkMessage nm );
-  inline void SendAppDomainID( AppDomainID aid );
-  inline void SendThreadID( ThreadID tid );
-  inline void SendFunctionID( FunctionID fid );
+  inline void SendBool( bool boolean );
+  inline void SendUINT32( UINT32 integer );
+  inline void SendUINT64( UINT64 integer );
+  inline void SendString( const string& functionSignature );
+  inline void SendNetworkMessage( NetworkMessage networkMessage );
+  inline void SendAppDomainID( AppDomainID appDomainId );
+  inline void SendThreadID( ThreadID threadId );
+  inline void SendFunctionID( FunctionID functionId );
 
 private:
-  SOCKET _s;
-  const char* _szOperation;
-  bool _bSentApplicationID;
+  SOCKET socket;
+  const char* operation;
+  bool isApplicationIdSent;
 
-  static bool _bInitialized;
-  static int _nApplicationID;
+  static bool isInitialized;
+  static int applicationId;
 };

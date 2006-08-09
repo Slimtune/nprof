@@ -11,15 +11,15 @@ namespace NProf.Glue.Profiler.Project
 	{
 		public Options()
 		{
-			_bDebug = false;
+			isDebug = false;
 		}
 
 		public bool Debug
 		{
-			get { return _bDebug; }
-			set { _bDebug = value; }
+			get { return isDebug; }
+			set { isDebug = value; }
 		}
 
-		bool _bDebug;
+		bool isDebug;
 	}
 }

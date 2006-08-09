@@ -29,10 +29,10 @@ public:
 	CalleeFunctionInfo();
 	~CalleeFunctionInfo();
 
-  INT64 llCycleCount;
-  INT64 llRecursiveCycleCount;
-  int nCalls;
-  int nRecursiveCount;
+  INT64 cycleCount;
+  INT64 recursiveCycleCount;
+  int calls;
+  int recursiveCount;
 };
 
 #endif

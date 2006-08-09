@@ -20,10 +20,10 @@
 
 CalleeFunctionInfo::CalleeFunctionInfo()
 {
-  llCycleCount = 0;
-  llRecursiveCycleCount = 0;
-  nRecursiveCount = 0;
-  nCalls = 0;
+  this->cycleCount = 0;
+  this->recursiveCycleCount = 0;
+  this->recursiveCount = 0;
+  this->calls = 0;
 }
 
 CalleeFunctionInfo::~CalleeFunctionInfo()

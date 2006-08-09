@@ -11,15 +11,15 @@ namespace NProf.Glue.Profiler.Project
 	{
 		public ProjectInfoCollection()
 		{
-			_nNewProjectIndex = 0;
-			_alItems = new ArrayList();
+			newProjectIndex = 0;
+			items = new ArrayList();
 		}
 
 		#region IListSource implementation
 
 		IList IListSource.GetList()
 		{
-			return _alItems;
+			return items;
 		}
 
 		bool IListSource.ContainsListCollection
@@ -36,7 +36,7 @@ namespace NProf.Glue.Profiler.Project
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return _alItems.GetEnumerator();
+			return items.GetEnumerator();
 		}
 
 		#endregion
@@ -51,7 +51,7 @@ namespace NProf.Glue.Profiler.Project
 
 		public ProjectInfo this[ int nIndex ]
 		{
-			get { return ( ProjectInfo )_alItems[ nIndex ]; }
+			get { return ( ProjectInfo )items[ nIndex ]; }
 		}
 
 		bool IList.IsReadOnly
@@ -71,7 +71,7 @@ namespace NProf.Glue.Profiler.Project
 
 		public int Add( ProjectInfo pi )
 		{
-			int index = _alItems.Count;
+			int index = items.Count;
 
 			this.Insert( index, pi );
 
@@ -80,7 +80,7 @@ namespace NProf.Glue.Profiler.Project
 
 		void IList.Clear()
 		{
-			_alItems.Clear();
+			items.Clear();
 		}
 
 		bool IList.Contains( object o )
@@ -90,12 +90,12 @@ namespace NProf.Glue.Profiler.Project
 
 		public bool Contains( ProjectInfo pi )
 		{
-			return _alItems.Contains(pi);
+			return items.Contains(pi);
 		}
 
 		public int Count
 		{
-			get { return _alItems.Count; }
+			get { return items.Count; }
 		}
 
 		int IList.IndexOf( object o )
@@ -105,7 +105,7 @@ namespace NProf.Glue.Profiler.Project
 
 		public int IndexOf( ProjectInfo pi )
 		{
-			return _alItems.IndexOf( pi );
+			return items.IndexOf( pi );
 		}
 
 		void IList.Insert( int index, object o )
@@ -118,7 +118,7 @@ namespace NProf.Glue.Profiler.Project
 			if ( pi.Name == null )
 				pi.Name = GetNewProjectName();
 
-			_alItems.Insert( index, pi );
+			items.Insert( index, pi );
 
 			if ( ProjectAdded != null )
 				ProjectAdded( this, pi, index );
@@ -137,15 +137,15 @@ namespace NProf.Glue.Profiler.Project
 		public void RemoveAt( int nIndex )
 		{
 			ProjectInfo pi = this[ nIndex ];
-			_alItems.RemoveAt( nIndex );
+			items.RemoveAt( nIndex );
 			if ( ProjectRemoved != null )
 				ProjectRemoved( this, pi, nIndex );
 		}
 
 		private string GetNewProjectName()
 		{
-			++_nNewProjectIndex;
-			return "Untitled Project #" + _nNewProjectIndex;
+			++newProjectIndex;
+			return "Untitled Project #" + newProjectIndex;
 		}
 
 		#endregion
@@ -154,7 +154,7 @@ namespace NProf.Glue.Profiler.Project
 
 		object ICollection.SyncRoot
 		{
-			get { return _alItems.SyncRoot; }
+			get { return items.SyncRoot; }
 		}
 
 		bool ICollection.IsSynchronized
@@ -164,7 +164,7 @@ namespace NProf.Glue.Profiler.Project
 
 		void ICollection.CopyTo( Array ary, int startIndex )
 		{
-			_alItems.CopyTo( ary, startIndex );
+			items.CopyTo( ary, startIndex );
 		}
 
 		#endregion
@@ -174,7 +174,7 @@ namespace NProf.Glue.Profiler.Project
 
 		public delegate void ProjectEventHandler( ProjectInfoCollection projects, ProjectInfo project, int nIndex );
 
-		private ArrayList _alItems;
-		private int _nNewProjectIndex;
+		private ArrayList items;
+		private int newProjectIndex;
 	}
 }

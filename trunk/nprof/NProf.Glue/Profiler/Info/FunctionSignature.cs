@@ -12,66 +12,66 @@ namespace NProf.Glue.Profiler.Info
 		{
 		}
 
-		public FunctionSignature( UInt32 uiMethodAttributes, string strReturnType, string strClassName, string strFunctionName, string strParameters )
+		public FunctionSignature( UInt32 methodAttributes, string returnType, string className, string functionName, string parameters )
 		{
-			CorMethodAttr cma = ( CorMethodAttr )uiMethodAttributes;
-			_bIsPInvoke = ( cma & CorMethodAttr.mdPinvokeImpl ) != 0;
-			_bIsStatic = ( cma & CorMethodAttr.mdStatic ) != 0;
-			_bIsExtern = ( cma & CorMethodAttr.mdUnmanagedExport ) != 0;
+			CorMethodAttr cma = ( CorMethodAttr )methodAttributes;
+			this.isPInvoke = ( cma & CorMethodAttr.mdPinvokeImpl ) != 0;
+			this.isStatic = ( cma & CorMethodAttr.mdStatic ) != 0;
+			this.isExtern = ( cma & CorMethodAttr.mdUnmanagedExport ) != 0;
 
-			_strReturnType = strReturnType;
-			_strClassName = strClassName;
-			_strFunctionName = strFunctionName;
-			_strParameters = strParameters;
+			this.returnType = returnType;
+			this.className = className;
+			this.functionName = functionName;
+			this.parameters = parameters;
 		}
 
 		public bool IsPInvoke
 		{
-			get { return _bIsPInvoke; }
-			set { _bIsPInvoke = value; }
+			get { return isPInvoke; }
+			set { isPInvoke = value; }
 		}
 
 		public bool IsStatic
 		{
-			get { return _bIsStatic; }
-			set { _bIsStatic = value; }
+			get { return isStatic; }
+			set { isStatic = value; }
 		}
 
 		public bool IsExtern
 		{
-			get { return _bIsExtern; }
-			set { _bIsExtern = value; }
+			get { return isExtern; }
+			set { isExtern = value; }
 		}
 
 		public string ReturnType
 		{
-			get { return _strReturnType; }
-			set { _strReturnType = value; }
+			get { return returnType; }
+			set { returnType = value; }
 		}
 
 		public string ClassName
 		{
-			get { return _strClassName; }
-			set { _strClassName = value; }
+			get { return className; }
+			set { className = value; }
 		}
 
 		public string FunctionName
 		{
-			get { return _strFunctionName; }
-			set { _strFunctionName = value; }
+			get { return functionName; }
+			set { functionName = value; }
 		}
 
 		public string Parameters
 		{
-			get { return _strParameters; }
-			set { _strParameters = value; }
+			get { return parameters; }
+			set { parameters = value; }
 		}
 
 		public string[] Namespace
 		{
 			get
 			{
-				string[] astrPieces = _strClassName.Split( '.' );
+				string[] astrPieces = className.Split( '.' );
 				string[] astrNamespace = new String[ astrPieces.Length - 1 ];
 				Array.Copy( astrPieces, 0, astrNamespace, 0, astrPieces.Length - 1 );
 
@@ -91,14 +91,14 @@ namespace NProf.Glue.Profiler.Info
 		{
 			get
 			{
-				return String.Format( "{0}{1}{2}{3} {4}::{5}({6})", 
-					_bIsExtern ? "extern " : String.Empty,
-					_bIsPInvoke ? "pinvoke " : String.Empty,
-					_bIsStatic ? "static " : String.Empty,
-					_strReturnType,
-					_strClassName,
-					_strFunctionName,
-					_strParameters );
+				return String.Format( "{0}{1}{2}{3} {4}.{5}({6})", 
+					isExtern ? "extern " : String.Empty,
+					isPInvoke ? "pinvoke " : String.Empty,
+					isStatic ? "static " : String.Empty,
+					returnType,
+					className,
+					functionName,
+					parameters );
 			}
 		}
 
@@ -144,7 +144,12 @@ namespace NProf.Glue.Profiler.Info
 
 		} ;
 
-		private bool _bIsPInvoke, _bIsStatic, _bIsExtern;
-		private string _strReturnType, _strClassName, _strFunctionName, _strParameters;
+		private bool isPInvoke;
+		private bool isStatic;
+		private bool isExtern;
+		private string returnType;
+		private string className;
+		private string functionName;
+		private string parameters;
 	}
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Xml.Serialization;
 
 namespace NProf.Glue.Profiler.Info
 {
@@ -10,67 +11,61 @@ namespace NProf.Glue.Profiler.Info
 	{
 		public CalleeFunctionInfo()
 		{
-			_fsm = new FunctionSignatureMap();
+			signatures = new FunctionSignatureMap();
 		}
-
-		public CalleeFunctionInfo( FunctionSignatureMap fsm, int nID, int nCalls, long lTotalTime, long lTotalRecursiveTime )
+		public CalleeFunctionInfo( FunctionSignatureMap signatures, int id, int calls, long totalTime, long totalRecursiveTime)
 		{
-			_nID = nID;
-			_nCalls = nCalls;
-			_lTotalTime = lTotalTime;
-			_lTotalRecursiveTime = lTotalRecursiveTime;
-			_fsm = fsm;
+			this.id = id;
+			this.calls = calls;
+			this.totalTime = totalTime;
+			this.totalRecursiveTime = totalRecursiveTime;
+			this.signatures = signatures;
 		}
-
 		public int ID
 		{
-			get { return _nID; }
-			set { _nID = value; }
+			get { return id; }
+			set { id = value; }
 		}
-
 		public string Signature
 		{
-			get { return _fsm.GetFunctionSignature( ID ); }
+			get { return signatures.GetFunctionSignature( ID ); }
 		}
-
 		public int Calls
 		{
-			get { return _nCalls; }
-			set { _nCalls = value; }
+			get { return calls; }
+			set { calls = value; }
 		}
-
+		[XmlIgnore]
 		public long TotalTime
 		{
-			get { return _lTotalTime; }
-			set { _lTotalTime = value; }
+			get { return totalTime; }
+			set { totalTime = value; }
 		}
-
+		[XmlIgnore]
 		public long TotalRecursiveTime
 		{
-			get { return _lTotalRecursiveTime; }
-			set { _lTotalRecursiveTime = value; }
+			get { return totalRecursiveTime; }
+			set { totalRecursiveTime = value; }
 		}
-
+		[XmlIgnore]
 		public double PercentOfTotalTimeInMethod
 		{
-			get { return ( double )_lTotalTime / ( double )_fi.ThreadTotalTicks * 100; }
+			get { return ( double )totalTime / ( double )function.ThreadTotalTicks * 100; }
 		}
-
+		[XmlIgnore]
 		public double PercentOfParentTimeInMethod
 		{
-			get { return ( double )_lTotalTime / ( double )_fi.TotalTicks * 100; }
+			get { return ( double )totalTime / ( double )function.TotalTicks * 100; }
 		}
-
 		internal FunctionInfo FunctionInfo
 		{
-			set { _fi = value; }
+			set { function = value; }
 		}
-
-		private int _nID;
-		private int _nCalls;
-		private FunctionInfo _fi;
-		private FunctionSignatureMap _fsm;
-		private long _lTotalTime;
-		private long _lTotalRecursiveTime;
+		private int id;
+		private int calls;
+		private FunctionInfo function;
+		private FunctionSignatureMap signatures;
+		private long totalTime;
+		private long totalRecursiveTime;
 	}
 }

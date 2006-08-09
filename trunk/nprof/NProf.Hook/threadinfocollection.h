@@ -34,15 +34,15 @@ public:
 	ThreadInfoCollection();
 	~ThreadInfoCollection();
 
-  ThreadInfo* GetThreadInfo( ThreadID tid );
+  ThreadInfo* GetThreadInfo( ThreadID threadId );
   /** No descriptions */
-  void EndAll( ProfilerHelper& ph );
-  void EndThread( ProfilerHelper& ph, ThreadID tid );
-  void DumpAll( ProfilerHelper& ph );
-  void Dump( ProfilerHelper& ph, ThreadID tid );
-  void Trace( ProfilerHelper& ph );
+  void EndAll( ProfilerHelper& profilerHelper );
+  void EndThread( ProfilerHelper& profilerHelper, ThreadID threadId );
+  void DumpAll( ProfilerHelper& profilerHelper );
+  void Dump( ProfilerHelper& profilerHelper, ThreadID threadId );
+  void Trace( ProfilerHelper& profilerHelper );
 private:
-  map< ThreadID, ThreadInfo* > _mThreadInfo;
+  map< ThreadID, ThreadInfo* > threadMap;
 };
 
 #endif

@@ -9,17 +9,17 @@ ProfilerHelper::~ProfilerHelper(void)
 {
 }
 
-void ProfilerHelper::Initialize(  ICorProfilerInfo* pPrfInfo )
+void ProfilerHelper::Initialize(  ICorProfilerInfo* profilerInfo )
 {
-  _pPrfInfo = pPrfInfo;
+  this->profilerInfo = profilerInfo;
 }
 
 ThreadID ProfilerHelper::GetCurrentThreadID()
 {
-  ThreadID tid;
-  _pPrfInfo->GetCurrentThreadID( &tid );
+  ThreadID threadId;
+  profilerInfo->GetCurrentThreadID( &threadId );
 
-  return tid;
+  return threadId;
 }
 
 string ProfilerHelper::GetCurrentThreadName()
@@ -28,33 +28,33 @@ string ProfilerHelper::GetCurrentThreadName()
 }
 
 void ProfilerHelper::GetFunctionSignature( 
-  FunctionID fid,
-  UINT32& uiMethodAttributes,
-  string& strRet, 
-  string& strClassName,
-  string& strFnName,
-  string& strParameters )
+  FunctionID functionId,
+  UINT32& methodAttributes,
+  string& returnType, 
+  string& className,
+  string& functionName,
+  string& parameters )
 {
-    ULONG ulArgs;
-    WCHAR wszRet[ MAX_FUNCTION_LENGTH ];
-    WCHAR wszParams[ MAX_FUNCTION_LENGTH ];
-    WCHAR wszFnName[ MAX_FUNCTION_LENGTH ];
-    WCHAR wszClassName[ MAX_FUNCTION_LENGTH ];
-    GetFunctionProperties( fid, &uiMethodAttributes, &ulArgs, wszRet, wszParams, wszClassName, wszFnName );
+    ULONG args;
+    WCHAR returnTypeString[ MAX_FUNCTION_LENGTH ];
+    WCHAR parametersString[ MAX_FUNCTION_LENGTH ];
+    WCHAR functionNameString[ MAX_FUNCTION_LENGTH ];
+    WCHAR classNameString[ MAX_FUNCTION_LENGTH ];
+    GetFunctionProperties( functionId, &methodAttributes, &args, returnTypeString, parametersString, classNameString, functionNameString );
     
-    strRet = CW2A( wszRet );
-    strParameters = CW2A( wszParams );
-    strClassName = CW2A( wszClassName );
-    strFnName = CW2A( wszFnName );
+    returnType = CW2A( returnTypeString );
+    parameters = CW2A( parametersString );
+    className = CW2A( classNameString );
+    functionName = CW2A( functionNameString );
 }
 
 /* static public */
 HRESULT ProfilerHelper::GetFunctionProperties( 
                        FunctionID functionID,
-										   UINT32* uiMethodAttr,
+										   UINT32* methodAttributes,
 										   ULONG *argCount,
-										   WCHAR *returnTypeStr, 
-										   WCHAR *functionParameters,
+										   WCHAR *returnType, 
+										   WCHAR *parameters,
 										   WCHAR *className,
                        WCHAR *funName )
 {
@@ -64,10 +64,10 @@ HRESULT ProfilerHelper::GetFunctionProperties(
 
 	// init return values
 	*argCount = 0;
-	returnTypeStr[0] = NULL; 
-	functionParameters[0] = NULL;
+	returnType[0] = NULL; 
+	parameters[0] = NULL;
 	funName[0] = NULL;
-  className[0] = NULL;
+	className[0] = NULL;
 
 
 
@@ -75,9 +75,9 @@ HRESULT ProfilerHelper::GetFunctionProperties(
 	{
 	    mdToken	token;
 		ClassID classID;
-    ModuleID moduleID;
-		IMetaDataImport *pMDImport = NULL;	
-    mdToken moduleToken;
+		ModuleID moduleID;
+		IMetaDataImport *metaDataImport = NULL;	
+		mdToken moduleToken;
 			    
 			    
 	    
@@ -86,8 +86,9 @@ HRESULT ProfilerHelper::GetFunctionProperties(
 		//
 		try
 		{
-			hr = _pPrfInfo->GetFunctionInfo( functionID,
-											&classID,
+			hr = profilerInfo->GetFunctionInfo(
+						functionID,
+						&classID,
 						&moduleID,
 						&moduleToken );
 		}
@@ -106,13 +107,13 @@ HRESULT ProfilerHelper::GetFunctionProperties(
 		    //
 			// Get the MetadataImport interface and the metadata token 
 			//
-			hr = _pPrfInfo->GetTokenAndMetaDataFromFunction( functionID, 
+			hr = profilerInfo->GetTokenAndMetaDataFromFunction( functionID, 
 			           								 		IID_IMetaDataImport, 
-															(IUnknown **)&pMDImport,
+															(IUnknown **)&metaDataImport,
 															&token );
 			if ( SUCCEEDED( hr ) )
 			{
-				hr = pMDImport->GetMethodProps( token,
+				hr = metaDataImport->GetMethodProps( token,
 											    NULL,
 											    funName,
 											    MAX_FUNCTION_LENGTH,
@@ -126,7 +127,7 @@ HRESULT ProfilerHelper::GetFunctionProperties(
 				{
 					mdTypeDef classToken = NULL;
 
-					hr = _pPrfInfo->GetClassIDInfo( classID, 
+					hr = profilerInfo->GetClassIDInfo( classID, 
 						        				   NULL,  
 						                           &classToken );
 					
@@ -134,7 +135,7 @@ HRESULT ProfilerHelper::GetFunctionProperties(
 					{
 				      	if ( classToken != mdTypeDefNil )
 						{
-				          	hr = pMDImport->GetTypeDefProps( classToken, 
+				          	hr = metaDataImport->GetTypeDefProps( classToken, 
 								                             className, 
 								                             MAX_FUNCTION_LENGTH,
 								                             NULL, 
@@ -146,7 +147,7 @@ HRESULT ProfilerHelper::GetFunctionProperties(
 						PCCOR_SIGNATURE sigBlob = NULL;
 
 
-					    hr = pMDImport->GetMethodProps( (mdMethodDef) token,
+					    hr = metaDataImport->GetMethodProps( (mdMethodDef) token,
 					                                    NULL,
 													    NULL,
 													    0,
@@ -164,7 +165,7 @@ HRESULT ProfilerHelper::GetFunctionProperties(
 							//
 							// Is the method static ?
 							//
-              *uiMethodAttr = methodAttr;
+              *methodAttributes = methodAttr;
 
 					     	//
 						    // Make sure we have a method signature.
@@ -198,7 +199,7 @@ HRESULT ProfilerHelper::GetFunctionProperties(
 								//
 							    // Get the return type
 							    //
-								sigBlob = ParseElementType( pMDImport, sigBlob, buffer );
+								sigBlob = ParseElementType( metaDataImport, sigBlob, buffer );
 
 								//
 								// if the return typ returned back empty, write void
@@ -206,7 +207,7 @@ HRESULT ProfilerHelper::GetFunctionProperties(
 								if ( buffer[0] == '\0' )
 									sprintf( buffer, "void" );
 
-								swprintf( returnTypeStr, L"%S",buffer );
+								swprintf( returnType, L"%S",buffer );
 								
 								//
 								// Get the parameters
@@ -217,12 +218,12 @@ HRESULT ProfilerHelper::GetFunctionProperties(
 								{
 									buffer[0] = '\0';
 
-									sigBlob = ParseElementType( pMDImport, sigBlob, buffer );									
+									sigBlob = ParseElementType( metaDataImport, sigBlob, buffer );									
 									if ( i == 0 )
-										swprintf( functionParameters, L"%S", buffer );
+										swprintf( parameters, L"%S", buffer );
 
 									else if ( sigBlob != NULL )
-										swprintf( functionParameters, L"%s, %S", functionParameters, buffer );
+										swprintf( parameters, L"%s, %S", parameters, buffer );
 									
 									else
 										hr = E_FAIL;
@@ -234,14 +235,14 @@ HRESULT ProfilerHelper::GetFunctionProperties(
 							    // Get the return type
 							    //
 								buffer[0] = '\0';
-								sigBlob = ParseElementType( pMDImport, sigBlob, buffer );
-								swprintf( returnTypeStr, L"%s %S",returnTypeStr, buffer );
+								sigBlob = ParseElementType( metaDataImport, sigBlob, buffer );
+								swprintf( returnType, L"%s %S",returnType, buffer );
 							}
 						} 
 					} 
 				} 
 
-				pMDImport->Release();
+				metaDataImport->Release();
 			} 		
 		}
 	}
@@ -263,7 +264,7 @@ HRESULT ProfilerHelper::GetFunctionProperties(
 } // BASEHELPER::GetFunctionProperties
 
 /* static public */
-PCCOR_SIGNATURE ProfilerHelper::ParseElementType( IMetaDataImport *pMDImport,
+PCCOR_SIGNATURE ProfilerHelper::ParseElementType( IMetaDataImport *metaDataImport,
 											  PCCOR_SIGNATURE signature, 
 											  char *buffer )
 {	
@@ -375,7 +376,7 @@ PCCOR_SIGNATURE ProfilerHelper::ParseElementType( IMetaDataImport *pMDImport,
 					WCHAR zName[MAX_FUNCTION_LENGTH];
 					
 					
-					hr = pMDImport->GetTypeDefProps( token, 
+					hr = metaDataImport->GetTypeDefProps( token, 
 													 zName,
 													 MAX_FUNCTION_LENGTH,
 													 NULL,
@@ -391,7 +392,7 @@ PCCOR_SIGNATURE ProfilerHelper::ParseElementType( IMetaDataImport *pMDImport,
 		
         
 		case ELEMENT_TYPE_SZARRAY:	 
-			signature = ParseElementType( pMDImport, signature, buffer ); 
+			signature = ParseElementType( metaDataImport, signature, buffer ); 
 			strcat( buffer, "[]" );
 			break;		
 		
@@ -401,7 +402,7 @@ PCCOR_SIGNATURE ProfilerHelper::ParseElementType( IMetaDataImport *pMDImport,
 				ULONG rank;
                 
 
-				signature = ParseElementType( pMDImport, signature, buffer );                 
+				signature = ParseElementType( metaDataImport, signature, buffer );                 
 				rank = CorSigUncompressData( signature );													
 				if ( rank == 0 ) 
 					strcat( buffer, "[?]" );
@@ -466,19 +467,19 @@ PCCOR_SIGNATURE ProfilerHelper::ParseElementType( IMetaDataImport *pMDImport,
 
 		
 		case ELEMENT_TYPE_PINNED:
-			signature = ParseElementType( pMDImport, signature, buffer ); 
+			signature = ParseElementType( metaDataImport, signature, buffer ); 
 			strcat( buffer, "pinned" );	
 			break;	
          
         
         case ELEMENT_TYPE_PTR:   
-            signature = ParseElementType( pMDImport, signature, buffer ); 
+            signature = ParseElementType( metaDataImport, signature, buffer ); 
 			strcat( buffer, "*" );	
 			break;   
         
         
         case ELEMENT_TYPE_BYREF:   
-            signature = ParseElementType( pMDImport, signature, buffer ); 
+            signature = ParseElementType( metaDataImport, signature, buffer ); 
 			strcat( buffer, "&" );	
 			break;  		    
 

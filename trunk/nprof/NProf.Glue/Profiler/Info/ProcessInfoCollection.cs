@@ -1,52 +1,45 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Xml.Serialization;
 
 namespace NProf.Glue.Profiler.Info
 {
-	/// <summary>
-	/// Summary description for ProcessInfoCollection.
-	/// </summary>
 	[Serializable]
 	public class ProcessInfoCollection : IEnumerable
 	{
 		public ProcessInfoCollection()
 		{
-			_htProcessInfo = new Hashtable();
-			_alProcessInfo = new ArrayList();
+			processes = new Dictionary<int,ProcessInfo>();
 		}
 
 		public IEnumerator GetEnumerator()
 		{
-			return _alProcessInfo.GetEnumerator();
+			return processes.Values.GetEnumerator();
 		}
 
-		public void Add( object o )
+		public void Add(ProcessInfo process)
 		{
-			ProcessInfo pi = ( ProcessInfo )o;
-			_htProcessInfo[ pi.ID ] = pi;
-			_alProcessInfo.Add( pi );
+			processes[process.ID] = process;
 		}
 
-		public ProcessInfo this[ int nProcessID ]
+		public ProcessInfo this[int nProcessID]
 		{
 			get
 			{
-				lock ( _htProcessInfo )
+				lock (processes)
 				{
-					ProcessInfo pi = ( ProcessInfo )_htProcessInfo[ nProcessID ];
-					if ( pi == null )
+					ProcessInfo pi = (ProcessInfo)processes[nProcessID];
+					if (pi == null)
 					{
-						pi = new ProcessInfo( nProcessID );
-						_htProcessInfo[ nProcessID ] = pi;
+						pi = new ProcessInfo(nProcessID);
+						processes[nProcessID] = pi;
 					}
 
 					return pi;
 				}
 			}
 		}
-
-		private Hashtable _htProcessInfo;	
-		private ArrayList _alProcessInfo;
+		private Dictionary<int,ProcessInfo> processes;
 	}
 }

@@ -13,91 +13,93 @@ namespace NProf.Glue.Profiler.Info
 		{
 		}
 
-		public FunctionInfo( ThreadInfo ti, int nID, FunctionSignature fs, int nCalls, long lTotalTime, long lTotalRecursiveTime, long lTotalSuspendedTime, CalleeFunctionInfo[] acfi )
+		public FunctionInfo( ThreadInfo ti, int nID, FunctionSignature signature, int calls, long totalTime, long totalRecursiveTime, long totalSuspendedTime, CalleeFunctionInfo[] callees )
 		{
-			_ti = ti;
-			_nID = nID;
-			_fs = fs;
-			_nCalls = nCalls;
-			_lTotalTime = lTotalTime;
-			_lTotalRecursiveTime = lTotalRecursiveTime;
-			_lTotalSuspendedTime = lTotalSuspendedTime;
-			_acfi = acfi;
+			this.thread = ti;
+			this.id = nID;
+			this.signature = signature;
+			this.calls = calls;
+			this.totalTime = totalTime;
+			this.totalRecursiveTime = totalRecursiveTime;
+			this.totalSuspendedTime = totalSuspendedTime;
+			this.callees = callees;
 
-			foreach ( CalleeFunctionInfo cfi in _acfi )
-				cfi.FunctionInfo = this;
+			foreach ( CalleeFunctionInfo callee in callees )
+				callee.FunctionInfo = this;
 		}
 
 		public int ID
 		{
-			get { return _nID; }
-			set { _nID = value; }
+			get { return id; }
+			set { id = value; }
 		}
 
 		public FunctionSignature Signature
 		{
-			get { return _fs; }
-			set { _fs = value; }
+			get { return signature; }
+			set { signature = value; }
 		}
 
 		public CalleeFunctionInfo[] CalleeInfo
 		{
-			get { return _acfi; }
-			set { _acfi = value; }
+			get { return callees; }
+			set { callees = value; }
 		}
 
 		public int Calls
 		{
-			get { return _nCalls; }
+			get { return calls; }
 		}
 
+		[XmlIgnore]
 		public long ThreadTotalTicks
 		{
-			get { return _ti.TotalTime; }
+			get { return thread.TotalTime; }
 		}
-
+		[XmlIgnore]
 		public long TotalTicks
 		{
-			get { return _lTotalTime; }
+			get { return totalTime; }
 		}
-
+		[XmlIgnore]
 		public long TotalRecursiveTicks
 		{
-			get { return _lTotalRecursiveTime; }
+			get { return totalRecursiveTime; }
 		}
-
+		[XmlIgnore]
 		public long TotalSuspendedTicks
 		{
-			get { return _lTotalSuspendedTime; }
+			get { return totalSuspendedTime; }
 		}
-
+		[XmlIgnore]
 		public long TotalChildrenTicks
 		{
 			get
 			{
-				long lTotalChildrenTime = 0;
-				foreach ( CalleeFunctionInfo cfi in _acfi )
-					lTotalChildrenTime += cfi.TotalTime;
+				long totalChildrenTime = 0;
+				foreach ( CalleeFunctionInfo callee in callees )
+					totalChildrenTime += callee.TotalTime;
 
-				return lTotalChildrenTime;
+				return totalChildrenTime;
 			}
 		}
-
+		[XmlIgnore]
 		public long TotalChildrenRecursiveTicks
 		{
 			get
 			{
-				long lTotalChildrenRecursiveTime = 0;
-				foreach ( CalleeFunctionInfo cfi in _acfi )
-					lTotalChildrenRecursiveTime += cfi.TotalRecursiveTime;
+				long totalChildrenRecursiveTime = 0;
+				foreach ( CalleeFunctionInfo callee in callees )
+					totalChildrenRecursiveTime += callee.TotalRecursiveTime;
 
-				return lTotalChildrenRecursiveTime;
+				return totalChildrenRecursiveTime;
 			}
 		}
 
 		/// <summary>
 		/// Percent on time, based on thread ticks, that method is suspended.
 		/// </summary>
+		[XmlIgnore]
 		public double PercentOfTotalTimeSuspended
 		{
 			get 
@@ -106,7 +108,7 @@ namespace NProf.Glue.Profiler.Info
 					return 0;
 
 				return ( 
-					( double )_lTotalSuspendedTime 
+					( double )totalSuspendedTime 
 					/ 
 					( double )ThreadTotalTicks ) * 100;
 			}
@@ -115,6 +117,7 @@ namespace NProf.Glue.Profiler.Info
 		/// <summary>
 		/// Percent on time, based on method ticks (not thread ticks), that method is suspended.
 		/// </summary>
+		[XmlIgnore]
 		public double PercentOfMethodTimeSuspended
 		{
 			get 
@@ -123,7 +126,7 @@ namespace NProf.Glue.Profiler.Info
 					return 0;
 
 				return ( 
-					( double )_lTotalSuspendedTime 
+					( double )totalSuspendedTime 
 					/ 
 					( double )TotalTicks ) * 100;
 			}
@@ -132,6 +135,7 @@ namespace NProf.Glue.Profiler.Info
 		/// <summary>
 		/// Percent of time, based on total thread ticks, spent in method (not including children).
 		/// </summary>
+		[XmlIgnore]
 		public double PercentOfTotalTimeInMethod
 		{
 			get
@@ -149,6 +153,7 @@ namespace NProf.Glue.Profiler.Info
 		/// <summary>
 		/// Percent of time, based on total thread ticks, spent in method and children.
 		/// </summary>
+		[XmlIgnore]
 		public double PercentOfTotalTimeInMethodAndChildren
 		{
 			get
@@ -166,6 +171,7 @@ namespace NProf.Glue.Profiler.Info
 		/// <summary>
 		/// Percent of time, based on method ticks (not thread ticks), spent in children.
 		/// </summary>
+		[XmlIgnore]
 		public double PercentOfMethodTimeInChildren
 		{
 			get
@@ -183,6 +189,7 @@ namespace NProf.Glue.Profiler.Info
 		/// <summary>
 		/// Percent of time, based on method ticks (not thread ticks), spent in method.
 		/// </summary>
+		[XmlIgnore]
 		public double PercentOfMethodTimeInMethod
 		{
 			get
@@ -200,6 +207,7 @@ namespace NProf.Glue.Profiler.Info
 		/// <summary>
 		/// Percent of time, based on thread ticks, spent in children.
 		/// </summary>
+		[XmlIgnore]
 		public double PercentOfTotalTimeInChildren
 		{
 			get
@@ -207,9 +215,9 @@ namespace NProf.Glue.Profiler.Info
 				if ( TotalTicks == 0 )
 					return 0;
 
-				long lTotalChildrenTime = 0;
-				foreach ( CalleeFunctionInfo cfi in _acfi )
-					lTotalChildrenTime += cfi.TotalTime;
+				long totalChildrenTime = 0;
+				foreach ( CalleeFunctionInfo callee in callees )
+					totalChildrenTime += callee.TotalTime;
 
 				return ( ( 
 					( double )( TotalChildrenTicks + TotalChildrenRecursiveTicks - TotalRecursiveTicks ) ) 
@@ -218,13 +226,13 @@ namespace NProf.Glue.Profiler.Info
 			}
 		}
 
-		private int _nID;
-		private int _nCalls;
-		private long _lTotalTime;
-		private long _lTotalRecursiveTime;
-		private long _lTotalSuspendedTime;
-		private FunctionSignature _fs;
-		private CalleeFunctionInfo[] _acfi;
-		private ThreadInfo _ti;
+		private int id;
+		private int calls;
+		private long totalTime;
+		private long totalRecursiveTime;
+		private long totalSuspendedTime;
+		private FunctionSignature signature;
+		private CalleeFunctionInfo[] callees;
+		private ThreadInfo thread;
 	}
 }

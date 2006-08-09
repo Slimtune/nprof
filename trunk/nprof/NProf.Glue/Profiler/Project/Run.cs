@@ -13,20 +13,20 @@ namespace NProf.Glue.Profiler.Project
 	{
 		public Run()
 		{
-			_rmcMessages = new RunMessageCollection();
-			_pic = new ProcessInfoCollection();
+			this.messages = new RunMessageCollection();
+			this.processes = new ProcessInfoCollection();
 		}
 
 		public Run( Profiler p, ProjectInfo pi )
 		{
-			_p = p;
-			_dtStart = DateTime.Now;
-			_dtEnd = DateTime.MaxValue;
-			_rs = RunState.Initializing;
-			_pic = new ProcessInfoCollection();
-			_pi = pi;
-			_rmcMessages = new RunMessageCollection();
-			_bSuccess = false;
+			this.profiler = p;
+			this.start = DateTime.Now;
+			this.end = DateTime.MaxValue;
+			this.runState = RunState.Initializing;
+			this.processes = new ProcessInfoCollection();
+			this.project = pi;
+			this.messages = new RunMessageCollection();
+			this.isSuccess = false;
 		}
 
 		/*public Run( DateTime dtStart, DateTime dtEnd, RunState rs, ThreadInfoCollection tic )
@@ -36,25 +36,25 @@ namespace NProf.Glue.Profiler.Project
 			_dtStart = dtStart;
 			_dtEnd = dtEnd;
 			_rs = rs;
-			_tic = tic;
+			threadCollection = tic;
 		}*/
 
 		public bool Start()
 		{
-			_dtStart = DateTime.Now;
+			start = DateTime.Now;
 
-			return _p.Start( _pi, this, new Profiler.ProcessCompletedHandler( OnProfileComplete ) );
+			return profiler.Start( project, this, new Profiler.ProcessCompletedHandler( OnProfileComplete ) );
 		}
 
 		public bool CanStop
 		{
 			get { return State == RunState.Initializing || 
-						( _pi.ProjectType == ProjectType.AspNet && State != RunState.Finished ); } 
+						( project.ProjectType == ProjectType.AspNet && State != RunState.Finished ); } 
 		}
 
 		public bool Stop()
 		{
-			_p.Stop();
+			profiler.Stop();
 
 			return true;
 		}
@@ -62,51 +62,54 @@ namespace NProf.Glue.Profiler.Project
 		[XmlIgnore]
 		public ProjectInfo Project
 		{
-			get { return _pi; }
-			set { _pi = value; }
+			get { return project; }
+			set { project = value; }
 		}
 
+		[XmlIgnore]
 		public DateTime StartTime
 		{
-			get { return _dtStart; }
-			set { _dtStart = value; }
+			get { return start; }
+			set { start = value; }
 		}
 
+		[XmlIgnore]
 		public DateTime EndTime
 		{
-			get { return _dtEnd; }
-			set { _dtEnd = value; }
+			get { return end; }
+			set { end = value; }
 		}
 
 		public RunState State
 		{
-			get { return _rs; }
+			get { return runState; }
 			
 			set 
 			{ 
-				RunState rsOld = _rs;
-				_rs = value;
+				RunState rsOld = runState;
+				runState = value;
 				if ( StateChanged != null )
-					StateChanged( this, rsOld, _rs );
+					StateChanged( this, rsOld, runState );
 			}
 		}
 
+		[XmlIgnore]
 		public RunMessageCollection Messages
 		{
-			get { return _rmcMessages; }
-			set { _rmcMessages = value; }
+			get { return messages; }
+			set { messages = value; }
 		}
 
 		public ProcessInfoCollection Processes
 		{
-			get { return _pic; }
-			set { _pic = value; }
+			get { return processes; }
+			set { processes = value; }
 		}
 
 		public bool Success
 		{
-			get { return _bSuccess; }
-			set { _bSuccess = value; }
+			get { return isSuccess; }
+			set { isSuccess = value; }
 		}
 
 		[Serializable]
@@ -126,7 +129,7 @@ namespace NProf.Glue.Profiler.Project
 		private void OnProfileComplete( Run run )
 		{
 			State = RunState.Finished;
-			_dtEnd = DateTime.Now;
+			end = DateTime.Now;
 		}
 
 		[field:NonSerialized]
@@ -134,13 +137,13 @@ namespace NProf.Glue.Profiler.Project
 
 		public delegate void RunStateEventHandler( Run run, RunState rsOld, RunState rsNew );
 
-		private bool _bSuccess;
-		private DateTime _dtStart;
-		private DateTime _dtEnd;
-		private RunState _rs;
-		private ProjectInfo _pi;
-		private Profiler _p;
-		private RunMessageCollection _rmcMessages;
-		private ProcessInfoCollection _pic;
+		private bool isSuccess;
+		private DateTime start;
+		private DateTime end;
+		private RunState runState;
+		private ProjectInfo project;
+		private Profiler profiler;
+		private RunMessageCollection messages;
+		private ProcessInfoCollection processes;
 	}
 }

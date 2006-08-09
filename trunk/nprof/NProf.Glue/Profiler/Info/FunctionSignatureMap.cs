@@ -11,27 +11,31 @@ namespace NProf.Glue.Profiler.Info
 	{
 		public FunctionSignatureMap()
 		{
-			_htSignatureMap = new Hashtable();
+			signatures = new Hashtable();
 		}
 
-		public void MapSignature( int nFunctionID, FunctionSignature fs )
+		public void MapSignature( int functionID, FunctionSignature signature )
 		{
-			lock ( _htSignatureMap.SyncRoot )
-				_htSignatureMap[ nFunctionID ] = fs;
-		}
-
-		public string GetFunctionSignature( int nFunctionID )
-		{
-			lock ( _htSignatureMap.SyncRoot )
+			lock (signatures.SyncRoot)
 			{
-				FunctionSignature fs = ( FunctionSignature )_htSignatureMap[ nFunctionID ];
-				if ( fs == null )
-					return "Unknown!";
-
-				return fs.Signature;
+				signatures[functionID] = signature;
 			}
 		}
 
-		private Hashtable _htSignatureMap;
+		public string GetFunctionSignature( int functionID )
+		{
+			lock ( signatures.SyncRoot )
+			{
+				FunctionSignature signature = ( FunctionSignature )signatures[ functionID ];
+				if (signature == null)
+				{
+					return "Unknown!";
+				}
+
+				return signature.Signature;
+			}
+		}
+
+		private Hashtable signatures;
 	}
 }

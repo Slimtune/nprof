@@ -18,16 +18,16 @@
 #include "stdafx.h"
 #include "stackentryinfo.h"
 
-StackEntryInfo::StackEntryInfo( FunctionInfo* pFunctionInfo, INT64 llCycleStart )
+StackEntryInfo::StackEntryInfo( FunctionInfo* functionInfo, INT64 cycleStart )
 {
-  this->pFunctionInfo = pFunctionInfo;
-  this->llCycleStart = llCycleStart;
+  this->functionInfo = functionInfo;
+  this->cycleStart = cycleStart;
 }
 
-StackEntryInfo::StackEntryInfo( const StackEntryInfo& rhs )
+StackEntryInfo::StackEntryInfo( const StackEntryInfo& stackEntry )
 {
-  pFunctionInfo = rhs.pFunctionInfo;
-  llCycleStart = rhs.llCycleStart;
+  this->functionInfo = stackEntry.functionInfo;
+  this->cycleStart = stackEntry.cycleStart;
 }
 
 StackEntryInfo::~StackEntryInfo()

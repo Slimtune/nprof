@@ -42,10 +42,6 @@
       <Project>{0BBA8E95-3D0F-4366-8418-0A8947C8DBEF}</Project>
       <Name>NProf.Glue</Name>
     </ProjectReference>
-    <ProjectReference Include="..\NProf.Utilities\NProf.Utilities.csproj">
-      <Project>{A9BC618E-7E40-4D66-9BD5-837728424BEE}</Project>
-      <Name>NProf.Utilities</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -10,18 +10,6 @@ namespace NProf.Glue.Profiler.Project
 	[Serializable]
 	public class RunMessageCollection : IEnumerable
 	{
-		/// <summary>
-		/// Create a new run message collection.
-		/// </summary>
-		public RunMessageCollection()
-		{
-			_alMessages = new ArrayList();
-		}
-
-		/// <summary>
-		/// Gets the enumerator.
-		/// </summary>
-		/// <returns>The enumerator</returns>
 		public IEnumerator GetEnumerator()
 		{
 			// Enumerate the current state of the messages
@@ -35,9 +23,9 @@ namespace NProf.Glue.Profiler.Project
 		{
 			get
 			{
-				lock ( _alMessages )
+				lock ( messages )
 				{
-					return ( string[] )_alMessages.ToArray( typeof( string ) );
+					return ( string[] )messages.ToArray( typeof( string ) );
 				}
 			}
 		}
@@ -49,7 +37,7 @@ namespace NProf.Glue.Profiler.Project
 		/// <returns>The current list of messages</returns>
 		public string[] StartListening( MessageHandler handler )
 		{
-			lock ( _alMessages )
+			lock ( messages )
 			{
 				Message += handler;
 				return AllMessages;
@@ -62,7 +50,7 @@ namespace NProf.Glue.Profiler.Project
 		/// <param name="handler">The <see cref="MessageHandler" /> added earlier</param>
 		public void StopListening( MessageHandler handler )
 		{
-			lock ( _alMessages )
+			lock ( messages )
 			{
 				Message -= handler;
 			}
@@ -74,19 +62,19 @@ namespace NProf.Glue.Profiler.Project
 			AddMessage( ( string )oMessage );
 		}
 
-		public void AddMessage( string strMessage )
+		public void AddMessage( string message )
 		{
-			lock ( _alMessages )
+			lock ( messages )
 			{
-				_alMessages.Add( strMessage );
+				messages.Add( message );
 				if ( Message != null )
-					Message( strMessage );
+					Message( message );
 			}
 		}
 
-		private ArrayList _alMessages;
+		private ArrayList messages=new ArrayList();
 
-		public delegate void MessageHandler( string strMessage );
+		public delegate void MessageHandler( string message );
 		[field:NonSerialized]
 		private event MessageHandler Message;
 	}

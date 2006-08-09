@@ -21,67 +21,67 @@
 
 ThreadInfo::ThreadInfo()
 {
-  _bRunning = false;
-  _llSuspendTime = 0;
-  _pStackInfo = new StackInfo( this );
+  this->isRunning = false;
+  this->suspendTime = 0;
+  this->stackInfo = new StackInfo( this );
 }
 
 ThreadInfo::~ThreadInfo()
 {
-	delete _pStackInfo;
+	delete stackInfo;
 }
 
 void ThreadInfo::Start()
 {
-  _llStartTime = rdtsc();
-  _bRunning = true;
+  startTime = rdtsc();
+  isRunning = true;
 }
 
 void ThreadInfo::End()
 {
-  _llEndTime = rdtsc();
-  _bRunning = false;
+  endTime = rdtsc();
+  isRunning = false;
 }
 
 bool ThreadInfo::IsRunning()
 {
-  return _bRunning;
+  return isRunning;
 }
 
 StackInfo* ThreadInfo::GetStackInfo()
 {
-  return _pStackInfo;
+  return stackInfo;
 }
 
-FunctionInfo* ThreadInfo::GetFunctionInfo( FunctionID fid )
+FunctionInfo* ThreadInfo::GetFunctionInfo( FunctionID functionId )
 {
-  map< FunctionID, FunctionInfo* >::iterator found = _mFunctionInfo.find( fid );
-  if ( found == _mFunctionInfo.end() )
+  map< FunctionID, FunctionInfo* >::iterator found = functionMap.find( functionId );
+  if ( found == functionMap.end() )
   {
-    FunctionInfo* pFunctionInfo = new FunctionInfo( fid );
-    _mFunctionInfo.insert( make_pair( fid, pFunctionInfo ) );
-    return pFunctionInfo;
+    FunctionInfo* functionInfo = new FunctionInfo( functionId );
+    functionMap.insert( make_pair( functionId, functionInfo ) );
+    return functionInfo;
   }
 
   return found->second;
 }
 
 /** No descriptions */
-void ThreadInfo::Trace( ProfilerHelper& ph )
+void ThreadInfo::Trace( ProfilerHelper& profilerHelper )
 {
-  for ( map< FunctionID, FunctionInfo* >::iterator it = _mFunctionInfo.begin(); it != _mFunctionInfo.end(); it++ )
+  for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
   {
-    cout << "Function ID " << it->first << ":" << endl;
+    cout << "Function ID " << i->first << ":" << endl;
     //cout << ph.GetFunctionSignature( it->first );
-    it->second->Trace( ph );
+    i->second->Trace( profilerHelper );
   }
 }
 
-void ThreadInfo::Dump( ProfilerSocket& ps, ProfilerHelper& ph )
+void ThreadInfo::Dump( ProfilerSocket& ps, ProfilerHelper& profilerHelper )
 {
-  for ( map< FunctionID, FunctionInfo* >::iterator it = _mFunctionInfo.begin(); it != _mFunctionInfo.end(); it++ )
+  for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
   {
-    ps.SendFunctionData( ph, it->first );
-    it->second->Dump( ps, ph );
+    ps.SendFunctionData( profilerHelper, i->first );
+    i->second->Dump( ps, profilerHelper );
   }
 }

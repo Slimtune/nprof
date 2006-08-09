@@ -32,22 +32,22 @@ using namespace std;
 
 class StackInfo {
 public: 
-	StackInfo( ThreadInfo* pThreadInfo );
+	StackInfo( ThreadInfo* threadInfo );
 	~StackInfo();
   
   /** No descriptions */
-  INT64 PopFunction( INT64 llCycleCount );
+  INT64 PopFunction( INT64 cycleCount );
   /** No descriptions */
-  void PushFunction( FunctionInfo* pFunctionInfo, INT64 llCycleCount );
+  void PushFunction( FunctionInfo* functionInfo, INT64 cycleCount );
   /** No descriptions */
   void Trace();
 
-  void SuspendFunction( INT64 llCycleCount );
-  void ResumeFunction( INT64 llCycleCount );
+  void SuspendFunction( INT64 cycleCount );
+  void ResumeFunction( INT64 cycleCount );
 private:
-  INT64 _llSuspendStart;
-  stack< StackEntryInfo > _sFunctionStack;
-  ThreadInfo* _pThreadInfo;
+  INT64 suspendStart;
+  stack< StackEntryInfo > functionStack;
+  ThreadInfo* threadInfo;
 };
 
 #endif

@@ -31,32 +31,33 @@ using namespace std;
 class Profiler
 {
 public: 
-	Profiler( ICorProfilerInfo* pPrfInfo );
+	Profiler( ICorProfilerInfo* profilerInfo );
 	~Profiler();
-  void Leave( FunctionID fid );
-  void Enter( FunctionID fid );
-  void TailCall( FunctionID fid );
-  void UnmanagedToManagedCall( FunctionID fid );
-  void ManagedToUnmanagedCall( FunctionID fid );
-  void ThreadStart( ThreadID tid );
-  void ThreadEnd( ThreadID tid );
+  void Leave( FunctionID functionId );
+  void Enter( FunctionID functionId );
+  void TailCall( FunctionID functionId );
+  void UnmanagedToManagedCall( FunctionID functionId );
+  void ManagedToUnmanagedCall( FunctionID functionId );
+  void ThreadStart( ThreadID threadId );
+  void ThreadEnd( ThreadID threadId );
   void ThreadSuspend();
   void ThreadResume();
-  void AppDomainStart( AppDomainID aid );
-  void AppDomainEnd( AppDomainID aid );
+  void AppDomainStart( AppDomainID appDomainId );
+  void AppDomainEnd( AppDomainID appDomainId );
   void End();
-  void ThreadMap( ThreadID tid, DWORD dwOSThread );
+  void ThreadMap( ThreadID threadId, DWORD osThread );
 
   /** No descriptions */
   void Trace();
+  CComPtr< ICorProfilerInfo > profilerInfo;
+
 private:
   ThreadID GetCurrentThreadID();
   ThreadInfo* GetCurrentThreadInfo();
 
-  ThreadInfoCollection _tic;
-  CComPtr< ICorProfilerInfo > _pPrfInfo;
-  ProfilerHelper _phHelper;
-  map< DWORD, ThreadID > _mThreadMap;
+  ThreadInfoCollection threadCollection;
+  ProfilerHelper profilerHelper;
+  map< DWORD, ThreadID > threadMap;
 };
 
 #endif

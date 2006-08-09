@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Drawing;
 using System.Collections;
 using System.ComponentModel;
@@ -148,16 +149,17 @@ namespace NProf.GUI
 
 		private void AboutForm_Load(object sender, System.EventArgs e)
 		{
-			System.IO.StreamReader sr = new System.IO.StreamReader( System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream( "NProf.GUI.Resources.GPL.txt" ) );
-			richTextBox1.Text = sr.ReadToEnd();
-			sr.Close();
+			using (StreamReader reader = new System.IO.StreamReader(System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("NProf.GUI.Resources.GPL.txt")))
+			{
+				richTextBox1.Text = reader.ReadToEnd();
+			}
 		}
 
 		private void linkLabel_LinkClicked(object sender, System.Windows.Forms.LinkLabelLinkClickedEventArgs e)
 		{
-			LinkLabel lbl = (LinkLabel)sender;
+			LinkLabel label = (LinkLabel)sender;
 
-			string url = lbl.Text.Substring(e.Link.Start, e.Link.Length);
+			string url = label.Text.Substring(e.Link.Start, e.Link.Length);
 
 			System.Diagnostics.Process.Start(url);
 		}

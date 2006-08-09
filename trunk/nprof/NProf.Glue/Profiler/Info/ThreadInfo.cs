@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Xml.Serialization;
 
 namespace NProf.Glue.Profiler.Info
@@ -12,51 +13,55 @@ namespace NProf.Glue.Profiler.Info
 	{
 		public ThreadInfo()
 		{
-			_fic = new FunctionInfoCollection();
-			_nID = 0;
-			_lStartTime = 0;
-			_lEndTime = 0;
+			this.functions = new FunctionInfoCollection();
+			this.id = 0;
+			this.startTime = 0;
+			this.endTime = 0;
 		}
 
-		public ThreadInfo( int nThreadID ) : this()
+		public ThreadInfo( int threadId ) : this()
 		{
-			_nID = nThreadID;
+			this.id = threadId;
 		}
 
+		[XmlIgnore]
 		public int ID
 		{
-			get { return _nID; }
+			get { return id; }
 		}
 
+		[XmlIgnore]
 		public long StartTime
 		{
-			get { return _lStartTime; }
-			set { _lStartTime = value; }
+			get { return startTime; }
+			set { startTime = value; }
 		}
 
+		[XmlIgnore]
 		public long EndTime
 		{
-			get { return _lEndTime; }
-			set { _lEndTime = value; }
+			get { return endTime; }
+			set { endTime = value; }
 		}
 
+		[XmlIgnore]
 		public long TotalTime
 		{
-			get { return _lEndTime - _lStartTime; }
+			get { return endTime - startTime; }
 		}
 
 		public FunctionInfoCollection FunctionInfoCollection
 		{
-			get { return _fic; }
+			get { return functions; }
 		}
 
 		public override string ToString()
 		{
-			return "Thread #" + _nID;
+			return "Thread #" + id;
 		}
 
-		private int _nID;
-		private long _lStartTime, _lEndTime;
-		private FunctionInfoCollection _fic;
+		private int id;
+		private long startTime, endTime;
+		private FunctionInfoCollection functions;
 	}
 }

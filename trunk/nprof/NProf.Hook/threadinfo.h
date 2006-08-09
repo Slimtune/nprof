@@ -38,17 +38,17 @@ public:
   void End();
   bool IsRunning();
   StackInfo* GetStackInfo();
-  FunctionInfo* GetFunctionInfo( FunctionID fid );
+  FunctionInfo* GetFunctionInfo( FunctionID functionId );
   void Trace( ProfilerHelper& ph );
-  void Dump( ProfilerSocket& ps, ProfilerHelper& ph );
-  INT64 _llStartTime;
-  INT64 _llEndTime;
-  INT64 _llSuspendTime;
+  void Dump( ProfilerSocket& profilerSocket, ProfilerHelper& profilerHelper );
+  INT64 startTime;
+  INT64 endTime;
+  INT64 suspendTime;
   
 private:
-  bool  _bRunning;
-  StackInfo* _pStackInfo;
-  map< FunctionID, FunctionInfo* > _mFunctionInfo;
+  bool  isRunning;
+  StackInfo* stackInfo;
+  map< FunctionID, FunctionInfo* > functionMap;
 };
 
 #endif

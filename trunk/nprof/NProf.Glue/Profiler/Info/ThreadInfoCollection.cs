@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Xml.Serialization;
 
 namespace NProf.Glue.Profiler.Info
@@ -10,40 +11,28 @@ namespace NProf.Glue.Profiler.Info
 	[Serializable]
 	public class ThreadInfoCollection : IEnumerable
 	{
-		public ThreadInfoCollection()
-		{
-			_htThreadInfo = new Hashtable();
-		}
-
 		public IEnumerator GetEnumerator()
 		{
-			return _htThreadInfo.Values.GetEnumerator();
+			return threads.Values.GetEnumerator();
 		}
-
-		public void Add( object o )
-		{
-			ThreadInfo ti = ( ThreadInfo )o;
-			_htThreadInfo[ ti.ID ] = ti;
-		}
-
-		public ThreadInfo this[ int nThreadID ]
+		public ThreadInfo this[ int threadId ]
 		{
 			get
 			{
-				lock ( _htThreadInfo )
+				lock ( threads )
 				{
-					ThreadInfo ti = ( ThreadInfo )_htThreadInfo[ nThreadID ];
-					if ( ti == null )
+					ThreadInfo thread;
+					if(!threads.TryGetValue(threadId,out thread))
+					//ThreadInfo thread = (ThreadInfo)threads[threadId];
+					//if (thread == null)
 					{
-						ti = new ThreadInfo( nThreadID );
-						_htThreadInfo[ nThreadID ] = ti;
+						thread = new ThreadInfo( threadId );
+						threads[ threadId ] = thread;
 					}
-
-					return ti;
+					return thread;
 				}
 			}
 		}
-
-		private Hashtable _htThreadInfo;
+		private Dictionary<int,ThreadInfo> threads=new Dictionary<int,ThreadInfo>();
 	}
 }

@@ -18,30 +18,17 @@ namespace NProf.GUI
 	{
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.Label label3;
-		private System.Windows.Forms.Label label4;
-		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.CheckBox _cbDebugProfilee;
 		private System.Windows.Forms.TextBox _txtApplicationName;
 		private System.Windows.Forms.TextBox _txtArguments;
-		private System.Windows.Forms.TextBox _txtWorkingDirectory;
 		private System.Windows.Forms.Button _btnCreateProject;
 		private System.Windows.Forms.Button _btnCancel;
 		private System.Windows.Forms.ToolTip _ttToolTips;
 		private System.Windows.Forms.Button _btnBrowseApplication;
-		private System.Windows.Forms.Button _btnBrowseWorkingDirectory;
 		private System.ComponentModel.IContainer components;
 
 		private ProjectInfo _p;
-		private System.Windows.Forms.Label label5;
-		private System.Windows.Forms.GroupBox groupBox1;
-		private System.Windows.Forms.CheckBox checkBox1;
-		private System.Windows.Forms.RadioButton _rbAspNet;
-		private System.Windows.Forms.RadioButton _rbFile;
-		private System.Windows.Forms.RadioButton _rbRemote;
-		private System.Windows.Forms.Label _lblAspNet;
-		private System.Windows.Forms.Label label6;
-		private System.Windows.Forms.GroupBox groupBox2;
-		private System.Windows.Forms.CheckBox _cbProfileOtherApps;
+		private CheckBox checkBox1;
 		private ProfilerProjectMode _ppm;
 
 		public ProfilerProjectOptionsForm()
@@ -88,58 +75,43 @@ namespace NProf.GUI
 			this.label1 = new System.Windows.Forms.Label();
 			this._txtArguments = new System.Windows.Forms.TextBox();
 			this.label3 = new System.Windows.Forms.Label();
-			this._txtWorkingDirectory = new System.Windows.Forms.TextBox();
-			this.label4 = new System.Windows.Forms.Label();
-			this._btnBrowseWorkingDirectory = new System.Windows.Forms.Button();
-			this.label2 = new System.Windows.Forms.Label();
 			this._btnCreateProject = new System.Windows.Forms.Button();
 			this._btnCancel = new System.Windows.Forms.Button();
 			this._ttToolTips = new System.Windows.Forms.ToolTip(this.components);
-			this.label5 = new System.Windows.Forms.Label();
-			this._rbAspNet = new System.Windows.Forms.RadioButton();
-			this._rbFile = new System.Windows.Forms.RadioButton();
-			this.groupBox1 = new System.Windows.Forms.GroupBox();
-			this._cbProfileOtherApps = new System.Windows.Forms.CheckBox();
 			this.checkBox1 = new System.Windows.Forms.CheckBox();
-			this._rbRemote = new System.Windows.Forms.RadioButton();
-			this._lblAspNet = new System.Windows.Forms.Label();
-			this.label6 = new System.Windows.Forms.Label();
-			this.groupBox2 = new System.Windows.Forms.GroupBox();
-			this.groupBox1.SuspendLayout();
-			this.groupBox2.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// _cbDebugProfilee
 			// 
 			this._cbDebugProfilee.FlatStyle = System.Windows.Forms.FlatStyle.System;
-			this._cbDebugProfilee.Location = new System.Drawing.Point(16, 16);
+			this._cbDebugProfilee.Location = new System.Drawing.Point(307, 62);
 			this._cbDebugProfilee.Name = "_cbDebugProfilee";
 			this._cbDebugProfilee.Size = new System.Drawing.Size(128, 24);
-			this._cbDebugProfilee.TabIndex = 0;
+			this._cbDebugProfilee.TabIndex = 6;
 			this._cbDebugProfilee.Text = "Debug profiler hook";
 			this._ttToolTips.SetToolTip(this._cbDebugProfilee, "Launch the debugger as soon as the profilee starts");
 			// 
 			// _btnBrowseApplication
 			// 
 			this._btnBrowseApplication.FlatStyle = System.Windows.Forms.FlatStyle.System;
-			this._btnBrowseApplication.Location = new System.Drawing.Point(528, 104);
+			this._btnBrowseApplication.Location = new System.Drawing.Point(437, 12);
 			this._btnBrowseApplication.Name = "_btnBrowseApplication";
 			this._btnBrowseApplication.Size = new System.Drawing.Size(75, 23);
-			this._btnBrowseApplication.TabIndex = 7;
+			this._btnBrowseApplication.TabIndex = 3;
 			this._btnBrowseApplication.Text = "Browse...";
 			this._btnBrowseApplication.Click += new System.EventHandler(this._btnBrowseApplication_Click);
 			// 
 			// _txtApplicationName
 			// 
-			this._txtApplicationName.Location = new System.Drawing.Point(128, 104);
+			this._txtApplicationName.Location = new System.Drawing.Point(119, 12);
 			this._txtApplicationName.Name = "_txtApplicationName";
-			this._txtApplicationName.Size = new System.Drawing.Size(392, 20);
-			this._txtApplicationName.TabIndex = 4;
+			this._txtApplicationName.Size = new System.Drawing.Size(312, 20);
+			this._txtApplicationName.TabIndex = 0;
 			this._ttToolTips.SetToolTip(this._txtApplicationName, "Locate the execute to profile");
 			// 
 			// label1
 			// 
-			this.label1.Location = new System.Drawing.Point(24, 104);
+			this.label1.Location = new System.Drawing.Point(15, 12);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(100, 23);
 			this.label1.TabIndex = 3;
@@ -147,201 +119,66 @@ namespace NProf.GUI
 			// 
 			// _txtArguments
 			// 
-			this._txtArguments.Location = new System.Drawing.Point(128, 128);
+			this._txtArguments.Location = new System.Drawing.Point(119, 36);
 			this._txtArguments.Name = "_txtArguments";
-			this._txtArguments.Size = new System.Drawing.Size(392, 20);
-			this._txtArguments.TabIndex = 5;
+			this._txtArguments.Size = new System.Drawing.Size(312, 20);
+			this._txtArguments.TabIndex = 1;
 			this._ttToolTips.SetToolTip(this._txtArguments, "Enter any command line arguments to pass to the above executable");
 			// 
 			// label3
 			// 
-			this.label3.Location = new System.Drawing.Point(24, 128);
+			this.label3.Location = new System.Drawing.Point(15, 36);
 			this.label3.Name = "label3";
 			this.label3.Size = new System.Drawing.Size(100, 23);
 			this.label3.TabIndex = 6;
 			this.label3.Text = "Arguments:";
 			// 
-			// _txtWorkingDirectory
-			// 
-			this._txtWorkingDirectory.Location = new System.Drawing.Point(128, 152);
-			this._txtWorkingDirectory.Name = "_txtWorkingDirectory";
-			this._txtWorkingDirectory.Size = new System.Drawing.Size(392, 20);
-			this._txtWorkingDirectory.TabIndex = 6;
-			this._ttToolTips.SetToolTip(this._txtWorkingDirectory, "Select the directory to start the program in");
-			// 
-			// label4
-			// 
-			this.label4.Location = new System.Drawing.Point(24, 152);
-			this.label4.Name = "label4";
-			this.label4.Size = new System.Drawing.Size(100, 23);
-			this.label4.TabIndex = 8;
-			this.label4.Text = "Working directory:";
-			// 
-			// _btnBrowseWorkingDirectory
-			// 
-			this._btnBrowseWorkingDirectory.FlatStyle = System.Windows.Forms.FlatStyle.System;
-			this._btnBrowseWorkingDirectory.Location = new System.Drawing.Point(528, 152);
-			this._btnBrowseWorkingDirectory.Name = "_btnBrowseWorkingDirectory";
-			this._btnBrowseWorkingDirectory.Size = new System.Drawing.Size(75, 23);
-			this._btnBrowseWorkingDirectory.TabIndex = 8;
-			this._btnBrowseWorkingDirectory.Text = "Browse...";
-			this._btnBrowseWorkingDirectory.Click += new System.EventHandler(this._btnBrowseWorkingDirectory_Click);
-			// 
-			// label2
-			// 
-			this.label2.Location = new System.Drawing.Point(16, 80);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(216, 23);
-			this.label2.TabIndex = 2;
-			this.label2.Text = "Locate the application you wish to profile:";
-			// 
 			// _btnCreateProject
 			// 
 			this._btnCreateProject.DialogResult = System.Windows.Forms.DialogResult.OK;
 			this._btnCreateProject.FlatStyle = System.Windows.Forms.FlatStyle.System;
-			this._btnCreateProject.Location = new System.Drawing.Point(192, 400);
+			this._btnCreateProject.Location = new System.Drawing.Point(307, 114);
 			this._btnCreateProject.Name = "_btnCreateProject";
 			this._btnCreateProject.Size = new System.Drawing.Size(96, 24);
-			this._btnCreateProject.TabIndex = 4;
-			this._btnCreateProject.Text = "Create Project";
+			this._btnCreateProject.TabIndex = 2;
+			this._btnCreateProject.Text = "OK";
 			this._btnCreateProject.Click += new System.EventHandler(this._btnCreateProject_Click);
 			// 
 			// _btnCancel
 			// 
 			this._btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
 			this._btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.System;
-			this._btnCancel.Location = new System.Drawing.Point(320, 400);
+			this._btnCancel.Location = new System.Drawing.Point(416, 114);
 			this._btnCancel.Name = "_btnCancel";
 			this._btnCancel.Size = new System.Drawing.Size(96, 24);
-			this._btnCancel.TabIndex = 5;
+			this._btnCancel.TabIndex = 3;
 			this._btnCancel.Text = "Cancel";
-			// 
-			// label5
-			// 
-			this.label5.Location = new System.Drawing.Point(16, 24);
-			this.label5.Name = "label5";
-			this.label5.Size = new System.Drawing.Size(184, 24);
-			this.label5.TabIndex = 0;
-			this.label5.Text = "Select the type of project to profile:";
-			this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			// 
-			// _rbAspNet
-			// 
-			this._rbAspNet.FlatStyle = System.Windows.Forms.FlatStyle.System;
-			this._rbAspNet.Location = new System.Drawing.Point(16, 192);
-			this._rbAspNet.Name = "_rbAspNet";
-			this._rbAspNet.Size = new System.Drawing.Size(104, 24);
-			this._rbAspNet.TabIndex = 11;
-			this._rbAspNet.Text = "ASP.NET";
-			this._rbAspNet.CheckedChanged += new System.EventHandler(this._rbProjectType_CheckedChanged);
-			// 
-			// _rbFile
-			// 
-			this._rbFile.Checked = true;
-			this._rbFile.FlatStyle = System.Windows.Forms.FlatStyle.System;
-			this._rbFile.Location = new System.Drawing.Point(16, 48);
-			this._rbFile.Name = "_rbFile";
-			this._rbFile.Size = new System.Drawing.Size(104, 24);
-			this._rbFile.TabIndex = 1;
-			this._rbFile.TabStop = true;
-			this._rbFile.Text = "File";
-			this._rbFile.CheckedChanged += new System.EventHandler(this._rbProjectType_CheckedChanged);
-			// 
-			// groupBox1
-			// 
-			this.groupBox1.Controls.Add(this._cbProfileOtherApps);
-			this.groupBox1.Controls.Add(this.checkBox1);
-			this.groupBox1.Controls.Add(this._cbDebugProfilee);
-			this.groupBox1.Location = new System.Drawing.Point(8, 320);
-			this.groupBox1.Name = "groupBox1";
-			this.groupBox1.Size = new System.Drawing.Size(624, 72);
-			this.groupBox1.TabIndex = 3;
-			this.groupBox1.TabStop = false;
-			this.groupBox1.Text = "Common Options";
-			// 
-			// _cbProfileOtherApps
-			// 
-			this._cbProfileOtherApps.Location = new System.Drawing.Point(192, 16);
-			this._cbProfileOtherApps.Name = "_cbProfileOtherApps";
-			this._cbProfileOtherApps.Size = new System.Drawing.Size(192, 24);
-			this._cbProfileOtherApps.TabIndex = 2;
-			this._cbProfileOtherApps.Text = "Profile Started Applications";
 			// 
 			// checkBox1
 			// 
-			this.checkBox1.Checked = true;
-			this.checkBox1.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.checkBox1.Enabled = false;
 			this.checkBox1.FlatStyle = System.Windows.Forms.FlatStyle.System;
-			this.checkBox1.Location = new System.Drawing.Point(16, 40);
+			this.checkBox1.Location = new System.Drawing.Point(18, 62);
 			this.checkBox1.Name = "checkBox1";
-			this.checkBox1.Size = new System.Drawing.Size(168, 24);
-			this.checkBox1.TabIndex = 1;
-			this.checkBox1.Text = "Start profiling immediately";
-			// 
-			// _rbRemote
-			// 
-			this._rbRemote.Enabled = false;
-			this._rbRemote.FlatStyle = System.Windows.Forms.FlatStyle.System;
-			this._rbRemote.Location = new System.Drawing.Point(16, 248);
-			this._rbRemote.Name = "_rbRemote";
-			this._rbRemote.Size = new System.Drawing.Size(136, 24);
-			this._rbRemote.TabIndex = 13;
-			this._rbRemote.Text = "Remote Connection";
-			this._rbRemote.CheckedChanged += new System.EventHandler(this._rbProjectType_CheckedChanged);
-			// 
-			// _lblAspNet
-			// 
-			this._lblAspNet.Location = new System.Drawing.Point(32, 216);
-			this._lblAspNet.Name = "_lblAspNet";
-			this._lblAspNet.Size = new System.Drawing.Size(584, 23);
-			this._lblAspNet.TabIndex = 12;
-			this._lblAspNet.Text = "ASP.NET will be profiled when this project is run.  Please read the documentation" +
-				" for special setup requirements.";
-			// 
-			// label6
-			// 
-			this.label6.Enabled = false;
-			this.label6.Location = new System.Drawing.Point(32, 272);
-			this.label6.Name = "label6";
-			this.label6.Size = new System.Drawing.Size(152, 16);
-			this.label6.TabIndex = 14;
-			this.label6.Text = "Profile a remote application.";
-			// 
-			// groupBox2
-			// 
-			this.groupBox2.Controls.Add(this.label6);
-			this.groupBox2.Controls.Add(this._lblAspNet);
-			this.groupBox2.Controls.Add(this._rbRemote);
-			this.groupBox2.Controls.Add(this._rbFile);
-			this.groupBox2.Controls.Add(this._rbAspNet);
-			this.groupBox2.Controls.Add(this.label5);
-			this.groupBox2.Controls.Add(this.label2);
-			this.groupBox2.Controls.Add(this._btnBrowseWorkingDirectory);
-			this.groupBox2.Controls.Add(this.label4);
-			this.groupBox2.Controls.Add(this._txtWorkingDirectory);
-			this.groupBox2.Controls.Add(this.label3);
-			this.groupBox2.Controls.Add(this._txtArguments);
-			this.groupBox2.Controls.Add(this.label1);
-			this.groupBox2.Controls.Add(this._txtApplicationName);
-			this.groupBox2.Controls.Add(this._btnBrowseApplication);
-			this.groupBox2.Location = new System.Drawing.Point(8, 8);
-			this.groupBox2.Name = "groupBox2";
-			this.groupBox2.Size = new System.Drawing.Size(624, 296);
-			this.groupBox2.TabIndex = 2;
-			this.groupBox2.TabStop = false;
-			this.groupBox2.Text = "Project Type";
+			this.checkBox1.Size = new System.Drawing.Size(272, 24);
+			this.checkBox1.TabIndex = 5;
+			this.checkBox1.Text = "Use stochastic profiling (faster but less accurate)";
+			this._ttToolTips.SetToolTip(this.checkBox1, "Launch the debugger as soon as the profilee starts");
 			// 
 			// ProfilerProjectOptionsForm
 			// 
 			this.AcceptButton = this._btnCreateProject;
 			this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
 			this.CancelButton = this._btnCancel;
-			this.ClientSize = new System.Drawing.Size(642, 431);
-			this.Controls.Add(this.groupBox2);
-			this.Controls.Add(this.groupBox1);
+			this.ClientSize = new System.Drawing.Size(523, 150);
+			this.Controls.Add(this.checkBox1);
+			this.Controls.Add(this.label3);
+			this.Controls.Add(this._cbDebugProfilee);
+			this.Controls.Add(this._txtArguments);
+			this.Controls.Add(this.label1);
 			this.Controls.Add(this._btnCancel);
+			this.Controls.Add(this._txtApplicationName);
 			this.Controls.Add(this._btnCreateProject);
+			this.Controls.Add(this._btnBrowseApplication);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
@@ -349,10 +186,8 @@ namespace NProf.GUI
 			this.ShowInTaskbar = false;
 			this.Text = "Create Profiler Project";
 			this.Load += new System.EventHandler(this.ProfilerProjectOptionsForm_Load);
-			this.groupBox1.ResumeLayout(false);
-			this.groupBox2.ResumeLayout(false);
-			this.groupBox2.PerformLayout();
 			this.ResumeLayout(false);
+			this.PerformLayout();
 
 		}
 		#endregion
@@ -382,29 +217,29 @@ namespace NProf.GUI
 			}
 		}
 
-		private void _btnBrowseWorkingDirectory_Click(object sender, System.EventArgs e)
-		{
-			FolderNameDialog fb = new FolderNameDialog();
-			if ( _txtWorkingDirectory.Text.Trim() == String.Empty )
-			{
-				if ( _txtApplicationName.Text.Trim() != String.Empty )
-				{
-					FileInfo fi = new FileInfo( _txtApplicationName.Text );
-					//fb.StartLocation = fi.DirectoryName;
-				}
-			}
-			else
-			{
-				//fb.StartLocation = _txtWorkingDirectory.Text;
-			}
+		//private void _btnBrowseWorkingDirectory_Click(object sender, System.EventArgs e)
+		//{
+		//    FolderNameDialog fb = new FolderNameDialog();
+		//    //if ( _txtWorkingDirectory.Text.Trim() == String.Empty )
+		//    //{
+		//    //    if ( _txtApplicationName.Text.Trim() != String.Empty )
+		//    //    {
+		//    //        FileInfo fi = new FileInfo( _txtApplicationName.Text );
+		//    //        //fb.StartLocation = fi.DirectoryName;
+		//    //    }
+		//    //}
+		//    //else
+		//    //{
+		//    //    //fb.StartLocation = _txtWorkingDirectory.Text;
+		//    //}
 
-			if ( fb.ShowDialog( this ) == DialogResult.OK )
-			{
-				_txtWorkingDirectory.Text = fb.DirectoryPath;
-				_txtWorkingDirectory.Focus();
-				_txtWorkingDirectory.SelectAll();
-			}
-		}
+		//    if ( fb.ShowDialog( this ) == DialogResult.OK )
+		//    {
+		//        _txtWorkingDirectory.Text = fb.DirectoryPath;
+		//        _txtWorkingDirectory.Focus();
+		//        _txtWorkingDirectory.SelectAll();
+		//    }
+		//}
 
 		private void ProfilerProjectOptionsForm_Load(object sender, System.EventArgs e)
 		{
@@ -421,42 +256,42 @@ namespace NProf.GUI
 
 			_txtApplicationName.Text = _p.ApplicationName;
 			_txtArguments.Text = _p.Arguments;
-			_txtWorkingDirectory.Text = _p.WorkingDirectory;
+			//_txtWorkingDirectory.Text = _p.WorkingDirectory;
 			_cbDebugProfilee.Checked = _p.Options.Debug;
 
-			switch ( _p.ProjectType )
-			{
-				default:
-				case ProjectType.File:
-					_rbFile.Checked = true;
-					break;
-				case ProjectType.AspNet:
-					_rbAspNet.Checked = true;
-					break;
-			}
+			//switch ( _p.ProjectType )
+			//{
+			//    default:
+			//    case ProjectType.File:
+			//        _rbFile.Checked = true;
+			//        break;
+			//    case ProjectType.AspNet:
+			//        _rbAspNet.Checked = true;
+			//        break;
+			//}
 		}
 
 		private void _btnCreateProject_Click(object sender, System.EventArgs e)
 		{
 			_p.ApplicationName = _txtApplicationName.Text;
 			_p.Arguments = _txtArguments.Text;
-			_p.WorkingDirectory = _txtWorkingDirectory.Text;
+			//_p.WorkingDirectory = _txtWorkingDirectory.Text;
 			_p.Options.Debug = _cbDebugProfilee.Checked;
 
-			if ( _rbFile.Checked )
-				_p.ProjectType = ProjectType.File;
-			else if ( _rbAspNet.Checked )
-				_p.ProjectType = ProjectType.AspNet;
+			//if ( _rbFile.Checked )
+			//    _p.ProjectType = ProjectType.File;
+			//else if ( _rbAspNet.Checked )
+			//    _p.ProjectType = ProjectType.AspNet;
 		}
 
-		private void _rbProjectType_CheckedChanged(object sender, System.EventArgs e)
-		{
-			_txtApplicationName.Enabled = _rbFile.Checked;
-			_txtArguments.Enabled = _rbFile.Checked;
-			_txtWorkingDirectory.Enabled = _rbFile.Checked;
-			_btnBrowseApplication.Enabled = _rbFile.Checked;
-			_btnBrowseWorkingDirectory.Enabled = _rbFile.Checked;
-		}
+		//private void _rbProjectType_CheckedChanged(object sender, System.EventArgs e)
+		//{
+		//    //_txtApplicationName.Enabled = _rbFile.Checked;
+		//    //_txtArguments.Enabled = _rbFile.Checked;
+		//    //_txtWorkingDirectory.Enabled = _rbFile.Checked;
+		//    //_btnBrowseApplication.Enabled = _rbFile.Checked;
+		//    //_btnBrowseWorkingDirectory.Enabled = _rbFile.Checked;
+		//}
 
 		public enum ProfilerProjectMode
 		{

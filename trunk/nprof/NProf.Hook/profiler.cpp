@@ -19,10 +19,10 @@
 #include "profiler.h"
 #include "profiler_socket.h"
 
-Profiler::Profiler( ICorProfilerInfo* pPrfInfo )
+Profiler::Profiler( ICorProfilerInfo* profilerInfo )
 {
-  _pPrfInfo = pPrfInfo;
-  _phHelper.Initialize( _pPrfInfo );
+	this->profilerInfo = profilerInfo;
+	this->profilerHelper.Initialize( profilerInfo );
 }
 
 Profiler::~Profiler()
@@ -30,104 +30,104 @@ Profiler::~Profiler()
 }
 
 /** No descriptions */
-void Profiler::Enter( FunctionID fid )
+void Profiler::Enter( FunctionID functionId )
 {
-  ThreadInfo* pThreadInfo=GetCurrentThreadInfo();
-  FunctionInfo* pFunctionInfo = pThreadInfo->GetFunctionInfo( fid );
-  pThreadInfo->GetStackInfo()->PushFunction( pFunctionInfo, rdtsc() );
+  ThreadInfo* threadInfo=GetCurrentThreadInfo();
+  FunctionInfo* functionInfo = threadInfo->GetFunctionInfo( functionId );
+  threadInfo->GetStackInfo()->PushFunction( functionInfo, rdtsc() );
 }
 
 /** No descriptions */
-void Profiler::Leave( FunctionID fid )
+void Profiler::Leave( FunctionID functionId )
 {
   GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
 }
 
 /** No descriptions */
-void Profiler::TailCall( FunctionID fid )
+void Profiler::TailCall( FunctionID functionId )
 {
   GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
 }
 
-void Profiler::UnmanagedToManagedCall( FunctionID fid )
+void Profiler::UnmanagedToManagedCall( FunctionID functionId )
 {
-  ThreadInfo* pThreadInfo=GetCurrentThreadInfo();
-  FunctionInfo* pFunctionInfo = pThreadInfo->GetFunctionInfo( fid );
-  pThreadInfo->GetStackInfo()->PushFunction( pFunctionInfo, rdtsc() );
+  ThreadInfo* threadInfo=GetCurrentThreadInfo();
+  FunctionInfo* functionInfo = threadInfo->GetFunctionInfo( functionId );
+  threadInfo->GetStackInfo()->PushFunction( functionInfo, rdtsc() );
 }
 
-void Profiler::ManagedToUnmanagedCall( FunctionID fid )
+void Profiler::ManagedToUnmanagedCall( FunctionID functionId )
 {
   GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
 }
 
 /** No descriptions */
-void Profiler::ThreadStart( ThreadID tid )
+void Profiler::ThreadStart( ThreadID threadId )
 {
-  cout << "ThreadStart( " << tid << " )" << endl;
-  _tic.GetThreadInfo( tid )->Start();
+  cout << "ThreadStart( " << threadId << " )" << endl;
+  threadCollection.GetThreadInfo( threadId )->Start();
   ProfilerSocket ps;
-  ps.SendThreadCreate( tid );
+  ps.SendThreadCreate( threadId );
 }
 
-void Profiler::ThreadMap( ThreadID tid, DWORD dwOSThread )
+void Profiler::ThreadMap( ThreadID threadId, DWORD dwOSThread )
 {
-  cout << "ThreadMap( " << tid << ", " << dwOSThread << ")" << endl;
-  _mThreadMap[ dwOSThread ] = tid;
+  cout << "ThreadMap( " << threadId << ", " << dwOSThread << ")" << endl;
+  threadMap[ dwOSThread ] = threadId;
 }
 
 /** No descriptions */
-void Profiler::ThreadEnd( ThreadID tid )
+void Profiler::ThreadEnd( ThreadID threadId )
 {
-  _tic.EndThread( _phHelper, tid );
-  cout << "ThreadEnd( " << tid << " )" << endl;
+  threadCollection.EndThread( profilerHelper, threadId );
+  cout << "ThreadEnd( " << threadId << " )" << endl;
 }
 
 /** No descriptions */
 void Profiler::ThreadSuspend()
 {
   //cout << "ThreadSuspend( " << GetCurrentThreadID() << " )" << endl;
-  _tic.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->SuspendFunction( rdtsc() );
+  threadCollection.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->SuspendFunction( rdtsc() );
 }
 
 /** No descriptions */
 void Profiler::ThreadResume()
 {
   //cout << "ThreadResume( " << GetCurrentThreadID() << " )" << endl;
-  _tic.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->ResumeFunction( rdtsc() );
+  threadCollection.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->ResumeFunction( rdtsc() );
 }
 
-void Profiler::AppDomainStart( AppDomainID aid )
+void Profiler::AppDomainStart( AppDomainID appDomainId )
 {
-  cout << "AppDomain Created: " << aid << endl;
+  cout << "AppDomain Created: " << appDomainId << endl;
   ProfilerSocket ps;
-  ps.SendAppDomainCreate( aid );
+  ps.SendAppDomainCreate( appDomainId );
 }
 
-void Profiler::AppDomainEnd( AppDomainID aid )
+void Profiler::AppDomainEnd( AppDomainID appDomainId )
 {
 }
 
 void Profiler::End()
 {
   cout << "End()" << endl;
-  _tic.EndAll( _phHelper );
+  threadCollection.EndAll( profilerHelper );
 }
 
 /** No descriptions */
 ThreadID Profiler::GetCurrentThreadID()
 {
-  return _phHelper.GetCurrentThreadID();
+  return profilerHelper.GetCurrentThreadID();
 }
 
 /** No descriptions */
 ThreadInfo* Profiler::GetCurrentThreadInfo()
 {
-  return _tic.GetThreadInfo( GetCurrentThreadID() );
+  return threadCollection.GetThreadInfo( GetCurrentThreadID() );
 }
 
 /** No descriptions */
 void Profiler::Trace()
 {
-  _tic.Trace( _phHelper );
+  threadCollection.Trace( profilerHelper );
 }

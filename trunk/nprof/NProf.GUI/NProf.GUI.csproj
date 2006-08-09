@@ -114,11 +114,6 @@
       <Project>{0BBA8E95-3D0F-4366-8418-0A8947C8DBEF}</Project>
       <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
     </ProjectReference>
-    <ProjectReference Include="..\NProf.Utilities\NProf.Utilities.csproj">
-      <Name>NProf.Utilities</Name>
-      <Project>{A9BC618E-7E40-4D66-9BD5-837728424BEE}</Project>
-      <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AboutForm.cs">
@@ -126,9 +121,6 @@
     </Compile>
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="NoProfilerRunsLoaded.cs">
-      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="ProcessTree.cs">
       <SubType>UserControl</SubType>
@@ -142,28 +134,8 @@
     <Compile Include="ProfilerProjectOptionsForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ProfilerRunControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="ProfilerRunMessagesForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ProjectTree.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <EmbeddedResource Include="AboutForm.resx">
       <DependentUpon>AboutForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="NoProfilerRunsLoaded.resx">
-      <DependentUpon>NoProfilerRunsLoaded.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ProcessTree.resx">
-      <DependentUpon>ProcessTree.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ProfilerControl.resx">
-      <DependentUpon>ProfilerControl.cs</DependentUpon>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="ProfilerForm.resx">
       <DependentUpon>ProfilerForm.cs</DependentUpon>
@@ -172,16 +144,6 @@
     <EmbeddedResource Include="ProfilerProjectOptionsForm.resx">
       <DependentUpon>ProfilerProjectOptionsForm.cs</DependentUpon>
       <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ProfilerRunControl.resx">
-      <DependentUpon>ProfilerRunControl.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ProfilerRunMessagesForm.resx">
-      <DependentUpon>ProfilerRunMessagesForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ProjectTree.resx">
-      <DependentUpon>ProjectTree.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\app-icon.ico" />
     <EmbeddedResource Include="Resources\go.bmp" />
@@ -192,8 +154,17 @@
     <EmbeddedResource Include="Resources\stop-error.bmp" />
     <EmbeddedResource Include="Resources\stop.bmp" />
     <EmbeddedResource Include="Resources\thread.bmp" />
-    <EmbeddedResource Include="Resources\toolbar16.png" />
     <EmbeddedResource Include="Resources\toolbar24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ProfilerControl.resx">
+      <DependentUpon>ProfilerControl.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\toolbar16.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\toolbar16.png" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -27,12 +27,12 @@
 
 class StackEntryInfo {
 public: 
-	StackEntryInfo( FunctionInfo* pFunctionInfo, INT64 llCycleStart );
+	StackEntryInfo( FunctionInfo* functionInfo, INT64 cycleStart );
 	StackEntryInfo( const StackEntryInfo& rhs );
 	~StackEntryInfo();
   
-  INT64 llCycleStart;
-  FunctionInfo* pFunctionInfo;
+  INT64 cycleStart;
+  FunctionInfo* functionInfo;
 };
 
 #endif

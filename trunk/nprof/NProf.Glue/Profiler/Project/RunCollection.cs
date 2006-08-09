@@ -11,38 +11,38 @@ namespace NProf.Glue.Profiler.Project
 	{
 		public RunCollection( ProjectInfo pi )
 		{
-			_pi = pi;
-			_alItems = new ArrayList();
+			this.project = pi;
+			items = new ArrayList();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return _alItems.GetEnumerator();
+			return items.GetEnumerator();
 		}
 
 		public int Count
 		{
-			get { return _alItems.Count; }
+			get { return items.Count; }
 		}
 
 		public void Add( Run run )
 		{
-			_alItems.Add( run );
+			items.Add( run );
 			if ( RunAdded != null )
-				RunAdded( _pi, this, run, _alItems.Count - 1 );
+				RunAdded( project, this, run, items.Count - 1 );
 		}
 
-		public void RemoveAt( int nIndex )
+		public void RemoveAt( int index )
 		{
-			Run run = this[ nIndex ];
-			_alItems.RemoveAt( nIndex );
+			Run run = this[ index ];
+			items.RemoveAt( index );
 			if ( RunRemoved != null )
-				RunRemoved( _pi, this, run, nIndex );
+				RunRemoved( project, this, run, index );
 		}
 
 		public Run this[ int nIndex ]
 		{
-			get { return ( Run )_alItems[ nIndex ]; }
+			get { return ( Run )items[ nIndex ]; }
 		}
 		[field:NonSerialized]
 		public event RunEventHandler RunAdded;
@@ -51,7 +51,7 @@ namespace NProf.Glue.Profiler.Project
 
 		public delegate void RunEventHandler( ProjectInfo pi, RunCollection runs, Run run, int nIndex );
 
-		private ArrayList _alItems;
-		private ProjectInfo _pi;
+		private ArrayList items;
+		private ProjectInfo project;
 	}
 }

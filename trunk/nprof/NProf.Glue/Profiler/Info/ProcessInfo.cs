@@ -12,54 +12,55 @@ namespace NProf.Glue.Profiler.Info
 	{
 		public ProcessInfo()
 		{
-			_nID = 0;
-			_tic = new ThreadInfoCollection();
-			_fsm = new FunctionSignatureMap();
+			this.id = 0;
+			this.threads = new ThreadInfoCollection();
+			this.signatures = new FunctionSignatureMap();
 		}
 
-		public ProcessInfo( int nID ) : this()
+		public ProcessInfo( int id ) : this()
 		{
-			_nID = nID;
+			this.id = id;
 		}
 
 		public int ID
 		{
-			get { return _nID; }
+			get { return id; }
 		}
 
+		[XmlIgnore]
 		public int ProcessID
 		{
-			get { return _nProcessID; }
-			set { _nProcessID = value; }
+			get { return processId; }
+			set { processId = value; }
 		}
 
 		public string Name
 		{
-			get { return _strName; }
-			set { _strName = value; }
+			get { return name; }
+			set { name = value; }
 		}
 
 		public FunctionSignatureMap Functions
 		{
-			get { return _fsm; }
-			set { _fsm = value; }
+			get { return signatures; }
+			set { signatures = value; }
 		}
 
 		public ThreadInfoCollection Threads
 		{
-			get { return _tic; }
-			set { _tic = value; }
+			get { return threads; }
+			set { threads = value; }
 		}
 
 		public override string ToString()
 		{
-			return String.Format( "{0} ({1})", _strName, _nProcessID );
+			return String.Format( "{0} ({1})", name, processId );
 		}
 
-		private int _nID;
-		private int _nProcessID;
-		private FunctionSignatureMap _fsm;
-		private ThreadInfoCollection _tic;
-		private string _strName;
+		private int id;
+		private int processId;
+		private FunctionSignatureMap signatures;
+		private ThreadInfoCollection threads;
+		private string name;
 	}
 }

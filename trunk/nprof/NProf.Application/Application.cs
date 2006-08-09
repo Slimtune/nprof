@@ -35,19 +35,28 @@ namespace NProf.Application
 			Console.WriteLine( "is available in the distribution package and from the NProf web site." );
 			Console.WriteLine();
 
-			ProfilerForm pf = new ProfilerForm();
+			ProfilerForm form = new ProfilerForm();
 			if ( args.Length > 0 )
 			{
-				pf.InitialProject = CreateProjectInfo( args );
+				form.InitialProject = CreateProjectInfo( args );
 			
 				// If we're in command-line mode and we couldn't create a project, return
-				if ( pf.InitialProject == null )
+				if ( form.InitialProject == null )
 					return;
 			}
 
 			Console.Out.Flush();
 			System.Threading.Thread.CurrentThread.Name = "GUI Thread";
-			System.Windows.Forms.Application.Run( pf );
+			form.Show();
+			if (form.InitialProject == null)
+			{
+				ProfilerProjectOptionsForm options=new ProfilerProjectOptionsForm();
+				options.ShowDialog();
+				form.Project=options.Project;
+				//form.Controls.Add(new ProfilerControl());
+			}
+			System.Windows.Forms.Application.Run();
+			//System.Windows.Forms.Application.Run( form );
 		}
 
 		/// <summary>
@@ -100,25 +109,25 @@ namespace NProf.Application
 		/// <returns>A <see cref="ProjectInfo"/> structure, or null if it could not be created</returns>
 		static ProjectInfo CreateProjectInfo( string[] args )
 		{
-			ProjectInfo pInfo = new ProjectInfo( ProjectType.File );
-			pInfo.Arguments = pInfo.WorkingDirectory = pInfo.ApplicationName = String.Empty;
+			ProjectInfo project = new ProjectInfo( ProjectType.File );
+			project.Arguments = project.WorkingDirectory = project.ApplicationName = String.Empty;
 			foreach ( string arg in args )
 			{
 				string upperArg = arg.ToUpper();
 				if ( upperArg.StartsWith( "/R:" ) )
 				{
-					pInfo.ApplicationName = Path.GetFullPath( arg.Substring( 3 ) );
-					Console.WriteLine( "Application: " + pInfo.ApplicationName );
+					project.ApplicationName = Path.GetFullPath( arg.Substring( 3 ) );
+					Console.WriteLine( "Application: " + project.ApplicationName );
 				} 
 				else if ( upperArg.StartsWith( "/W:" ) )
 				{
-					pInfo.WorkingDirectory = arg.Substring( 3 );
-					Console.WriteLine( "Working Directory: " + pInfo.WorkingDirectory );
+					project.WorkingDirectory = arg.Substring( 3 );
+					Console.WriteLine( "Working Directory: " + project.WorkingDirectory );
 				} 
 				else if ( upperArg.StartsWith( "/A:" ) )
 				{
-					pInfo.Arguments = arg.Substring( 3 );
-					Console.WriteLine( "Arguments: " + pInfo.Arguments );
+					project.Arguments = arg.Substring( 3 );
+					Console.WriteLine( "Arguments: " + project.Arguments );
 				}
 				else if ( upperArg.Equals( "/V" ) )
 				{
@@ -138,20 +147,20 @@ namespace NProf.Application
 			}
 			
 			// Check if the user has specified an application to run
-			if ( pInfo.ApplicationName.Length == 0 )
+			if ( project.ApplicationName.Length == 0 )
 			{
 				Console.WriteLine( "Error: You need to specify an application to run." );
 				return null;
 			}
 			
 			// Set the working directory, if not specified
-			if ( pInfo.WorkingDirectory.Length == 0 )
+			if ( project.WorkingDirectory.Length == 0 )
 			{
 				// Note: if the pInfo.Name is rooted, it will override the app startup path
-				pInfo.WorkingDirectory = Path.Combine( Directory.GetCurrentDirectory(), Path.GetDirectoryName( pInfo.ApplicationName ) );
+				project.WorkingDirectory = Path.Combine( Directory.GetCurrentDirectory(), Path.GetDirectoryName( project.ApplicationName ) );
 			}
 
-			return pInfo;
+			return project;
 		}	
 	}
 }

@@ -6,4 +6,4 @@
 
 // CNProfCORHook
 
-Profiler* CNProfCORHook::_pProfiler;
+Profiler* CNProfCORHook::profiler;

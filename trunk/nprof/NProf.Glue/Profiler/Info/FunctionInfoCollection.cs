@@ -1,40 +1,19 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Xml.Serialization;
+using System.Runtime.Serialization;
 
 namespace NProf.Glue.Profiler.Info
 {
-	/// <summary>
-	/// Summary description for FunctionCollection.
-	/// </summary>
 	[Serializable]
-	public class FunctionInfoCollection : IEnumerable
+	public class FunctionInfoCollection : Dictionary<int,FunctionInfo>
 	{
 		public FunctionInfoCollection()
 		{
-			_htFunctionInfo = new Hashtable();
 		}
-
-		public void Add( object o )
+		public FunctionInfoCollection(SerializationInfo info,StreamingContext context):base(info,context)
 		{
-			Add( ( FunctionInfo )o );
 		}
-
-		public void Add( FunctionInfo fi )
-		{
-			_htFunctionInfo[ fi.ID ] = fi;
-		}
-
-		public FunctionInfo this[ int nFunctionID ]
-		{
-			get { return ( FunctionInfo )_htFunctionInfo[ nFunctionID ]; }
-		}
-
-		public IEnumerator GetEnumerator()
-		{
-			return _htFunctionInfo.Values.GetEnumerator();
-		}
-
-		Hashtable _htFunctionInfo;
 	}
 }

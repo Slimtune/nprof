@@ -3,21 +3,21 @@
 
 #define SAFE_SEND( socket, data ) \
 	{ \
-		int nSent = send( socket, ( const char * )&data, sizeof( data ), 0 ); \
-		if ( nSent != sizeof( data ) ) \
+		int sent = send( socket, ( const char * )&data, sizeof( data ), 0 ); \
+		if ( sent != sizeof( data ) ) \
 		{ \
 			HandleError( "SAFE_SEND", WSAGetLastError() ); \
-			HandleWrongSentLength( "SAFE_SEND", sizeof( data ), nSent ); \
+			HandleWrongSentLength( "SAFE_SEND", sizeof( data ), sent ); \
 		} \
 	}
 
 #define SAFE_SEND_RAW( socket, data, length ) \
 	{ \
-		int nSent = send( socket, data, length, 0 ); \
-		if ( nSent != length ) \
+		int sent = send( socket, data, length, 0 ); \
+		if ( sent != length ) \
 		{ \
 			HandleError( "SAFE_SEND_RAW", WSAGetLastError() ); \
-			HandleWrongSentLength( "SAFE_SEND_RAW", sizeof( data ), nSent ); \
+			HandleWrongSentLength( "SAFE_SEND_RAW", sizeof( data ), sent ); \
 		} \
 	}
 
@@ -36,21 +36,21 @@
 		} \
 	}
 
-bool ProfilerSocket::_bInitialized = false;
-int ProfilerSocket::_nApplicationID = -1;
+bool ProfilerSocket::isInitialized = false;
+int ProfilerSocket::applicationId = -1;
 
 ProfilerSocket::ProfilerSocket()
 {
-	_szOperation = "ctor";
-	_bSentApplicationID = false;
+	this->operation = "ctor";
+	this->isApplicationIdSent = false;
 
 	sockaddr_in sa;
 	sa.sin_family = AF_INET;
 	sa.sin_port = htons( atoi( getenv( "NPROF_PROFILING_SOCKET" ) ) );
 	sa.sin_addr.S_un.S_addr = inet_addr( "127.0.0.1" );
 
-	_s = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, 0, 0, 0);
-	if ( _s == INVALID_SOCKET )
+	socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, 0, 0, 0);
+	if ( socket == INVALID_SOCKET )
 	{
 		HandleError( "WSASocket", WSAGetLastError() );
 	}
@@ -59,7 +59,7 @@ ProfilerSocket::ProfilerSocket()
 		int n = 0;
 		while ( n < 10 )
 		{
-			int nResult = connect( _s, ( const sockaddr * )&sa, sizeof( sa ) );
+			int nResult = connect( socket, ( const sockaddr * )&sa, sizeof( sa ) );
 			if ( nResult == SOCKET_ERROR )
 			{
 				HandleError( "connect", WSAGetLastError() );
@@ -73,8 +73,7 @@ ProfilerSocket::ProfilerSocket()
 			n++;
 		}
 	}
-
-	_s = INVALID_SOCKET;
+	this->socket = INVALID_SOCKET;
 }
 
 void ProfilerSocket::Initialize()
@@ -89,7 +88,7 @@ void ProfilerSocket::Initialize()
 
 void ProfilerSocket::SendInitialize()
 {
-	_szOperation = "SendInitialize";
+	operation = "SendInitialize";
 
 	SendNetworkMessage( INITIALIZE );
 	SendUINT32( NETWORK_PROTOCOL_VERSION );
@@ -106,9 +105,9 @@ void ProfilerSocket::SendInitialize()
 		{
 			cout << "Successfully initialized profiler socket!" << endl;
 			ReadByte( b );
-			_nApplicationID = b;
+			applicationId = b;
 
-			cout << "Application ID = " << _nApplicationID << endl;
+			cout << "Application ID = " << applicationId << endl;
 
 			SendUINT32( ::GetCurrentProcessId() );
 			
@@ -125,33 +124,33 @@ void ProfilerSocket::SendInitialize()
 			
 			::GlobalFree( pstrCmdLine );
 
-			_bInitialized = true;
+			isInitialized = true;
 		}
 		else
 		{
 			cout << "We weren't allowed to initialize!" << endl;
-			_bInitialized = false;
+			isInitialized = false;
 		}
 	}
 	else
 	{
 		cout << "Could not initialize!" << endl;
-		_bInitialized = false;
+		isInitialized = false;
 	}
 }
 
 void ProfilerSocket::SendShutdown()
 {
-	if ( !_bInitialized )
+	if ( !isInitialized )
 		return;
-	_szOperation = "SendShutdown";
+	operation = "SendShutdown";
 
 	SendNetworkMessage( SHUTDOWN );
 }
 
 void ProfilerSocket::SendAppDomainCreate( AppDomainID aid )
 {
-	_szOperation = "SendAppDomainCreate";
+	operation = "SendAppDomainCreate";
 
 	SendNetworkMessage( APPDOMAIN_CREATE );
 	SendAppDomainID( aid );
@@ -159,25 +158,25 @@ void ProfilerSocket::SendAppDomainCreate( AppDomainID aid )
 
 void ProfilerSocket::SendThreadCreate( ThreadID tid )
 {
-	_szOperation = "SendThreadCreate";
+	operation = "SendThreadCreate";
 
 	SendNetworkMessage( THREAD_CREATE );
 	SendThreadID( tid );
 }
 
-void ProfilerSocket::SendThreadEnd( ThreadID tid, UINT64 llThreadStartTime, UINT64 llThreadEndTime )
+void ProfilerSocket::SendThreadEnd( ThreadID tid, UINT64 llThreadStartTime, UINT64 threadEndTime )
 {
-	_szOperation = "SendThreadEnd";
+	operation = "SendThreadEnd";
 
 	SendNetworkMessage( THREAD_END );
 	SendThreadID( tid );
 	SendUINT64( llThreadStartTime );
-	SendUINT64( llThreadEndTime );
+	SendUINT64( threadEndTime );
 }
 
 void ProfilerSocket::SendStartFunctionData( ThreadID tid )
 {
-	_szOperation = "SendStartFunctionData";
+	operation = "SendStartFunctionData";
 
 	SendNetworkMessage( FUNCTION_DATA );
 	SendThreadID( tid );
@@ -185,142 +184,142 @@ void ProfilerSocket::SendStartFunctionData( ThreadID tid )
 
 void ProfilerSocket::SendFunctionData( ProfilerHelper& ph, FunctionID fid )
 {
-	_szOperation = "SendFunctionData";
+	operation = "SendFunctionData";
 
 	SendFunctionID( fid );
-	string strRet, strClassName, strFnName, strParameters;
-	UINT32 uiMethodAttributes;
-	ph.GetFunctionSignature( fid, uiMethodAttributes, strRet, strClassName, strFnName, strParameters );
+	string returnType, className, functionName, parameters;
+	UINT32 methodAttributes;
+	ph.GetFunctionSignature( fid, methodAttributes, returnType, className, functionName, parameters );
 
-	SendUINT32( uiMethodAttributes );
-	SendString( strRet );
-	SendString( strClassName );
-	SendString( strFnName );
-	SendString( strParameters );
+	SendUINT32( methodAttributes );
+	SendString( returnType );
+	SendString( className );
+	SendString( functionName );
+	SendString( parameters );
 }
 
 void ProfilerSocket::SendProfilerMessage( const string& strMessage )
 {
-	_szOperation = "SendProfilerMessage";
+	operation = "SendProfilerMessage";
 
 	SendNetworkMessage( PROFILER_MESSAGE );
 	SendString( strMessage );
 }
 
-void ProfilerSocket::SendFunctionTimingData( int nCalls, UINT64 llCycleCount, UINT64 llRecursiveCycleCount, UINT64 llSuspendCycleCount )
+void ProfilerSocket::SendFunctionTimingData( int calls, UINT64 cycleCount, UINT64 recursiveCycleCount, UINT64 suspendCycleCount )
 {
-	_szOperation = "SendFunctionTimingData";
+	operation = "SendFunctionTimingData";
 
-	SendUINT32( nCalls );
-	SendUINT64( llCycleCount );
-	SendUINT64( llRecursiveCycleCount );
-	SendUINT64( llSuspendCycleCount );
+	SendUINT32( calls );
+	SendUINT64( cycleCount );
+	SendUINT64( recursiveCycleCount );
+	SendUINT64( suspendCycleCount );
 }
 
-void ProfilerSocket::SendCalleeFunctionData( FunctionID fid, int nCalls, UINT64 llCycleCount, UINT64 llRecursiveCycleCount )
+void ProfilerSocket::SendCalleeFunctionData( FunctionID fid, int calls, UINT64 cycleCount, UINT64 recursiveCycleCount )
 {
-	_szOperation = "SendCalleeFunctionData";
+	operation = "SendCalleeFunctionData";
 
 	SendFunctionID( fid );
-	SendUINT32( nCalls );
-	SendUINT64( llCycleCount );
-	SendUINT64( llRecursiveCycleCount );
+	SendUINT32( calls );
+	SendUINT64( cycleCount );
+	SendUINT64( recursiveCycleCount );
 }
 
 void ProfilerSocket::SendEndFunctionData()
 {
-	_szOperation = "SendEndFunctionData";
+	operation = "SendEndFunctionData";
 
 	SendFunctionID( 0xffffffff );
 }
 
 void ProfilerSocket::SendEndCalleeFunctionData()
 {
-	_szOperation = "SendEndCalleeFunctionData";
+	operation = "SendEndCalleeFunctionData";
 
 	SendFunctionID( 0xffffffff );
 }
 
-void ProfilerSocket::SendBool( bool b )
+void ProfilerSocket::SendBool( bool boolean )
 {
-	SAFE_SEND( _s, b );
+	SAFE_SEND( socket, boolean );
 }
 
-void ProfilerSocket::SendUINT32( UINT32 ui )
+void ProfilerSocket::SendUINT32( UINT32 integer )
 {
-	SAFE_SEND( _s, ui );
+	SAFE_SEND( socket, integer );
 }
 
-void ProfilerSocket::SendUINT64( UINT64 ui )
+void ProfilerSocket::SendUINT64( UINT64 integer)
 {
-	SAFE_SEND( _s, ui );
+	SAFE_SEND( socket, integer);
 }
 
-void ProfilerSocket::SendString( const string& strFunctionSignature )
+void ProfilerSocket::SendString( const string& signature )
 {
-	SendUINT32( ( UINT32 )strFunctionSignature.length() );
-	SAFE_SEND_RAW( _s, strFunctionSignature.c_str(), ( int )strFunctionSignature.length() );
+	SendUINT32( ( UINT32 )signature.length() );
+	SAFE_SEND_RAW( socket, signature.c_str(), ( int )signature.length() );
 }
 
-void ProfilerSocket::SendNetworkMessage( NetworkMessage nm )
+void ProfilerSocket::SendNetworkMessage( NetworkMessage networkMessage )
 {
-	UINT16 mess = nm;
-	SAFE_SEND( _s, mess );
+	UINT16 mess = networkMessage;
+	SAFE_SEND( socket, mess );
 
-	if ( !_bSentApplicationID )
+	if ( !isApplicationIdSent)
 	{
-		if ( nm != INITIALIZE )
-			SendUINT32( _nApplicationID );
+		if ( networkMessage != INITIALIZE )
+			SendUINT32( applicationId );
 
-		_bSentApplicationID = true;
+		isApplicationIdSent = true;
 	}
 }
 
-void ProfilerSocket::SendAppDomainID( AppDomainID aid )
+void ProfilerSocket::SendAppDomainID( AppDomainID appDomainId )
 {
-	SAFE_SEND( _s, aid );
+	SAFE_SEND( socket, appDomainId );
 }
 
-void ProfilerSocket::SendThreadID( ThreadID tid )
+void ProfilerSocket::SendThreadID( ThreadID threadId )
 {
-	SAFE_SEND( _s, tid );
+	SAFE_SEND( socket, threadId );
 }
 
-void ProfilerSocket::SendFunctionID( FunctionID fid )
+void ProfilerSocket::SendFunctionID( FunctionID functionId )
 {
-	SAFE_SEND( _s, fid );
+	SAFE_SEND( socket, functionId );
 }
 
 int ProfilerSocket::ReadByte( BYTE& b )
 {
 	int result;
-	SAFE_READ( _s, b, result );
+	SAFE_READ( socket, b, result );
 
 	return result;
 }
 
-void ProfilerSocket::HandleError( const char* szCaller, int nError )
+void ProfilerSocket::HandleError( const char* caller, int error )
 {
 //	std::ofstream outf;
 //	outf.open( "c:\\nprof.log", ios::app );
-//	outf << _szOperation << " " << szCaller << " Error: " << nError << " on socket " << _s << endl;
+//	outf << operation << " " << caller << " Error: " << nError << " on socket " << _s << endl;
 }
 
-void ProfilerSocket::HandleWrongSentLength( const char* szCaller, int nExpected, int nSent )
+void ProfilerSocket::HandleWrongSentLength( const char* caller, int expected, int sent )
 {
 //	std::ofstream outf;
 //	outf.open( "c:\\nprof.log", ios::app );
-//	outf << _szOperation << " " << szCaller << " Expected to send " << nExpected << ", sent " << nSent << " instead." << endl;
+//	outf << operation << " " << caller << " Expected to send " << expected << ", sent " << sent << " instead." << endl;
 }
 
-void ProfilerSocket::HandleWrongRecvLength( const char* szCaller, int nExpected, int nSent )
+void ProfilerSocket::HandleWrongRecvLength( const char* caller, int expected, int sent )
 {
 //	std::ofstream outf;
 //	outf.open( "c:\\nprof.log", ios::app );
-//	outf << _szOperation << " " << szCaller << " Expected to send " << nExpected << ", sent " << nSent << " instead." << endl;
+//	outf << operation << " " << caller << " Expected to send " << expected << ", sent " << sent << " instead." << endl;
 }
 
 ProfilerSocket::~ProfilerSocket(void)
 {
-	closesocket( _s );
+	closesocket( socket );
 }

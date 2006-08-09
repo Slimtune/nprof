@@ -11,62 +11,62 @@ namespace NProf.Glue.Profiler.Project
 	{
 		public ProjectInfo() : this(ProjectType.File) { } // JC: added default constructor for serialization
 
-		public ProjectInfo( ProjectType pt )
+		public ProjectInfo( ProjectType projectType )
 		{
-			_po = new Options();
-			_strName = null;
-			_rc = new RunCollection( this );
-			_pt = pt;
+			this.options = new Options();
+			this.name = null;
+			this.runs = new RunCollection( this );
+			this.projectType = projectType;
 		}
 
 		public Options Options
 		{
-			get { return _po; }
-			set { _po = value; } // JC: added for serialization support
+			get { return options; }
+			set { options = value; } // JC: added for serialization support
 		}
 
 		public string Name
 		{
-			get { return _strName; }
-			set { _strName = value; Fire_ProjectInfoChanged(); }
+			get { return name; }
+			set { name = value; Fire_ProjectInfoChanged(); }
 		}
 
 		public string ApplicationName
 		{
-			get { return _strAppName; }
-			set { _strAppName = value; Fire_ProjectInfoChanged(); }
+			get { return appName; }
+			set { appName = value; Fire_ProjectInfoChanged(); }
 		}
 
 		public string Arguments
 		{
-			get { return _strArguments; }
-			set { _strArguments = value; Fire_ProjectInfoChanged(); }
+			get { return arguments; }
+			set { arguments = value; Fire_ProjectInfoChanged(); }
 		}
 
 		public string WorkingDirectory
 		{
-			get { return _strWorkingDirectory; }
-			set { _strWorkingDirectory = value; Fire_ProjectInfoChanged(); }
+			get { return workingDirectory; }
+			set { workingDirectory = value; Fire_ProjectInfoChanged(); }
 		}
 
 		[XmlIgnore()] // JC: prevent saving of runs collection
 		public RunCollection Runs
 		{
-			get { return _rc; }
+			get { return runs; }
 		}
 
 		public Run CreateRun( Profiler p )
 		{
 			Run run = new Run( p, this );
-			_rc.Add( run );
+			runs.Add( run );
 			
 			return run;
 		}
 
 		public ProjectType ProjectType
 		{
-			get { return _pt; }
-			set { _pt = value; }
+			get { return projectType; }
+			set { projectType = value; }
 		}
 
 		private void Fire_ProjectInfoChanged()
@@ -79,10 +79,12 @@ namespace NProf.Glue.Profiler.Project
 
 		public delegate void ProjectEventHandler( ProjectInfo project );
 
-		private Options _po;
-		private string _strAppName, _strArguments, _strWorkingDirectory;
-		private string _strName;
-		private RunCollection _rc;
-		private ProjectType _pt;
+		private Options options;
+		private string appName;
+		private string arguments;
+		private string workingDirectory;
+		private string name;
+		private RunCollection runs;
+		private ProjectType projectType;
 	}
 }

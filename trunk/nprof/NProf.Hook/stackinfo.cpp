@@ -19,9 +19,9 @@ email                : mmastrac@canada.com
 #include "stackinfo.h"
 #include "threadinfo.h"
 
-StackInfo::StackInfo( ThreadInfo* pThreadInfo )
+StackInfo::StackInfo( ThreadInfo* threadInfo )
 {
-	_pThreadInfo = pThreadInfo;
+	this->threadInfo = threadInfo;
 }
 
 StackInfo::~StackInfo()
@@ -29,89 +29,89 @@ StackInfo::~StackInfo()
 }
 
 /** No descriptions */
-void StackInfo::PushFunction( FunctionInfo* pFunctionInfo, INT64 llCycleCount )
+void StackInfo::PushFunction( FunctionInfo* functionInfo, INT64 cycleCount )
 {
-	if ( _sFunctionStack.size() > 0 )
+	if ( functionStack.size() > 0 )
 	{
 		// Increment the recursive count of this callee function info so we don't double-book entries
-		FunctionInfo* pCallerFunctionInfo = _sFunctionStack.top().pFunctionInfo;
-		FunctionID fidCallee = pFunctionInfo->fid;
+		FunctionInfo* callerFunction = functionStack.top().functionInfo;
+		FunctionID calleeId = functionInfo->functionId;
 		
-		CalleeFunctionInfo* pCalleeFunctionInfo = pCallerFunctionInfo->GetCalleeFunctionInfo( fidCallee );
-		pCalleeFunctionInfo->nRecursiveCount++;
-		pCalleeFunctionInfo->nCalls++;
+		CalleeFunctionInfo* calleeFunction = callerFunction->GetCalleeFunctionInfo( calleeId );
+		calleeFunction->recursiveCount++;
+		calleeFunction->calls++;
 	}
 
 	// Increment the recursive count of this function info so we don't double-book entries
-	pFunctionInfo->nRecursiveCount++;
-	pFunctionInfo->nCalls++;
+	functionInfo->recursiveCount++;
+	functionInfo->calls++;
 
-	_sFunctionStack.push( StackEntryInfo( pFunctionInfo, llCycleCount ) );
+	functionStack.push( StackEntryInfo( functionInfo, cycleCount ) );
 }
 
 /** No descriptions */
-INT64 StackInfo::PopFunction( INT64 llCycleCount )
+INT64 StackInfo::PopFunction( INT64 cycleCount )
 {
-	INT64 llElapsed = llCycleCount - _sFunctionStack.top().llCycleStart;
-	FunctionInfo* pFunctionInfo = _sFunctionStack.top().pFunctionInfo;
+	INT64 elapsed = cycleCount - functionStack.top().cycleStart;
+	FunctionInfo* functionInfo = functionStack.top().functionInfo;
 
-	FunctionID fidCallee = pFunctionInfo->fid;
+	FunctionID calleeId = functionInfo->functionId;
 
 	// Only add the time if we're at the lowest call to the function on the stack
 	// Prevents double-accounting of recursive functions
-	pFunctionInfo->nRecursiveCount--;
-	if ( pFunctionInfo->nRecursiveCount == 0 )
-		pFunctionInfo->llCycleCount += llElapsed;
+	functionInfo->recursiveCount--;
+	if ( functionInfo->recursiveCount == 0 )
+		functionInfo->cycleCount += elapsed;
 	else
-		pFunctionInfo->llRecursiveCycleCount += llElapsed;
+		functionInfo->recursiveCycleCount += elapsed;
 
-	_sFunctionStack.pop();
+	functionStack.pop();
 
-	if ( _sFunctionStack.size() > 0 )
+	if ( functionStack.size() > 0 )
 	{
-		CalleeFunctionInfo* pCalleeFunctionInfo = _sFunctionStack.top().pFunctionInfo->GetCalleeFunctionInfo( fidCallee );
+		CalleeFunctionInfo* calleeFunction = functionStack.top().functionInfo->GetCalleeFunctionInfo( calleeId );
 
 		// Only add the time if we're at the lowest call to the function on the stack
 		// Prevents double-accounting of recursive functions
-		pCalleeFunctionInfo->nRecursiveCount--;
-		if ( pCalleeFunctionInfo->nRecursiveCount == 0 )
-			pCalleeFunctionInfo->llCycleCount += llElapsed;
+		calleeFunction->recursiveCount--;
+		if ( calleeFunction->recursiveCount == 0 )
+			calleeFunction->cycleCount += elapsed;
 		else
-			pCalleeFunctionInfo->llRecursiveCycleCount += llElapsed;
+			calleeFunction->recursiveCycleCount += elapsed;
 	}
 
-	return llElapsed;
+	return elapsed;
 }
 
 /** No descriptions */
-void StackInfo::SuspendFunction( INT64 llCycleCount )
+void StackInfo::SuspendFunction( INT64 cycleCount )
 {
-	_llSuspendStart = llCycleCount;
-	if ( _sFunctionStack.size() == 0 ) 
+	suspendStart = cycleCount;
+	if ( functionStack.size() == 0 ) 
 	{
 		cout << "Suspend with no call stack!" << endl;
 		return;
 	}
-	//cout << "Suspended function ID: " << _sFunctionStack.top().pFunctionInfo->fid << endl;
+	//cout << "Suspended function ID: " << functionStack.top().functionInfo->fid << endl;
 }
 
 /** No descriptions */
-void StackInfo::ResumeFunction( INT64 llCycleCount )
+void StackInfo::ResumeFunction( INT64 cycleCount )
 {
-	INT64 llElapsed = llCycleCount - _llSuspendStart;
+	INT64 elapsed = cycleCount - suspendStart;
 	// Resume with no call stack, ignore
-	if ( _sFunctionStack.size() == 0 ) 
+	if ( functionStack.size() == 0 ) 
 	{
 		cout << "Resume with no call stack!" << endl;
 		return;
 	}
-	_sFunctionStack.top().pFunctionInfo->llSuspendCycleCount += llElapsed;
-	_pThreadInfo->_llSuspendTime += llElapsed;
-	//cout << "Resumed function ID: " << _sFunctionStack.top().pFunctionInfo->fid << endl;
+	functionStack.top().functionInfo->suspendCycleCount += elapsed;
+	threadInfo->suspendTime += elapsed;
+	//cout << "Resumed function ID: " << functionStack.top().functionInfo->fid << endl;
 }
 
 /** No descriptions */
 void StackInfo::Trace()
 {
-	cout << "Stack depth = " << _sFunctionStack.size() << endl;
+	cout << "Stack depth = " << functionStack.size() << endl;
 }

@@ -40,7 +40,7 @@ class ATL_NO_VTABLE CNProfCORHook :
 public:
   CNProfCORHook()
   {
-    _pProfiler = NULL;
+    this->profiler = NULL;
   }
 
   DECLARE_PROTECT_FINAL_CONSTRUCT()
@@ -52,35 +52,34 @@ public:
 
   void FinalRelease() 
   {
-    if ( _pProfiler )
-      delete _pProfiler;
+    if ( profiler )
+      delete profiler;
   }
 
 public:
-  static Profiler* _pProfiler;
+  static Profiler* profiler;
 
   // ICorProfilerCallback Methods
 public:
   static Profiler* GetProfiler()
   {
-    return _pProfiler;
+    return profiler;
   }
 
   STDMETHOD(Initialize)(LPUNKNOWN pICorProfilerInfoUnk)
   {
     //DebugBreak();
-    CComQIPtr< ICorProfilerInfo > pProfilerInfo = pICorProfilerInfoUnk;
+    CComQIPtr< ICorProfilerInfo > profilerInfo = pICorProfilerInfoUnk;
 
     ProfilerSocket::Initialize();
 
     cout << "Initializing profiler hook DLL..." << endl;
 
-    if ( pProfilerInfo )
+    if ( profilerInfo )
     {
-      _pProfiler = new Profiler( pProfilerInfo );
-
+      profiler = new Profiler( profilerInfo );
       cout << "Initializing event masks..." << endl;
-      pProfilerInfo->SetEventMask( 
+      profilerInfo->SetEventMask( 
         COR_PRF_MONITOR_THREADS	|
         COR_PRF_DISABLE_INLINING |
         COR_PRF_MONITOR_SUSPENDS |    
@@ -88,13 +87,13 @@ public:
         COR_PRF_MONITOR_EXCEPTIONS |  
         COR_PRF_MONITOR_APPDOMAIN_LOADS |
         COR_PRF_MONITOR_ASSEMBLY_LOADS |
-			  COR_PRF_MONITOR_CACHE_SEARCHES |
-				COR_PRF_MONITOR_JIT_COMPILATION | 
+		COR_PRF_MONITOR_CACHE_SEARCHES |
+		COR_PRF_MONITOR_JIT_COMPILATION | 
         COR_PRF_MONITOR_CODE_TRANSITIONS
       );
 
       cout << "Initializing hooks..." << endl;
-      pProfilerInfo->SetEnterLeaveFunctionHooks( ( FunctionEnter* )&RawEnter, ( FunctionLeave* )&RawLeave, ( FunctionTailcall* )&RawTailCall );
+      profilerInfo->SetEnterLeaveFunctionHooks( ( FunctionEnter* )&RawEnter, ( FunctionLeave* )&RawLeave, ( FunctionTailcall* )&RawTailCall );
       cout << "Ready!" << endl;
     }
 
@@ -103,17 +102,17 @@ public:
   STDMETHOD(Shutdown)()
   {
     cout << "Terminating profiler..." << endl;
-    _pProfiler->End();
-    delete _pProfiler;
-    _pProfiler = NULL;
-    ProfilerSocket ps;
-    ps.SendShutdown();
+    profiler->End();
+    delete profiler;
+    profiler = NULL;
+    ProfilerSocket profilerSocket;
+    profilerSocket.SendShutdown();
 
     return S_OK;
   }
   STDMETHOD(AppDomainCreationStarted)(AppDomainID appDomainId)
   {
-    _pProfiler->AppDomainStart( appDomainId );
+    profiler->AppDomainStart( appDomainId );
     return S_OK;
   }
   STDMETHOD(AppDomainCreationFinished)(AppDomainID appDomainId, HRESULT hrStatus)
@@ -122,7 +121,7 @@ public:
   }
   STDMETHOD(AppDomainShutdownStarted)(AppDomainID appDomainId)
   {
-    _pProfiler->AppDomainEnd( appDomainId );
+    profiler->AppDomainEnd( appDomainId );
     return S_OK;
   }
   STDMETHOD(AppDomainShutdownFinished)(AppDomainID appDomainId, HRESULT hrStatus)
@@ -211,17 +210,17 @@ public:
   }
   STDMETHOD(ThreadCreated)(ThreadID threadId)
   {
-    _pProfiler->ThreadStart( threadId );
+    profiler->ThreadStart( threadId );
     return S_OK;
   }
   STDMETHOD(ThreadDestroyed)(ThreadID threadId)
   {
-    _pProfiler->ThreadEnd( threadId );
+    profiler->ThreadEnd( threadId );
     return S_OK;
   }
   STDMETHOD(ThreadAssignedToOSThread)(ThreadID managedThreadId, DWORD osThreadId)
   {
-    _pProfiler->ThreadMap( managedThreadId, osThreadId );
+    profiler->ThreadMap( managedThreadId, osThreadId );
     return S_OK;
   }
   STDMETHOD(RemotingClientInvocationStarted)()
@@ -260,19 +259,19 @@ public:
   {
     // Only track returns
     if ( reason == COR_PRF_TRANSITION_RETURN )
-      _pProfiler->UnmanagedToManagedCall( functionId );
+      profiler->UnmanagedToManagedCall( functionId );
     return S_OK;
   }
   STDMETHOD(ManagedToUnmanagedTransition)(FunctionID functionId, COR_PRF_TRANSITION_REASON reason)
   {
     // Only track calls
     if ( reason == COR_PRF_TRANSITION_CALL )
-      _pProfiler->ManagedToUnmanagedCall( functionId );
+      profiler->ManagedToUnmanagedCall( functionId );
     return S_OK;
   }
   STDMETHOD(RuntimeSuspendStarted)(COR_PRF_SUSPEND_REASON suspendReason)
   {
-    _pProfiler->ThreadSuspend();
+    profiler->ThreadSuspend();
     return S_OK;
   }
   STDMETHOD(RuntimeSuspendFinished)()
@@ -285,7 +284,7 @@ public:
   }
   STDMETHOD(RuntimeResumeStarted)()
   {
-    _pProfiler->ThreadResume();
+    profiler->ThreadResume();
     return S_OK;
   }
   STDMETHOD(RuntimeResumeFinished)()
@@ -359,7 +358,7 @@ public:
   STDMETHOD(ExceptionUnwindFunctionLeave)()
   {
     // Update the call stack as we leave
-    _pProfiler->Leave( 0 );
+    profiler->Leave( 0 );
 
     return S_OK;
   }

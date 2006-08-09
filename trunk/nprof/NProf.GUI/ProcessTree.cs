@@ -5,6 +5,9 @@ using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
 using NProf.Glue.Profiler.Info;
+using NProf.Glue.Profiler.Project;
+
+
 
 namespace NProf.GUI
 {
@@ -13,8 +16,8 @@ namespace NProf.GUI
 	/// </summary>
 	public class ProcessTree : System.Windows.Forms.UserControl
 	{
-		private System.Windows.Forms.TreeView _tvProcess;
-		private System.Windows.Forms.ImageList _ilState;
+		public System.Windows.Forms.TreeView processView;
+		private System.Windows.Forms.ImageList stateImages;
 		private System.ComponentModel.IContainer components;
 
 		public ProcessTree()
@@ -28,50 +31,50 @@ namespace NProf.GUI
 
 		public ProcessInfoCollection Processes
 		{
-			get { return _pic; }
-			set { _pic = value; UpdateProcesses(); }
+			get { return processes; }
+			set { processes = value; UpdateProcesses(); }
 		}
 
 		/// <summary> 
 		/// Clean up any resources being used.
 		/// </summary>
-		protected override void Dispose( bool disposing )
+		protected override void Dispose(bool disposing)
 		{
-			if( disposing )
+			if (disposing)
 			{
-				if(components != null)
+				if (components != null)
 				{
 					components.Dispose();
 				}
 			}
-			base.Dispose( disposing );
+			base.Dispose(disposing);
 		}
 
 		private void UpdateProcesses()
 		{
-			_tvProcess.Nodes.Clear();
-			if ( _pic == null )
+			processView.Nodes.Clear();
+			if (processes == null)
 				return;
 
 			bool bFirst = true;
 
-			foreach ( ProcessInfo pi in _pic )
+			foreach (ProcessInfo pi in processes)
 			{
-				TreeNode tnProcess = _tvProcess.Nodes.Add( pi.ToString() );
+				TreeNode tnProcess = processView.Nodes.Add(pi.ToString());
 				tnProcess.ImageIndex = 0;
 				tnProcess.SelectedImageIndex = 0;
 				tnProcess.Tag = pi;
 
-				foreach ( ThreadInfo ti in pi.Threads )
+				foreach (ThreadInfo ti in pi.Threads)
 				{
-					TreeNode tnThread = tnProcess.Nodes.Add( ti.ToString() );
+					TreeNode tnThread = tnProcess.Nodes.Add(ti.ToString());
 					tnThread.ImageIndex = 1;
 					tnThread.SelectedImageIndex = 1;
 					tnThread.Tag = ti;
 
-					if ( bFirst )
+					if (bFirst)
 					{
-						_tvProcess.SelectedNode = tnThread;
+						processView.SelectedNode = tnThread;
 						bFirst = false;
 					}
 				}
@@ -86,30 +89,30 @@ namespace NProf.GUI
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
-			this._tvProcess = new System.Windows.Forms.TreeView();
-			this._ilState = new System.Windows.Forms.ImageList(this.components);
+			this.processView = new System.Windows.Forms.TreeView();
+			this.stateImages = new System.Windows.Forms.ImageList(this.components);
 			this.SuspendLayout();
 			// 
 			// _tvProcess
 			// 
-			this._tvProcess.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._tvProcess.HideSelection = false;
-			this._tvProcess.ImageList = this._ilState;
-			this._tvProcess.Location = new System.Drawing.Point(0, 0);
-			this._tvProcess.Name = "_tvProcess";
-			this._tvProcess.Size = new System.Drawing.Size(150, 150);
-			this._tvProcess.TabIndex = 0;
-			this._tvProcess.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this._tvProcess_AfterSelect);
-			this._tvProcess.BeforeSelect += new System.Windows.Forms.TreeViewCancelEventHandler(this._tvProcess_BeforeSelect);
+			this.processView.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.processView.HideSelection = false;
+			this.processView.ImageList = this.stateImages;
+			this.processView.Location = new System.Drawing.Point(0, 0);
+			this.processView.Name = "_tvProcess";
+			this.processView.Size = new System.Drawing.Size(150, 150);
+			this.processView.TabIndex = 0;
+			this.processView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this._tvProcess_AfterSelect);
+			this.processView.BeforeSelect += new System.Windows.Forms.TreeViewCancelEventHandler(this._tvProcess_BeforeSelect);
 			// 
 			// _ilState
 			// 
-			this._ilState.ImageSize = new System.Drawing.Size(16, 16);
-			this._ilState.TransparentColor = System.Drawing.Color.Transparent;
+			this.stateImages.ImageSize = new System.Drawing.Size(16, 16);
+			this.stateImages.TransparentColor = System.Drawing.Color.Transparent;
 			// 
 			// ProcessTree
 			// 
-			this.Controls.Add(this._tvProcess);
+			this.Controls.Add(this.processView);
 			this.Name = "ProcessTree";
 			this.Load += new System.EventHandler(this.ProcessTree_Load);
 			this.ResumeLayout(false);
@@ -122,29 +125,160 @@ namespace NProf.GUI
 		private void _tvProcess_BeforeSelect(object sender, System.Windows.Forms.TreeViewCancelEventArgs e)
 		{
 			// Don't allow selection on this tree unless it's a ThreadInfo
-			if ( !( e.Node.Tag is ThreadInfo ) )
+			if (!(e.Node.Tag is ThreadInfo))
 				e.Cancel = true;
 		}
 
 		private void _tvProcess_AfterSelect(object sender, System.Windows.Forms.TreeViewEventArgs e)
 		{
-			if ( ThreadSelected != null )
-				ThreadSelected( ( ThreadInfo )e.Node.Tag );
+			if (ThreadSelected != null)
+				ThreadSelected((ThreadInfo)e.Node.Tag);
 		}
 
 		private void ProcessTree_Load(object sender, System.EventArgs e)
 		{
-			_ilState = new ImageList();
-			_ilState.TransparentColor = Color.Magenta;
-			
-			_ilState.Images.Add( Image.FromStream( this.GetType().Assembly.GetManifestResourceStream( "NProf.GUI.Resources.process.bmp" ) ) );
-			_ilState.Images.Add( Image.FromStream( this.GetType().Assembly.GetManifestResourceStream( "NProf.GUI.Resources.thread.bmp" ) ) );
+			stateImages = new ImageList();
+			stateImages.TransparentColor = Color.Magenta;
 
-			_tvProcess.ImageList = _ilState;
+			stateImages.Images.Add(Image.FromStream(this.GetType().Assembly.GetManifestResourceStream("NProf.GUI.Resources.process.bmp")));
+			stateImages.Images.Add(Image.FromStream(this.GetType().Assembly.GetManifestResourceStream("NProf.GUI.Resources.thread.bmp")));
+
+			processView.ImageList = stateImages;
 		}
 
-		public delegate void ThreadSelectedHandler( ThreadInfo ti );
+		public delegate void ThreadSelectedHandler(ThreadInfo ti);
 
-		private ProcessInfoCollection _pic;
+		private ProcessInfoCollection processes;
+
+
+
+
+
+		public Run GetSelectedRun()
+		{
+			TreeNode tnSelected = processView.SelectedNode;// ; _tvProjects.SelectedNode;
+			//TreeNode tnSelected = _tvProjects.SelectedNode;
+			if (tnSelected == null || !(tnSelected.Tag is Run))
+				return null;
+
+			return (tnSelected.Tag as Run);
+		}
+		public void SelectRun(Run run)
+		{
+			processView.SelectedNode = FindRunNode(run);
+			//_tvProjects.SelectedNode = FindRunNode(run);
+		}
+		private TreeNode FindRunNode(Run run)
+		{
+			foreach (TreeNode tnRun in processView.Nodes)
+				if (tnRun.Tag == run)
+					return tnRun;
+
+			return null;
+		}
+
+
+		public void AddRunNode(Run run)
+		{
+			//_tvProjects.Invoke(new MethodInvoker(delegate()
+			//{
+			TreeNode node = new TreeNode(run.StartTime.ToString());
+			node.ImageIndex = GetRunStateImage(run);
+			node.SelectedImageIndex = GetRunStateImage(run);
+			node.Tag = run;
+			processView.Nodes.Add(node);
+			//_tvProjects.Nodes.Add(node);
+			//}));
+
+			run.StateChanged += new Run.RunStateEventHandler(OnRunStateChanged);
+		}
+
+
+
+
+		private void OnRunAdded(ProjectInfo pi, RunCollection runs, Run run, int nIndex)
+		{
+			foreach (TreeNode tn in processView.Nodes)
+			{
+				if (tn.Tag == pi)
+					AddRunNode(run);
+				//AddRunNode(tn, run);
+			}
+		}
+
+		private void OnRunRemoved(ProjectInfo pi, RunCollection runs, Run run, int nIndex)
+		{
+			//_tvProjects.Nodes.RemoveAt( nIndex );
+		}
+
+		private void OnRunStateChanged(Run run, Run.RunState rsOld, Run.RunState rsNew)
+		{
+			TreeNode tn = FindRunNode(run);
+			processView.Invoke(new TreeNodeSetState(OnTreeNodeSetState), new object[] { tn, run.StartTime.ToString(), GetRunStateImage(run) });
+			//_tvProjects.Invoke(new TreeNodeSetState(OnTreeNodeSetState), new object[] { tn, run.StartTime.ToString(), GetRunStateImage(run) });
+
+			//TreeNode tn = FindRunNode(run);
+			//_tvProjects.Invoke(new TreeNodeSetState(OnTreeNodeSetState), new object[] { tn, run.StartTime.ToString(), GetRunStateImage(run) });
+		}
+
+		private int GetRunStateImage(Run r)
+		{
+			switch (r.State)
+			{
+				case Run.RunState.Initializing:
+					return 1;
+				case Run.RunState.Running:
+					return 2;
+				case Run.RunState.Finished:
+					return r.Success ? 3 : 4;
+			}
+
+			return 0;
+		}
+
+		//private void ProjectTree_Load(object sender, System.EventArgs e)
+		//{
+		//    //_ilState = new ImageList();
+		//    //_ilState.TransparentColor = Color.Magenta;
+
+		//    //_ilState.Images.Add(Image.FromStream(this.GetType().Assembly.GetManifestResourceStream("NProf.GUI.Resources.project.bmp")));
+		//    //_ilState.Images.Add(Image.FromStream(this.GetType().Assembly.GetManifestResourceStream("NProf.GUI.Resources.initializing.bmp")));
+		//    //_ilState.Images.Add(Image.FromStream(this.GetType().Assembly.GetManifestResourceStream("NProf.GUI.Resources.go.bmp")));
+		//    //_ilState.Images.Add(Image.FromStream(this.GetType().Assembly.GetManifestResourceStream("NProf.GUI.Resources.stop.bmp")));
+		//    //_ilState.Images.Add(Image.FromStream(this.GetType().Assembly.GetManifestResourceStream("NProf.GUI.Resources.stop-error.bmp")));
+
+		//    //_tvProjects.ImageList = _ilState;
+		//}
+
+		//private void ProjectTree_DoubleClick(object sender, System.EventArgs e)
+		//{
+		//    Run r = GetSelectedRun();
+		//    if (r != null)
+		//    {
+		//        if (RunDoubleClicked != null)
+		//            RunDoubleClicked(r);
+
+		//        return;
+		//    }
+		//}
+
+
+		private void OnTreeNodeSetState(TreeNode tn, string strLabel, int nImageIndex)
+		{
+			tn.Text = strLabel;
+			tn.ImageIndex = nImageIndex;
+			tn.SelectedImageIndex = nImageIndex;
+		}
+
+		public event ProjectDoubleClickedHandler ProjectDoubleClicked;
+		public event RunDoubleClickedHandler RunDoubleClicked;
+
+		public delegate void ProjectDoubleClickedHandler(ProjectInfo proj);
+		public delegate void RunDoubleClickedHandler(Run run);
+
+		private delegate TreeNode TreeNodeAdd(TreeNodeCollection tncParent, string strLabel, int nImageIndex, object oTag);
+		private delegate void TreeNodeRemove(TreeNode tnChild);
+		private delegate void TreeNodeSetState(TreeNode tn, string strLabel, int nImageIndex);
+		private delegate void TreeNodeUpdate(TreeNode tn);
 	}
 }

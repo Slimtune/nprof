@@ -37,14 +37,14 @@ public:
   void Trace( ProfilerHelper& ph );
   void Dump( ProfilerSocket& ps, ProfilerHelper& ph );
 
-  int nCalls;
-  int nRecursiveCount;
-  INT64 llCycleCount;
-  INT64 llRecursiveCycleCount;
-  INT64 llSuspendCycleCount;
-  FunctionID fid;
+  int calls;
+  int recursiveCount;
+  INT64 cycleCount;
+  INT64 recursiveCycleCount;
+  INT64 suspendCycleCount;
+  FunctionID functionId;
 
-  map< FunctionID, CalleeFunctionInfo* > _mCalleeInfo;
+  map< FunctionID, CalleeFunctionInfo* > calleeMap;
 };
 
 #endif

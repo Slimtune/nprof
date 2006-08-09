@@ -22,7 +22,7 @@ namespace NProf.Glue.Profiler
 		private const string PROFILER_GUID = "{791DA9FE-05A0-495E-94BF-9AD875C4DF0F}";
 		public Profiler()
 		{
-			_htFunctionMap = new Hashtable();
+			functionMap = new Hashtable();
 		}
 
 		public static string Version
@@ -30,14 +30,14 @@ namespace NProf.Glue.Profiler
 			get { return "0.9-alpha"; }
 		}
 
-		public bool CheckSetup( out string strMessage )
+		public bool CheckSetup( out string message )
 		{
-			strMessage = String.Empty;
+			message = String.Empty;
 			using ( RegistryKey rk = Registry.ClassesRoot.OpenSubKey( "CLSID\\" + PROFILER_GUID ) )
 			{
 				if ( rk == null )
 				{
-					strMessage = "Unable to find the registry key for the profiler hook.  Please register the NProf.Hook.dll file.";
+					message = "Unable to find the registry key for the profiler hook.  Please register the NProf.Hook.dll file.";
 					return false;
 				}
 			}
@@ -47,34 +47,34 @@ namespace NProf.Glue.Profiler
 
 		public bool Start( ProjectInfo pi, Run run, ProcessCompletedHandler pch )
 		{
-			_dtStart = DateTime.Now;
-			_pi = pi;
-			_pch = pch;
-			_run = run;
-			_run.State = Run.RunState.Initializing;
+			this.start = DateTime.Now;
+			this.project = pi;
+			this.completed = pch;
+			this.run = run;
+			this.run.State = Run.RunState.Initializing;
 
-			_pss = new ProfilerSocketServer( pi.Options, run );
-			_pss.Start();
-			_pss.Exited += new EventHandler( OnProcessExited );
-			_pss.Error += new ProfilerSocketServer.ErrorHandler( OnError );
-			_pss.Message += new ProfilerSocketServer.MessageHandler( OnMessage );
+			socketServer = new ProfilerSocketServer( pi.Options, run );
+			socketServer.Start();
+			socketServer.Exited += new EventHandler( OnProcessExited );
+			socketServer.Error += new ProfilerSocketServer.ErrorHandler( OnError );
+			socketServer.Message += new ProfilerSocketServer.MessageHandler( OnMessage );
 
 			switch ( pi.ProjectType )
 			{
 				case ProjectType.File:
 				{
-					_p = new Process();
-					_p.StartInfo = new ProcessStartInfo( pi.ApplicationName, pi.Arguments );
-					_p.StartInfo.EnvironmentVariables[ "COR_ENABLE_PROFILING" ] = "0x1";
-					_p.StartInfo.EnvironmentVariables[ "COR_PROFILER" ] = PROFILER_GUID;
-					_p.StartInfo.EnvironmentVariables[ "NPROF_PROFILING_SOCKET" ] = _pss.Port.ToString();
-					_p.StartInfo.UseShellExecute = false;
-					_p.StartInfo.Arguments = pi.Arguments;
-					_p.StartInfo.WorkingDirectory = pi.WorkingDirectory;
-					_p.EnableRaisingEvents = true;
+					process = new Process();
+					process.StartInfo = new ProcessStartInfo( pi.ApplicationName, pi.Arguments );
+					process.StartInfo.EnvironmentVariables[ "COR_ENABLE_PROFILING" ] = "0x1";
+					process.StartInfo.EnvironmentVariables[ "COR_PROFILER" ] = PROFILER_GUID;
+					process.StartInfo.EnvironmentVariables[ "NPROF_PROFILING_SOCKET" ] = socketServer.Port.ToString();
+					process.StartInfo.UseShellExecute = false;
+					process.StartInfo.Arguments = pi.Arguments;
+					process.StartInfo.WorkingDirectory = pi.WorkingDirectory;
+					process.EnableRaisingEvents = true;
 					//_p.Exited += new EventHandler( OnProcessExited );
 
-					return _p.Start();
+					return process.Start();
 				}
 
 				case ProjectType.AspNet:
@@ -93,9 +93,9 @@ namespace NProf.Glue.Profiler
 
 					Process p = Process.Start( "iisreset.exe", "" );
 					p.WaitForExit();
-					_run.Messages.AddMessage( "Navigate to your project and ASP.NET will connect to the profiler" );
-					_run.Messages.AddMessage( "NOTE: ASP.NET must be set to run under the SYSTEM account in machine.config" );
-					_run.Messages.AddMessage( @"If ASP.NET cannot be profiled, ensure that the userName=""SYSTEM"" in the <processModel> section of machine.config." );
+					this.run.Messages.AddMessage( "Navigate to your project and ASP.NET will connect to the profiler" );
+					this.run.Messages.AddMessage( "NOTE: ASP.NET must be set to run under the SYSTEM account in machine.config" );
+					this.run.Messages.AddMessage( @"If ASP.NET cannot be profiled, ensure that the userName=""SYSTEM"" in the <processModel> section of machine.config." );
 
 					return true;
 				}
@@ -104,7 +104,7 @@ namespace NProf.Glue.Profiler
 				{
 					SetEnvironmentVariable( "COR_ENABLE_PROFILING", "0x1" );
 					SetEnvironmentVariable( "COR_PROFILER", PROFILER_GUID );
-					SetEnvironmentVariable( "NPROF_PROFILING_SOCKET", _pss.Port.ToString() );
+					SetEnvironmentVariable( "NPROF_PROFILING_SOCKET", socketServer.Port.ToString() );
 
 					return true;
 				}
@@ -121,29 +121,29 @@ namespace NProf.Glue.Profiler
 
 		public void Stop()
 		{
-			Run run;
+			Run r;
 
-			lock ( _oRunLock )
+			lock ( runLock )
 			{
-				run = _run;
+				r = run;
 
 				// Is there anything to stop?
-				if ( _run == null )
+				if ( run == null )
 					return;
 
-				_run = null;
+				run = null;
 			}
 
 			// Stop the profiler socket server if profilee hasn't connected
-			if ( run.State == Run.RunState.Initializing )
+			if ( r.State == Run.RunState.Initializing )
 			{
-				run.Messages.AddMessage( "Shutting down profiler..." );
-				_pss.Stop();
-				run.State = Run.RunState.Finished;
-				run.Success = false;
+				r.Messages.AddMessage( "Shutting down profiler..." );
+				socketServer.Stop();
+				r.State = Run.RunState.Finished;
+				r.Success = false;
 			}
 
-			if ( _pi.ProjectType == ProjectType.AspNet )
+			if ( project.ProjectType == ProjectType.AspNet )
 			{
 				using ( RegistryKey rk = Registry.LocalMachine.OpenSubKey( @"SYSTEM\CurrentControlSet\Services\W3SVC", true ) )
 				{
@@ -157,56 +157,56 @@ namespace NProf.Glue.Profiler
 						SetRegistryKeys( rk, false );
 				}
 
-				run.Messages.AddMessage( "Terminating ASP.NET..." );
+				r.Messages.AddMessage( "Terminating ASP.NET..." );
 				Process.Start( "iisreset.exe", "/stop" ).WaitForExit();
 			}
 		}
 
 		private void OnProcessExited( object oSender, EventArgs ea )
 		{
-			Run run;
+			Run r;
 
-			lock ( _oRunLock )
+			lock ( runLock )
 			{
-				run = _run;
+				r = run;
 
 				// This gets called twice for file projects - FIXME
-				if ( _run == null )
+				if ( run == null )
 					return;
 
-				_run = null;
+				run = null;
 			}
 
-			if ( !_pss.HasStoppedGracefully )
+			if ( !socketServer.HasStoppedGracefully )
 			{
-				if ( run.State == Run.RunState.Initializing )
+				if ( r.State == Run.RunState.Initializing )
 				{
-					run.Messages.AddMessage( "No connection made with profiled application." );
-					run.Messages.AddMessage( "Application might not support .NET." );
+					r.Messages.AddMessage( "No connection made with profiled application." );
+					r.Messages.AddMessage( "Application might not support .NET." );
 				}
 				else
 				{
-					run.Messages.AddMessage( "Application stopped before profiler information could be retrieved." );
+					r.Messages.AddMessage( "Application stopped before profiler information could be retrieved." );
 				}
 
-				run.Success = false;
-				run.State = Run.RunState.Finished;
-				run.Messages.AddMessage( "Profiler run did not complete successfully." );
+				r.Success = false;
+				r.State = Run.RunState.Finished;
+				r.Messages.AddMessage( "Profiler run did not complete successfully." );
 			}
 			else
 			{
-				run.Success = true;
+				r.Success = true;
 			}
 
-			_dtEnd = DateTime.Now;
-			run.Messages.AddMessage( "Stopping profiler listener..." );
-			_pss.Stop();
+			end = DateTime.Now;
+			r.Messages.AddMessage( "Stopping profiler listener..." );
+			socketServer.Stop();
 //			if ( ProcessCompleted != null )
 //				ProcessCompleted( _pss.ThreadInfoCollection );
 
-			run.EndTime = _dtEnd;
+			r.EndTime = end;
 
-			_pch( run );
+			completed( r );
 		}
 
 		private void OnError( Exception e )
@@ -223,37 +223,37 @@ namespace NProf.Glue.Profiler
 
 		public int[] GetFunctionIDs()
 		{
-			return ( int[] )new ArrayList( _htFunctionMap.Keys ).ToArray( typeof( int ) );
+			return ( int[] )new ArrayList( functionMap.Keys ).ToArray( typeof( int ) );
 		}
 
 		public string GetFunctionSignature( int nFunctionID )
 		{
-			return ( string )_htFunctionMap[ nFunctionID ];
+			return ( string )functionMap[ nFunctionID ];
 		}
 
-		private void SetRegistryKeys( RegistryKey rk, bool bSet )
+		private void SetRegistryKeys( RegistryKey key, bool isSet )
 		{
-			if ( rk == null )
+			if ( key == null )
 				return;
 			
-			if ( !bSet )
+			if ( !isSet )
 			{
 				// Get rid of the environment
-				rk.DeleteValue( "Environment", false );
+				key.DeleteValue( "Environment", false );
 				return;
 			}
 
-			object oKeys = rk.GetValue( "Environment" );
+			object oKeys = key.GetValue( "Environment" );
 			
 			// If it's not something we expected, fix it
 			if ( oKeys == null || !( oKeys is string[] ) )
 				oKeys = new string[ 0 ]; 
 
 			// Save the environment the first time through
-			if ( rk.GetValue( "nprof Saved Environment" ) == null && ( ( string[] )oKeys ).Length > 0 )
-				rk.SetValue( "nprof Saved Environment", oKeys );
+			if ( key.GetValue( "nprof Saved Environment" ) == null && ( ( string[] )oKeys ).Length > 0 )
+				key.SetValue( "nprof Saved Environment", oKeys );
 
-			Hashtable htItems = new Hashtable( Environment.GetEnvironmentVariables() );
+			Hashtable items = new Hashtable( Environment.GetEnvironmentVariables() );
 
 			// Set the environment to be the default system environment
 			using ( RegistryKey rkEnv = Registry.LocalMachine.OpenSubKey( @"SYSTEM\CurrentControlSet\Control\Session Manager\Environment" ) )
@@ -262,23 +262,23 @@ namespace NProf.Glue.Profiler
 					throw new InvalidOperationException( "Unable to locate machine environment key" );
 
 				foreach ( string strValueName in rkEnv.GetValueNames() )
-					htItems[ strValueName ] = rkEnv.GetValue( strValueName );
+					items[ strValueName ] = rkEnv.GetValue( strValueName );
 				
 			}
 
-			htItems.Remove( "COR_ENABLE_PROFILING" );
-			htItems.Remove( "COR_PROFILER" );
-			htItems.Remove( "NPROF_PROFILING_SOCKET" );
+			items.Remove( "COR_ENABLE_PROFILING" );
+			items.Remove( "COR_PROFILER" );
+			items.Remove( "NPROF_PROFILING_SOCKET" );
 
-			htItems.Add( "COR_ENABLE_PROFILING", "0x1" );
-			htItems.Add( "COR_PROFILER", PROFILER_GUID );
-			htItems.Add( "NPROF_PROFILING_SOCKET", _pss.Port.ToString() );
+			items.Add( "COR_ENABLE_PROFILING", "0x1" );
+			items.Add( "COR_PROFILER", PROFILER_GUID );
+			items.Add( "NPROF_PROFILING_SOCKET", socketServer.Port.ToString() );
 
-			ArrayList alItems = new ArrayList();
-			foreach ( DictionaryEntry de in htItems )
-				alItems.Add( String.Format( "{0}={1}", de.Key, de.Value ) );
+			ArrayList itemList = new ArrayList();
+			foreach ( DictionaryEntry de in items )
+				itemList.Add( String.Format( "{0}={1}", de.Key, de.Value ) );
 
-			rk.SetValue( "Environment", ( string[] )alItems.ToArray( typeof( string ) ) );
+			key.SetValue( "Environment", ( string[] )itemList.ToArray( typeof( string ) ) );
 		}
 
 		public delegate void ProcessCompletedHandler( Run run );
@@ -292,20 +292,20 @@ namespace NProf.Glue.Profiler
 		public event MessageHandler Message;
 
 		[NonSerialized]
-		private ProcessCompletedHandler _pch;
-		private DateTime _dtStart;
-		private DateTime _dtEnd;
-		private Run _run;
-		private object _oRunLock = 0;
+		private ProcessCompletedHandler completed;
+		private DateTime start;
+		private DateTime end;
+		private Run run;
+		private object runLock = 0;
 
 		[DllImport("Kernel32.dll", CharSet = CharSet.Auto )]
 		private static extern bool SetEnvironmentVariable( string strVariable, string strNewValue );
 
-		private Hashtable _htFunctionMap;
+		private Hashtable functionMap;
 		[NonSerialized]
-		private Process _p;
-		private ProjectInfo _pi;
+		private Process process;
+		private ProjectInfo project;
 		[NonSerialized]
-		private ProfilerSocketServer _pss;
+		private ProfilerSocketServer socketServer;
 	}
 }

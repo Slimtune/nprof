@@ -18,56 +18,55 @@
 #include "stdafx.h"
 #include "functioninfo.h"
 
-FunctionInfo::FunctionInfo( FunctionID fid )
+FunctionInfo::FunctionInfo( FunctionID functionId )
 {
-  llCycleCount = -1;
-  llRecursiveCycleCount = -1;
-  llSuspendCycleCount = 0;
-  nCalls = 0;
-  nRecursiveCount = 0;
-  this->fid = fid;
+  this->cycleCount = -1;
+  this->recursiveCycleCount = -1;
+  this->suspendCycleCount = 0;
+  this->calls = 0;
+  this->recursiveCount = 0;
+  this->functionId = functionId;
 }
 
 FunctionInfo::~FunctionInfo()
 {
 }
 
-CalleeFunctionInfo* FunctionInfo::GetCalleeFunctionInfo( FunctionID fid )
+CalleeFunctionInfo* FunctionInfo::GetCalleeFunctionInfo( FunctionID functionId )
 {
-  map< FunctionID, CalleeFunctionInfo* >::iterator found = _mCalleeInfo.find( fid );
-  if ( found == _mCalleeInfo.end() )
+  map< FunctionID, CalleeFunctionInfo* >::iterator found = calleeMap.find( functionId );
+  if ( found == calleeMap.end() )
   {
-    CalleeFunctionInfo* pFunctionInfo = new CalleeFunctionInfo();
-    _mCalleeInfo.insert( make_pair( fid, pFunctionInfo ) );
-    return pFunctionInfo;
+    CalleeFunctionInfo* functionInfo = new CalleeFunctionInfo();
+    calleeMap.insert( make_pair( functionId, functionInfo ) );
+    return functionInfo;
   }
   
   return found->second;
 }
 
 /** No descriptions */
-void FunctionInfo::Trace( ProfilerHelper& ph )
+void FunctionInfo::Trace( ProfilerHelper& profilerHelper )
 {
-  cout << "  Calls: " << nCalls << endl;
-  cout << "  Time: " << llCycleCount << endl;
-  cout << "  Avg. time: " << llCycleCount / nCalls << endl;
+  cout << "  Calls: " << calls << endl;
+  cout << "  Time: " << cycleCount << endl;
+  cout << "  Avg. time: " << cycleCount / calls << endl;
 
-  for ( map< FunctionID, CalleeFunctionInfo* >::iterator it = _mCalleeInfo.begin(); it != _mCalleeInfo.end(); it++ )
+  for ( map< FunctionID, CalleeFunctionInfo* >::iterator i = calleeMap.begin(); i != calleeMap.end(); i++ )
   {
-    cout << "  Callee Function ID " << it->first << ":" << endl;
-    //cout << "  " << ph.GetFunctionSignature( it->first ) << endl;
-    cout << "    Calls: " << it->second->nCalls << endl;
-    cout << "    Time: " << it->second->llCycleCount << endl;
-    cout << "    Avg. time: " << it->second->llCycleCount / it->second->nCalls << endl;
+    cout << "  Callee Function ID " << i->first << ":" << endl;
+    cout << "    Calls: " << i->second->calls << endl;
+    cout << "    Time: " << i->second->cycleCount << endl;
+    cout << "    Avg. time: " << i->second->cycleCount / i->second->calls << endl;
   }
 }    
 
-void FunctionInfo::Dump( ProfilerSocket& ps, ProfilerHelper& ph )
+void FunctionInfo::Dump( ProfilerSocket& ps, ProfilerHelper& profilerHelper )
 {
-  ps.SendFunctionTimingData( nCalls, llCycleCount, llRecursiveCycleCount, llSuspendCycleCount );
-  for ( map< FunctionID, CalleeFunctionInfo* >::iterator it = _mCalleeInfo.begin(); it != _mCalleeInfo.end(); it++ )
+  ps.SendFunctionTimingData( calls, cycleCount, recursiveCycleCount, suspendCycleCount );
+  for ( map< FunctionID, CalleeFunctionInfo* >::iterator i = calleeMap.begin(); i != calleeMap.end(); i++ )
   {
-    ps.SendCalleeFunctionData( it->first, it->second->nCalls, it->second->llCycleCount, it->second->llRecursiveCycleCount );
+    ps.SendCalleeFunctionData( i->first, i->second->calls, i->second->cycleCount, i->second->recursiveCycleCount );
   }
   ps.SendEndCalleeFunctionData();
 }
