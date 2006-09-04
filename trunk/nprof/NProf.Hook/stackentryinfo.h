@@ -14,25 +14,26 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-
-#ifndef STACKENTRYINFO_H
-#define STACKENTRYINFO_H
-
-#include "stdafx.h"
-#include "functioninfo.h"
-
-/**
-  *@author Matthew Mastracci
-  */
-
-class StackEntryInfo {
-public: 
-	StackEntryInfo( FunctionInfo* functionInfo, INT64 cycleStart );
-	StackEntryInfo( const StackEntryInfo& rhs );
-	~StackEntryInfo();
-  
-  INT64 cycleStart;
-  FunctionInfo* functionInfo;
-};
-
-#endif
+//
+//#ifndef STACKENTRYINFO_H
+//#define STACKENTRYINFO_H
+//
+//#include "stdafx.h"
+//#include "functioninfo.h"
+//#include "profiler.h"
+//
+///**
+//  *@author Matthew Mastracci
+//  */
+//
+//class StackEntryInfo {
+//public: 
+//	StackEntryInfo( FunctionInfo* functionInfo, INT64 cycleStart );
+//	StackEntryInfo( const StackEntryInfo& rhs );
+//	~StackEntryInfo();
+//  
+//  INT64 cycleStart;
+//  FunctionInfo* functionInfo;
+//};
+//
+//#endif
