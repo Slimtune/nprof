@@ -91,15 +91,6 @@
     <Compile Include="TestClass.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="TestClass1.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="TestClass2.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="TestClass3.cs">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
