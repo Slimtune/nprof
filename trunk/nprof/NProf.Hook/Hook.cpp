@@ -15,29 +15,10 @@
  *                                                                         *
  ***************************************************************************/
 
-/***************************************************************************
-                          profiler.h  -  description
-                             -------------------
-    begin                : Sat Jan 18 2003
-    copyright            : (C) 2003 by Matthew Mastracci
-    email                : mmastrac@canada.com
- ***************************************************************************/
-
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
-
 #ifndef PROFILER_H
 #define PROFILER_H
 
-#include "stdafx.h"
 #include "resource.h"
-
 
 
 #pragma once
@@ -112,13 +93,11 @@ using namespace std;
 
 
 
-
-
 class ProfilerHelper
 {
 public:
-  ProfilerHelper();
-  ~ProfilerHelper(void);
+  //ProfilerHelper();
+  //~ProfilerHelper(void);
   void Initialize( ICorProfilerInfo* profilerInfo ); 
   
   void GetFunctionSignature(   
@@ -289,7 +268,7 @@ public:
 	~ThreadInfoCollection();
 
   ThreadInfo* GetThreadInfo( ThreadID threadId );
-  /** No descriptions */
+
   void EndAll( ProfilerHelper& profilerHelper );
   void EndThread( ProfilerHelper& profilerHelper, ThreadID threadId );
   void DumpAll( ProfilerHelper& profilerHelper );
@@ -302,7 +281,7 @@ class Profiler
 {
 public: 
 	Profiler( ICorProfilerInfo* profilerInfo );
-	~Profiler();
+	//~Profiler();
   void Leave( FunctionID functionId );
   void Enter( FunctionID functionId );
   void TailCall( FunctionID functionId );
@@ -330,7 +309,6 @@ private:
 };
 
 
-// Pre-define these methods
 void RawEnter();
 void RawLeave();
 void RawTailCall();
@@ -836,23 +814,12 @@ void __declspec( naked ) RawTailCall()
 #endif
 
 
-
-//#include "stdafx.h"
-//#include "profiler.h"
-//#include "profiler_socket.h"
-//#include "profiler.h"
-
 Profiler::Profiler( ICorProfilerInfo* profilerInfo )
 {
 	this->profilerInfo = profilerInfo;
 	this->profilerHelper.Initialize( profilerInfo );
 }
 
-Profiler::~Profiler()
-{
-}
-
-/** No descriptions */
 void Profiler::Enter( FunctionID functionId )
 {
   ThreadInfo* threadInfo=GetCurrentThreadInfo();
@@ -860,13 +827,11 @@ void Profiler::Enter( FunctionID functionId )
   threadInfo->GetStackInfo()->PushFunction( functionInfo, rdtsc() );
 }
 
-/** No descriptions */
 void Profiler::Leave( FunctionID functionId )
 {
   GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
 }
 
-/** No descriptions */
 void Profiler::TailCall( FunctionID functionId )
 {
   GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
@@ -884,7 +849,6 @@ void Profiler::ManagedToUnmanagedCall( FunctionID functionId )
   GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
 }
 
-/** No descriptions */
 void Profiler::ThreadStart( ThreadID threadId )
 {
   cout << "ThreadStart( " << threadId << " )" << endl;
@@ -899,21 +863,18 @@ void Profiler::ThreadMap( ThreadID threadId, DWORD dwOSThread )
   threadMap[ dwOSThread ] = threadId;
 }
 
-/** No descriptions */
 void Profiler::ThreadEnd( ThreadID threadId )
 {
   threadCollection.EndThread( profilerHelper, threadId );
   cout << "ThreadEnd( " << threadId << " )" << endl;
 }
 
-/** No descriptions */
 void Profiler::ThreadSuspend()
 {
   //cout << "ThreadSuspend( " << GetCurrentThreadID() << " )" << endl;
   threadCollection.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->SuspendFunction( rdtsc() );
 }
 
-/** No descriptions */
 void Profiler::ThreadResume()
 {
   //cout << "ThreadResume( " << GetCurrentThreadID() << " )" << endl;
@@ -937,24 +898,20 @@ void Profiler::End()
   threadCollection.EndAll( profilerHelper );
 }
 
-/** No descriptions */
 ThreadID Profiler::GetCurrentThreadID()
 {
   return profilerHelper.GetCurrentThreadID();
 }
 
-/** No descriptions */
 ThreadInfo* Profiler::GetCurrentThreadInfo()
 {
   return threadCollection.GetThreadInfo( GetCurrentThreadID() );
 }
 
-/** No descriptions */
 void Profiler::Trace()
 {
   threadCollection.Trace( profilerHelper );
 }
-
 
 CalleeFunctionInfo::CalleeFunctionInfo()
 {
@@ -964,12 +921,6 @@ CalleeFunctionInfo::CalleeFunctionInfo()
   this->calls = 0;
 }
 
-CalleeFunctionInfo::~CalleeFunctionInfo()
-{
-}
-
-
-
 FunctionInfo::FunctionInfo( FunctionID functionId )
 {
   this->cycleCount = -1;
@@ -978,10 +929,6 @@ FunctionInfo::FunctionInfo( FunctionID functionId )
   this->calls = 0;
   this->recursiveCount = 0;
   this->functionId = functionId;
-}
-
-FunctionInfo::~FunctionInfo()
-{
 }
 
 CalleeFunctionInfo* FunctionInfo::GetCalleeFunctionInfo( FunctionID functionId )
@@ -997,7 +944,6 @@ CalleeFunctionInfo* FunctionInfo::GetCalleeFunctionInfo( FunctionID functionId )
   return found->second;
 }
 
-/** No descriptions */
 void FunctionInfo::Trace( ProfilerHelper& profilerHelper )
 {
   cout << "  Calls: " << calls << endl;
@@ -1028,14 +974,6 @@ void FunctionInfo::Dump( ProfilerSocket& ps, ProfilerHelper& profilerHelper )
 		 helpstring = "NProf.Hook 1.0 Type Library",
 		 resource_name = "IDR_NPROFHOOK") ];
 
-
-ProfilerHelper::ProfilerHelper()
-{
-}
-
-ProfilerHelper::~ProfilerHelper(void)
-{
-}
 
 void ProfilerHelper::Initialize(  ICorProfilerInfo* profilerInfo )
 {
