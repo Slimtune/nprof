@@ -1,0 +1,41 @@
+import "C:\Programme\Microsoft Visual Studio 8\VC\PlatformSDK\include\prsht.idl";
+import "C:\Programme\Microsoft Visual Studio 8\VC\PlatformSDK\include\mshtml.idl";
+import "c:\programme\microsoft visual studio 8\vc\platformsdk\include\dimm.idl";
+import "C:\Programme\Microsoft Visual Studio 8\VC\PlatformSDK\include\mshtmhst.idl";
+import "c:\programme\microsoft visual studio 8\vc\platformsdk\include\docobj.idl";
+import "C:\Programme\Microsoft Visual Studio 8\VC\PlatformSDK\include\exdisp.idl";
+import "C:\Programme\Microsoft Visual Studio 8\VC\PlatformSDK\include\objsafe.idl";
+import "C:\Programme\Microsoft Visual Studio 8\SDK\v2.0\include\corsym.idl";
+import "C:\Programme\Microsoft Visual Studio 8\SDK\v2.0\include\corpub.idl";
+import "C:\Programme\Microsoft Visual Studio 8\SDK\v2.0\include\corprof.idl";
+
+[
+	object,
+	uuid(5B94DF43-780B-42FD-AC4C-ABAB35D4A274),
+	dual,
+	helpstring("INProfCORHook Interface"),
+	pointer_default(unique)
+] 
+#line 20 "d:\\nprof\\trunk\\nprof\\hook\\nprofcorhook.h"
+interface INProfCORHook : IDispatch {
+};
+
+
+[ version(1.0), uuid(A461E20A-C7DC-4A89-A24E-87B5E975A96B), helpstring("NProf.Hook 1.0 Type Library") ]
+library NProfHook
+{
+	importlib("stdole2.tlb");
+	importlib("olepro32.dll");
+
+	[
+		version(1.0),
+		uuid(791DA9FE-05A0-495E-94BF-9AD875C4DF0F),
+		helpstring("nprof COR Profiling Hook Class")
+	] 
+#line 37 "d:\\nprof\\trunk\\nprof\\hook\\nprofcorhook.h"
+	coclass CNProfCORHook {
+		interface INProfCORHook;
+	};
+
+}
+
