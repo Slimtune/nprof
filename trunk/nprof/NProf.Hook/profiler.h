@@ -80,13 +80,9 @@ using namespace std;
 #include "corhlpr.h"
 #include "corerror.h"
 
-//#include "mscoree.h"
-
 #include "corsym.h"
 #include "corpub.h"
-//#include "corsvc.h"
 #include "corprof.h"
-//#include "cordebug.h"
 
 #define MAX_FUNCTION_LENGTH 2048
 
