@@ -38,13 +38,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NProf.Glue\NProf.Glue.csproj">
-      <Project>{0BBA8E95-3D0F-4366-8418-0A8947C8DBEF}</Project>
-      <Name>NProf.Glue</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NProf.Utilities\NProf.Utilities.csproj">
-      <Project>{A9BC618E-7E40-4D66-9BD5-837728424BEE}</Project>
-      <Name>NProf.Utilities</Name>
+    <ProjectReference Include="..\NProf\NProf.csproj">
+      <Project>{46B2E25E-CFE3-4FA6-9E7F-8EDFA440E0B5}</Project>
+      <Name>NProf</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
