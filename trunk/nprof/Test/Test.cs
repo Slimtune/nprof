@@ -1,3 +1,20 @@
+/***************************************************************************
+                          profiler.cpp  -  description
+                             -------------------
+    begin                : Sat Jan 18 2003
+    copyright            : (C) 2003,2004,2005,2006 by Matthew Mastracci, Christian Staudenmeyer
+    email                : mmastrac@canada.com
+ ***************************************************************************/
+
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -25,6 +42,7 @@ namespace NProf.Test
 		}
 		public class TestProfilee : Test
 		{
+			Run run;
 			public override object GetResult(out int level)
 			{
 				level = 1;
@@ -35,8 +53,10 @@ namespace NProf.Test
 				//project.Arguments = "-test";
 				project.ApplicationName = Path.Combine(NProfDirectory, @"TestProfilee\bin\Debug\TestProfilee.exe");
 
-				Run run = project.CreateRun(profiler);
-				run.StateChanged += new RunStateEventHandler(run_StateChanged);
+				run = project.CreateRun(profiler);
+				run.profiler.Completed += new EventHandler(profiler_Completed);
+				//run.StateChanged += new RunStateEventHandler(run_StateChanged);
+				//run.StateChanged += new RunStateEventHandler(run_StateChanged);
 				run.Start();
 
 				while (result == null)
@@ -45,15 +65,21 @@ namespace NProf.Test
 				}
 				return result;
 			}
-			private object result = null;
-			void run_StateChanged(Run run, RunState rsOld, RunState rsNew)
+
+			void profiler_Completed(object sender, EventArgs e)
 			{
-				if (rsNew == NProf.RunState.Finished)
-				//if (rsNew == NProf.Glue.Profiler.Project.RunState.Finished)
-				{
-					result = run;
-				}
+				result = run;
 			}
+			private object result = null;
+			//void run_StateChanged(Run run, RunState rsOld, RunState rsNew)
+			////void run_StateChanged(Run run, RunState rsOld, RunState rsNew)
+			//{
+			//    if (rsNew == RunState.Finished)
+			//    //if (rsNew == NProf.Glue.Profiler.Project.RunState.Finished)
+			//    {
+			//        result = run;
+			//    }
+			//}
 		}
 	}
 	public abstract class TestRunner
@@ -63,7 +89,6 @@ namespace NProf.Test
 			get
 			{
 				return @"D:\nprof\trunk\nprof\Test\Tests";
-				//return Path.Combine(Interpreter.InstallationPath, "Test");
 			}
 		}
 		public abstract class Test

@@ -32,7 +32,7 @@ library NProfHook
 		uuid(791DA9FE-05A0-495E-94BF-9AD875C4DF0F),
 		helpstring("nprof COR Profiling Hook Class")
 	] 
-#line 345 "d:\\nprof\\trunk\\nprof\\nprof.hook\\profiler.cpp"
+#line 341 "d:\\nprof\\trunk\\nprof\\nprof.hook\\profiler.cpp"
 	coclass CNProfCORHook {
 		interface INProfCORHook;
 	};

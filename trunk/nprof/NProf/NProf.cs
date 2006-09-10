@@ -1,3 +1,20 @@
+/***************************************************************************
+                          profiler.cpp  -  description
+                             -------------------
+    begin                : Sat Jan 18 2003
+    copyright            : (C) 2003,2004,2005,2006 by Matthew Mastracci, Christian Staudenmeyer
+    email                : mmastrac@canada.com
+ ***************************************************************************/
+
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+
 using System;
 using System.IO;
 using System.Net;
@@ -23,8 +40,9 @@ using Genghis.Windows.Forms;
 using Reflector.UserInterface;
 using Crownwood.Magic.Menus;
 using DotNetLib.Windows.Forms;
+using System.Globalization;
 
-namespace NProf.GUI
+namespace NProf
 {
 	public class ProfilerForm : Form
 	{
@@ -37,71 +55,78 @@ namespace NProf.GUI
 			set
 			{
 				project = value;
+				runs.Nodes.Clear();
+				foreach (Run run in Project.Runs)
+				{
+					UpdateRun(run);
+				}
 			}
 		}
-		private Profiler profiler;
+		private Profiler profiler=new Profiler();
 		private ProjectInfo project;
 		private TreeView runs = new TreeView();
-		private MethodView methods;
-		private MethodView callees;
-		private MethodView callers;
-		private StatusBar statusBar;
-		private StatusBarPanel statusPanel;
+		private MethodView methods=new MethodView();
+		private MethodView callees=new MethodView();
+		private MethodView callers=new MethodView();
 		private TextBox findText = new TextBox();
-		public static ProfilerForm form = new ProfilerForm();
-		public static Panel methodPanel;
+		public static Panel methodPanel=new Panel();
+		Run currentRun;
 		private ProfilerForm()
 		{
 			runs.DoubleClick += delegate
 			{
-				//ThreadInfo thread = runs.SelectedNode.Tag as ThreadInfo;
-				//if (thread != null)
-				//{
-				//currentThread = thread;
 				UpdateFilters((Run)runs.SelectedNode.Tag);// this should also be done when loading a project!!
-				methods.Sort(2, SortOrder.Descending, true);
-				//}
 			};
-			methodPanel = new Panel();
+			methods.SelectedItemsChanged += delegate
+			{
+				callees.Items.Clear();
+				callers.Items.Clear();
+
+				if (methods.SelectedItems.Count == 0)
+					return;
+
+				// somebody clicked! empty the forward stack and push this click on the "Back" stack.
+				if (!isNavigating)
+				{
+					forward.Clear();
+					if (_navCurrent != 0)
+					{
+						back.Push(_navCurrent);
+					}
+					else
+					{
+					}
+
+					for (int idx = 0; idx < methods.SelectedItems.Count; ++idx)
+					{
+						if (methods.SelectedItems[idx].Tag != null)
+						{
+							_navCurrent = (methods.SelectedItems[idx].Tag as FunctionInfo).ID;
+							break;
+						}
+					}
+				}
+				//Run run = (Run)runs.SelectedNode.Tag;
+				UpdateCalleeList();
+				UpdateCallerList(currentRun);
+			};
 			Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("NProf.GUI.Resources.app-icon.ico"));
 			Text = "NProf";
-			profiler = new Profiler();
 
 			string directory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 			string dll = Path.Combine(directory, "msvcr70.dll");
 			if (LoadLibrary(dll) == 0)
-				throw new Win32Exception(Marshal.GetLastWin32Error(), "Failed to load msvcr10.dll");
+				throw new Win32Exception(Marshal.GetLastWin32Error(), "Failed to load msvcr70.dll");
 
 			CommandBarManager commandBarManager = new CommandBarManager();
 			CommandBar commandBar = new CommandBar(CommandBarStyle.ToolBar);
-			commandBar.Items.AddRange(
-				new CommandBarItem[]
-				{
-					new CommandBarButton(Images.New, "New", New),
-					new CommandBarButton(Images.Save, "Save", Save)
-				});
+			commandBar.Items.Add(new CommandBarButton(Images.New, "New", New));
+			commandBar.Items.Add(new CommandBarButton(Images.Save, "Save", Save));
 			commandBar.Items.AddSeparator();
-
 			commandBar.Items.Add(new CommandBarButton(Images.Back, "Back", Back));
+			commandBar.Items.Add(new CommandBarButton(Images.Forward, "Forward", Forward));
 			commandBar.Items.AddSeparator();
-			commandBar.Items.AddRange(
-				new CommandBarItem[]
-				{
-					new CommandBarButton(Images.Forward, "Forward", Forward),
-					new CommandBarButton(Images.Run, "Run", delegate { StartRun(null, null); })
-				});
-			//commandBar.Items.AddRange(
-			//    new CommandBarItem[]
-			//    {
-			//        new CommandBarButton(Images.New, "New", New),
-			//        new CommandBarButton(Images.Save, "Save", Save),
-
-			//        new CommandBarButton(Images.Back, "Back", Back),
-			//        new CommandBarButton(Images.Forward, "Forward", Forward),
-			//        new CommandBarButton(Images.Run, "Run", delegate { StartRun(null, null); }),
-			//    }
-			//);
-
+			commandBar.Items.Add(new CommandBarButton(Images.Run, "Run", delegate { StartRun(null, null); }));
 			commandBarManager.CommandBars.Add(commandBar);
 
 			MenuControl mainMenu = new MenuControl();
@@ -130,33 +155,17 @@ namespace NProf.GUI
 
 			commandBarManager.Dock = DockStyle.Top;
 
-
-
-			// use something like FlowLayoutPanel instead of nested panels, if possible
-			statusPanel = new StatusBarPanel();
-			statusPanel.AutoSize = StatusBarPanelAutoSize.Spring;
-			statusPanel.Text = "Ready.";
-			statusPanel.Width = 904;
-
-			statusBar = new StatusBar();
-			statusBar.Panels.Add(statusPanel);
-			statusBar.ShowPanels = true;
-
-			//Controls.Add(statusBar);
-
 			Panel panel = new Panel();
 			panel.Dock = DockStyle.Fill;
 			Controls.Add(panel);
 
 			runs.Dock = DockStyle.Left;
 
-			methods = new MethodView();
+			Size=new Size(800,600);
 			methods.Size = new Size(100, 100);
 
-			callers = new MethodView();
 			callers.Size = new Size(100, 100);
 			callers.Dock = DockStyle.Bottom;
-			callees = new MethodView();
 			callees.Size = new Size(100, 100);
 			callees.Dock = DockStyle.Bottom;
 			methods.Dock = DockStyle.Fill;
@@ -208,29 +217,33 @@ namespace NProf.GUI
 			Controls.Add(commandBarManager);
 			Controls.Add(mainMenu);
 		}
-
-
+		public static Splitter Splitter(DockStyle dock)
+		{
+			Splitter splitter = new Splitter();
+			splitter.Dock = dock;
+			return splitter;
+		}
 		[DllImport("kernel32.dll", SetLastError = true)]
 		static extern int LoadLibrary(string strLibFileName);
 
 		private delegate void HandleProfileComplete(Run run);
 
-		private void OnUIThreadProfileComplete(Run run)
-		{
-			if (run.State == RunState.Finished
-				&& run.Success)
-			{
-				UpdateRun(run);
-			}
-		}
+		//private void OnUIThreadProfileComplete(Run run)
+		//{
+		//    if (run.State == RunState.Finished
+		//        && run.Success)
+		//    {
+		//        UpdateRun(run);
+		//    }
+		//}
 
-		private void OnRunStateChanged(Run run, RunState rsOld, RunState rsNew)
-		{
-			if (rsNew == RunState.Running || rsNew == RunState.Finished)
-			{
-				this.BeginInvoke(new HandleProfileComplete(OnUIThreadProfileComplete), new object[] { run });
-			}
-		}
+		//private void OnRunStateChanged(Run run, RunState rsOld, RunState rsNew)
+		//{
+		//    if (rsNew == RunState.Running || rsNew == RunState.Finished)
+		//    {
+		//        this.BeginInvoke(new HandleProfileComplete(OnUIThreadProfileComplete), new object[] { run });
+		//    }
+		//}
 
 		private void ProfilerForm_Load(object sender, System.EventArgs e)
 		{
@@ -256,28 +269,14 @@ namespace NProf.GUI
 		private void Open(object sender, System.EventArgs e)
 		{
 			OpenFileDialog dialog = new OpenFileDialog();
-
 			dialog.DefaultExt = "nprof";
 			dialog.Filter = "NProf projects (*.nprof)|*.nprof|All files (*.*)|*.*";
 			dialog.Multiselect = true;
 			dialog.Title = "Open a saved NProf project file";
-
 			if (dialog.ShowDialog(this) == DialogResult.OK)
 			{
-				foreach (string fileName in dialog.FileNames)
-				{
-					ProjectInfo project = SerializationHandler.OpenProjectInfo(fileName);
-					this.Project = project;
-
-					// ask before deleting current project?
-					runs.Nodes.Clear();
-					foreach (Run run in Project.Runs)
-					{
-						UpdateRun(run);
-					}
-
-					//_pic.Add( project );
-				}
+				ProjectInfo project = SerializationHandler.OpenProjectInfo(dialog.FileName);
+				this.Project = project;
 			}
 		}
 
@@ -285,6 +284,7 @@ namespace NProf.GUI
 		{
 			SaveProject(Project, false);
 		}
+
 		private void StartRun(object sender, System.EventArgs e)
 		{
 			string message;
@@ -296,7 +296,15 @@ namespace NProf.GUI
 			}
 
 			Run run = Project.CreateRun(profiler);
-			run.StateChanged += new RunStateEventHandler(OnRunStateChanged);
+			run.profiler.Completed += delegate
+			{
+				this.BeginInvoke(new EventHandler(delegate
+				{
+					 UpdateRun(run);
+				}));
+			};
+
+			//run.StateChanged += new RunStateEventHandler(OnRunStateChanged);
 			run.Start();
 		}
 
@@ -315,7 +323,7 @@ namespace NProf.GUI
 				return;
 
 			forward.Push(_navCurrent);
-			_navCurrent = (int[])back.Pop();
+			_navCurrent = back.Pop();
 
 			isNavigating = true;
 			JumpToID(_navCurrent);
@@ -328,7 +336,8 @@ namespace NProf.GUI
 				return;
 
 			back.Push(_navCurrent);
-			_navCurrent = (int[])forward.Pop();
+			_navCurrent = forward.Pop();
+			//_navCurrent = (int[])forward.Pop();
 
 			isNavigating = true;
 			JumpToID(_navCurrent);
@@ -344,8 +353,6 @@ namespace NProf.GUI
 		{
 			if (project == null)
 				return true;
-
-			//MessageBox.Show(this, "NOTE: You might not be able to load the data you're saving.  Please keep this in mind.", "Important Note", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
 			string filename = SerializationHandler.GetFilename(project);
 
@@ -365,42 +372,15 @@ namespace NProf.GUI
 				project.Name = Path.GetFileNameWithoutExtension(saveDlg.FileName);
 				filename = saveDlg.FileName;
 			}
-
 			SerializationHandler.SaveProjectInfo(project, filename);
 
 			return true;
 		}
-		//private void UpdateMenuItems(object sender, System.EventArgs e)
-		//{
-		//    //bool bCanRunOrEdit = _pt.GetSelectedProject() != null
-		//    //    && _pt.GetSelectedProject().ProjectType != ProjectType.VSNet;
-		//    bool bCanRunOrEdit = true;
-
-		//    Run run = null;
-		//    //Run run = _pt.GetSelectedRun();
-
-		//    runMenu.Enabled = bCanRunOrEdit;
-		//    _cmdProjectStop.Enabled = bCanRunOrEdit && ( run != null && run.State == RunState.Running );
-		//    optionsMenu.Enabled = bCanRunOrEdit;
-		//    //_cmdProjectRunViewMessages.Enabled = ( !IsShowingBlankTab() );
-		//    //_cmdProjectRunCopy.Enabled = ( !IsShowingBlankTab() );
-
-		//    //_cmdFileClose.Enabled = bCanRunOrEdit;
-		//    _cmdFileSave.Enabled = bCanRunOrEdit;
-		//    _cmdFileSaveAs.Enabled = bCanRunOrEdit;
-		//    //_cmdFileSaveAll.Enabled = ( !IsShowingBlankTab() );
-
-		//    //_cmdViewNavBack.Enabled = ( !IsShowingBlankTab() );
-		//    //_cmdViewNavForward.Enabled = ( !IsShowingBlankTab() );
-		//}
 		private class Images
 		{
 			private static Image[] images = null;
-
-			// ImageList.Images[int index] does not preserve alpha channel.
 			static Images()
 			{
-				// TODO alpha channel PNG loader is not working on .NET Service RC1
 				Bitmap bitmap = (Bitmap)Bitmap.FromStream(typeof(Images).Assembly.GetManifestResourceStream("NProf.GUI.Resources.toolbar16.png"));
 				int count = (int)(bitmap.Width / bitmap.Height);
 				images = new Image[count];
@@ -411,7 +391,6 @@ namespace NProf.GUI
 					rectangle.X += bitmap.Height;
 				}
 			}
-
 			public static Image New { get { return images[0]; } }
 			public static Image Open { get { return images[1]; } }
 			public static Image Save { get { return images[2]; } }
@@ -448,94 +427,37 @@ namespace NProf.GUI
 			public static Image FolderProperties { get { return images[36]; } }
 			public static Image Run { get { return images[37]; } }
 		}
-		private Stack back = new Stack();
-		private Stack forward = new Stack();
+		private Stack<int> back = new Stack<int>();
+		private Stack<int> forward = new Stack<int>();
 
-		private int[] _navCurrent = null;
+		private int _navCurrent = 0;
+		//private int[] _navCurrent = null;
+		// remove
 		private bool isNavigating = false;
-
 
 		public void UpdateRun(Run run)
 		{
-
 			TreeNode node = new TreeNode(run.StartTime.ToString());
-			//node.ImageIndex = GetRunStateImage(run);
-			//node.SelectedImageIndex = GetRunStateImage(run);
 			node.Tag = run;
 			runs.Nodes.Add(node);
-
-
-			//foreach (ThreadInfo ti in run.Process.Threads)
-			//{
-			//    TreeNode threadNode = new TreeNode(ti.ToString());
-			//    threadNode.ImageIndex = 1;
-			//    threadNode.SelectedImageIndex = 1;
-			//    threadNode.Tag = ti;
-			//    node.Nodes.Add(threadNode);
-			//}
-			//runs.SelectedNode = node.Nodes[0];
-			//currentThread = (ThreadInfo)node.Nodes[0].Tag;
-
-			//run.StateChanged += new RunStateEventHandler(OnRunStateChanged);
-
 			UpdateFilters(run);
-			//processTree.process = run.process;
-			//_ptProcessTree.UpdateProcesses(run);
-			//UpdateFilters();
 		}
-		// rename
 		private void UpdateFilters(Run run)
 		{
 			methods.Items.Clear();
 			callees.Items.Clear();
 			callers.Items.Clear();
 
-			try
+			currentRun = run;
+			methods.BeginUpdate();
+			foreach (ThreadInfo thread in run.Process.Threads)
 			{
-				methods.BeginUpdate();
-
-				//ThreadInfo tiCurrentThread = currentThread;
-				foreach (ThreadInfo thread in run.Process.Threads)
+				foreach (FunctionInfo method in thread.FunctionInfoCollection.Values)
 				{
-					foreach (Method method in thread.FunctionInfoCollection.Values)
-					{
-						methods.Add(method);
-					}
+					methods.Add(method);
 				}
 			}
-			finally
-			{
-				methods.Sort();
-				methods.EndUpdate();
-			}
-		}
-
-		private void _lvFunctionInfo_SelectedItemsChanged(object sender, System.EventArgs e)
-		{
-			callees.Items.Clear();
-			callers.Items.Clear();
-
-			if (methods.SelectedItems.Count == 0)
-				return;
-
-			// somebody clicked! empty the forward stack and push this click on the "Back" stack.
-			if (!isNavigating)
-			{
-				forward.Clear();
-				if (_navCurrent != null)
-					back.Push(_navCurrent);
-
-				ArrayList lst = new ArrayList();
-
-				for (int idx = 0; idx < methods.SelectedItems.Count; ++idx)
-					if (methods.SelectedItems[idx].Tag != null)
-						lst.Add((methods.SelectedItems[idx].Tag as Method).ID);
-
-				_navCurrent = (int[])lst.ToArray(typeof(int));
-			}
-			Run run = (Run)runs.SelectedNode.Tag;
-			UpdateCalleeList();
-			UpdateCallerList(run);
+			methods.EndUpdate();
 		}
 		private void UpdateCallerList(Run run)
 		{
@@ -546,33 +468,27 @@ namespace NProf.GUI
 			callers.ShowRootTreeLines = multipleSelected;
 			callers.ShowTreeLines = multipleSelected;
 
-			//ThreadInfo tiCurrentThread = currentThread;
-			// only one can be selected
-			foreach (ContainerListViewItem item in methods.SelectedItems)
+			FunctionInfo mfi = (FunctionInfo)methods.SelectedItems[0].Tag;
+			foreach (ThreadInfo thread in run.Process.Threads)
 			{
-				Method mfi = (Method)item.Tag;
-
-				foreach (ThreadInfo thread in run.Process.Threads)
+				foreach (FunctionInfo fi in thread.FunctionInfoCollection.Values)
 				{
-					foreach (Method fi in thread.FunctionInfoCollection.Values)
+					foreach (CalleeFunctionInfo cfi in fi.CalleeInfo)
 					{
-						foreach (CalleeFunctionInfo cfi in fi.CalleeInfo)
+						if (cfi.ID == mfi.ID)
 						{
-							if (cfi.ID == mfi.ID)
-							{
-								callers.Add(fi);
-							}
+							callers.Add(fi);
 						}
 					}
 				}
 			}
-
 			callers.Sort();
 			callers.EndUpdate();
 		}
 		public const string timeFormat = ".00;-.00;.0";
 		private void UpdateCalleeList()
 		{
+			callees.Items.Clear();
 			callees.BeginUpdate();
 
 			bool multipleSelected = (methods.SelectedItems.Count > 1);
@@ -580,145 +496,50 @@ namespace NProf.GUI
 			callees.ShowRootTreeLines = multipleSelected;
 			callees.ShowTreeLines = multipleSelected;
 
-			ContainerListViewItem lviSuspend = null;
-
 			foreach (ContainerListViewItem item in methods.SelectedItems)
 			{
-				Method fi = (Method)item.Tag;
+				FunctionInfo fi = (FunctionInfo)item.Tag;
 
 				foreach (CalleeFunctionInfo cfi in fi.CalleeInfo)
 				{
 					callees.Add(cfi);
 				}
 
-				ContainerListViewItem inMethod = callees.Items.Add("( in method )");
+				ContainerListViewItem inMethod = callees.Items.Add("(in method)");
 				inMethod.SubItems[1].Text = fi.Calls.ToString();
-				inMethod.SubItems[2].Text = fi.PercentOfTotalTimeInMethod.ToString(timeFormat);
+				inMethod.SubItems[2].Text = fi.TimeInMethod.ToString(timeFormat);
 				inMethod.Tag = fi;
-
-
-
-				if (fi.TotalSuspendedTicks > 0)
-				{
-					if (lviSuspend == null) // don't have it
-					{
-						lviSuspend = callees.Items.Add("(thread suspended)");
-						lviSuspend.SubItems[1].Text = "-";
-						lviSuspend.SubItems[2].Text = fi.PercentOfTotalTimeSuspended.ToString(timeFormat);
-					}
-					else // do, update totals
-					{
-						lviSuspend.SubItems[2].Text = "-";
-					}
-
-					// either way, add a child pointing back to the parent
-					ContainerListViewItem lvi = lviSuspend.Items.Add(fi.Signature.Signature);
-					lvi.SubItems[1].Text = "-";
-					lvi.SubItems[2].Text = fi.PercentOfTotalTimeSuspended.ToString(timeFormat);
-				}
 			}
 			callees.Sort();
 			callees.EndUpdate();
 		}
-
-		private void _lvChildInfo_DoubleClick(object sender, System.EventArgs e)
-		{
-			ContainerListView ctl = sender as ContainerListView;
-
-			if (ctl.SelectedItems.Count == 0)
-				return;
-
-			if (ctl.SelectedItems[0].Tag is CalleeFunctionInfo)
-			{
-				CalleeFunctionInfo cfi = (CalleeFunctionInfo)ctl.SelectedItems[0].Tag;
-				if (cfi == null)
-					MessageBox.Show("No information available for this item");
-				else
-					JumpToID(cfi.ID);
-			}
-			else if (ctl.SelectedItems[0].Tag is Method)
-			{
-				Method fi = (Method)ctl.SelectedItems[0].Tag;
-				if (fi == null)
-					MessageBox.Show("No information available for this item");
-				else
-					JumpToID(fi.ID);
-			}
-		}
-		private class SignatureComparer : IComparer
-		{
-			private string text;
-			public SignatureComparer(string text)
-			{
-				this.text = text;
-			}
-			public int Compare(object x, object y)
-			{
-				ContainerListViewItem a = (ContainerListViewItem)x;
-				ContainerListViewItem b = (ContainerListViewItem)y;
-				bool aFound = a.SubItems[1].Text.ToLower().IndexOf(text) != -1;
-				bool bFound = b.SubItems[1].Text.ToLower().IndexOf(text) != -1;
-				if (aFound && !bFound)
-				{
-					return -1;
-				}
-				else if (bFound && !aFound)
-				{
-					return 1;
-				}
-				else
-				{
-					if (a.Text == b.Text)
-					{
-						return 0;
-					}
-					else
-					{
-						return -1;
-					}
-				}
-			}
-		}
-
-		private void JumpToID(int nID)
-		{
-			JumpToID(new int[] { nID });
-		}
-
-		private void JumpToID(int[] ids)
+		private void JumpToID(int id)
 		{
 			methods.SelectedItems.Clear();
+			foreach (ContainerListViewItem lvi in methods.Items)
+			{
+				FunctionInfo fi = (FunctionInfo)lvi.Tag;
 
-			foreach (int id in ids)
-				foreach (ContainerListViewItem lvi in methods.Items)
+				if (fi.ID == id)
 				{
-					Method fi = (Method)lvi.Tag;
-
-					if (fi.ID == id)
+					if (!lvi.Selected)
 					{
-						if (!lvi.Selected)
-						{
-							lvi.Selected = true;
-							lvi.Focused = true;
-						}
-						break;
+						lvi.Selected = true;
+						lvi.Focused = true;
 					}
+					break;
 				}
-
+			}
 			methods.EnsureVisible();
 			methods.Focus();
 		}
-
 		private int GetSelectedID()
 		{
 			if (callees.SelectedItems.Count == 0)
 				return -1;
 
-			return ((Method)methods.SelectedItems[0].Tag).ID;
+			return ((FunctionInfo)methods.SelectedItems[0].Tag).ID;
 		}
-
-		//private ThreadInfo currentThread;
-
 		private void Find(bool forward)
 		{
 			if (findText.Text != "")
@@ -783,22 +604,17 @@ namespace NProf.GUI
 		{
 			Find(false);
 		}
-		public static Splitter Splitter(DockStyle dock)
-		{
-			Splitter splitter = new Splitter();
-			splitter.Dock = dock;
-			return splitter;
-		}
+		public static ProfilerForm form = new ProfilerForm();
 	}
 	public class MethodItem : ContainerListViewItem
 	{
-		private Method function;
-		public MethodItem(Method function)
+		private FunctionInfo function;
+		public MethodItem(FunctionInfo function)
 			: base(function.Signature.Signature)
 		{
 			this.function = function;
 			this.SubItems[1].Text = function.Calls.ToString();
-			this.SubItems[2].Text = function.PercentOfTotalTimeInMethod.ToString(ProfilerForm.timeFormat);
+			this.SubItems[2].Text = function.TimeInMethod.ToString(ProfilerForm.timeFormat);
 			this.Tag = function;
 		}
 	}
@@ -817,17 +633,18 @@ namespace NProf.GUI
 			Columns[2].SortDataType = SortDataType.String;
 			this.ClientSizeChanged += new EventHandler(MethodView_ClientSizeChanged);
 			Font = new Font("Tahoma", 8.0f);
+
+			Sort(2, SortOrder.Descending, true);
 		}
 
 		void MethodView_ClientSizeChanged(object sender, EventArgs e)
 		{
 		}
-		public void Add(NProf.Method function)
+		public void Add(FunctionInfo function)
 		{
 			ContainerListViewItem item = Items.Add(function.Signature.Signature);
 			item.SubItems[1].Text = function.Calls.ToString();
-			item.SubItems[2].Text = function.PercentOfTotalTimeInMethod.ToString(ProfilerForm.timeFormat);
-			//item.SubItems[2].Text = function.PercentOfTotalTimeInMethod.ToString("0.0000;-0.0000;0");
+			item.SubItems[2].Text = function.TimeInMethod.ToString(ProfilerForm.timeFormat);
 			item.Tag = function;
 		}
 		public void Add(CalleeFunctionInfo function)
@@ -857,9 +674,6 @@ namespace NProf.GUI
 			MenuCommands.AddRange(commands);
 		}
 	}
-}
-namespace NProf
-{
 	public class ProfilerSocketServer
 	{
 		public ProfilerSocketServer(Run run)
@@ -1008,10 +822,10 @@ namespace NProf
 									// Prompt the user?
 								}
 
-								if (run.State == RunState.Running)
-								{
-									//ns.WriteByte( 0 );
-								}
+								//if (run.State == RunState.Running)
+								//{
+								//    //ns.WriteByte( 0 );
+								//}
 
 								int networkProtocolVersion = reader.ReadInt32();
 								if (networkProtocolVersion != NETWORK_PROTOCOL_VERSION)
@@ -1067,7 +881,7 @@ namespace NProf
 								}
 
 								// We're off!
-								run.State = RunState.Running;
+								//run.State = RunState.Running;
 								break;
 							}
 
@@ -1149,7 +963,7 @@ namespace NProf
 									}
 									//CalleeFunctionInfo[] acfi = ( CalleeFunctionInfo[] )callees.ToArray( typeof( CalleeFunctionInfo ) );
 
-									Method function = new Method(currentProcess.Threads[threadId], functionId, fs, callCount, totalTime, totalRecursiveTime, totalSuspendTime, callees.ToArray());
+									FunctionInfo function = new FunctionInfo(currentProcess.Threads[threadId], functionId, fs, callCount, totalTime, totalRecursiveTime, totalSuspendTime, callees.ToArray());
 									currentProcess.Threads[threadId].FunctionInfoCollection.Add(function.ID, function);
 									//currentProcess.Threads[threadId].FunctionInfoCollection.Add(function);
 
@@ -1264,25 +1078,25 @@ namespace NProf
 		{
 			get { return (double)totalTime / (double)function.TotalTicks; }
 		}
-		internal Method FunctionInfo
+		internal FunctionInfo FunctionInfo
 		{
 			set { function = value; }
 		}
 		private int id;
 		private int calls;
-		private Method function;
+		private FunctionInfo function;
 		private FunctionSignatureMap signatures;
 		private long totalTime;
 		private long totalRecursiveTime;
 	}
 	// rename?
 	[Serializable]
-	public class Method
+	public class FunctionInfo
 	{
-		public Method()
+		public FunctionInfo()
 		{
 		}
-		public Method(ThreadInfo ti, int nID, FunctionSignature signature, int calls, long totalTime, long totalRecursiveTime, long totalSuspendedTime, CalleeFunctionInfo[] callees)
+		public FunctionInfo(ThreadInfo ti, int nID, FunctionSignature signature, int calls, long totalTime, long totalRecursiveTime, long totalSuspendedTime, CalleeFunctionInfo[] callees)
 		{
 			this.thread = ti;
 			this.id = nID;
@@ -1363,104 +1177,15 @@ namespace NProf
 			}
 		}
 		[XmlIgnore]
-		public double PercentOfTotalTimeSuspended
-		{
-			get
-			{
-				if (ThreadTotalTicks == 0)
-					return 0;
-
-				return (
-					(double)totalSuspendedTime
-					/
-					(double)ThreadTotalTicks);
-			}
-		}
-		[XmlIgnore]
-		public double PercentOfMethodTimeSuspended
-		{
-			get
-			{
-				if (TotalTicks == 0)
-					return 0;
-
-				return (
-					(double)totalSuspendedTime
-					/
-					(double)TotalTicks);
-			}
-		}
-		// rename
-		[XmlIgnore]
-		public double PercentOfTotalTimeInMethod
-		{
-			get
-			{
-				if (ThreadTotalTicks == 0)
-					return 0;
-
-				return (
-					(double)(TotalTicks + TotalRecursiveTicks - TotalChildrenTicks - TotalChildrenRecursiveTicks)
-					/
-					(double)ThreadTotalTicks);
-			}
-		}
-		[XmlIgnore]
-		public double PercentOfTotalTimeInMethodAndChildren
-		{
-			get
-			{
-				if (ThreadTotalTicks == 0)
-					return 0;
-
-				return (
-					(double)TotalTicks
-					/
-					(double)ThreadTotalTicks);
-			}
-		}
-		[XmlIgnore]
-		public double TimeInChildren
-		{
-			get
-			{
-				if (TotalTicks == 0)
-					return 0;
-
-				return (
-					(double)(TotalChildrenTicks)
-					/
-					(double)(TotalTicks + TotalRecursiveTicks));
-			}
-		}
-		[XmlIgnore]
 		public double TimeInMethod
 		{
 			get
 			{
-				if (TotalTicks == 0)
+				if (ThreadTotalTicks == 0)
 					return 0;
 
 				return (
 					(double)(TotalTicks + TotalRecursiveTicks - TotalChildrenTicks - TotalChildrenRecursiveTicks)
-					/
-					(double)(TotalTicks + TotalRecursiveTicks));
-			}
-		}
-		[XmlIgnore]
-		public double TotalTimeInChildren
-		{
-			get
-			{
-				if (TotalTicks == 0)
-					return 0;
-
-				long totalChildrenTime = 0;
-				foreach (CalleeFunctionInfo callee in callees)
-					totalChildrenTime += callee.TotalTime;
-
-				return ((
-					(double)(TotalChildrenTicks + TotalChildrenRecursiveTicks - TotalRecursiveTicks))
 					/
 					(double)ThreadTotalTicks);
 			}
@@ -1475,7 +1200,7 @@ namespace NProf
 		private ThreadInfo thread;
 	}
 	[Serializable]
-	public class FunctionInfoCollection : Dictionary<int, Method>
+	public class FunctionInfoCollection : Dictionary<int, FunctionInfo>
 	{
 		public FunctionInfoCollection()
 		{
@@ -1491,7 +1216,6 @@ namespace NProf
 		public FunctionSignature()
 		{
 		}
-
 		public FunctionSignature(UInt32 methodAttributes, string returnType, string className, string functionName, string parameters)
 		{
 			CorMethodAttr cma = (CorMethodAttr)methodAttributes;
@@ -1637,7 +1361,6 @@ namespace NProf
 				signatures[functionID] = signature;
 			}
 		}
-
 		public string GetFunctionSignature(int functionID)
 		{
 			lock (signatures.SyncRoot)
@@ -1941,7 +1664,7 @@ namespace NProf
 			this.profiler = p;
 			this.start = DateTime.Now;
 			this.end = DateTime.MaxValue;
-			this.runState = RunState.Initializing;
+			//this.runState = RunState.Initializing;
 			this.project = pi;
 			this.messages = new RunMessageCollection();
 			this.isSuccess = false;
@@ -1950,17 +1673,17 @@ namespace NProf
 		{
 			start = DateTime.Now;
 
-			return profiler.Start(project, this, new Profiler.ProcessCompletedHandler(OnProfileComplete));
+			return profiler.Start(project, this);
 		}
 
-		public bool CanStop
-		{
-			get
-			{
-				return State == RunState.Initializing ||
-					  (project.ProjectType == ProjectType.AspNet && State != RunState.Finished);
-			}
-		}
+		//public bool CanStop
+		//{
+		//    get
+		//    {
+		//        return State == RunState.Initializing ||
+		//              (project.ProjectType == ProjectType.AspNet && State != RunState.Finished);
+		//    }
+		//}
 
 		public bool Stop()
 		{
@@ -1968,12 +1691,6 @@ namespace NProf
 
 			return true;
 		}
-
-		//public ProjectInfo Project
-		//{
-		//    get { return project; }
-		//    set { project = value; }
-		//}
 
 		[XmlIgnore]
 		public DateTime StartTime
@@ -1988,18 +1705,18 @@ namespace NProf
 			set { end = value; }
 		}
 
-		public RunState State
-		{
-			get { return runState; }
+		//public RunState State
+		//{
+		//    get { return runState; }
 
-			set
-			{
-				RunState rsOld = runState;
-				runState = value;
-				if (StateChanged != null)
-					StateChanged(this, rsOld, runState);
-			}
-		}
+		//    set
+		//    {
+		//        RunState rsOld = runState;
+		//        runState = value;
+		//        if (StateChanged != null)
+		//            StateChanged(this, rsOld, runState);
+		//    }
+		//}
 
 		[XmlIgnore]
 		public RunMessageCollection Messages
@@ -2014,27 +1731,28 @@ namespace NProf
 		}
 
 
-		public Profiler.ProcessCompletedHandler ProcessCompletedHandler
-		{
-			get { return new Profiler.ProcessCompletedHandler(OnProfileComplete); }
-		}
+		//public Profiler.ProcessCompletedHandler ProcessCompletedHandler
+		//{
+		//    get { return new Profiler.ProcessCompletedHandler(OnProfileComplete); }
+		//}
 
-		private void OnProfileComplete(Run run)
-		{
-			State = RunState.Finished;
-			end = DateTime.Now;
-		}
+		//private void OnProfileComplete(Run run)
+		//{
+		//    State = RunState.Finished;
+		//    end = DateTime.Now;
+		//}
 
-		[field: NonSerialized]
-		public event RunStateEventHandler StateChanged;
+		//[field: NonSerialized]
+		//public event RunStateEventHandler StateChanged;
+
 
 
 		private bool isSuccess;
 		private DateTime start;
 		private DateTime end;
-		private RunState runState;
+		//private RunState runState;
 		private ProjectInfo project;
-		private Profiler profiler;
+		public Profiler profiler;
 		private RunMessageCollection messages;
 		private ProcessInfo process;
 
@@ -2050,15 +1768,16 @@ namespace NProf
 			}
 		}
 	}
-	public delegate void RunStateEventHandler(Run run, RunState rsOld, RunState rsNew);
+	//public delegate void RunStateEventHandler(Run run, RunState rsOld, RunState rsNew);
 
-	[Serializable]
-	public enum RunState
-	{
-		Initializing,
-		Running,
-		Finished,
-	}
+	//[Serializable]
+	//public enum RunState
+	//{
+	//    Initializing,
+	//    Running,
+	//    Finished,
+	//}
+	// remove
 	[Serializable]
 	public class RunCollection : IEnumerable
 	{
@@ -2186,8 +1905,48 @@ namespace NProf
 				projectToFileName[project] = fileName;
 
 				// make the file recently used and return
-				//MakeRecentlyUsed(project, fileName);
+				MakeRecentlyUsed(fileName);
+
 				return project;
+			}
+		}
+		private static RegistryKey RecentProjectsKey()
+		{
+			return Registry.CurrentUser.CreateSubKey("Software\\NProf\\RecentProjects");
+		}
+		public static void MakeRecentlyUsed(string fileName)
+		{
+			using (RegistryKey key = RecentProjectsKey())
+			{
+				key.SetValue(fileName, DateTime.Now.ToString(CultureInfo.InvariantCulture));
+				//key.Flush();
+			}
+			//{
+			//    Queue<string> files=GetRecentlyUsed();
+			//    files.Enqueue(fileName);
+			//    int index=1;
+			//    foreach(string file in files)
+			//    {
+			//        key.SetValue(index.ToString(),file);
+			//        index++;
+			//    }
+			//}
+		}
+		public static List<string> GetRecentlyUsed()
+		{
+			using(RegistryKey key=RecentProjectsKey())
+			{
+				Dictionary<string,DateTime> data=new Dictionary<string,DateTime>();
+				foreach(string name in key.GetValueNames())
+				{
+					data[name]=Convert.ToDateTime(key.GetValue(name),CultureInfo.InvariantCulture);
+				}
+				List<string> result=new List<string>(data.Keys);
+				result.Sort(delegate(string a, string b)
+				{
+					return data[a].CompareTo(data[b]);
+				});
+				return result;
 			}
 		}
 		public static void SaveProjectInfo(ProjectInfo info)
@@ -2195,7 +1954,7 @@ namespace NProf
 			if (projectToFileName.Contains(info)) // one that has already been opened
 			{
 				string fileName = (string)projectToFileName[info];
-
+				MakeRecentlyUsed(fileName);
 				SaveProjectInfo(info, fileName);
 			}
 		}
@@ -2209,6 +1968,7 @@ namespace NProf
 				projectToFileName[info] = fileName;
 
 				// make it recently used
+				MakeRecentlyUsed(fileName);
 				//MakeRecentlyUsed(info, fileName);
 			}
 		}
@@ -2230,6 +1990,9 @@ namespace NProf
 		{
 			get { return "0.9-alpha"; }
 		}
+		[field: NonSerialized]
+		public event EventHandler Completed;
+
 
 		public bool CheckSetup(out string message)
 		{
@@ -2246,13 +2009,13 @@ namespace NProf
 			return true;
 		}
 
-		public bool Start(ProjectInfo pi, Run run, ProcessCompletedHandler pch)
+		public bool Start(ProjectInfo pi, Run run)
 		{
 			this.start = DateTime.Now;
 			this.project = pi;
-			this.completed = pch;
+			//this.completed = pch;
 			this.run = run;
-			this.run.State = RunState.Initializing;
+			//this.run.State = RunState.Initializing;
 
 			socketServer = new ProfilerSocketServer(run);
 			socketServer.Start();
@@ -2314,6 +2077,74 @@ namespace NProf
 					throw new InvalidOperationException("Unknown project type: " + pi.ProjectType);
 			}
 		}
+		//public bool Start(ProjectInfo pi, Run run, ProcessCompletedHandler pch)
+		//{
+		//    this.start = DateTime.Now;
+		//    this.project = pi;
+		//    this.completed = pch;
+		//    this.run = run;
+		//    this.run.State = RunState.Initializing;
+
+		//    socketServer = new ProfilerSocketServer(run);
+		//    socketServer.Start();
+		//    socketServer.Exited += new EventHandler(OnProcessExited);
+		//    socketServer.Error += new ProfilerSocketServer.ErrorHandler(OnError);
+		//    socketServer.Message += new ProfilerSocketServer.MessageHandler(OnMessage);
+
+		//    switch (pi.ProjectType)
+		//    {
+		//        case ProjectType.File:
+		//            {
+		//                process = new Process();
+		//                process.StartInfo = new ProcessStartInfo(pi.ApplicationName, pi.Arguments);
+		//                process.StartInfo.EnvironmentVariables["COR_ENABLE_PROFILING"] = "0x1";
+		//                process.StartInfo.EnvironmentVariables["COR_PROFILER"] = PROFILER_GUID;
+		//                process.StartInfo.EnvironmentVariables["NPROF_PROFILING_SOCKET"] = socketServer.Port.ToString();
+		//                process.StartInfo.UseShellExecute = false;
+		//                process.StartInfo.Arguments = pi.Arguments;
+		//                process.StartInfo.WorkingDirectory = pi.WorkingDirectory;
+		//                process.EnableRaisingEvents = true;
+		//                //_p.Exited += new EventHandler( OnProcessExited );
+
+		//                return process.Start();
+		//            }
+
+		//        case ProjectType.AspNet:
+		//            {
+		//                using (RegistryKey rk = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\W3SVC", true))
+		//                {
+		//                    if (rk != null)
+		//                        SetRegistryKeys(rk, true);
+		//                }
+
+		//                using (RegistryKey rk = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\IISADMIN", true))
+		//                {
+		//                    if (rk != null)
+		//                        SetRegistryKeys(rk, true);
+		//                }
+
+		//                Process p = Process.Start("iisreset.exe", "");
+		//                p.WaitForExit();
+		//                this.run.Messages.AddMessage("Navigate to your project and ASP.NET will connect to the profiler");
+		//                this.run.Messages.AddMessage("NOTE: ASP.NET must be set to run under the SYSTEM account in machine.config");
+		//                this.run.Messages.AddMessage(@"If ASP.NET cannot be profiled, ensure that the userName=""SYSTEM"" in the <processModel> section of machine.config.");
+
+		//                return true;
+		//            }
+
+		//        case ProjectType.VSNet:
+		//            {
+		//                SetEnvironmentVariable("COR_ENABLE_PROFILING", "0x1");
+		//                SetEnvironmentVariable("COR_PROFILER", PROFILER_GUID);
+		//                SetEnvironmentVariable("NPROF_PROFILING_SOCKET", socketServer.Port.ToString());
+
+		//                return true;
+		//            }
+
+		//        default:
+		//            throw new InvalidOperationException("Unknown project type: " + pi.ProjectType);
+		//    }
+		//}
 
 		public void Disable()
 		{
@@ -2336,13 +2167,13 @@ namespace NProf
 			}
 
 			// Stop the profiler socket server if profilee hasn't connected
-			if (r.State == RunState.Initializing)
-			{
+			//if (r.State == RunState.Initializing)
+			//{
 				r.Messages.AddMessage("Shutting down profiler...");
 				socketServer.Stop();
-				r.State = RunState.Finished;
+				//r.State = RunState.Finished;
 				r.Success = false;
-			}
+			//}
 
 			if (project.ProjectType == ProjectType.AspNet)
 			{
@@ -2380,18 +2211,18 @@ namespace NProf
 
 			if (!socketServer.HasStoppedGracefully)
 			{
-				if (r.State == RunState.Initializing)
-				{
-					r.Messages.AddMessage("No connection made with profiled application.");
-					r.Messages.AddMessage("Application might not support .NET.");
-				}
-				else
-				{
-					r.Messages.AddMessage("Application stopped before profiler information could be retrieved.");
-				}
+				//if (r.State == RunState.Initializing)
+				//{
+				//    r.Messages.AddMessage("No connection made with profiled application.");
+				//    r.Messages.AddMessage("Application might not support .NET.");
+				//}
+				//else
+				//{
+				//    r.Messages.AddMessage("Application stopped before profiler information could be retrieved.");
+				//}
 
 				r.Success = false;
-				r.State = RunState.Finished;
+				//r.State = RunState.Finished;
 				r.Messages.AddMessage("Profiler run did not complete successfully.");
 			}
 			else
@@ -2407,7 +2238,11 @@ namespace NProf
 
 			r.EndTime = end;
 
-			completed(r);
+			if (Completed != null)
+			{
+				Completed(this, new EventArgs());
+			}
+			//completed(r);
 		}
 
 		private void OnError(Exception e)
@@ -2487,14 +2322,12 @@ namespace NProf
 		[field: NonSerialized]
 		public event ProcessCompletedHandler ProcessCompleted;
 		public delegate void ErrorHandler(Exception e);
-		//[field:NonSerialized]
-		//public event ErrorHandler Error;
 		public delegate void MessageHandler(string strMessage);
 		[field: NonSerialized]
 		public event MessageHandler Message;
 
-		[NonSerialized]
-		private ProcessCompletedHandler completed;
+		//[NonSerialized]
+		//private ProcessCompletedHandler completed;
 		private DateTime start;
 		private DateTime end;
 		private Run run;
@@ -2510,12 +2343,12 @@ namespace NProf
 		[NonSerialized]
 		private ProfilerSocketServer socketServer;
 	}
-	public class Application
+	public class NProf
 	{
 		[STAThread]
 		static void Main(string[] args)
 		{
-			System.Windows.Forms.Application.EnableVisualStyles();
+			Application.EnableVisualStyles();
 
 			// Always print GPL notice
 			Console.WriteLine("NProf version {0} (C) 2003 by Matthew Mastracci", Profiler.Version);
@@ -2529,7 +2362,7 @@ namespace NProf
 			ProfilerForm form = ProfilerForm.form;
 			if (args.Length > 0)
 			{
-				form.Project = CreateProjectInfo(args);
+				form.Project =  SerializationHandler.OpenProjectInfo(args[0].Trim('"'));
 			}
 
 			Console.Out.Flush();
@@ -2537,80 +2370,14 @@ namespace NProf
 			form.Show();
 			if (form.Project == null)
 			{
-				PropertiesForm options = new PropertiesForm(PropertiesForm.ProfilerProjectMode.ModifyProject);
+				PropertiesForm options = new PropertiesForm(PropertiesForm.ProfilerProjectMode.CreateProject);
 				options.ShowDialog();
-				form.Project = options.Project;
-			}
-			try
-			{
-				System.Windows.Forms.Application.Run(form);
-			}
-			catch (Exception e)
-			{
-			}
-		}
-		static void PrintUsage()
-		{
-			Console.WriteLine("Usage: nprof [/r:<file> [/w:<workingdir>] [/a:<args>]] | [/help] | [/v]");
-			Console.WriteLine();
-			Console.WriteLine("Options (use quotes around any arguments containing spaces)");
-			Console.WriteLine("  /r:<file>        The application to profile");
-			Console.WriteLine("  /w:<workingdir>  Specifies the working directory for the application");
-			Console.WriteLine("  /a:<args>        Specifies command line arguments");
-			Console.WriteLine("  /v               Returns the version of nprof and exists");
-			Console.WriteLine();
-			Console.WriteLine(@"Example: Run testapp.exe in C:\Program Files\Test App with ""-i -q"" as arguments");
-			Console.WriteLine(@"  nprof /r:testapp.exe ""/w:C:\Program Files\Test App"" ""/a:-i -q""");
-		}
-		static ProjectInfo CreateProjectInfo(string[] args)
-		{
-			ProjectInfo project = new ProjectInfo(ProjectType.File);
-			project.Arguments = project.WorkingDirectory = project.ApplicationName = String.Empty;
-			foreach (string arg in args)
-			{
-				string upperArg = arg.ToUpper();
-				if (upperArg.StartsWith("/R:"))
+				if (form.Project == null)
 				{
-					project.ApplicationName = Path.GetFullPath(arg.Substring(3));
-					Console.WriteLine("Application: " + project.ApplicationName);
-				}
-				else if (upperArg.StartsWith("/W:"))
-				{
-					project.WorkingDirectory = arg.Substring(3);
-					Console.WriteLine("Working Directory: " + project.WorkingDirectory);
-				}
-				else if (upperArg.StartsWith("/A:"))
-				{
-					project.Arguments = arg.Substring(3);
-					Console.WriteLine("Arguments: " + project.Arguments);
-				}
-				else if (upperArg.Equals("/HELP") || upperArg.Equals("/H") || upperArg.Equals("/?") || upperArg.Equals("-H") || upperArg.Equals("-HELP") || upperArg.Equals("--HELP"))
-				{
-					PrintUsage();
-					return null;
-				}
-				else
-				{
-					Console.WriteLine(@"Error: Unrecognized argument ""{0}"".  Use /help for usage details.", arg);
-					return null;
+					form.Project = options.Project;
 				}
 			}
-
-			// Check if the user has specified an application to run
-			if (project.ApplicationName.Length == 0)
-			{
-				Console.WriteLine("Error: You need to specify an application to run.");
-				return null;
-			}
-
-			// Set the working directory, if not specified
-			if (project.WorkingDirectory.Length == 0)
-			{
-				// Note: if the pInfo.Name is rooted, it will override the app startup path
-				project.WorkingDirectory = Path.Combine(Directory.GetCurrentDirectory(), Path.GetDirectoryName(project.ApplicationName));
-			}
-
-			return project;
+			Application.Run(form);
 		}
 	}
 }

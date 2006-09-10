@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 6.00.0366 */
-/* at Thu Sep 07 15:38:27 2006
+/* at Sun Sep 10 11:19:01 2006
  */
 /* Compiler settings for _NProf.Hook.idl:
     Oicf, W1, Zp8, env=Win32 (32b run)

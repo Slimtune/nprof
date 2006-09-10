@@ -1,8 +1,4 @@
-﻿CanStop (Boolean):
-	"False"
-State (RunState):
-	"Finished"
-Success (Boolean):
+﻿Success (Boolean):
 	"True"
 Process (ProcessInfo):
 	ID (Int32):
@@ -842,7 +838,7 @@ Process (ProcessInfo):
 				Values (ValueCollection):
 					Count (Int32):
 						"410"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10498064"
 						Signature (FunctionSignature):
@@ -915,7 +911,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10498072"
 						Signature (FunctionSignature):
@@ -974,7 +970,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10498616"
 						Signature (FunctionSignature):
@@ -1033,7 +1029,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10498624"
 						Signature (FunctionSignature):
@@ -1092,7 +1088,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10498632"
 						Signature (FunctionSignature):
@@ -1179,7 +1175,7 @@ Process (ProcessInfo):
 									"6"
 						Calls (Int32):
 							"6"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10498640"
 						Signature (FunctionSignature):
@@ -1245,7 +1241,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10498648"
 						Signature (FunctionSignature):
@@ -1311,7 +1307,7 @@ Process (ProcessInfo):
 									"3"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10498656"
 						Signature (FunctionSignature):
@@ -1377,7 +1373,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10644512"
 						Signature (FunctionSignature):
@@ -1429,7 +1425,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"85"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10644528"
 						Signature (FunctionSignature):
@@ -1481,7 +1477,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10644544"
 						Signature (FunctionSignature):
@@ -1533,7 +1529,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10644552"
 						Signature (FunctionSignature):
@@ -1585,7 +1581,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"4"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10652800"
 						Signature (FunctionSignature):
@@ -1637,7 +1633,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"7"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10652840"
 						Signature (FunctionSignature):
@@ -1696,7 +1692,7 @@ Process (ProcessInfo):
 									"7"
 						Calls (Int32):
 							"7"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10652856"
 						Signature (FunctionSignature):
@@ -1755,7 +1751,7 @@ Process (ProcessInfo):
 									"7"
 						Calls (Int32):
 							"7"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10652872"
 						Signature (FunctionSignature):
@@ -1814,7 +1810,7 @@ Process (ProcessInfo):
 									"12"
 						Calls (Int32):
 							"12"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10652888"
 						Signature (FunctionSignature):
@@ -1873,7 +1869,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10652904"
 						Signature (FunctionSignature):
@@ -1932,7 +1928,7 @@ Process (ProcessInfo):
 									"10"
 						Calls (Int32):
 							"10"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10652912"
 						Signature (FunctionSignature):
@@ -1984,7 +1980,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"30"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10652920"
 						Signature (FunctionSignature):
@@ -2036,7 +2032,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"5"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653008"
 						Signature (FunctionSignature):
@@ -2095,7 +2091,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653016"
 						Signature (FunctionSignature):
@@ -2154,7 +2150,7 @@ Process (ProcessInfo):
 									"3"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653024"
 						Signature (FunctionSignature):
@@ -2213,7 +2209,7 @@ Process (ProcessInfo):
 									"3"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653032"
 						Signature (FunctionSignature):
@@ -2272,7 +2268,7 @@ Process (ProcessInfo):
 									"3"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653056"
 						Signature (FunctionSignature):
@@ -2331,7 +2327,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653128"
 						Signature (FunctionSignature):
@@ -2383,7 +2379,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"4"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653136"
 						Signature (FunctionSignature):
@@ -2435,7 +2431,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"64"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653184"
 						Signature (FunctionSignature):
@@ -2501,7 +2497,7 @@ Process (ProcessInfo):
 									"25"
 						Calls (Int32):
 							"25"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653248"
 						Signature (FunctionSignature):
@@ -2574,7 +2570,7 @@ Process (ProcessInfo):
 									"7"
 						Calls (Int32):
 							"7"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653328"
 						Signature (FunctionSignature):
@@ -2626,7 +2622,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653336"
 						Signature (FunctionSignature):
@@ -2678,7 +2674,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653424"
 						Signature (FunctionSignature):
@@ -2730,7 +2726,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653616"
 						Signature (FunctionSignature):
@@ -2789,7 +2785,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653624"
 						Signature (FunctionSignature):
@@ -2841,7 +2837,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653672"
 						Signature (FunctionSignature):
@@ -2914,7 +2910,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653688"
 						Signature (FunctionSignature):
@@ -2973,7 +2969,7 @@ Process (ProcessInfo):
 									"4"
 						Calls (Int32):
 							"4"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653808"
 						Signature (FunctionSignature):
@@ -3025,7 +3021,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"5"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653824"
 						Signature (FunctionSignature):
@@ -3084,7 +3080,7 @@ Process (ProcessInfo):
 									"11"
 						Calls (Int32):
 							"11"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653848"
 						Signature (FunctionSignature):
@@ -3143,7 +3139,7 @@ Process (ProcessInfo):
 									"5"
 						Calls (Int32):
 							"5"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653864"
 						Signature (FunctionSignature):
@@ -3202,7 +3198,7 @@ Process (ProcessInfo):
 									"5"
 						Calls (Int32):
 							"5"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653872"
 						Signature (FunctionSignature):
@@ -3268,7 +3264,7 @@ Process (ProcessInfo):
 									"14"
 						Calls (Int32):
 							"14"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653888"
 						Signature (FunctionSignature):
@@ -3320,7 +3316,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"5"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653896"
 						Signature (FunctionSignature):
@@ -3372,7 +3368,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"14"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10653968"
 						Signature (FunctionSignature):
@@ -3424,7 +3420,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18286584"
 						Signature (FunctionSignature):
@@ -3485,7 +3481,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18286592"
 						Signature (FunctionSignature):
@@ -3546,7 +3542,7 @@ Process (ProcessInfo):
 									"6"
 						Calls (Int32):
 							"6"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18286600"
 						Signature (FunctionSignature):
@@ -3607,7 +3603,7 @@ Process (ProcessInfo):
 									"3"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18286608"
 						Signature (FunctionSignature):
@@ -3668,7 +3664,7 @@ Process (ProcessInfo):
 									"9"
 						Calls (Int32):
 							"9"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18286616"
 						Signature (FunctionSignature):
@@ -3743,7 +3739,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"9"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18286648"
 						Signature (FunctionSignature):
@@ -3804,7 +3800,7 @@ Process (ProcessInfo):
 									"5"
 						Calls (Int32):
 							"5"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18286688"
 						Signature (FunctionSignature):
@@ -3886,7 +3882,7 @@ Process (ProcessInfo):
 									"9"
 						Calls (Int32):
 							"9"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18286704"
 						Signature (FunctionSignature):
@@ -3940,7 +3936,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18286744"
 						Signature (FunctionSignature):
@@ -4022,7 +4018,7 @@ Process (ProcessInfo):
 									"5"
 						Calls (Int32):
 							"5"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18286752"
 						Signature (FunctionSignature):
@@ -4111,7 +4107,7 @@ Process (ProcessInfo):
 									"11"
 						Calls (Int32):
 							"11"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18286768"
 						Signature (FunctionSignature):
@@ -4172,7 +4168,7 @@ Process (ProcessInfo):
 									"21"
 						Calls (Int32):
 							"21"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18286776"
 						Signature (FunctionSignature):
@@ -4240,7 +4236,7 @@ Process (ProcessInfo):
 									"5"
 						Calls (Int32):
 							"5"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18286784"
 						Signature (FunctionSignature):
@@ -4294,7 +4290,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"21"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18286864"
 						Signature (FunctionSignature):
@@ -4376,7 +4372,7 @@ Process (ProcessInfo):
 									"5"
 						Calls (Int32):
 							"5"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18287136"
 						Signature (FunctionSignature):
@@ -4472,7 +4468,7 @@ Process (ProcessInfo):
 									"4"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18292040"
 						Signature (FunctionSignature):
@@ -4524,7 +4520,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"5"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18292064"
 						Signature (FunctionSignature):
@@ -4576,7 +4572,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18292512"
 						Signature (FunctionSignature):
@@ -4639,7 +4635,7 @@ Process (ProcessInfo):
 									"3"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18293256"
 						Signature (FunctionSignature):
@@ -4693,7 +4689,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"6"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18293280"
 						Signature (FunctionSignature):
@@ -4747,7 +4743,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18293448"
 						Signature (FunctionSignature):
@@ -4808,7 +4804,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18293824"
 						Signature (FunctionSignature):
@@ -4869,7 +4865,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18295728"
 						Signature (FunctionSignature):
@@ -4925,7 +4921,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"35"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18295736"
 						Signature (FunctionSignature):
@@ -4981,7 +4977,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18295752"
 						Signature (FunctionSignature):
@@ -5044,7 +5040,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18295760"
 						Signature (FunctionSignature):
@@ -5121,7 +5117,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18295768"
 						Signature (FunctionSignature):
@@ -5184,7 +5180,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18295776"
 						Signature (FunctionSignature):
@@ -5240,7 +5236,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18295784"
 						Signature (FunctionSignature):
@@ -5303,7 +5299,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18296624"
 						Signature (FunctionSignature):
@@ -5380,7 +5376,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18296640"
 						Signature (FunctionSignature):
@@ -5436,7 +5432,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18296648"
 						Signature (FunctionSignature):
@@ -5492,7 +5488,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"13"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18297144"
 						Signature (FunctionSignature):
@@ -5551,7 +5547,7 @@ Process (ProcessInfo):
 									"9"
 						Calls (Int32):
 							"9"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18301216"
 						Signature (FunctionSignature):
@@ -5610,7 +5606,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18301224"
 						Signature (FunctionSignature):
@@ -5683,7 +5679,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18302024"
 						Signature (FunctionSignature):
@@ -5735,7 +5731,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18302040"
 						Signature (FunctionSignature):
@@ -5794,7 +5790,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18302104"
 						Signature (FunctionSignature):
@@ -5902,7 +5898,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18302144"
 						Signature (FunctionSignature):
@@ -5975,7 +5971,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18305816"
 						Signature (FunctionSignature):
@@ -6043,7 +6039,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18305824"
 						Signature (FunctionSignature):
@@ -6111,7 +6107,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18305888"
 						Signature (FunctionSignature):
@@ -6165,7 +6161,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18306008"
 						Signature (FunctionSignature):
@@ -6219,7 +6215,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18306488"
 						Signature (FunctionSignature):
@@ -6280,7 +6276,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309088"
 						Signature (FunctionSignature):
@@ -6339,7 +6335,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309112"
 						Signature (FunctionSignature):
@@ -6468,7 +6464,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309120"
 						Signature (FunctionSignature):
@@ -6520,7 +6516,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"24"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309136"
 						Signature (FunctionSignature):
@@ -6586,7 +6582,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309144"
 						Signature (FunctionSignature):
@@ -6673,7 +6669,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309160"
 						Signature (FunctionSignature):
@@ -6725,7 +6721,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309176"
 						Signature (FunctionSignature):
@@ -6784,7 +6780,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309192"
 						Signature (FunctionSignature):
@@ -6836,7 +6832,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309248"
 						Signature (FunctionSignature):
@@ -6895,7 +6891,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309264"
 						Signature (FunctionSignature):
@@ -6954,7 +6950,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309272"
 						Signature (FunctionSignature):
@@ -7013,7 +7009,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309280"
 						Signature (FunctionSignature):
@@ -7072,7 +7068,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309296"
 						Signature (FunctionSignature):
@@ -7131,7 +7127,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309320"
 						Signature (FunctionSignature):
@@ -7183,7 +7179,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309328"
 						Signature (FunctionSignature):
@@ -7249,7 +7245,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309336"
 						Signature (FunctionSignature):
@@ -7308,7 +7304,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309360"
 						Signature (FunctionSignature):
@@ -7360,7 +7356,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309384"
 						Signature (FunctionSignature):
@@ -7419,7 +7415,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309392"
 						Signature (FunctionSignature):
@@ -7478,7 +7474,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309400"
 						Signature (FunctionSignature):
@@ -7530,7 +7526,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309440"
 						Signature (FunctionSignature):
@@ -7582,7 +7578,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309456"
 						Signature (FunctionSignature):
@@ -7634,7 +7630,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309480"
 						Signature (FunctionSignature):
@@ -7693,7 +7689,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309496"
 						Signature (FunctionSignature):
@@ -7752,7 +7748,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309544"
 						Signature (FunctionSignature):
@@ -7811,7 +7807,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309608"
 						Signature (FunctionSignature):
@@ -7863,7 +7859,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309632"
 						Signature (FunctionSignature):
@@ -7915,7 +7911,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309640"
 						Signature (FunctionSignature):
@@ -7967,7 +7963,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309648"
 						Signature (FunctionSignature):
@@ -8019,7 +8015,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309656"
 						Signature (FunctionSignature):
@@ -8071,7 +8067,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18309672"
 						Signature (FunctionSignature):
@@ -8242,7 +8238,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18311360"
 						Signature (FunctionSignature):
@@ -8301,7 +8297,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18312984"
 						Signature (FunctionSignature):
@@ -8360,7 +8356,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18313008"
 						Signature (FunctionSignature):
@@ -8419,7 +8415,7 @@ Process (ProcessInfo):
 									"4"
 						Calls (Int32):
 							"4"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18313016"
 						Signature (FunctionSignature):
@@ -8485,7 +8481,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18313200"
 						Signature (FunctionSignature):
@@ -8544,7 +8540,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18320984"
 						Signature (FunctionSignature):
@@ -8619,7 +8615,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18320992"
 						Signature (FunctionSignature):
@@ -8680,7 +8676,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18321000"
 						Signature (FunctionSignature):
@@ -8748,7 +8744,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18321024"
 						Signature (FunctionSignature):
@@ -8809,7 +8805,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18321032"
 						Signature (FunctionSignature):
@@ -8891,7 +8887,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18321096"
 						Signature (FunctionSignature):
@@ -8952,7 +8948,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18321136"
 						Signature (FunctionSignature):
@@ -9006,7 +9002,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"4"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18321152"
 						Signature (FunctionSignature):
@@ -9060,7 +9056,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18321184"
 						Signature (FunctionSignature):
@@ -9114,7 +9110,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"4"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18321200"
 						Signature (FunctionSignature):
@@ -9168,7 +9164,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18321232"
 						Signature (FunctionSignature):
@@ -9229,7 +9225,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18321240"
 						Signature (FunctionSignature):
@@ -9290,7 +9286,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18321296"
 						Signature (FunctionSignature):
@@ -9379,7 +9375,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18321304"
 						Signature (FunctionSignature):
@@ -9447,7 +9443,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18321344"
 						Signature (FunctionSignature):
@@ -9501,7 +9497,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18321352"
 						Signature (FunctionSignature):
@@ -9562,7 +9558,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18321360"
 						Signature (FunctionSignature):
@@ -9623,7 +9619,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18321376"
 						Signature (FunctionSignature):
@@ -9691,7 +9687,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18321496"
 						Signature (FunctionSignature):
@@ -9794,7 +9790,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18321504"
 						Signature (FunctionSignature):
@@ -9855,7 +9851,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18322920"
 						Signature (FunctionSignature):
@@ -9907,7 +9903,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18322928"
 						Signature (FunctionSignature):
@@ -9959,7 +9955,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18322936"
 						Signature (FunctionSignature):
@@ -10011,7 +10007,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18322944"
 						Signature (FunctionSignature):
@@ -10063,7 +10059,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"8"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18323024"
 						Signature (FunctionSignature):
@@ -10122,7 +10118,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18323056"
 						Signature (FunctionSignature):
@@ -10174,7 +10170,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"20"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18323064"
 						Signature (FunctionSignature):
@@ -10226,7 +10222,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"26"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18324336"
 						Signature (FunctionSignature):
@@ -10287,7 +10283,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18324344"
 						Signature (FunctionSignature):
@@ -10355,7 +10351,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18324376"
 						Signature (FunctionSignature):
@@ -10409,7 +10405,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"45"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18324384"
 						Signature (FunctionSignature):
@@ -10491,7 +10487,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18324392"
 						Signature (FunctionSignature):
@@ -10545,7 +10541,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18324496"
 						Signature (FunctionSignature):
@@ -10599,7 +10595,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18324512"
 						Signature (FunctionSignature):
@@ -10653,7 +10649,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18325968"
 						Signature (FunctionSignature):
@@ -10737,7 +10733,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18327360"
 						Signature (FunctionSignature):
@@ -10819,7 +10815,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18327368"
 						Signature (FunctionSignature):
@@ -10880,7 +10876,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18327384"
 						Signature (FunctionSignature):
@@ -10948,7 +10944,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"7"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18327424"
 						Signature (FunctionSignature):
@@ -11030,7 +11026,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18327440"
 						Signature (FunctionSignature):
@@ -11091,7 +11087,7 @@ Process (ProcessInfo):
 									"7"
 						Calls (Int32):
 							"7"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18328568"
 						Signature (FunctionSignature):
@@ -11152,7 +11148,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18328600"
 						Signature (FunctionSignature):
@@ -11248,7 +11244,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18328672"
 						Signature (FunctionSignature):
@@ -11302,7 +11298,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18328688"
 						Signature (FunctionSignature):
@@ -11363,7 +11359,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18328696"
 						Signature (FunctionSignature):
@@ -11431,7 +11427,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18328704"
 						Signature (FunctionSignature):
@@ -11520,7 +11516,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18328712"
 						Signature (FunctionSignature):
@@ -11595,7 +11591,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18329096"
 						Signature (FunctionSignature):
@@ -11656,7 +11652,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18337792"
 						Signature (FunctionSignature):
@@ -11736,7 +11732,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18343144"
 						Signature (FunctionSignature):
@@ -11811,7 +11807,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18343184"
 						Signature (FunctionSignature):
@@ -11872,7 +11868,7 @@ Process (ProcessInfo):
 									"3"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18343688"
 						Signature (FunctionSignature):
@@ -11933,7 +11929,7 @@ Process (ProcessInfo):
 									"3"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18345512"
 						Signature (FunctionSignature):
@@ -11987,7 +11983,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"5"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18345520"
 						Signature (FunctionSignature):
@@ -12069,7 +12065,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18345528"
 						Signature (FunctionSignature):
@@ -12144,7 +12140,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18345536"
 						Signature (FunctionSignature):
@@ -12212,7 +12208,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18345544"
 						Signature (FunctionSignature):
@@ -12280,7 +12276,7 @@ Process (ProcessInfo):
 									"3"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18345552"
 						Signature (FunctionSignature):
@@ -12355,7 +12351,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18481272"
 						Signature (FunctionSignature):
@@ -12416,7 +12412,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18481280"
 						Signature (FunctionSignature):
@@ -12477,7 +12473,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18481488"
 						Signature (FunctionSignature):
@@ -12536,7 +12532,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18482392"
 						Signature (FunctionSignature):
@@ -12602,7 +12598,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18482400"
 						Signature (FunctionSignature):
@@ -12675,7 +12671,7 @@ Process (ProcessInfo):
 									"4"
 						Calls (Int32):
 							"4"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18482416"
 						Signature (FunctionSignature):
@@ -12727,7 +12723,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"5"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18482960"
 						Signature (FunctionSignature):
@@ -12779,7 +12775,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18484808"
 						Signature (FunctionSignature):
@@ -12838,7 +12834,7 @@ Process (ProcessInfo):
 									"4"
 						Calls (Int32):
 							"4"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18486016"
 						Signature (FunctionSignature):
@@ -12899,7 +12895,7 @@ Process (ProcessInfo):
 									"9"
 						Calls (Int32):
 							"9"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18486024"
 						Signature (FunctionSignature):
@@ -12960,7 +12956,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18486032"
 						Signature (FunctionSignature):
@@ -13021,7 +13017,7 @@ Process (ProcessInfo):
 									"12"
 						Calls (Int32):
 							"12"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18486048"
 						Signature (FunctionSignature):
@@ -13082,7 +13078,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18486064"
 						Signature (FunctionSignature):
@@ -13143,7 +13139,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18486144"
 						Signature (FunctionSignature):
@@ -13204,7 +13200,7 @@ Process (ProcessInfo):
 									"26"
 						Calls (Int32):
 							"26"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18486152"
 						Signature (FunctionSignature):
@@ -13265,7 +13261,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18486240"
 						Signature (FunctionSignature):
@@ -13333,7 +13329,7 @@ Process (ProcessInfo):
 									"3"
 						Calls (Int32):
 							"15"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18486248"
 						Signature (FunctionSignature):
@@ -13394,7 +13390,7 @@ Process (ProcessInfo):
 									"10"
 						Calls (Int32):
 							"10"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18486272"
 						Signature (FunctionSignature):
@@ -13448,7 +13444,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"11"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18486296"
 						Signature (FunctionSignature):
@@ -13523,7 +13519,7 @@ Process (ProcessInfo):
 									"12"
 						Calls (Int32):
 							"26"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18486328"
 						Signature (FunctionSignature):
@@ -13598,7 +13594,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18486352"
 						Signature (FunctionSignature):
@@ -13666,7 +13662,7 @@ Process (ProcessInfo):
 									"11"
 						Calls (Int32):
 							"11"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18490208"
 						Signature (FunctionSignature):
@@ -13734,7 +13730,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18490576"
 						Signature (FunctionSignature):
@@ -13788,7 +13784,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18492344"
 						Signature (FunctionSignature):
@@ -13847,7 +13843,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18492528"
 						Signature (FunctionSignature):
@@ -13906,7 +13902,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18493144"
 						Signature (FunctionSignature):
@@ -13967,7 +13963,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494216"
 						Signature (FunctionSignature):
@@ -14028,7 +14024,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494224"
 						Signature (FunctionSignature):
@@ -14089,7 +14085,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494248"
 						Signature (FunctionSignature):
@@ -14185,7 +14181,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494256"
 						Signature (FunctionSignature):
@@ -14260,7 +14256,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494280"
 						Signature (FunctionSignature):
@@ -14384,7 +14380,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494296"
 						Signature (FunctionSignature):
@@ -14445,7 +14441,7 @@ Process (ProcessInfo):
 									"3"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494480"
 						Signature (FunctionSignature):
@@ -14499,7 +14495,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494488"
 						Signature (FunctionSignature):
@@ -14581,7 +14577,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494496"
 						Signature (FunctionSignature):
@@ -14656,7 +14652,7 @@ Process (ProcessInfo):
 									"5"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494504"
 						Signature (FunctionSignature):
@@ -14724,7 +14720,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494528"
 						Signature (FunctionSignature):
@@ -14778,7 +14774,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494536"
 						Signature (FunctionSignature):
@@ -14832,7 +14828,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494544"
 						Signature (FunctionSignature):
@@ -14893,7 +14889,7 @@ Process (ProcessInfo):
 									"3"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494584"
 						Signature (FunctionSignature):
@@ -14947,7 +14943,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"4"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494648"
 						Signature (FunctionSignature):
@@ -15008,7 +15004,7 @@ Process (ProcessInfo):
 									"22"
 						Calls (Int32):
 							"25"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494672"
 						Signature (FunctionSignature):
@@ -15069,7 +15065,7 @@ Process (ProcessInfo):
 									"10"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494696"
 						Signature (FunctionSignature):
@@ -15130,7 +15126,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494704"
 						Signature (FunctionSignature):
@@ -15184,7 +15180,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494712"
 						Signature (FunctionSignature):
@@ -15252,7 +15248,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494728"
 						Signature (FunctionSignature):
@@ -15306,7 +15302,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494736"
 						Signature (FunctionSignature):
@@ -15367,7 +15363,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494744"
 						Signature (FunctionSignature):
@@ -15421,7 +15417,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494752"
 						Signature (FunctionSignature):
@@ -15475,7 +15471,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494760"
 						Signature (FunctionSignature):
@@ -15529,7 +15525,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494768"
 						Signature (FunctionSignature):
@@ -15583,7 +15579,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494776"
 						Signature (FunctionSignature):
@@ -15637,7 +15633,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494808"
 						Signature (FunctionSignature):
@@ -15698,7 +15694,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494816"
 						Signature (FunctionSignature):
@@ -15759,7 +15755,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494824"
 						Signature (FunctionSignature):
@@ -15820,7 +15816,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494840"
 						Signature (FunctionSignature):
@@ -15881,7 +15877,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494848"
 						Signature (FunctionSignature):
@@ -15942,7 +15938,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494856"
 						Signature (FunctionSignature):
@@ -16003,7 +15999,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494864"
 						Signature (FunctionSignature):
@@ -16064,7 +16060,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494872"
 						Signature (FunctionSignature):
@@ -16125,7 +16121,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494880"
 						Signature (FunctionSignature):
@@ -16186,7 +16182,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18494992"
 						Signature (FunctionSignature):
@@ -16247,7 +16243,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18495000"
 						Signature (FunctionSignature):
@@ -16301,7 +16297,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18495008"
 						Signature (FunctionSignature):
@@ -16355,7 +16351,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18495048"
 						Signature (FunctionSignature):
@@ -16409,7 +16405,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18495056"
 						Signature (FunctionSignature):
@@ -16463,7 +16459,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18495080"
 						Signature (FunctionSignature):
@@ -16517,7 +16513,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18495088"
 						Signature (FunctionSignature):
@@ -16571,7 +16567,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18495104"
 						Signature (FunctionSignature):
@@ -16632,7 +16628,7 @@ Process (ProcessInfo):
 									"3"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18495208"
 						Signature (FunctionSignature):
@@ -16693,7 +16689,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18495216"
 						Signature (FunctionSignature):
@@ -16754,7 +16750,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18495224"
 						Signature (FunctionSignature):
@@ -16815,7 +16811,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18495232"
 						Signature (FunctionSignature):
@@ -16876,7 +16872,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18495296"
 						Signature (FunctionSignature):
@@ -16937,7 +16933,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18495392"
 						Signature (FunctionSignature):
@@ -16998,7 +16994,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18495400"
 						Signature (FunctionSignature):
@@ -17052,7 +17048,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18495512"
 						Signature (FunctionSignature):
@@ -17246,7 +17242,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18495584"
 						Signature (FunctionSignature):
@@ -17300,7 +17296,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18497160"
 						Signature (FunctionSignature):
@@ -17357,7 +17353,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18501184"
 						Signature (FunctionSignature):
@@ -17418,7 +17414,7 @@ Process (ProcessInfo):
 									"5"
 						Calls (Int32):
 							"5"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18501192"
 						Signature (FunctionSignature):
@@ -17479,7 +17475,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18501696"
 						Signature (FunctionSignature):
@@ -17554,7 +17550,7 @@ Process (ProcessInfo):
 									"3"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18501712"
 						Signature (FunctionSignature):
@@ -17608,7 +17604,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18501792"
 						Signature (FunctionSignature):
@@ -17662,7 +17658,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18502968"
 						Signature (FunctionSignature):
@@ -17719,7 +17715,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18502984"
 						Signature (FunctionSignature):
@@ -17769,7 +17765,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18502992"
 						Signature (FunctionSignature):
@@ -17819,7 +17815,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18503008"
 						Signature (FunctionSignature):
@@ -17869,7 +17865,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18503824"
 						Signature (FunctionSignature):
@@ -17930,7 +17926,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18503992"
 						Signature (FunctionSignature):
@@ -17991,7 +17987,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18504608"
 						Signature (FunctionSignature):
@@ -18068,7 +18064,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18504616"
 						Signature (FunctionSignature):
@@ -18124,7 +18120,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18504688"
 						Signature (FunctionSignature):
@@ -18180,7 +18176,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18506552"
 						Signature (FunctionSignature):
@@ -18246,7 +18242,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18506576"
 						Signature (FunctionSignature):
@@ -18298,7 +18294,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18507400"
 						Signature (FunctionSignature):
@@ -18369,7 +18365,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18507584"
 						Signature (FunctionSignature):
@@ -18430,7 +18426,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18507648"
 						Signature (FunctionSignature):
@@ -18491,7 +18487,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18507688"
 						Signature (FunctionSignature):
@@ -18559,7 +18555,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18508288"
 						Signature (FunctionSignature):
@@ -18613,7 +18609,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18509088"
 						Signature (FunctionSignature):
@@ -18674,7 +18670,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18510224"
 						Signature (FunctionSignature):
@@ -18763,7 +18759,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18512320"
 						Signature (FunctionSignature):
@@ -18866,7 +18862,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18520872"
 						Signature (FunctionSignature):
@@ -18923,7 +18919,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18521040"
 						Signature (FunctionSignature):
@@ -18982,7 +18978,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18521072"
 						Signature (FunctionSignature):
@@ -19041,7 +19037,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18521128"
 						Signature (FunctionSignature):
@@ -19100,7 +19096,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18522640"
 						Signature (FunctionSignature):
@@ -19184,7 +19180,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18524224"
 						Signature (FunctionSignature):
@@ -19264,7 +19260,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18524248"
 						Signature (FunctionSignature):
@@ -19323,7 +19319,7 @@ Process (ProcessInfo):
 									"4"
 						Calls (Int32):
 							"4"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18524392"
 						Signature (FunctionSignature):
@@ -19375,7 +19371,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18529904"
 						Signature (FunctionSignature):
@@ -19427,7 +19423,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18529920"
 						Signature (FunctionSignature):
@@ -19479,7 +19475,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"4"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18536064"
 						Signature (FunctionSignature):
@@ -19531,7 +19527,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18536080"
 						Signature (FunctionSignature):
@@ -19583,7 +19579,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"12"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18536104"
 						Signature (FunctionSignature):
@@ -19642,7 +19638,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18543520"
 						Signature (FunctionSignature):
@@ -19726,7 +19722,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19793720"
 						Signature (FunctionSignature):
@@ -19794,7 +19790,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19794232"
 						Signature (FunctionSignature):
@@ -19848,7 +19844,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19794240"
 						Signature (FunctionSignature):
@@ -19902,7 +19898,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19797152"
 						Signature (FunctionSignature):
@@ -19961,7 +19957,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19797192"
 						Signature (FunctionSignature):
@@ -20027,7 +20023,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"12"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19797200"
 						Signature (FunctionSignature):
@@ -20093,7 +20089,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19797208"
 						Signature (FunctionSignature):
@@ -20145,7 +20141,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19797728"
 						Signature (FunctionSignature):
@@ -20211,7 +20207,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19797880"
 						Signature (FunctionSignature):
@@ -20277,7 +20273,7 @@ Process (ProcessInfo):
 									"12"
 						Calls (Int32):
 							"12"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19798072"
 						Signature (FunctionSignature):
@@ -20336,7 +20332,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19799392"
 						Signature (FunctionSignature):
@@ -20397,7 +20393,7 @@ Process (ProcessInfo):
 									"4"
 						Calls (Int32):
 							"4"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19799400"
 						Signature (FunctionSignature):
@@ -20465,7 +20461,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19799464"
 						Signature (FunctionSignature):
@@ -20526,7 +20522,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19799704"
 						Signature (FunctionSignature):
@@ -20594,7 +20590,7 @@ Process (ProcessInfo):
 									"12"
 						Calls (Int32):
 							"12"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19799752"
 						Signature (FunctionSignature):
@@ -20655,7 +20651,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19800504"
 						Signature (FunctionSignature):
@@ -20730,7 +20726,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19800512"
 						Signature (FunctionSignature):
@@ -20798,7 +20794,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19800592"
 						Signature (FunctionSignature):
@@ -20859,7 +20855,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19800600"
 						Signature (FunctionSignature):
@@ -20948,7 +20944,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19800624"
 						Signature (FunctionSignature):
@@ -21023,7 +21019,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19800752"
 						Signature (FunctionSignature):
@@ -21077,7 +21073,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"4"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19801176"
 						Signature (FunctionSignature):
@@ -21131,7 +21127,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19802200"
 						Signature (FunctionSignature):
@@ -21220,7 +21216,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19802208"
 						Signature (FunctionSignature):
@@ -21281,7 +21277,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19802248"
 						Signature (FunctionSignature):
@@ -21391,7 +21387,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19802288"
 						Signature (FunctionSignature):
@@ -21466,7 +21462,7 @@ Process (ProcessInfo):
 									"13"
 						Calls (Int32):
 							"13"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19802304"
 						Signature (FunctionSignature):
@@ -21527,7 +21523,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19802328"
 						Signature (FunctionSignature):
@@ -21581,7 +21577,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19802360"
 						Signature (FunctionSignature):
@@ -21642,7 +21638,7 @@ Process (ProcessInfo):
 									"12"
 						Calls (Int32):
 							"12"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19802376"
 						Signature (FunctionSignature):
@@ -21710,7 +21706,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19802960"
 						Signature (FunctionSignature):
@@ -21773,7 +21769,7 @@ Process (ProcessInfo):
 									"3"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19802968"
 						Signature (FunctionSignature):
@@ -21850,7 +21846,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19803120"
 						Signature (FunctionSignature):
@@ -21920,7 +21916,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19803328"
 						Signature (FunctionSignature):
@@ -21981,7 +21977,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19803344"
 						Signature (FunctionSignature):
@@ -22035,7 +22031,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"14"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19803352"
 						Signature (FunctionSignature):
@@ -22089,7 +22085,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19803392"
 						Signature (FunctionSignature):
@@ -22150,7 +22146,7 @@ Process (ProcessInfo):
 									"13"
 						Calls (Int32):
 							"13"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19803424"
 						Signature (FunctionSignature):
@@ -22218,7 +22214,7 @@ Process (ProcessInfo):
 									"12"
 						Calls (Int32):
 							"12"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19803440"
 						Signature (FunctionSignature):
@@ -22272,7 +22268,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"12"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19803504"
 						Signature (FunctionSignature):
@@ -22326,7 +22322,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"13"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19804080"
 						Signature (FunctionSignature):
@@ -22378,7 +22374,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19804128"
 						Signature (FunctionSignature):
@@ -22437,7 +22433,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19804640"
 						Signature (FunctionSignature):
@@ -22498,7 +22494,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19804744"
 						Signature (FunctionSignature):
@@ -22559,7 +22555,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19805248"
 						Signature (FunctionSignature):
@@ -22627,7 +22623,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19805264"
 						Signature (FunctionSignature):
@@ -22695,7 +22691,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19805272"
 						Signature (FunctionSignature):
@@ -22749,7 +22745,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19805280"
 						Signature (FunctionSignature):
@@ -22810,7 +22806,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19805296"
 						Signature (FunctionSignature):
@@ -22906,7 +22902,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19805304"
 						Signature (FunctionSignature):
@@ -22981,7 +22977,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19805336"
 						Signature (FunctionSignature):
@@ -23049,7 +23045,7 @@ Process (ProcessInfo):
 									"13"
 						Calls (Int32):
 							"13"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19805344"
 						Signature (FunctionSignature):
@@ -23117,7 +23113,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19805912"
 						Signature (FunctionSignature):
@@ -23178,7 +23174,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19805920"
 						Signature (FunctionSignature):
@@ -23239,7 +23235,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19805936"
 						Signature (FunctionSignature):
@@ -23300,7 +23296,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19805968"
 						Signature (FunctionSignature):
@@ -23368,7 +23364,7 @@ Process (ProcessInfo):
 									"13"
 						Calls (Int32):
 							"13"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19805992"
 						Signature (FunctionSignature):
@@ -23436,7 +23432,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19808176"
 						Signature (FunctionSignature):
@@ -23497,7 +23493,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19808192"
 						Signature (FunctionSignature):
@@ -23565,7 +23561,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19808216"
 						Signature (FunctionSignature):
@@ -23626,7 +23622,7 @@ Process (ProcessInfo):
 									"3"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19808400"
 						Signature (FunctionSignature):
@@ -23687,7 +23683,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19808416"
 						Signature (FunctionSignature):
@@ -23741,7 +23737,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19808632"
 						Signature (FunctionSignature):
@@ -23802,7 +23798,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19808648"
 						Signature (FunctionSignature):
@@ -23870,7 +23866,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19808680"
 						Signature (FunctionSignature):
@@ -23931,7 +23927,7 @@ Process (ProcessInfo):
 									"3"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19808888"
 						Signature (FunctionSignature):
@@ -23992,7 +23988,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19809432"
 						Signature (FunctionSignature):
@@ -24074,7 +24070,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19809696"
 						Signature (FunctionSignature):
@@ -24144,7 +24140,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19809872"
 						Signature (FunctionSignature):
@@ -24214,7 +24210,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19810256"
 						Signature (FunctionSignature):
@@ -24273,7 +24269,7 @@ Process (ProcessInfo):
 									"4"
 						Calls (Int32):
 							"4"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19812224"
 						Signature (FunctionSignature):
@@ -24341,7 +24337,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19812232"
 						Signature (FunctionSignature):
@@ -24416,7 +24412,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19812240"
 						Signature (FunctionSignature):
@@ -24470,7 +24466,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19812272"
 						Signature (FunctionSignature):
@@ -24531,7 +24527,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19812296"
 						Signature (FunctionSignature):
@@ -24585,7 +24581,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"7"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19812592"
 						Signature (FunctionSignature):
@@ -24646,7 +24642,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19812600"
 						Signature (FunctionSignature):
@@ -24721,7 +24717,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19812608"
 						Signature (FunctionSignature):
@@ -24775,7 +24771,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"7"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19812616"
 						Signature (FunctionSignature):
@@ -24836,7 +24832,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19812664"
 						Signature (FunctionSignature):
@@ -24890,7 +24886,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19812672"
 						Signature (FunctionSignature):
@@ -24979,7 +24975,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19812696"
 						Signature (FunctionSignature):
@@ -25061,7 +25057,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19815856"
 						Signature (FunctionSignature):
@@ -25122,7 +25118,7 @@ Process (ProcessInfo):
 									"3"
 						Calls (Int32):
 							"3"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19816992"
 						Signature (FunctionSignature):
@@ -25218,7 +25214,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19817016"
 						Signature (FunctionSignature):
@@ -25279,7 +25275,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"5"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19825160"
 						Signature (FunctionSignature):
@@ -25331,7 +25327,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19825224"
 						Signature (FunctionSignature):
@@ -25390,7 +25386,7 @@ Process (ProcessInfo):
 									"4"
 						Calls (Int32):
 							"4"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19825232"
 						Signature (FunctionSignature):
@@ -25463,7 +25459,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19825912"
 						Signature (FunctionSignature):
@@ -25529,7 +25525,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19826176"
 						Signature (FunctionSignature):
@@ -25588,7 +25584,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19827360"
 						Signature (FunctionSignature):
@@ -25656,7 +25652,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19827368"
 						Signature (FunctionSignature):
@@ -25738,7 +25734,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19827552"
 						Signature (FunctionSignature):
@@ -25799,7 +25795,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19827560"
 						Signature (FunctionSignature):
@@ -25867,7 +25863,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19828088"
 						Signature (FunctionSignature):
@@ -25928,7 +25924,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19828320"
 						Signature (FunctionSignature):
@@ -25989,7 +25985,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19828528"
 						Signature (FunctionSignature):
@@ -26050,7 +26046,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19828544"
 						Signature (FunctionSignature):
@@ -26104,7 +26100,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19828704"
 						Signature (FunctionSignature):
@@ -26165,7 +26161,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19828960"
 						Signature (FunctionSignature):
@@ -26229,7 +26225,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19829424"
 						Signature (FunctionSignature):
@@ -26290,7 +26286,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19829432"
 						Signature (FunctionSignature):
@@ -26344,7 +26340,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"13"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19829760"
 						Signature (FunctionSignature):
@@ -26396,7 +26392,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19830896"
 						Signature (FunctionSignature):
@@ -26478,7 +26474,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19830912"
 						Signature (FunctionSignature):
@@ -26532,7 +26528,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19830936"
 						Signature (FunctionSignature):
@@ -26593,7 +26589,7 @@ Process (ProcessInfo):
 									"13"
 						Calls (Int32):
 							"13"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19830944"
 						Signature (FunctionSignature):
@@ -26654,7 +26650,7 @@ Process (ProcessInfo):
 									"13"
 						Calls (Int32):
 							"13"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19831312"
 						Signature (FunctionSignature):
@@ -26711,7 +26707,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19831328"
 						Signature (FunctionSignature):
@@ -26761,7 +26757,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19832016"
 						Signature (FunctionSignature):
@@ -26825,7 +26821,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19832312"
 						Signature (FunctionSignature):
@@ -26883,825 +26879,825 @@ Process (ProcessInfo):
 						Calls (Int32):
 							"12"
 				Entry (KeyValuePair`2)
-					"[10498064, NProf.Method]"
+					"[10498064, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10498072, NProf.Method]"
+					"[10498072, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10498616, NProf.Method]"
+					"[10498616, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10498624, NProf.Method]"
+					"[10498624, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10498632, NProf.Method]"
+					"[10498632, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10498640, NProf.Method]"
+					"[10498640, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10498648, NProf.Method]"
+					"[10498648, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10498656, NProf.Method]"
+					"[10498656, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10644512, NProf.Method]"
+					"[10644512, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10644528, NProf.Method]"
+					"[10644528, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10644544, NProf.Method]"
+					"[10644544, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10644552, NProf.Method]"
+					"[10644552, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10652800, NProf.Method]"
+					"[10652800, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10652840, NProf.Method]"
+					"[10652840, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10652856, NProf.Method]"
+					"[10652856, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10652872, NProf.Method]"
+					"[10652872, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10652888, NProf.Method]"
+					"[10652888, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10652904, NProf.Method]"
+					"[10652904, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10652912, NProf.Method]"
+					"[10652912, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10652920, NProf.Method]"
+					"[10652920, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653008, NProf.Method]"
+					"[10653008, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653016, NProf.Method]"
+					"[10653016, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653024, NProf.Method]"
+					"[10653024, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653032, NProf.Method]"
+					"[10653032, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653056, NProf.Method]"
+					"[10653056, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653128, NProf.Method]"
+					"[10653128, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653136, NProf.Method]"
+					"[10653136, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653184, NProf.Method]"
+					"[10653184, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653248, NProf.Method]"
+					"[10653248, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653328, NProf.Method]"
+					"[10653328, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653336, NProf.Method]"
+					"[10653336, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653424, NProf.Method]"
+					"[10653424, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653616, NProf.Method]"
+					"[10653616, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653624, NProf.Method]"
+					"[10653624, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653672, NProf.Method]"
+					"[10653672, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653688, NProf.Method]"
+					"[10653688, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653808, NProf.Method]"
+					"[10653808, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653824, NProf.Method]"
+					"[10653824, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653848, NProf.Method]"
+					"[10653848, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653864, NProf.Method]"
+					"[10653864, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653872, NProf.Method]"
+					"[10653872, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653888, NProf.Method]"
+					"[10653888, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653896, NProf.Method]"
+					"[10653896, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[10653968, NProf.Method]"
+					"[10653968, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18286584, NProf.Method]"
+					"[18286584, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18286592, NProf.Method]"
+					"[18286592, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18286600, NProf.Method]"
+					"[18286600, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18286608, NProf.Method]"
+					"[18286608, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18286616, NProf.Method]"
+					"[18286616, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18286648, NProf.Method]"
+					"[18286648, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18286688, NProf.Method]"
+					"[18286688, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18286704, NProf.Method]"
+					"[18286704, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18286744, NProf.Method]"
+					"[18286744, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18286752, NProf.Method]"
+					"[18286752, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18286768, NProf.Method]"
+					"[18286768, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18286776, NProf.Method]"
+					"[18286776, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18286784, NProf.Method]"
+					"[18286784, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18286864, NProf.Method]"
+					"[18286864, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18287136, NProf.Method]"
+					"[18287136, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18292040, NProf.Method]"
+					"[18292040, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18292064, NProf.Method]"
+					"[18292064, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18292512, NProf.Method]"
+					"[18292512, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18293256, NProf.Method]"
+					"[18293256, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18293280, NProf.Method]"
+					"[18293280, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18293448, NProf.Method]"
+					"[18293448, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18293824, NProf.Method]"
+					"[18293824, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18295728, NProf.Method]"
+					"[18295728, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18295736, NProf.Method]"
+					"[18295736, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18295752, NProf.Method]"
+					"[18295752, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18295760, NProf.Method]"
+					"[18295760, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18295768, NProf.Method]"
+					"[18295768, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18295776, NProf.Method]"
+					"[18295776, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18295784, NProf.Method]"
+					"[18295784, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18296624, NProf.Method]"
+					"[18296624, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18296640, NProf.Method]"
+					"[18296640, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18296648, NProf.Method]"
+					"[18296648, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18297144, NProf.Method]"
+					"[18297144, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18301216, NProf.Method]"
+					"[18301216, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18301224, NProf.Method]"
+					"[18301224, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18302024, NProf.Method]"
+					"[18302024, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18302040, NProf.Method]"
+					"[18302040, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18302104, NProf.Method]"
+					"[18302104, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18302144, NProf.Method]"
+					"[18302144, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18305816, NProf.Method]"
+					"[18305816, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18305824, NProf.Method]"
+					"[18305824, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18305888, NProf.Method]"
+					"[18305888, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18306008, NProf.Method]"
+					"[18306008, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18306488, NProf.Method]"
+					"[18306488, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309088, NProf.Method]"
+					"[18309088, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309112, NProf.Method]"
+					"[18309112, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309120, NProf.Method]"
+					"[18309120, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309136, NProf.Method]"
+					"[18309136, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309144, NProf.Method]"
+					"[18309144, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309160, NProf.Method]"
+					"[18309160, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309176, NProf.Method]"
+					"[18309176, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309192, NProf.Method]"
+					"[18309192, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309248, NProf.Method]"
+					"[18309248, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309264, NProf.Method]"
+					"[18309264, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309272, NProf.Method]"
+					"[18309272, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309280, NProf.Method]"
+					"[18309280, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309296, NProf.Method]"
+					"[18309296, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309320, NProf.Method]"
+					"[18309320, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309328, NProf.Method]"
+					"[18309328, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309336, NProf.Method]"
+					"[18309336, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309360, NProf.Method]"
+					"[18309360, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309384, NProf.Method]"
+					"[18309384, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309392, NProf.Method]"
+					"[18309392, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309400, NProf.Method]"
+					"[18309400, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309440, NProf.Method]"
+					"[18309440, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309456, NProf.Method]"
+					"[18309456, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309480, NProf.Method]"
+					"[18309480, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309496, NProf.Method]"
+					"[18309496, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309544, NProf.Method]"
+					"[18309544, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309608, NProf.Method]"
+					"[18309608, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309632, NProf.Method]"
+					"[18309632, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309640, NProf.Method]"
+					"[18309640, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309648, NProf.Method]"
+					"[18309648, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309656, NProf.Method]"
+					"[18309656, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18309672, NProf.Method]"
+					"[18309672, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18311360, NProf.Method]"
+					"[18311360, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18312984, NProf.Method]"
+					"[18312984, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18313008, NProf.Method]"
+					"[18313008, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18313016, NProf.Method]"
+					"[18313016, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18313200, NProf.Method]"
+					"[18313200, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18320984, NProf.Method]"
+					"[18320984, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18320992, NProf.Method]"
+					"[18320992, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18321000, NProf.Method]"
+					"[18321000, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18321024, NProf.Method]"
+					"[18321024, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18321032, NProf.Method]"
+					"[18321032, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18321096, NProf.Method]"
+					"[18321096, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18321136, NProf.Method]"
+					"[18321136, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18321152, NProf.Method]"
+					"[18321152, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18321184, NProf.Method]"
+					"[18321184, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18321200, NProf.Method]"
+					"[18321200, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18321232, NProf.Method]"
+					"[18321232, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18321240, NProf.Method]"
+					"[18321240, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18321296, NProf.Method]"
+					"[18321296, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18321304, NProf.Method]"
+					"[18321304, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18321344, NProf.Method]"
+					"[18321344, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18321352, NProf.Method]"
+					"[18321352, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18321360, NProf.Method]"
+					"[18321360, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18321376, NProf.Method]"
+					"[18321376, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18321496, NProf.Method]"
+					"[18321496, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18321504, NProf.Method]"
+					"[18321504, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18322920, NProf.Method]"
+					"[18322920, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18322928, NProf.Method]"
+					"[18322928, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18322936, NProf.Method]"
+					"[18322936, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18322944, NProf.Method]"
+					"[18322944, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18323024, NProf.Method]"
+					"[18323024, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18323056, NProf.Method]"
+					"[18323056, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18323064, NProf.Method]"
+					"[18323064, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18324336, NProf.Method]"
+					"[18324336, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18324344, NProf.Method]"
+					"[18324344, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18324376, NProf.Method]"
+					"[18324376, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18324384, NProf.Method]"
+					"[18324384, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18324392, NProf.Method]"
+					"[18324392, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18324496, NProf.Method]"
+					"[18324496, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18324512, NProf.Method]"
+					"[18324512, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18325968, NProf.Method]"
+					"[18325968, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18327360, NProf.Method]"
+					"[18327360, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18327368, NProf.Method]"
+					"[18327368, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18327384, NProf.Method]"
+					"[18327384, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18327424, NProf.Method]"
+					"[18327424, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18327440, NProf.Method]"
+					"[18327440, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18328568, NProf.Method]"
+					"[18328568, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18328600, NProf.Method]"
+					"[18328600, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18328672, NProf.Method]"
+					"[18328672, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18328688, NProf.Method]"
+					"[18328688, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18328696, NProf.Method]"
+					"[18328696, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18328704, NProf.Method]"
+					"[18328704, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18328712, NProf.Method]"
+					"[18328712, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18329096, NProf.Method]"
+					"[18329096, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18337792, NProf.Method]"
+					"[18337792, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18343144, NProf.Method]"
+					"[18343144, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18343184, NProf.Method]"
+					"[18343184, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18343688, NProf.Method]"
+					"[18343688, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18345512, NProf.Method]"
+					"[18345512, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18345520, NProf.Method]"
+					"[18345520, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18345528, NProf.Method]"
+					"[18345528, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18345536, NProf.Method]"
+					"[18345536, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18345544, NProf.Method]"
+					"[18345544, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18345552, NProf.Method]"
+					"[18345552, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18481272, NProf.Method]"
+					"[18481272, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18481280, NProf.Method]"
+					"[18481280, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18481488, NProf.Method]"
+					"[18481488, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18482392, NProf.Method]"
+					"[18482392, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18482400, NProf.Method]"
+					"[18482400, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18482416, NProf.Method]"
+					"[18482416, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18482960, NProf.Method]"
+					"[18482960, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18484808, NProf.Method]"
+					"[18484808, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18486016, NProf.Method]"
+					"[18486016, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18486024, NProf.Method]"
+					"[18486024, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18486032, NProf.Method]"
+					"[18486032, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18486048, NProf.Method]"
+					"[18486048, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18486064, NProf.Method]"
+					"[18486064, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18486144, NProf.Method]"
+					"[18486144, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18486152, NProf.Method]"
+					"[18486152, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18486240, NProf.Method]"
+					"[18486240, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18486248, NProf.Method]"
+					"[18486248, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18486272, NProf.Method]"
+					"[18486272, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18486296, NProf.Method]"
+					"[18486296, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18486328, NProf.Method]"
+					"[18486328, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18486352, NProf.Method]"
+					"[18486352, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18490208, NProf.Method]"
+					"[18490208, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18490576, NProf.Method]"
+					"[18490576, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18492344, NProf.Method]"
+					"[18492344, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18492528, NProf.Method]"
+					"[18492528, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18493144, NProf.Method]"
+					"[18493144, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494216, NProf.Method]"
+					"[18494216, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494224, NProf.Method]"
+					"[18494224, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494248, NProf.Method]"
+					"[18494248, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494256, NProf.Method]"
+					"[18494256, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494280, NProf.Method]"
+					"[18494280, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494296, NProf.Method]"
+					"[18494296, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494480, NProf.Method]"
+					"[18494480, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494488, NProf.Method]"
+					"[18494488, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494496, NProf.Method]"
+					"[18494496, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494504, NProf.Method]"
+					"[18494504, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494528, NProf.Method]"
+					"[18494528, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494536, NProf.Method]"
+					"[18494536, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494544, NProf.Method]"
+					"[18494544, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494584, NProf.Method]"
+					"[18494584, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494648, NProf.Method]"
+					"[18494648, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494672, NProf.Method]"
+					"[18494672, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494696, NProf.Method]"
+					"[18494696, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494704, NProf.Method]"
+					"[18494704, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494712, NProf.Method]"
+					"[18494712, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494728, NProf.Method]"
+					"[18494728, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494736, NProf.Method]"
+					"[18494736, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494744, NProf.Method]"
+					"[18494744, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494752, NProf.Method]"
+					"[18494752, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494760, NProf.Method]"
+					"[18494760, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494768, NProf.Method]"
+					"[18494768, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494776, NProf.Method]"
+					"[18494776, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494808, NProf.Method]"
+					"[18494808, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494816, NProf.Method]"
+					"[18494816, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494824, NProf.Method]"
+					"[18494824, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494840, NProf.Method]"
+					"[18494840, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494848, NProf.Method]"
+					"[18494848, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494856, NProf.Method]"
+					"[18494856, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494864, NProf.Method]"
+					"[18494864, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494872, NProf.Method]"
+					"[18494872, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494880, NProf.Method]"
+					"[18494880, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18494992, NProf.Method]"
+					"[18494992, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18495000, NProf.Method]"
+					"[18495000, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18495008, NProf.Method]"
+					"[18495008, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18495048, NProf.Method]"
+					"[18495048, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18495056, NProf.Method]"
+					"[18495056, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18495080, NProf.Method]"
+					"[18495080, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18495088, NProf.Method]"
+					"[18495088, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18495104, NProf.Method]"
+					"[18495104, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18495208, NProf.Method]"
+					"[18495208, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18495216, NProf.Method]"
+					"[18495216, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18495224, NProf.Method]"
+					"[18495224, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18495232, NProf.Method]"
+					"[18495232, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18495296, NProf.Method]"
+					"[18495296, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18495392, NProf.Method]"
+					"[18495392, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18495400, NProf.Method]"
+					"[18495400, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18495512, NProf.Method]"
+					"[18495512, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18495584, NProf.Method]"
+					"[18495584, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18497160, NProf.Method]"
+					"[18497160, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18501184, NProf.Method]"
+					"[18501184, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18501192, NProf.Method]"
+					"[18501192, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18501696, NProf.Method]"
+					"[18501696, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18501712, NProf.Method]"
+					"[18501712, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18501792, NProf.Method]"
+					"[18501792, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18502968, NProf.Method]"
+					"[18502968, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18502984, NProf.Method]"
+					"[18502984, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18502992, NProf.Method]"
+					"[18502992, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18503008, NProf.Method]"
+					"[18503008, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18503824, NProf.Method]"
+					"[18503824, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18503992, NProf.Method]"
+					"[18503992, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18504608, NProf.Method]"
+					"[18504608, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18504616, NProf.Method]"
+					"[18504616, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18504688, NProf.Method]"
+					"[18504688, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18506552, NProf.Method]"
+					"[18506552, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18506576, NProf.Method]"
+					"[18506576, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18507400, NProf.Method]"
+					"[18507400, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18507584, NProf.Method]"
+					"[18507584, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18507648, NProf.Method]"
+					"[18507648, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18507688, NProf.Method]"
+					"[18507688, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18508288, NProf.Method]"
+					"[18508288, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18509088, NProf.Method]"
+					"[18509088, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18510224, NProf.Method]"
+					"[18510224, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18512320, NProf.Method]"
+					"[18512320, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18520872, NProf.Method]"
+					"[18520872, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18521040, NProf.Method]"
+					"[18521040, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18521072, NProf.Method]"
+					"[18521072, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18521128, NProf.Method]"
+					"[18521128, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18522640, NProf.Method]"
+					"[18522640, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18524224, NProf.Method]"
+					"[18524224, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18524248, NProf.Method]"
+					"[18524248, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18524392, NProf.Method]"
+					"[18524392, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18529904, NProf.Method]"
+					"[18529904, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18529920, NProf.Method]"
+					"[18529920, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18536064, NProf.Method]"
+					"[18536064, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18536080, NProf.Method]"
+					"[18536080, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18536104, NProf.Method]"
+					"[18536104, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18543520, NProf.Method]"
+					"[18543520, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19793720, NProf.Method]"
+					"[19793720, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19794232, NProf.Method]"
+					"[19794232, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19794240, NProf.Method]"
+					"[19794240, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19797152, NProf.Method]"
+					"[19797152, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19797192, NProf.Method]"
+					"[19797192, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19797200, NProf.Method]"
+					"[19797200, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19797208, NProf.Method]"
+					"[19797208, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19797728, NProf.Method]"
+					"[19797728, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19797880, NProf.Method]"
+					"[19797880, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19798072, NProf.Method]"
+					"[19798072, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19799392, NProf.Method]"
+					"[19799392, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19799400, NProf.Method]"
+					"[19799400, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19799464, NProf.Method]"
+					"[19799464, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19799704, NProf.Method]"
+					"[19799704, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19799752, NProf.Method]"
+					"[19799752, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19800504, NProf.Method]"
+					"[19800504, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19800512, NProf.Method]"
+					"[19800512, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19800592, NProf.Method]"
+					"[19800592, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19800600, NProf.Method]"
+					"[19800600, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19800624, NProf.Method]"
+					"[19800624, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19800752, NProf.Method]"
+					"[19800752, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19801176, NProf.Method]"
+					"[19801176, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19802200, NProf.Method]"
+					"[19802200, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19802208, NProf.Method]"
+					"[19802208, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19802248, NProf.Method]"
+					"[19802248, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19802288, NProf.Method]"
+					"[19802288, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19802304, NProf.Method]"
+					"[19802304, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19802328, NProf.Method]"
+					"[19802328, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19802360, NProf.Method]"
+					"[19802360, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19802376, NProf.Method]"
+					"[19802376, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19802960, NProf.Method]"
+					"[19802960, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19802968, NProf.Method]"
+					"[19802968, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19803120, NProf.Method]"
+					"[19803120, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19803328, NProf.Method]"
+					"[19803328, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19803344, NProf.Method]"
+					"[19803344, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19803352, NProf.Method]"
+					"[19803352, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19803392, NProf.Method]"
+					"[19803392, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19803424, NProf.Method]"
+					"[19803424, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19803440, NProf.Method]"
+					"[19803440, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19803504, NProf.Method]"
+					"[19803504, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19804080, NProf.Method]"
+					"[19804080, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19804128, NProf.Method]"
+					"[19804128, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19804640, NProf.Method]"
+					"[19804640, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19804744, NProf.Method]"
+					"[19804744, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19805248, NProf.Method]"
+					"[19805248, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19805264, NProf.Method]"
+					"[19805264, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19805272, NProf.Method]"
+					"[19805272, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19805280, NProf.Method]"
+					"[19805280, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19805296, NProf.Method]"
+					"[19805296, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19805304, NProf.Method]"
+					"[19805304, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19805336, NProf.Method]"
+					"[19805336, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19805344, NProf.Method]"
+					"[19805344, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19805912, NProf.Method]"
+					"[19805912, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19805920, NProf.Method]"
+					"[19805920, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19805936, NProf.Method]"
+					"[19805936, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19805968, NProf.Method]"
+					"[19805968, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19805992, NProf.Method]"
+					"[19805992, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19808176, NProf.Method]"
+					"[19808176, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19808192, NProf.Method]"
+					"[19808192, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19808216, NProf.Method]"
+					"[19808216, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19808400, NProf.Method]"
+					"[19808400, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19808416, NProf.Method]"
+					"[19808416, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19808632, NProf.Method]"
+					"[19808632, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19808648, NProf.Method]"
+					"[19808648, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19808680, NProf.Method]"
+					"[19808680, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19808888, NProf.Method]"
+					"[19808888, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19809432, NProf.Method]"
+					"[19809432, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19809696, NProf.Method]"
+					"[19809696, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19809872, NProf.Method]"
+					"[19809872, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19810256, NProf.Method]"
+					"[19810256, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19812224, NProf.Method]"
+					"[19812224, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19812232, NProf.Method]"
+					"[19812232, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19812240, NProf.Method]"
+					"[19812240, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19812272, NProf.Method]"
+					"[19812272, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19812296, NProf.Method]"
+					"[19812296, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19812592, NProf.Method]"
+					"[19812592, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19812600, NProf.Method]"
+					"[19812600, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19812608, NProf.Method]"
+					"[19812608, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19812616, NProf.Method]"
+					"[19812616, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19812664, NProf.Method]"
+					"[19812664, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19812672, NProf.Method]"
+					"[19812672, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19812696, NProf.Method]"
+					"[19812696, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19815856, NProf.Method]"
+					"[19815856, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19816992, NProf.Method]"
+					"[19816992, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19817016, NProf.Method]"
+					"[19817016, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19825160, NProf.Method]"
+					"[19825160, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19825224, NProf.Method]"
+					"[19825224, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19825232, NProf.Method]"
+					"[19825232, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19825912, NProf.Method]"
+					"[19825912, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19826176, NProf.Method]"
+					"[19826176, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19827360, NProf.Method]"
+					"[19827360, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19827368, NProf.Method]"
+					"[19827368, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19827552, NProf.Method]"
+					"[19827552, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19827560, NProf.Method]"
+					"[19827560, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19828088, NProf.Method]"
+					"[19828088, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19828320, NProf.Method]"
+					"[19828320, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19828528, NProf.Method]"
+					"[19828528, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19828544, NProf.Method]"
+					"[19828544, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19828704, NProf.Method]"
+					"[19828704, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19828960, NProf.Method]"
+					"[19828960, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19829424, NProf.Method]"
+					"[19829424, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19829432, NProf.Method]"
+					"[19829432, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19829760, NProf.Method]"
+					"[19829760, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19830896, NProf.Method]"
+					"[19830896, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19830912, NProf.Method]"
+					"[19830912, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19830936, NProf.Method]"
+					"[19830936, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19830944, NProf.Method]"
+					"[19830944, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19831312, NProf.Method]"
+					"[19831312, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19831328, NProf.Method]"
+					"[19831328, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19832016, NProf.Method]"
+					"[19832016, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19832312, NProf.Method]"
+					"[19832312, NProf.FunctionInfo]"
 		Entry (ThreadInfo)
 			FunctionInfoCollection (FunctionInfoCollection):
 				Comparer (GenericEqualityComparer`1):
@@ -27737,7 +27733,7 @@ Process (ProcessInfo):
 				Values (ValueCollection):
 					Count (Int32):
 						"12"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"10644560"
 						Signature (FunctionSignature):
@@ -27789,7 +27785,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18292520"
 						Signature (FunctionSignature):
@@ -27852,7 +27848,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18296632"
 						Signature (FunctionSignature):
@@ -27922,7 +27918,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18296688"
 						Signature (FunctionSignature):
@@ -28013,7 +28009,7 @@ Process (ProcessInfo):
 									"1"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18322920"
 						Signature (FunctionSignature):
@@ -28065,7 +28061,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18322928"
 						Signature (FunctionSignature):
@@ -28117,7 +28113,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18323056"
 						Signature (FunctionSignature):
@@ -28169,7 +28165,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18509368"
 						Signature (FunctionSignature):
@@ -28223,7 +28219,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"18509408"
 						Signature (FunctionSignature):
@@ -28277,7 +28273,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19802968"
 						Signature (FunctionSignature):
@@ -28354,7 +28350,7 @@ Process (ProcessInfo):
 									"2"
 						Calls (Int32):
 							"2"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19809704"
 						Signature (FunctionSignature):
@@ -28410,7 +28406,7 @@ Process (ProcessInfo):
 								"False"
 						Calls (Int32):
 							"1"
-					Entry (Method)
+					Entry (FunctionInfo)
 						ID (Int32):
 							"19809880"
 						Signature (FunctionSignature):
@@ -28467,26 +28463,26 @@ Process (ProcessInfo):
 						Calls (Int32):
 							"1"
 				Entry (KeyValuePair`2)
-					"[10644560, NProf.Method]"
+					"[10644560, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18292520, NProf.Method]"
+					"[18292520, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18296632, NProf.Method]"
+					"[18296632, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18296688, NProf.Method]"
+					"[18296688, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18322920, NProf.Method]"
+					"[18322920, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18322928, NProf.Method]"
+					"[18322928, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18323056, NProf.Method]"
+					"[18323056, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18509368, NProf.Method]"
+					"[18509368, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[18509408, NProf.Method]"
+					"[18509408, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19802968, NProf.Method]"
+					"[19802968, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19809704, NProf.Method]"
+					"[19809704, NProf.FunctionInfo]"
 				Entry (KeyValuePair`2)
-					"[19809880, NProf.Method]"
+					"[19809880, NProf.FunctionInfo]"

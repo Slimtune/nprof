@@ -5,6 +5,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Windows.Forms;
 using Genghis.Windows.Forms;
+using System.Collections.Generic;
 
 namespace NProf
 {
@@ -22,7 +23,9 @@ namespace NProf
 		private System.ComponentModel.IContainer components;
 
 		private ProjectInfo project;
-		private CheckBox checkBox1;
+		private RadioButton radioButton1;
+		private RadioButton radioButton2;
+		private FlowLayoutPanel recentProjects;
 		private ProfilerProjectMode projectMode;
 
 		public PropertiesForm(ProfilerProjectMode mode)
@@ -39,6 +42,23 @@ namespace NProf
 
 			project = new ProjectInfo( ProjectType.File );
 			this.Mode = mode;
+			if (mode == ProfilerProjectMode.CreateProject)
+			{
+				List<string> files=SerializationHandler.GetRecentlyUsed();
+				foreach (string file in files.GetRange(0,Math.Min(files.Count,5)))
+				{
+					LinkLabel label=new LinkLabel();
+					label.AutoSize = true;
+					label.Text=file;
+					label.Click += delegate
+					{
+						ProfilerForm.form.Project = SerializationHandler.OpenProjectInfo(label.Text);
+						Close();
+					};
+					recentProjects.Controls.Add(label);
+
+				}
+			}
 		}
 
 		/// <summary>
@@ -73,14 +93,16 @@ namespace NProf
 			this._btnCreateProject = new System.Windows.Forms.Button();
 			this._btnCancel = new System.Windows.Forms.Button();
 			this._ttToolTips = new System.Windows.Forms.ToolTip(this.components);
-			this.checkBox1 = new System.Windows.Forms.CheckBox();
+			this.radioButton1 = new System.Windows.Forms.RadioButton();
+			this.radioButton2 = new System.Windows.Forms.RadioButton();
+			this.recentProjects = new System.Windows.Forms.FlowLayoutPanel();
 			this.SuspendLayout();
 			// 
-			// _cbDebugProfilee
+			// debugProfiler
 			// 
 			this.debugProfiler.FlatStyle = System.Windows.Forms.FlatStyle.System;
 			this.debugProfiler.Location = new System.Drawing.Point(307, 62);
-			this.debugProfiler.Name = "_cbDebugProfilee";
+			this.debugProfiler.Name = "debugProfiler";
 			this.debugProfiler.Size = new System.Drawing.Size(128, 24);
 			this.debugProfiler.TabIndex = 6;
 			this.debugProfiler.Text = "Debug profiler hook";
@@ -96,10 +118,10 @@ namespace NProf
 			this._btnBrowseApplication.Text = "Browse...";
 			this._btnBrowseApplication.Click += new System.EventHandler(this._btnBrowseApplication_Click);
 			// 
-			// _txtApplicationName
+			// application
 			// 
 			this.application.Location = new System.Drawing.Point(119, 12);
-			this.application.Name = "_txtApplicationName";
+			this.application.Name = "application";
 			this.application.Size = new System.Drawing.Size(312, 20);
 			this.application.TabIndex = 0;
 			this._ttToolTips.SetToolTip(this.application, "Locate the execute to profile");
@@ -112,10 +134,10 @@ namespace NProf
 			this.label1.TabIndex = 3;
 			this.label1.Text = "Application to run:";
 			// 
-			// _txtArguments
+			// arguments
 			// 
 			this.arguments.Location = new System.Drawing.Point(119, 36);
-			this.arguments.Name = "_txtArguments";
+			this.arguments.Name = "arguments";
 			this.arguments.Size = new System.Drawing.Size(312, 20);
 			this.arguments.TabIndex = 1;
 			this._ttToolTips.SetToolTip(this.arguments, "Enter any command line arguments to pass to the above executable");
@@ -149,23 +171,44 @@ namespace NProf
 			this._btnCancel.TabIndex = 3;
 			this._btnCancel.Text = "Cancel";
 			// 
-			// checkBox1
+			// radioButton1
 			// 
-			this.checkBox1.FlatStyle = System.Windows.Forms.FlatStyle.System;
-			this.checkBox1.Location = new System.Drawing.Point(18, 62);
-			this.checkBox1.Name = "checkBox1";
-			this.checkBox1.Size = new System.Drawing.Size(272, 24);
-			this.checkBox1.TabIndex = 5;
-			this.checkBox1.Text = "Use stochastic profiling (faster but less accurate)";
-			this._ttToolTips.SetToolTip(this.checkBox1, "Launch the debugger as soon as the profilee starts");
+			this.radioButton1.AutoSize = true;
+			this.radioButton1.Checked = true;
+			this.radioButton1.Location = new System.Drawing.Point(18, 69);
+			this.radioButton1.Name = "radioButton1";
+			this.radioButton1.Size = new System.Drawing.Size(68, 17);
+			this.radioButton1.TabIndex = 7;
+			this.radioButton1.TabStop = true;
+			this.radioButton1.Text = "Sampling";
+			this.radioButton1.UseVisualStyleBackColor = true;
 			// 
-			// OptionsForm
+			// radioButton2
+			// 
+			this.radioButton2.AutoSize = true;
+			this.radioButton2.Location = new System.Drawing.Point(18, 93);
+			this.radioButton2.Name = "radioButton2";
+			this.radioButton2.Size = new System.Drawing.Size(97, 17);
+			this.radioButton2.TabIndex = 8;
+			this.radioButton2.Text = "Instrumentation";
+			this.radioButton2.UseVisualStyleBackColor = true;
+			// 
+			// recentProjects
+			// 
+			this.recentProjects.Location = new System.Drawing.Point(17, 128);
+			this.recentProjects.Name = "recentProjects";
+			this.recentProjects.Size = new System.Drawing.Size(469, 93);
+			this.recentProjects.TabIndex = 9;
+			// 
+			// PropertiesForm
 			// 
 			this.AcceptButton = this._btnCreateProject;
 			this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
 			this.CancelButton = this._btnCancel;
 			this.ClientSize = new System.Drawing.Size(524, 263);
-			this.Controls.Add(this.checkBox1);
+			this.Controls.Add(this.recentProjects);
+			this.Controls.Add(this.radioButton2);
+			this.Controls.Add(this.radioButton1);
 			this.Controls.Add(this.label3);
 			this.Controls.Add(this.debugProfiler);
 			this.Controls.Add(this.arguments);
@@ -177,7 +220,7 @@ namespace NProf
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
-			this.Name = "OptionsForm";
+			this.Name = "PropertiesForm";
 			this.ShowInTaskbar = false;
 			this.Text = "Create Profiler Project";
 			this.Load += new System.EventHandler(this.ProfilerProjectOptionsForm_Load);
