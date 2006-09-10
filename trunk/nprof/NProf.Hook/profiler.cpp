@@ -82,7 +82,7 @@ using namespace std;
 #include "corhlpr.h"
 #include "corerror.h"
 
-#include "corsym.h"
+//#include "corsym.h"
 #include "corpub.h"
 #include "corprof.h"
 
@@ -435,10 +435,11 @@ public:
 			COR_PRF_MONITOR_ASSEMBLY_LOADS |
 			COR_PRF_MONITOR_CACHE_SEARCHES |
 			COR_PRF_MONITOR_JIT_COMPILATION);
+
 		TIMECAPS timeCaps;
 		timeGetDevCaps(&timeCaps, sizeof(TIMECAPS));
 		timer = timeSetEvent(
-		  500,
+		  50,
 		  timeCaps.wPeriodMin, 
 		  TimerFunction, 
 		  (DWORD_PTR)this,     
@@ -449,7 +450,6 @@ public:
 
 	void WalkStack()
 	{
-		// buggy, somehow does not work correctly
 		for(map< DWORD, ThreadID >::iterator i=threadMap.begin();i!=threadMap.end();i++)
 		{
 			i++;
@@ -459,18 +459,13 @@ public:
 			{
 
 				int suspended=SuspendThread(threadHandle);
-				//cout << "suspended: "<< suspended <<"\n";
 			}
 		}
-		//DebugBreak();
-		//for(map< DWORD, ThreadID >::iterator i=threadMap.begin();i!=threadMap.end();i++)
-		for(map< DWORD, ThreadID >::reverse_iterator i=threadMap.rend();i!=threadMap.rbegin();i++)
+		for(map< DWORD, ThreadID >::iterator i=threadMap.begin();i!=threadMap.end();i++)
 		{
 			i++;
 			DWORD threadId=(*i).first;
-
 			HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME|THREAD_QUERY_INFORMATION|THREAD_GET_CONTEXT,false,threadId);
-			//HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME,false,threadId);
 			if(threadHandle!=NULL)
 			{
 				vector<FunctionID> functions;
@@ -482,18 +477,30 @@ public:
 					&functions,
 					NULL,
 					NULL);
-				for(int i=0	;i<functions.size();i++)
+				//if(functions.size()!=0)
+				//{
+				//	DebugBreak();
+				//}
+				for(int index=0	;index<functions.size();index++)
 				{
+					//DebugBreak();
+
 					ThreadInfo* threadInfo=threadCollection.GetThreadInfo(id);
-					for(int y=i+1;;y++)
+					for(int y=index+1;;y++)
 					{
 						if(y>functions.size()-1)
 						{
-							FunctionID id=functions[i];
+							FunctionID id=functions[index];
 							threadInfo->GetFunctionInfo(id)->calls++;
+							//functionInfo->calls=20;
+							//functionInfo->recursiveCount=20; 
+							//functionInfo->cycleCount=20;
+							//functionInfo->recursiveCycleCount=20;
+							//functionInfo->suspendCycleCount=30;
+							//threadInfo->GetFunctionInfo(id);
 							break;
 						}
-						if(functions[y]==functions[i])
+						if(functions[y]==functions[index])
 						{
 							break;
 						}
@@ -501,7 +508,6 @@ public:
 				}
 				ResumeThread(threadHandle);
 			}
-			//break;
 		}
 	}
 };
@@ -578,23 +584,8 @@ public:
 
     if ( profilerInfo )
     {
-      profiler = new InstrumentationProfiler( profilerInfo );
-      //profiler = new Profiler( profilerInfo );
-      //cout << "Initializing event masks..." << endl;
-  //    profilerInfo->SetEventMask( 
-		//COR_PRF_ENABLE_STACK_SNAPSHOT|
-  //      COR_PRF_MONITOR_THREADS	|
-  //      COR_PRF_DISABLE_INLINING |
-  //      COR_PRF_MONITOR_SUSPENDS |    
-  //      //COR_PRF_MONITOR_ENTERLEAVE |
-  //      COR_PRF_MONITOR_EXCEPTIONS |  
-  //      COR_PRF_MONITOR_APPDOMAIN_LOADS |
-  //      COR_PRF_MONITOR_ASSEMBLY_LOADS |
-		//COR_PRF_MONITOR_CACHE_SEARCHES |
-		//COR_PRF_MONITOR_JIT_COMPILATION 
-		////| COR_PRF_MONITOR_CODE_TRANSITIONS
-      //);
-
+      profiler = new SamplingProfiler( profilerInfo );
+      //profiler = new InstrumentationProfiler( profilerInfo );
       cout << "Initializing hooks..." << endl;
       profilerInfo->SetEnterLeaveFunctionHooks( ( FunctionEnter* )&RawEnter, ( FunctionLeave* )&RawLeave, ( FunctionTailcall* )&RawTailCall );
       cout << "Ready!" << endl;
@@ -606,7 +597,6 @@ public:
   {
     cout << "Terminating profiler..." << endl;
     profiler->End();
-	//DebugBreak();
     delete profiler;
     profiler = NULL;
     ProfilerSocket profilerSocket;
@@ -1065,6 +1055,9 @@ void FunctionInfo::Trace( ProfilerHelper& profilerHelper )
 
 void FunctionInfo::Dump( ProfilerSocket& ps, ProfilerHelper& profilerHelper )
 {
+	// without sleep function data does not get sent correctly in sampling mode, why?
+	Sleep(100);
+	//DebugBreak();
   ps.SendFunctionTimingData( calls, cycleCount, recursiveCycleCount, suspendCycleCount );
   for ( map< FunctionID, CalleeFunctionInfo* >::iterator i = calleeMap.begin(); i != calleeMap.end(); i++ )
   {
@@ -2050,6 +2043,7 @@ void ThreadInfo::Trace( ProfilerHelper& profilerHelper )
 
 void ThreadInfo::Dump( ProfilerSocket& ps, ProfilerHelper& profilerHelper )
 {
+	//DebugBreak();
   for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
   {
     ps.SendFunctionData( profilerHelper, i->first );

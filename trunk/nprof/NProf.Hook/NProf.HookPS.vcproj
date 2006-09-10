@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="8,00"
 	Name="NProf.HookPS"
 	ProjectGUID="{546FAB57-D1E2-43A7-8E98-7525542C5540}"
 	Keyword="AtlPSProj"
@@ -174,18 +174,6 @@
 			Name="Generated Files"
 			SourceControlFiles="false"
 			>
-			<File
-				RelativePath="_NProf.Hook_i.c"
-				>
-			</File>
-			<File
-				RelativePath="_NProf.Hook_p.c"
-				>
-			</File>
-			<File
-				RelativePath="dlldata.c"
-				>
-			</File>
 		</Filter>
 	</Files>
 	<Globals>

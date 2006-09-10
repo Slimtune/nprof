@@ -49,9 +49,9 @@ namespace NProf.Test
 				ProjectInfo project = new ProjectInfo(ProjectType.File);
 				ProfilerForm.form.Project = project;
 				Profiler profiler = new Profiler();
-				//project.ApplicationName = @"D:\Meta\0.2\bin\Debug\Meta.exe";
-				//project.Arguments = "-test";
-				project.ApplicationName = Path.Combine(NProfDirectory, @"TestProfilee\bin\Debug\TestProfilee.exe");
+				project.ApplicationName = @"D:\Meta\0.2\bin\Debug\Meta.exe";
+				project.Arguments = "-test";
+				//project.ApplicationName = Path.Combine(NProfDirectory, @"TestProfilee\bin\Debug\TestProfilee.exe");
 
 				run = project.CreateRun(profiler);
 				run.profiler.Completed += new EventHandler(profiler_Completed);

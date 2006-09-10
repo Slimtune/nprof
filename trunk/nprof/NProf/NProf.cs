@@ -928,6 +928,7 @@ namespace NProf
 								functionId = reader.ReadInt32();
 								int nIndex = 0;
 
+								//while (functionId != -1)
 								while (functionId != -1)
 								{
 									UInt32 uiFlags = reader.ReadUInt32();
@@ -1550,6 +1551,7 @@ namespace NProf
 		}
 		private Dictionary<int, ThreadInfo> threads = new Dictionary<int, ThreadInfo>();
 	}
+
 	[Serializable]
 	public class ProjectInfo
 	{

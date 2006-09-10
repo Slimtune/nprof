@@ -5,7 +5,6 @@ import "C:\Programme\Microsoft Visual Studio 8\VC\PlatformSDK\include\mshtmhst.i
 import "c:\programme\microsoft visual studio 8\vc\platformsdk\include\docobj.idl";
 import "C:\Programme\Microsoft Visual Studio 8\VC\PlatformSDK\include\exdisp.idl";
 import "C:\Programme\Microsoft Visual Studio 8\VC\PlatformSDK\include\objsafe.idl";
-import "C:\Programme\Microsoft Visual Studio 8\SDK\v2.0\include\corsym.idl";
 import "C:\Programme\Microsoft Visual Studio 8\SDK\v2.0\include\corpub.idl";
 import "C:\Programme\Microsoft Visual Studio 8\SDK\v2.0\include\corprof.idl";
 
@@ -16,7 +15,7 @@ import "C:\Programme\Microsoft Visual Studio 8\SDK\v2.0\include\corprof.idl";
 	helpstring("INProfCORHook Interface"),
 	pointer_default(unique)
 ] 
-#line 544 "d:\\nprof\\trunk\\nprof\\nprof.hook\\profiler.cpp"
+#line 530 "d:\\nprof\\trunk\\nprof\\nprof.hook\\profiler.cpp"
 interface INProfCORHook : IDispatch {
 };
 
@@ -32,7 +31,7 @@ library NProfHook
 		uuid(791DA9FE-05A0-495E-94BF-9AD875C4DF0F),
 		helpstring("nprof COR Profiling Hook Class")
 	] 
-#line 558 "d:\\nprof\\trunk\\nprof\\nprof.hook\\profiler.cpp"
+#line 544 "d:\\nprof\\trunk\\nprof\\nprof.hook\\profiler.cpp"
 	coclass CNProfCORHook {
 		interface INProfCORHook;
 	};
