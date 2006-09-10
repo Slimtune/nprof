@@ -584,7 +584,8 @@ public:
 
     if ( profilerInfo )
     {
-      profiler = new SamplingProfiler( profilerInfo );
+      profiler = new InstrumentationProfiler( profilerInfo );
+      //profiler = new SamplingProfiler( profilerInfo );
       //profiler = new InstrumentationProfiler( profilerInfo );
       cout << "Initializing hooks..." << endl;
       profilerInfo->SetEnterLeaveFunctionHooks( ( FunctionEnter* )&RawEnter, ( FunctionLeave* )&RawLeave, ( FunctionTailcall* )&RawTailCall );

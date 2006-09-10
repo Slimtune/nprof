@@ -87,7 +87,7 @@ BEGIN
 	IDS_PROJNAME					"NProf.Hook"
 END
 
-IDR_NPROFHOOK REGISTRY "NProf.Hook.rgs"
+IDR_NPROFHOOK REGISTRY "Hook.rgs"
 ////////////////////////////////////////////////////////////////////////////
 
 

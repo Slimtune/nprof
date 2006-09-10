@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8,00"
 	Name="NProf.Hook"
-	ProjectGUID="{4DAE8B45-A01C-456E-8AFE-E7D6C596F205}"
+	ProjectGUID="{1EF831D4-C2DA-4DEA-AD58-16A0C4EBBA93}"
 	RootNamespace="NProf.Hook"
 	Keyword="AtlProj"
 	>
@@ -230,19 +230,15 @@
 	</References>
 	<Files>
 		<File
-			RelativePath="NProf.Hook.rc"
+			RelativePath=".\Hook.cpp"
 			>
 		</File>
 		<File
-			RelativePath="NProf.Hook.rgs"
+			RelativePath=".\Hook.rc"
 			>
 		</File>
 		<File
-			RelativePath=".\profiler.cpp"
-			>
-		</File>
-		<File
-			RelativePath="ReadMe.txt"
+			RelativePath=".\Hook.rgs"
 			>
 		</File>
 		<File
