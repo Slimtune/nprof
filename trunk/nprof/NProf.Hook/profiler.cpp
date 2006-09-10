@@ -277,39 +277,135 @@ public:
 private:
   map< ThreadID, ThreadInfo* > threadMap;
 };
+
+
 class Profiler
 {
 public: 
 	Profiler( ICorProfilerInfo2* profilerInfo );
-	void WalkStack();
-	void Leave( FunctionID functionId );
-	void Enter( FunctionID functionId );
-	void TailCall( FunctionID functionId );
-	void UnmanagedToManagedCall( FunctionID functionId );
-	void ManagedToUnmanagedCall( FunctionID functionId );
-	void ThreadStart( ThreadID threadId );
-	void ThreadEnd( ThreadID threadId );
-	void ThreadSuspend();
-	void ThreadResume();
-	void AppDomainStart( AppDomainID appDomainId );
-	void AppDomainEnd( AppDomainID appDomainId );
-	void End();
-	void ThreadMap( ThreadID threadId, DWORD osThread );
+	virtual void Leave( FunctionID functionId ){};
+	virtual void Enter( FunctionID functionId ){};
+	virtual void TailCall( FunctionID functionId ){};
+	virtual void UnmanagedToManagedCall( FunctionID functionId ){};
+	//virtual void ManagedToUnmanagedCall( FunctionID functionId ){};
+	//virtual void ThreadStart( ThreadID threadId ){};
+	//virtual void ThreadEnd( ThreadID threadId ){};
+	//virtual void ThreadSuspend(){};
+	//virtual void ThreadResume(){};
+	//virtual void AppDomainStart( AppDomainID appDomainId ){};
+	virtual void AppDomainEnd( AppDomainID appDomainId ){};
+	//virtual void End(){};
+	//virtual void ThreadMap( ThreadID threadId, DWORD osThread ){};
 
-	void Trace();
+
+
+	void ManagedToUnmanagedCall( FunctionID functionId )
+	{
+	  GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
+	};
+
+	void ThreadStart( ThreadID threadId )
+	{
+	  threadCollection.GetThreadInfo( threadId )->Start();
+	  ProfilerSocket ps;
+	  ps.SendThreadCreate( threadId );
+	};
+
+	void ThreadMap( ThreadID threadId, DWORD dwOSThread )
+	{
+	  cout << "ThreadMap( " << threadId << ", " << dwOSThread << ")" << endl;
+	  threadMap[ dwOSThread ] = threadId;
+	};
+
+	void ThreadEnd( ThreadID threadId )
+	{
+	  threadCollection.EndThread( profilerHelper, threadId );
+	  cout << "ThreadEnd( " << threadId << " )" << endl;
+	};
+
+	void ThreadSuspend()
+	{
+	  //cout << "ThreadSuspend( " << GetCurrentThreadID() << " )" << endl;
+	  threadCollection.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->SuspendFunction( rdtsc() );
+	};
+
+	void ThreadResume()
+	{
+	  //cout << "ThreadResume( " << GetCurrentThreadID() << " )" << endl;
+	  threadCollection.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->ResumeFunction( rdtsc() );
+	};
+
+	void AppDomainStart( AppDomainID appDomainId )
+	{
+	  cout << "AppDomain Created: " << appDomainId << endl;
+	  ProfilerSocket ps;
+	  ps.SendAppDomainCreate( appDomainId );
+	};
+
+
+	virtual void End()
+	{
+		cout << "End()" << endl;
+		threadCollection.EndAll( profilerHelper );
+	};
+
+
 	CComPtr< ICorProfilerInfo2 > profilerInfo;
-	bool statisticalCompleted;
-	static UINT timer;
-private:
-	ThreadID GetCurrentThreadID();
-	ThreadInfo* GetCurrentThreadInfo();
+protected:
+	ThreadID GetCurrentThreadID()
+	{
+		return profilerHelper.GetCurrentThreadID();
+	}
+	ThreadInfo* GetCurrentThreadInfo()
+	{
+	  return threadCollection.GetThreadInfo( GetCurrentThreadID() );
+	};
+	//ThreadID GetCurrentThreadID();
+	//ThreadInfo* GetCurrentThreadInfo();
 
 	ThreadInfoCollection threadCollection;
 	ProfilerHelper profilerHelper;
 	map< DWORD, ThreadID > threadMap;
 	bool statistical;
 };
-UINT Profiler::timer;
+
+class InstrumentationProfiler:public Profiler
+{
+public:
+	InstrumentationProfiler( ICorProfilerInfo2* profilerInfo );
+	
+	void Enter( FunctionID functionId )
+	{
+	  ThreadInfo* threadInfo=GetCurrentThreadInfo();
+	  FunctionInfo* functionInfo = threadInfo->GetFunctionInfo( functionId );
+	  threadInfo->GetStackInfo()->PushFunction( functionInfo, rdtsc() );
+	};
+	void Leave( FunctionID functionId )
+	{
+		GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
+	};
+
+	void TailCall( FunctionID functionId )
+	{
+		GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
+	};
+
+	void UnmanagedToManagedCall( FunctionID functionId )
+	{
+		ThreadInfo* threadInfo=GetCurrentThreadInfo();
+		FunctionInfo* functionInfo = threadInfo->GetFunctionInfo( functionId );
+		threadInfo->GetStackInfo()->PushFunction( functionInfo, rdtsc() );
+	};
+};
+class SamplingProfiler:public Profiler
+{
+public:
+	SamplingProfiler( ICorProfilerInfo2* profilerInfo );
+	void WalkStack();
+	static UINT timer;
+};
+UINT SamplingProfiler::timer;
+
 
 
 void RawEnter();
@@ -328,7 +424,6 @@ __interface INProfCORHook : IDispatch
 };
 
 // CNProfCORHook
-
 [
   coclass,
   threading("apartment"),
@@ -381,21 +476,22 @@ public:
 
     if ( profilerInfo )
     {
-      profiler = new Profiler( profilerInfo );
-      cout << "Initializing event masks..." << endl;
-      profilerInfo->SetEventMask( 
-		COR_PRF_ENABLE_STACK_SNAPSHOT|
-        COR_PRF_MONITOR_THREADS	|
-        COR_PRF_DISABLE_INLINING |
-        COR_PRF_MONITOR_SUSPENDS |    
-        //COR_PRF_MONITOR_ENTERLEAVE |
-        COR_PRF_MONITOR_EXCEPTIONS |  
-        COR_PRF_MONITOR_APPDOMAIN_LOADS |
-        COR_PRF_MONITOR_ASSEMBLY_LOADS |
-		COR_PRF_MONITOR_CACHE_SEARCHES |
-		COR_PRF_MONITOR_JIT_COMPILATION 
-		//| COR_PRF_MONITOR_CODE_TRANSITIONS
-      );
+      profiler = new InstrumentationProfiler( profilerInfo );
+      //profiler = new Profiler( profilerInfo );
+      //cout << "Initializing event masks..." << endl;
+  //    profilerInfo->SetEventMask( 
+		//COR_PRF_ENABLE_STACK_SNAPSHOT|
+  //      COR_PRF_MONITOR_THREADS	|
+  //      COR_PRF_DISABLE_INLINING |
+  //      COR_PRF_MONITOR_SUSPENDS |    
+  //      //COR_PRF_MONITOR_ENTERLEAVE |
+  //      COR_PRF_MONITOR_EXCEPTIONS |  
+  //      COR_PRF_MONITOR_APPDOMAIN_LOADS |
+  //      COR_PRF_MONITOR_ASSEMBLY_LOADS |
+		//COR_PRF_MONITOR_CACHE_SEARCHES |
+		//COR_PRF_MONITOR_JIT_COMPILATION 
+		////| COR_PRF_MONITOR_CODE_TRANSITIONS
+      //);
 
       cout << "Initializing hooks..." << endl;
       profilerInfo->SetEnterLeaveFunctionHooks( ( FunctionEnter* )&RawEnter, ( FunctionLeave* )&RawLeave, ( FunctionTailcall* )&RawTailCall );
@@ -817,106 +913,116 @@ void __declspec( naked ) RawTailCall()
 #endif
 
 
-//Profiler::Profiler( ICorProfilerInfo2* profilerInfo )
+InstrumentationProfiler::InstrumentationProfiler( ICorProfilerInfo2* profilerInfo ):Profiler(profilerInfo)
+{
+	profilerInfo->SetEventMask( 
+		COR_PRF_ENABLE_STACK_SNAPSHOT|
+		COR_PRF_MONITOR_THREADS	|
+		COR_PRF_DISABLE_INLINING |
+		COR_PRF_MONITOR_SUSPENDS |    
+		COR_PRF_MONITOR_ENTERLEAVE |
+		COR_PRF_MONITOR_EXCEPTIONS |  
+		COR_PRF_MONITOR_APPDOMAIN_LOADS |
+		COR_PRF_MONITOR_ASSEMBLY_LOADS |
+		COR_PRF_MONITOR_CACHE_SEARCHES |
+		COR_PRF_MONITOR_JIT_COMPILATION | 
+		COR_PRF_MONITOR_CODE_TRANSITIONS);
+}
+
+//void InstrumentationProfiler::Enter( FunctionID functionId )
 //{
-//	this->profilerInfo = profilerInfo;
-//	this->profilerHelper.Initialize( profilerInfo );
+//  ThreadInfo* threadInfo=GetCurrentThreadInfo();
+//  FunctionInfo* functionInfo = threadInfo->GetFunctionInfo( functionId );
+//  threadInfo->GetStackInfo()->PushFunction( functionInfo, rdtsc() );
 //}
 
-void Profiler::Enter( FunctionID functionId )
-{
-  ThreadInfo* threadInfo=GetCurrentThreadInfo();
-  FunctionInfo* functionInfo = threadInfo->GetFunctionInfo( functionId );
-  threadInfo->GetStackInfo()->PushFunction( functionInfo, rdtsc() );
-}
+//void InstrumentationProfiler::Leave( FunctionID functionId )
+//{
+//  GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
+//}
+//
+//void InstrumentationProfiler::TailCall( FunctionID functionId )
+//{
+//  GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
+//}
+//
+//void InstrumentationProfiler::UnmanagedToManagedCall( FunctionID functionId )
+//{
+//  ThreadInfo* threadInfo=GetCurrentThreadInfo();
+//  FunctionInfo* functionInfo = threadInfo->GetFunctionInfo( functionId );
+//  threadInfo->GetStackInfo()->PushFunction( functionInfo, rdtsc() );
+//}
 
-void Profiler::Leave( FunctionID functionId )
-{
-  GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
-}
+//void Profiler::ManagedToUnmanagedCall( FunctionID functionId )
+//{
+//  GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
+//}
+//
+//void Profiler::ThreadStart( ThreadID threadId )
+//{
+//  //cout << "ThreadStart( " << threadId << " )" << endl;
+//  threadCollection.GetThreadInfo( threadId )->Start();
+//  ProfilerSocket ps;
+//  ps.SendThreadCreate( threadId );
+//}
+//
+//void Profiler::ThreadMap( ThreadID threadId, DWORD dwOSThread )
+//{
+//  cout << "ThreadMap( " << threadId << ", " << dwOSThread << ")" << endl;
+//  threadMap[ dwOSThread ] = threadId;
+//}
+//
+//void Profiler::ThreadEnd( ThreadID threadId )
+//{
+//  threadCollection.EndThread( profilerHelper, threadId );
+//  cout << "ThreadEnd( " << threadId << " )" << endl;
+//}
+//
+//void Profiler::ThreadSuspend()
+//{
+//  //cout << "ThreadSuspend( " << GetCurrentThreadID() << " )" << endl;
+//  threadCollection.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->SuspendFunction( rdtsc() );
+//}
+//
+//void Profiler::ThreadResume()
+//{
+//  //cout << "ThreadResume( " << GetCurrentThreadID() << " )" << endl;
+//  threadCollection.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->ResumeFunction( rdtsc() );
+//}
+//
+//void Profiler::AppDomainStart( AppDomainID appDomainId )
+//{
+//  cout << "AppDomain Created: " << appDomainId << endl;
+//  ProfilerSocket ps;
+//  ps.SendAppDomainCreate( appDomainId );
+//}
+//
+//void Profiler::AppDomainEnd( AppDomainID appDomainId )
+//{
+//}
+//
+//void Profiler::End()
+//{
+//  cout << "End()" << endl;
+//  //timeKillEvent(timer);
+//  //DebugBreak();
+//  threadCollection.EndAll( profilerHelper );
+//}
+//
+//ThreadID Profiler::GetCurrentThreadID()
+//{
+//  return profilerHelper.GetCurrentThreadID();
+//}
+//
+//ThreadInfo* Profiler::GetCurrentThreadInfo()
+//{
+//  return threadCollection.GetThreadInfo( GetCurrentThreadID() );
+//}
 
-void Profiler::TailCall( FunctionID functionId )
-{
-  GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
-}
-
-void Profiler::UnmanagedToManagedCall( FunctionID functionId )
-{
-  ThreadInfo* threadInfo=GetCurrentThreadInfo();
-  FunctionInfo* functionInfo = threadInfo->GetFunctionInfo( functionId );
-  threadInfo->GetStackInfo()->PushFunction( functionInfo, rdtsc() );
-}
-
-void Profiler::ManagedToUnmanagedCall( FunctionID functionId )
-{
-  GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
-}
-
-void Profiler::ThreadStart( ThreadID threadId )
-{
-  //cout << "ThreadStart( " << threadId << " )" << endl;
-  threadCollection.GetThreadInfo( threadId )->Start();
-  ProfilerSocket ps;
-  ps.SendThreadCreate( threadId );
-}
-
-void Profiler::ThreadMap( ThreadID threadId, DWORD dwOSThread )
-{
-  cout << "ThreadMap( " << threadId << ", " << dwOSThread << ")" << endl;
-  threadMap[ dwOSThread ] = threadId;
-}
-
-void Profiler::ThreadEnd( ThreadID threadId )
-{
-  threadCollection.EndThread( profilerHelper, threadId );
-  cout << "ThreadEnd( " << threadId << " )" << endl;
-}
-
-void Profiler::ThreadSuspend()
-{
-  //cout << "ThreadSuspend( " << GetCurrentThreadID() << " )" << endl;
-  threadCollection.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->SuspendFunction( rdtsc() );
-}
-
-void Profiler::ThreadResume()
-{
-  //cout << "ThreadResume( " << GetCurrentThreadID() << " )" << endl;
-  threadCollection.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->ResumeFunction( rdtsc() );
-}
-
-void Profiler::AppDomainStart( AppDomainID appDomainId )
-{
-  cout << "AppDomain Created: " << appDomainId << endl;
-  ProfilerSocket ps;
-  ps.SendAppDomainCreate( appDomainId );
-}
-
-void Profiler::AppDomainEnd( AppDomainID appDomainId )
-{
-}
-
-void Profiler::End()
-{
-  cout << "End()" << endl;
-  //timeKillEvent(timer);
-  //DebugBreak();
-  threadCollection.EndAll( profilerHelper );
-}
-
-ThreadID Profiler::GetCurrentThreadID()
-{
-  return profilerHelper.GetCurrentThreadID();
-}
-
-ThreadInfo* Profiler::GetCurrentThreadInfo()
-{
-  return threadCollection.GetThreadInfo( GetCurrentThreadID() );
-}
-
-void Profiler::Trace()
-{
-  threadCollection.Trace( profilerHelper );
-}
+//void Profiler::Trace()
+//{
+//  threadCollection.Trace( profilerHelper );
+//}
 
 
 HRESULT __stdcall __stdcall StackWalker( 
@@ -937,19 +1043,17 @@ HRESULT __stdcall __stdcall StackWalker(
 }
 
 
-
+// move to samplingProfiler
 void CALLBACK TimerFunction(UINT wTimerID, UINT msg, 
     DWORD dwUser, DWORD dw1, DWORD dw2) 
 {
-	Profiler* profiler=(Profiler*)dwUser;
+	SamplingProfiler* profiler=(SamplingProfiler*)dwUser;
 	profiler->WalkStack();
 }
 
-void Profiler::WalkStack()
+void SamplingProfiler::WalkStack()
 {
-	//cout << "walk stack\n";
-	//cout << "profileCount:"<<profileCount<<"\n";
-
+	// buggy, somehow does not work correctly
 	for(map< DWORD, ThreadID >::iterator i=threadMap.begin();i!=threadMap.end();i++)
 	{
 		i++;
@@ -975,37 +1079,18 @@ void Profiler::WalkStack()
 		//HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME,false,threadId);
 		if(threadHandle!=NULL)
 		{
-			//cout <<"opened thread";
 			vector<FunctionID> functions;
-			//cout << " thread id" <<threadId <<"\n";
-			//BYTE bytes[]={0,0,0,0,0,0,0,0,0,0,0};
-			//CONTEXT context;
-			//DWORD test;
-			//profilerInfo->GetEventMask(&test);
-
-			//cout << "DoStackSnapshot";
-			//cout << 
-			//profilerInfo->GetFunctionFromIP(,&newID);
-			//align dword;
-			CONTEXT context;
-
-			
+			//CONTEXT context;			
 			//context.ContextFlags=CONTEXT_DEBUG_REGISTERS;
-			context.ContextFlags=CONTEXT_FULL;
+			//context.ContextFlags=CONTEXT_FULL;
+			//GetThreadContext(threadHandle,&context);
+			//CONTEXT* pContext=&context;
 
-			GetThreadContext(threadHandle,&context);
-			//cout << "threadContext" << GetThreadContext(threadHandle,&context) <<"\n";
-			//cout << "lastError" << GetLastError() <<"\n";
 
-			CONTEXT* pContext=&context;
-			//try
-			//{
 			ThreadID id=i->second;
 
 
-				//cout << "DoStackSnapshot" << 
 			profilerInfo->DoStackSnapshot(
-				//NULL,
 				id,
 				StackWalker,
 				COR_PRF_SNAPSHOT_DEFAULT,
@@ -1014,7 +1099,6 @@ void Profiler::WalkStack()
 				NULL);
 				//(BYTE*)(void*)pContext,
 				//sizeof(CONTEXT));
-			ResumeThread(threadHandle);
 			for(int i=0	;i<functions.size();i++)
 			{
 				ThreadInfo* threadInfo=threadCollection.GetThreadInfo(id);
@@ -1032,419 +1116,45 @@ void Profiler::WalkStack()
 					}
 				}
 			}
-			//if(ResumeThread(threadHandle)!=-1)
-			//{
-			//	//cout << "resumed thread";
-			//}
+			ResumeThread(threadHandle);
 		}
-		else
-		{
-			//cout <<"could not open thread";
-		}
-		break;
+		//break;
 	}
 }
-//void Profiler::WalkStack()
-//{
-//
-//	//cout << "walk stack\n";
-//	//cout << "profileCount:"<<profileCount<<"\n";
-//	profileCount++;
-//
-//	for(map< DWORD, ThreadID >::iterator i=threadMap.begin();i!=threadMap.end();i++)
-//	{
-//		i++;
-//		DWORD threadId=(*i).first;
-//		HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME,false,threadId);
-//		if(threadHandle!=NULL)
-//		{
-//
-//			int suspended=SuspendThread(threadHandle);
-//			//cout << "suspended: "<< suspended <<"\n";
-//		}
-//	}
-//	//DebugBreak();
-//	//for(map< DWORD, ThreadID >::iterator i=threadMap.begin();i!=threadMap.end();i++)
-//	for(map< DWORD, ThreadID >::reverse_iterator i=threadMap.rend();i!=threadMap.rbegin();i++)
-//	{
-//		i++;
-//		DWORD threadId=(*i).first;
-//		//cout<<"threadId "<<threadId<<"\n";
-//		//cout<<"managed thread "<<i->second<<"\n";
-//
-//		HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME|THREAD_QUERY_INFORMATION|THREAD_GET_CONTEXT,false,threadId);
-//		//HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME,false,threadId);
-//		if(threadHandle!=NULL)
-//		{
-//			//cout <<"opened thread";
-//			vector<FunctionID> functions;
-//			//cout << " thread id" <<threadId <<"\n";
-//			//BYTE bytes[]={0,0,0,0,0,0,0,0,0,0,0};
-//			//CONTEXT context;
-//			//DWORD test;
-//			//profilerInfo->GetEventMask(&test);
-//
-//			//cout << "DoStackSnapshot";
-//			//cout << 
-//			//profilerInfo->GetFunctionFromIP(,&newID);
-//			//align dword;
-//			CONTEXT context;
-//
-//			
-//			//context.ContextFlags=CONTEXT_DEBUG_REGISTERS;
-//			context.ContextFlags=CONTEXT_FULL;
-//
-//			GetThreadContext(threadHandle,&context);
-//			//cout << "threadContext" << GetThreadContext(threadHandle,&context) <<"\n";
-//			//cout << "lastError" << GetLastError() <<"\n";
-//
-//			CONTEXT* pContext=&context;
-//			//try
-//			//{
-//			ThreadID id=i->second;
-//
-//
-//				//cout << "DoStackSnapshot" << 
-//			profilerInfo->DoStackSnapshot(
-//				//NULL,
-//				threadId,
-//				StackWalker,
-//				COR_PRF_SNAPSHOT_DEFAULT,
-//				&functions,
-//				NULL,
-//				NULL);
-//				//(BYTE*)(void*)pContext,
-//				//sizeof(CONTEXT));
-//			ResumeThread(threadHandle);
-//			for(int i=0	;i<functions.size();i++)
-//			{
-//				ThreadInfo* threadInfo=threadCollection.GetThreadInfo(id);
-//				for(int y=i+1;;y++)
-//				{
-//					if(y>functions.size()-1)
-//					{
-//						FunctionID id=functions[i];
-//						threadInfo->GetFunctionInfo(id)->calls++;
-//						break;
-//					}
-//					if(functions[y]==functions[i])
-//					{
-//						break;
-//					}
-//				}
-//			}
-//			//if(ResumeThread(threadHandle)!=-1)
-//			//{
-//			//	//cout << "resumed thread";
-//			//}
-//		}
-//		else
-//		{
-//			//cout <<"could not open thread";
-//		}
-//		break;
-//	}
-//}
 
 Profiler::Profiler( ICorProfilerInfo2* profilerInfo )
 {
 	this->profilerInfo = profilerInfo;
 	this->profilerHelper.Initialize( profilerInfo );
-	this->statistical = true;
-	this->statisticalCompleted=false;
-	
+}
 
+
+
+SamplingProfiler::SamplingProfiler(ICorProfilerInfo2* profilerInfo):Profiler(profilerInfo)
+{
+      profilerInfo->SetEventMask( 
+		COR_PRF_ENABLE_STACK_SNAPSHOT|
+        COR_PRF_MONITOR_THREADS	|
+        COR_PRF_DISABLE_INLINING |
+        COR_PRF_MONITOR_SUSPENDS |    
+        //COR_PRF_MONITOR_ENTERLEAVE |
+        COR_PRF_MONITOR_EXCEPTIONS |  
+        COR_PRF_MONITOR_APPDOMAIN_LOADS |
+        COR_PRF_MONITOR_ASSEMBLY_LOADS |
+		COR_PRF_MONITOR_CACHE_SEARCHES |
+		COR_PRF_MONITOR_JIT_COMPILATION 
+		//| COR_PRF_MONITOR_CODE_TRANSITIONS
+		);
 	TIMECAPS timeCaps;
 	timeGetDevCaps(&timeCaps, sizeof(TIMECAPS));
 	timer = timeSetEvent(
 	  500,
 	  timeCaps.wPeriodMin, 
-	  TimerFunction,  
+	  TimerFunction, 
 	  (DWORD_PTR)this,     
 	  TIME_PERIODIC);      
 }
-//void Profiler::Enter( FunctionID functionId )
-//{
-//	if(statistical)
-//	{
-//		//	vector<FunctionID> functions;
-//
-//			//profilerInfo->DoStackSnapshot(
-//			//	NULL,
-//			//	StackWalker,
-//			//	COR_PRF_SNAPSHOT_DEFAULT,
-//			//	&functions,
-//			//	NULL,
-//			//	0);
-//		//	ThreadInfo* threadInfo=GetCurrentThreadInfo();
-//		//	for(int i=1;i<functions.size();i++)
-//		//	{
-//		//		for(int y=i+1;;y++)
-//		//		{
-//		//			if(y>functions.size()-1)
-//		//			{
-//		//				FunctionID id=functions[i];
-//		//				threadInfo->GetFunctionInfo(id)->calls++;
-//		//				break;
-//		//			}
-//		//			if(functions[y]==functions[i])
-//		//			{
-//		//				break;
-//		//			}
-//		//			//if(y==functions.size()-1)
-//		//			//{
-//		//			//	FunctionID id=functions[i];
-//		//			//	threadInfo->GetFunctionInfo(id)->calls++;
-//		//			//	break;
-//		//			//}
-//		//		}
-//		//	}
-//		//}
-//	}
-//	else
-//	{
-//	  ThreadInfo* threadInfo=GetCurrentThreadInfo();
-//	  FunctionInfo* functionInfo = threadInfo->GetFunctionInfo( functionId );
-//	  threadInfo->GetStackInfo()->PushFunction( functionInfo, rdtsc() );
-//	}
-//}
-//
-//void Profiler::Leave( FunctionID functionId )
-//{
-//	if(statistical)
-//	{
-//		//if(!statisticalCompleted)
-//		//{
-//		//	statisticalCompleted=true;
-//		//	Deactivate();
-//		//	 //HRESULT result= profilerInfo->SetEventMask( 
-//		//		// COR_PRF_ENABLE_STACK_SNAPSHOT
-//		//		//// COR_PRF_MONITOR_NONE
-//		//		////COR_PRF_MONITOR_THREADS	|
-//		//		////COR_PRF_DISABLE_INLINING |
-//		//		////COR_PRF_ENABLE_STACK_SNAPSHOT|
-//		//		////COR_PRF_MONITOR_SUSPENDS |    
-//		//		////COR_PRF_MONITOR_EXCEPTIONS |  
-//		//		////COR_PRF_MONITOR_APPDOMAIN_LOADS |
-//		//		////COR_PRF_MONITOR_ASSEMBLY_LOADS |
-//		//		////COR_PRF_MONITOR_CACHE_SEARCHES |
-//		//		////COR_PRF_MONITOR_JIT_COMPILATION 
-//		//		////| COR_PRF_MONITOR_CODE_TRANSITIONS
-//		//	 // );		
-//		//	vector<FunctionID> functions;
-//
-//		//	functions.push_back(functionId);
-//		//	profilerInfo->DoStackSnapshot(
-//		//		NULL,
-//		//		StackWalker,
-//		//		COR_PRF_SNAPSHOT_DEFAULT,
-//		//		&functions,
-//		//		NULL,
-//		//		0);
-//		//	ThreadInfo* threadInfo=GetCurrentThreadInfo();
-//		//	for(int i=0;i<functions.size();i++)
-//		//	{
-//		//		for(int y=i+1;;y++)
-//		//		{
-//		//			if(y>functions.size()-1)
-//		//			{
-//		//				FunctionID id=functions[i];
-//		//				threadInfo->GetFunctionInfo(id)->calls++;
-//		//				break;
-//		//			}
-//		//			if(functions[y]==functions[i])
-//		//			{
-//		//				break;
-//		//			}
-//		//			//if(y==functions.size()-1)
-//		//			//{
-//		//			//	FunctionID id=functions[i];
-//		//			//	threadInfo->GetFunctionInfo(id)->calls++;
-//		//			//	break;
-//		//			//}
-//		//		}
-//		//		//}
-//		//		//FunctionID id=functions[i];
-//		//		//threadInfo->GetFunctionInfo(id)->calls++;
-//		//	}
-//		//}
-//	}
-//	else
-//	{
-//		GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
-//	}
-//}
-//
-//void Profiler::TailCall( FunctionID functionId )
-//{
-//	//Leave(functionId);
-//	if(statistical)
-//	{
-//		Enter(functionId);
-//	}
-//	else
-//	{
-//		Leave(functionId);
-//		//GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
-//	}
-//}
-//
-//void Profiler::UnmanagedToManagedCall( FunctionID functionId )
-//{
-//	Enter(functionId);
-//	//if(statistical)
-//	//{
-//	//	//this->Enter(functionId);
-//	//}
-//	//else
-//	//{
-//	//	ThreadInfo* threadInfo=GetCurrentThreadInfo();
-//	//	FunctionInfo* functionInfo = threadInfo->GetFunctionInfo( functionId );
-//	//	threadInfo->GetStackInfo()->PushFunction( functionInfo, rdtsc() );
-//	//}
-//}
-//
-//void Profiler::ManagedToUnmanagedCall( FunctionID functionId )
-//{
-//	Leave(functionId);
-//	//if(statistical)
-//	//{
-//	//	Leave(functionId);
-//	//}
-//	//else
-//	//{
-//	//	GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
-//	//}
-//}
-//void Profiler::ThreadStart( ThreadID threadId )
-//{
-//  //cout << "ThreadStart( " << threadId << " )" << endl;
-//	if(globalId==0)
-//	{
-//		globalId=threadId;
-//	}
-//  threadCollection.GetThreadInfo( threadId )->Start();
-//  ProfilerSocket ps;
-//  ps.SendThreadCreate( threadId );
-//}
-//
-//void Profiler::ThreadMap( ThreadID threadId, DWORD dwOSThread )
-//{
-//  //cout << "ThreadMap( " << threadId << ", " << dwOSThread << ")" << endl;
-//  threadMap[ dwOSThread ] = threadId;
-//}
-//
-//void Profiler::ThreadEnd( ThreadID threadId )
-//{
-//	//Sleep(1000000);
-//  threadCollection.EndThread( profilerHelper, threadId );
-//  //cout << "ThreadEnd( " << threadId << " )" << endl;
-//}
-//
-//void Profiler::ThreadSuspend()
-//{
-//  //cout << "ThreadSuspend( " << GetCurrentThreadID() << " )" << endl;
-//  threadCollection.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->SuspendFunction( rdtsc() );
-//}
-//
-//void Profiler::ThreadResume()
-//{
-//  //cout << "ThreadResume( " << GetCurrentThreadID() << " )" << endl;
-//  threadCollection.GetiThreadInfo( GetCurrentThreadID() )->GetStackInfo()->ResumeFunction( rdtsc() );
-//}
-//
-//void Profiler::AppDomainStart( AppDomainID appDomainId )
-//{
-//  cout << "AppDomain Created: " << appDomainId << endl;
-//  ProfilerSocket ps;
-//  ps.SendAppDomainCreate( appDomainId );
-//}
-//
-//void Profiler::AppDomainEnd( AppDomainID appDomainId )
-//{
-//}
-//
-//void Profiler::End()
-//{
-//	cout << "End()" << endl;
-//	timeKillEvent(timer);
-//
-//  threadCollection.EndAll( profilerHelper );
-//}
-//
-//ThreadID Profiler::GetCurrentThreadID()
-//{
-//  return profilerHelper.GetCurrentThreadID();
-//}
-//
-//ThreadInfo* Profiler::GetCurrentThreadInfo()
-//{
-//  return threadCollection.GetThreadInfo( GetCurrentThreadID() );
-//}
-//
-//void Profiler::Trace()
-//{
-//  threadCollection.Trace( profilerHelper );
-//}
 
-
-//void Profiler::Activate()
-//{
-//	 profilerInfo->SetEventMask(
-//		 COR_PRF_MONITOR_THREADS
-//		 |COR_PRF_ENABLE_STACK_SNAPSHOT
-//		 //|COR_PRF_MONITOR_ENTERLEAVE
-//		 );
-//	//profilerInfo->SetEventMask(
-//	//	COR_PRF_MONITOR_THREADS	
-//	//	|COR_PRF_DISABLE_INLINING
-//	//	|COR_PRF_ENABLE_STACK_SNAPSHOT
-//	//	|COR_PRF_MONITOR_SUSPENDS
-//	//	|COR_PRF_MONITOR_ENTERLEAVE
-//	//	|COR_PRF_MONITOR_EXCEPTIONS
-//	//	|COR_PRF_MONITOR_APPDOMAIN_LOADS
-//	//	|COR_PRF_MONITOR_ASSEMBLY_LOADS
-//	//	|COR_PRF_MONITOR_CACHE_SEARCHES
-//	//	|COR_PRF_MONITOR_JIT_COMPILATION
-//	//	|COR_PRF_MONITOR_CODE_TRANSITIONS
-//	//);
-//}
-//void Profiler::Deactivate()
-//{
-//	 //profilerInfo->SetEventMask(
-//		//COR_PRF_MONITOR_THREADS
-//	 //|COR_PRF_ENABLE_STACK_SNAPSHOT
-//	 //|COR_PRF_MONITOR_ENTERLEAVE
-//	 //);
-//	//profilerInfo->SetEventMask(
-//	//	COR_PRF_MONITOR_THREADS	
-//	//	|COR_PRF_DISABLE_INLINING
-//	//	|COR_PRF_ENABLE_STACK_SNAPSHOT
-//	//	|COR_PRF_MONITOR_SUSPENDS
-//	//	//|COR_PRF_MONITOR_ENTERLEAVE
-//	//	|COR_PRF_MONITOR_EXCEPTIONS
-//	//	|COR_PRF_MONITOR_APPDOMAIN_LOADS
-//	//	|COR_PRF_MONITOR_ASSEMBLY_LOADS
-//	//	|COR_PRF_MONITOR_CACHE_SEARCHES
-//	//	|COR_PRF_MONITOR_JIT_COMPILATION
-//	//	|COR_PRF_MONITOR_CODE_TRANSITIONS
-//	//);
-//
-//	//profilerInfo->SetEventMask(
-//	//COR_PRF_MONITOR_THREADS	|
-//	//COR_PRF_DISABLE_INLINING |
-//	//COR_PRF_ENABLE_STACK_SNAPSHOT//|
-//	//COR_PRF_MONITOR_SUSPENDS 
-//	//|    
-//	//COR_PRF_MONITOR_ENTERLEAVE |
-//	//COR_PRF_MONITOR_EXCEPTIONS |  
-//	//COR_PRF_MONITOR_APPDOMAIN_LOADS |
-//	//COR_PRF_MONITOR_ASSEMBLY_LOADS |
-//	//COR_PRF_MONITOR_CACHE_SEARCHES |
-//	//COR_PRF_MONITOR_JIT_COMPILATION //| 
-//	//COR_PRF_MONITOR_CODE_TRANSITIONS
-//	//);
-//}
 
 CalleeFunctionInfo::CalleeFunctionInfo()
 {

@@ -4,6 +4,7 @@
 	Version="8,00"
 	Name="NProf.Hook"
 	ProjectGUID="{4DAE8B45-A01C-456E-8AFE-E7D6C596F205}"
+	RootNamespace="NProf.Hook"
 	Keyword="AtlProj"
 	>
 	<Platforms>
