@@ -6,8 +6,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NProf", "NProf\NProf.csproj", "{46B2E25E-CFE3-4FA6-9E7F-8EDFA440E0B5}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NProf.Hook", "NProf.Hook\NProf.Hook.vcproj", "{4DAE8B45-A01C-456E-8AFE-E7D6C596F205}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NProf.Hook", "Hook\Hook.vcproj", "{1EF831D4-C2DA-4DEA-AD58-16A0C4EBBA93}"
 EndProject
 Global
@@ -50,16 +48,6 @@ Global
 		{46B2E25E-CFE3-4FA6-9E7F-8EDFA440E0B5}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{46B2E25E-CFE3-4FA6-9E7F-8EDFA440E0B5}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{46B2E25E-CFE3-4FA6-9E7F-8EDFA440E0B5}.Release|Win32.ActiveCfg = Release|Any CPU
-		{4DAE8B45-A01C-456E-8AFE-E7D6C596F205}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{4DAE8B45-A01C-456E-8AFE-E7D6C596F205}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{4DAE8B45-A01C-456E-8AFE-E7D6C596F205}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{4DAE8B45-A01C-456E-8AFE-E7D6C596F205}.Debug|Win32.ActiveCfg = Debug|Win32
-		{4DAE8B45-A01C-456E-8AFE-E7D6C596F205}.Debug|Win32.Build.0 = Debug|Win32
-		{4DAE8B45-A01C-456E-8AFE-E7D6C596F205}.Release|Any CPU.ActiveCfg = Release|Win32
-		{4DAE8B45-A01C-456E-8AFE-E7D6C596F205}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{4DAE8B45-A01C-456E-8AFE-E7D6C596F205}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{4DAE8B45-A01C-456E-8AFE-E7D6C596F205}.Release|Win32.ActiveCfg = Release|Win32
-		{4DAE8B45-A01C-456E-8AFE-E7D6C596F205}.Release|Win32.Build.0 = Release|Win32
 		{1EF831D4-C2DA-4DEA-AD58-16A0C4EBBA93}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{1EF831D4-C2DA-4DEA-AD58-16A0C4EBBA93}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{1EF831D4-C2DA-4DEA-AD58-16A0C4EBBA93}.Debug|Mixed Platforms.Build.0 = Debug|Win32
@@ -75,7 +63,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		XCSharpSolutionEnabled = False
 		XCSharpProjectsDisabled = 
+		XCSharpSolutionEnabled = False
 	EndGlobalSection
 EndGlobal

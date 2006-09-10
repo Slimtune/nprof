@@ -405,12 +405,10 @@ HRESULT __stdcall __stdcall StackWalker(
 	BYTE context[  ],
 	void *clientData)
 {
-	cout << "StackWalker\n" << funcId << "\n";
 	if(funcId!=0)
 	{
 		((vector<FunctionID>*)clientData)->push_back(funcId);
 	}
-	cout << "in stackwalker";
 	return S_OK;
 }
 
@@ -584,8 +582,8 @@ public:
 
     if ( profilerInfo )
     {
-      profiler = new InstrumentationProfiler( profilerInfo );
       //profiler = new SamplingProfiler( profilerInfo );
+      profiler = new SamplingProfiler( profilerInfo );
       //profiler = new InstrumentationProfiler( profilerInfo );
       cout << "Initializing hooks..." << endl;
       profilerInfo->SetEnterLeaveFunctionHooks( ( FunctionEnter* )&RawEnter, ( FunctionLeave* )&RawLeave, ( FunctionTailcall* )&RawTailCall );
@@ -1057,7 +1055,7 @@ void FunctionInfo::Trace( ProfilerHelper& profilerHelper )
 void FunctionInfo::Dump( ProfilerSocket& ps, ProfilerHelper& profilerHelper )
 {
 	// without sleep function data does not get sent correctly in sampling mode, why?
-	Sleep(100);
+	//Sleep(100);
 	//DebugBreak();
   ps.SendFunctionTimingData( calls, cycleCount, recursiveCycleCount, suspendCycleCount );
   for ( map< FunctionID, CalleeFunctionInfo* >::iterator i = calleeMap.begin(); i != calleeMap.end(); i++ )
@@ -2037,14 +2035,13 @@ void ThreadInfo::Trace( ProfilerHelper& profilerHelper )
   for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
   {
     cout << "Function ID " << i->first << ":" << endl;
-    //cout << ph.GetFunctionSignature( it->first );
     i->second->Trace( profilerHelper );
   }
 }
 
 void ThreadInfo::Dump( ProfilerSocket& ps, ProfilerHelper& profilerHelper )
 {
-	//DebugBreak();
+	Sleep(100);
   for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
   {
     ps.SendFunctionData( profilerHelper, i->first );
