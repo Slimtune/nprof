@@ -34,7 +34,6 @@ using Microsoft.Win32;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Data;
-using NProf.GUI;
 using NProf;
 using Genghis.Windows.Forms;
 using Reflector.UserInterface;
@@ -55,11 +54,8 @@ namespace NProf
 			set
 			{
 				project = value;
-				runs.Nodes.Clear();
-				foreach (Run run in Project.Runs)
-				{
-					UpdateRun(run);
-				}
+				UpdateRuns();
+				//}
 			}
 		}
 		private Profiler profiler=new Profiler();
@@ -110,7 +106,7 @@ namespace NProf
 				UpdateCalleeList();
 				UpdateCallerList(currentRun);
 			};
-			Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("NProf.GUI.Resources.app-icon.ico"));
+			Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("NProf.Resources.app-icon.ico"));
 			Text = "NProf";
 
 			string directory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -161,7 +157,7 @@ namespace NProf
 
 			runs.Dock = DockStyle.Left;
 
-			Size=new Size(800,600);
+			Size = new Size(800, 600);
 			methods.Size = new Size(100, 100);
 
 			callers.Size = new Size(100, 100);
@@ -175,6 +171,18 @@ namespace NProf
 			runSplitter.Dock = DockStyle.Left;
 
 			Label findLabel = new Label();
+			findText.TextChanged += delegate
+			{
+				Find(true, false);
+			};
+			findText.KeyDown += delegate(object sender, KeyEventArgs e)
+			{
+				if (e.KeyCode == Keys.Enter)
+				{
+					Find(true, true);
+					e.Handled = true;
+				}
+			};
 			findLabel.Text = "Find:";
 			findLabel.TextAlign = ContentAlignment.MiddleCenter;
 			findLabel.AutoSize = true;
@@ -209,6 +217,12 @@ namespace NProf
 				findPanel
 
 			});
+			Label runsLabel = new Label();
+			runsLabel.Text = "Project runs:";
+			FlowLayoutPanel runsPanel = new FlowLayoutPanel();
+			runsPanel.Dock = DockStyle.Left;
+			runsLabel.Controls.Add(runs);
+			runsPanel.Controls.Add(runsLabel);
 			panel.Controls.AddRange(new Control[] {
 				methodPanel,
 				runSplitter,
@@ -228,26 +242,9 @@ namespace NProf
 
 		private delegate void HandleProfileComplete(Run run);
 
-		//private void OnUIThreadProfileComplete(Run run)
-		//{
-		//    if (run.State == RunState.Finished
-		//        && run.Success)
-		//    {
-		//        UpdateRun(run);
-		//    }
-		//}
-
-		//private void OnRunStateChanged(Run run, RunState rsOld, RunState rsNew)
-		//{
-		//    if (rsNew == RunState.Running || rsNew == RunState.Finished)
-		//    {
-		//        this.BeginInvoke(new HandleProfileComplete(OnUIThreadProfileComplete), new object[] { run });
-		//    }
-		//}
-
 		private void ProfilerForm_Load(object sender, System.EventArgs e)
 		{
-			Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("NProf.GUI.Resources.app-icon.ico"));
+			Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("NProf.Resources.app-icon.ico"));
 			Text = "nprof Profiling Application - v" + Profiler.Version;
 		}
 
@@ -300,7 +297,7 @@ namespace NProf
 			{
 				this.BeginInvoke(new EventHandler(delegate
 				{
-					 UpdateRun(run);
+					 UpdateRuns();
 				}));
 			};
 
@@ -337,7 +334,6 @@ namespace NProf
 
 			back.Push(_navCurrent);
 			_navCurrent = forward.Pop();
-			//_navCurrent = (int[])forward.Pop();
 
 			isNavigating = true;
 			JumpToID(_navCurrent);
@@ -363,7 +359,6 @@ namespace NProf
 				saveDlg.DefaultExt = "nprof";
 				saveDlg.FileName = SerializationHandler.GetFilename(project); ;
 				saveDlg.Filter = "NProf projects (*.nprof)|*.nprof|All files (*.*)|*.*";
-				// saveDlg.InitialDirectory = TODO: store the most recently used direcotry somewhere and go there
 				saveDlg.Title = "Save a NProf project file";
 
 				if (saveDlg.ShowDialog(this) != DialogResult.OK)
@@ -381,7 +376,7 @@ namespace NProf
 			private static Image[] images = null;
 			static Images()
 			{
-				Bitmap bitmap = (Bitmap)Bitmap.FromStream(typeof(Images).Assembly.GetManifestResourceStream("NProf.GUI.Resources.toolbar16.png"));
+				Bitmap bitmap = (Bitmap)Bitmap.FromStream(typeof(Images).Assembly.GetManifestResourceStream("NProf.Resources.toolbar16.png"));
 				int count = (int)(bitmap.Width / bitmap.Height);
 				images = new Image[count];
 				Rectangle rectangle = new Rectangle(0, 0, bitmap.Height, bitmap.Height);
@@ -431,16 +426,20 @@ namespace NProf
 		private Stack<int> forward = new Stack<int>();
 
 		private int _navCurrent = 0;
-		//private int[] _navCurrent = null;
-		// remove
+
 		private bool isNavigating = false;
 
-		public void UpdateRun(Run run)
+		public void UpdateRuns()
 		{
-			TreeNode node = new TreeNode(run.StartTime.ToString());
-			node.Tag = run;
-			runs.Nodes.Add(node);
-			UpdateFilters(run);
+			runs.Nodes.Clear();
+			foreach (Run run in Project.Runs)
+			{
+				//project
+				TreeNode node = new TreeNode(run.StartTime.ToString());
+				node.Tag = run;
+				runs.Nodes.Add(node);
+				UpdateFilters(run);
+			}
 		}
 		private void UpdateFilters(Run run)
 		{
@@ -540,7 +539,7 @@ namespace NProf
 
 			return ((FunctionInfo)methods.SelectedItems[0].Tag).ID;
 		}
-		private void Find(bool forward)
+		private void Find(bool forward,bool step)
 		{
 			if (findText.Text != "")
 			{
@@ -558,13 +557,20 @@ namespace NProf
 				}
 				else
 				{
-					if (forward)
+					if (step)
 					{
-						item = methods.SelectedItems[0].NextItem;
+						if (forward)
+						{
+							item = methods.SelectedItems[0].NextItem;
+						}
+						else
+						{
+							item = methods.SelectedItems[0].PreviousItem;
+						}
 					}
 					else
 					{
-						item = methods.SelectedItems[0].PreviousItem;
+						item = methods.SelectedItems[0];
 					}
 				}
 				while (item != null)
@@ -598,11 +604,11 @@ namespace NProf
 		}
 		private void findNext_Click(object sender, EventArgs e)
 		{
-			Find(true);
+			Find(true,true);
 		}
 		private void findPrevious_Click(object sender, EventArgs e)
 		{
-			Find(false);
+			Find(false,true);
 		}
 		public static ProfilerForm form = new ProfilerForm();
 	}

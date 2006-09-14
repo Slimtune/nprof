@@ -21,7 +21,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Windows.Forms;
 
-namespace NProf.GUI
+namespace NProf
 {
 	/// <summary>
 	/// Summary description for AboutForm.
@@ -165,7 +165,7 @@ namespace NProf.GUI
 
 		private void AboutForm_Load(object sender, System.EventArgs e)
 		{
-			using (StreamReader reader = new System.IO.StreamReader(System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("NProf.GUI.Resources.GPL.txt")))
+			using (StreamReader reader = new System.IO.StreamReader(System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("NProf.Resources.GPL.txt")))
 			{
 				richTextBox1.Text = reader.ReadToEnd();
 			}

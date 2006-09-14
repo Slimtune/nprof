@@ -100,23 +100,10 @@ using namespace std;
 class ProfilerHelper
 {
 public:
-  //void Initialize( ICorProfilerInfo2* profilerInfo ); 
-  //
-  //void GetFunctionSignature(   
-  //  FunctionID functionId, 
-  //  UINT32& methodAttributes, 
-  //  string& returnType, 
-  //  string& className,
-  //  string& functionName,
-  //  string& parameters );
-  //ThreadID GetCurrentThreadID();
-  //string ProfilerHelper::GetCurrentThreadName();
-
 	void ProfilerHelper::Initialize(  ICorProfilerInfo2* profilerInfo )
 	{
 		this->profilerInfo = profilerInfo;
 	}
-
 	ThreadID ProfilerHelper::GetCurrentThreadID()
 	{
 		ThreadID threadId;
@@ -124,12 +111,10 @@ public:
 
 		return threadId;
 	}
-
 	string ProfilerHelper::GetCurrentThreadName()
 	{
 		return "";
 	}
-
 	void ProfilerHelper::GetFunctionSignature( 
 		FunctionID functionId,
 		UINT32& methodAttributes,
@@ -151,7 +136,6 @@ public:
 		functionName = CW2A( functionNameString );
 	}
 private:
-
 	HRESULT ProfilerHelper::GetFunctionProperties( 
 					   FunctionID functionID,
 										   UINT32* methodAttributes,
@@ -162,8 +146,7 @@ private:
 						   WCHAR *funName )
 	{
 		HRESULT hr = E_FAIL; // assume success
-
-			
+	
 
 		// init return values
 		*argCount = 0;
@@ -597,17 +580,7 @@ private:
 		return signature;
 
 	} // BASEHELPER::ParseElementType
-  //HRESULT GetFunctionProperties( FunctionID functionID,
-		//								    UINT32* methodAttributes,
-		//								    ULONG* argCount,
-		//								    WCHAR* returnType, 
-		//								    WCHAR* parameters,
-		//								    WCHAR* className,
-  //                      WCHAR* functionName );
-  //PCCOR_SIGNATURE ParseElementType( IMetaDataImport* metaDataImport,
-		//									    PCCOR_SIGNATURE signature, 
-		//									    char* buffer );
-  CComPtr< ICorProfilerInfo2 > profilerInfo;
+	CComPtr< ICorProfilerInfo2 > profilerInfo;
 };
 
 enum NetworkMessage
@@ -958,31 +931,75 @@ private:
 
 class CalleeFunctionInfo {
 public: 
-	CalleeFunctionInfo();
-	~CalleeFunctionInfo();
-
-  INT64 cycleCount;
-  INT64 recursiveCycleCount;
-  int calls;
-  int recursiveCount;
+	CalleeFunctionInfo::CalleeFunctionInfo()
+	{
+		this->cycleCount = 0;
+		this->recursiveCycleCount = 0;
+		this->recursiveCount = 0;
+		this->calls = 0;
+	}
+	INT64 cycleCount;
+	INT64 recursiveCycleCount;
+	int calls;
+	int recursiveCount;
 };
 class FunctionInfo
 {
 public: 
-	FunctionInfo( FunctionID fid );
-	~FunctionInfo();
-  CalleeFunctionInfo* GetCalleeFunctionInfo( FunctionID fid );
-  void Trace( ProfilerHelper& ph );
-  void Dump( ProfilerSocket& ps, ProfilerHelper& ph );
 
-  int calls;
-  int recursiveCount;
-  INT64 cycleCount;
-  INT64 recursiveCycleCount;
-  INT64 suspendCycleCount;
-  FunctionID functionId;
+	FunctionInfo::FunctionInfo( FunctionID functionId )
+	{
+		this->cycleCount = -1;
+		this->recursiveCycleCount = -1;
+		this->suspendCycleCount = 0;
+		this->calls = 0;
+		this->recursiveCount = 0;
+		this->functionId = functionId;
+	}
 
-  map< FunctionID, CalleeFunctionInfo* > calleeMap;
+	CalleeFunctionInfo* FunctionInfo::GetCalleeFunctionInfo( FunctionID functionId )
+	{
+		map< FunctionID, CalleeFunctionInfo* >::iterator found = calleeMap.find( functionId );
+		if ( found == calleeMap.end() )
+		{
+			CalleeFunctionInfo* functionInfo = new CalleeFunctionInfo();
+			calleeMap.insert( make_pair( functionId, functionInfo ) );
+			return functionInfo;
+		}
+		return found->second;
+	}
+
+	void FunctionInfo::Trace( ProfilerHelper& profilerHelper )
+	{
+		cout << "  Calls: " << calls << endl;
+		cout << "  Time: " << cycleCount << endl;
+		cout << "  Avg. time: " << cycleCount / calls << endl;
+
+		for ( map< FunctionID, CalleeFunctionInfo* >::iterator i = calleeMap.begin(); i != calleeMap.end(); i++ )
+		{
+			cout << "  Callee Function ID " << i->first << ":" << endl;
+			cout << "    Calls: " << i->second->calls << endl;
+			cout << "    Time: " << i->second->cycleCount << endl;
+			cout << "    Avg. time: " << i->second->cycleCount / i->second->calls << endl;
+		}
+	}    
+
+	void FunctionInfo::Dump( ProfilerSocket& ps, ProfilerHelper& profilerHelper )
+	{
+		ps.SendFunctionTimingData( calls, cycleCount, recursiveCycleCount, suspendCycleCount );
+		for ( map< FunctionID, CalleeFunctionInfo* >::iterator i = calleeMap.begin(); i != calleeMap.end(); i++ )
+		{
+			ps.SendCalleeFunctionData( i->first, i->second->calls, i->second->cycleCount, i->second->recursiveCycleCount );
+		}
+		ps.SendEndCalleeFunctionData();
+	}
+	int calls;
+	int recursiveCount;
+	INT64 cycleCount;
+	INT64 recursiveCycleCount;
+	INT64 suspendCycleCount;
+	FunctionID functionId;
+	map< FunctionID, CalleeFunctionInfo* > calleeMap;
 };
 
 class ThreadInfo;
@@ -994,13 +1011,11 @@ public:
 		this->functionInfo = functionInfo;
 		this->cycleStart = cycleStart;
 	}
-
 	StackEntryInfo::StackEntryInfo( const StackEntryInfo& stackEntry )
 	{
 		this->functionInfo = stackEntry.functionInfo;
 		this->cycleStart = stackEntry.cycleStart;
 	}
-  
 	INT64 cycleStart;
 	FunctionInfo* functionInfo;
 };
@@ -1012,7 +1027,6 @@ public:
 	{
 		this->threadInfo = threadInfo;
 	}
-
 	void PushFunction( FunctionInfo* functionInfo, INT64 cycleCount )
 	{
 		if ( functionStack.size() > 0 )
@@ -1076,21 +1090,6 @@ public:
 		}
 		//cout << "Suspended function ID: " << functionStack.top().functionInfo->fid << endl;
 	}
-
-	//void StackInfo::ResumeFunction( INT64 cycleCount )
-	//{
-	//	INT64 elapsed = cycleCount - suspendStart;
-	//	// Resume with no call stack, ignore
-	//	if ( functionStack.size() == 0 ) 
-	//	{
-	//		//cout << "Resume with no call stack!" << endl;
-	//		return;
-	//	}
-	//	functionStack.top().functionInfo->suspendCycleCount += elapsed;
-	//	threadInfo->suspendTime += elapsed;
-	//	//cout << "Resumed function ID: " << functionStack.top().functionInfo->fid << endl;
-	//}
-
 	void StackInfo::Trace()
 	{
 		cout << "Stack depth = " << functionStack.size() << endl;
@@ -1105,18 +1104,6 @@ private:
 class ThreadInfo
 {
 public: 
-	//ThreadInfo();
-	//~ThreadInfo();
-
- // void Start();
- // void End();
- // bool IsRunning();
- // StackInfo* GetStackInfo();
- // FunctionInfo* GetFunctionInfo( FunctionID functionId );
- // void Trace( ProfilerHelper& ph );
- // void Dump( ProfilerSocket& profilerSocket, ProfilerHelper& profilerHelper );
-
-
 	ThreadInfo::ThreadInfo()
 	{
 		this->isRunning = false;
@@ -1176,7 +1163,7 @@ public:
 	void ThreadInfo::Dump( ProfilerSocket& ps, ProfilerHelper& profilerHelper )
 	{
 		// the Sleep avoids a strange bug in the SamplingProfiler, where no functions get sent to NProf
-		Sleep(100);
+		Sleep(1000);
 		for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
 		{
 			ps.SendFunctionData( profilerHelper, i->first );
@@ -1448,6 +1435,7 @@ public:
 		for(map< DWORD, ThreadID >::iterator i=threadMap.begin();i!=threadMap.end();i++)
 		{
 			i++;
+			//cout<< "threadMap.size():"<<threadMap.size();
 			DWORD threadId=(*i).first;
 			HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME,false,threadId);
 			if(threadHandle!=NULL)
@@ -1472,27 +1460,22 @@ public:
 					&functions,
 					NULL,
 					NULL);
-				//if(functions.size()!=0)
-				//{
-				//	DebugBreak();
-				//}
+				
+				ThreadInfo* threadInfo=threadCollection.GetThreadInfo(id);
+
 				for(int index=0	;index<functions.size();index++)
 				{
-					//DebugBreak();
-
-					ThreadInfo* threadInfo=threadCollection.GetThreadInfo(id);
 					for(int y=index+1;;y++)
 					{
 						if(y>functions.size()-1)
 						{
 							FunctionID id=functions[index];
-							threadInfo->GetFunctionInfo(id)->calls++;
-							//functionInfo->calls=20;
-							//functionInfo->recursiveCount=20; 
-							//functionInfo->cycleCount=20;
-							//functionInfo->recursiveCycleCount=20;
-							//functionInfo->suspendCycleCount=30;
-							//threadInfo->GetFunctionInfo(id);
+							FunctionInfo* function=threadInfo->GetFunctionInfo(id);
+							function->calls++;
+							if(index<functions.size()-1)
+							{
+								function->GetCalleeFunctionInfo(functions[index+1])->calls++;
+							}
 							break;
 						}
 						if(functions[y]==functions[index])
@@ -1506,6 +1489,57 @@ public:
 		}
 	}
 };
+	//void PushFunction( FunctionInfo* functionInfo, INT64 cycleCount )
+	//{
+	//	if ( functionStack.size() > 0 )
+	//	{
+	//		// Increment the recursive count of this callee function info so we don't double-book entries
+	//		FunctionInfo* callerFunction = functionStack.top().functionInfo;
+	//		FunctionID calleeId = functionInfo->functionId;
+	//		
+	//		CalleeFunctionInfo* calleeFunction = callerFunction->GetCalleeFunctionInfo( calleeId );
+	//		calleeFunction->recursiveCount++;
+	//		calleeFunction->calls++;
+	//	}
+
+	//	// Increment the recursive count of this function info so we don't double-book entries
+	//	functionInfo->recursiveCount++;
+	//	functionInfo->calls++;
+
+	//	functionStack.push( StackEntryInfo( functionInfo, cycleCount ) );
+	//}
+	//INT64 PopFunction( INT64 cycleCount )
+	//{
+	//	INT64 elapsed = cycleCount - functionStack.top().cycleStart;
+	//	FunctionInfo* functionInfo = functionStack.top().functionInfo;
+
+	//	FunctionID calleeId = functionInfo->functionId;
+
+	//	// Only add the time if we're at the lowest call to the function on the stack
+	//	// Prevents double-accounting of recursive functions
+	//	functionInfo->recursiveCount--;
+	//	if ( functionInfo->recursiveCount == 0 )
+	//		functionInfo->cycleCount += elapsed;
+	//	else
+	//		functionInfo->recursiveCycleCount += elapsed;
+
+	//	functionStack.pop();
+
+	//	if ( functionStack.size() > 0 )
+	//	{
+	//		CalleeFunctionInfo* calleeFunction = functionStack.top().functionInfo->GetCalleeFunctionInfo( calleeId );
+
+	//		// Only add the time if we're at the lowest call to the function on the stack
+	//		// Prevents double-accounting of recursive functions
+	//		calleeFunction->recursiveCount--;
+	//		if ( calleeFunction->recursiveCount == 0 )
+	//			calleeFunction->cycleCount += elapsed;
+	//		else
+	//			calleeFunction->recursiveCycleCount += elapsed;
+	//	}
+
+	//	return elapsed;
+	//}
 
 UINT SamplingProfiler::timer;
 
@@ -1579,8 +1613,8 @@ public:
 
     if ( profilerInfo )
     {
-      //profiler = new SamplingProfiler( profilerInfo );
-      profiler = new InstrumentationProfiler( profilerInfo );
+      profiler = new SamplingProfiler( profilerInfo );
+      //profiler = new InstrumentationProfiler( profilerInfo );
       cout << "Initializing hooks..." << endl;
       profilerInfo->SetEnterLeaveFunctionHooks( ( FunctionEnter* )&RawEnter, ( FunctionLeave* )&RawLeave, ( FunctionTailcall* )&RawTailCall );
       cout << "Ready!" << endl;
@@ -2000,66 +2034,6 @@ void __declspec( naked ) RawTailCall()
 #endif
 
 
-
-
-CalleeFunctionInfo::CalleeFunctionInfo()
-{
-  this->cycleCount = 0;
-  this->recursiveCycleCount = 0;
-  this->recursiveCount = 0;
-  this->calls = 0;
-}
-
-FunctionInfo::FunctionInfo( FunctionID functionId )
-{
-  this->cycleCount = -1;
-  this->recursiveCycleCount = -1;
-  this->suspendCycleCount = 0;
-  this->calls = 0;
-  this->recursiveCount = 0;
-  this->functionId = functionId;
-}
-
-CalleeFunctionInfo* FunctionInfo::GetCalleeFunctionInfo( FunctionID functionId )
-{
-  map< FunctionID, CalleeFunctionInfo* >::iterator found = calleeMap.find( functionId );
-  if ( found == calleeMap.end() )
-  {
-    CalleeFunctionInfo* functionInfo = new CalleeFunctionInfo();
-    calleeMap.insert( make_pair( functionId, functionInfo ) );
-    return functionInfo;
-  }
-  
-  return found->second;
-}
-
-void FunctionInfo::Trace( ProfilerHelper& profilerHelper )
-{
-  cout << "  Calls: " << calls << endl;
-  cout << "  Time: " << cycleCount << endl;
-  cout << "  Avg. time: " << cycleCount / calls << endl;
-
-  for ( map< FunctionID, CalleeFunctionInfo* >::iterator i = calleeMap.begin(); i != calleeMap.end(); i++ )
-  {
-    cout << "  Callee Function ID " << i->first << ":" << endl;
-    cout << "    Calls: " << i->second->calls << endl;
-    cout << "    Time: " << i->second->cycleCount << endl;
-    cout << "    Avg. time: " << i->second->cycleCount / i->second->calls << endl;
-  }
-}    
-
-void FunctionInfo::Dump( ProfilerSocket& ps, ProfilerHelper& profilerHelper )
-{
-	// without sleep function data does not get sent correctly in sampling mode, why?
-	//Sleep(100);
-	//DebugBreak();
-  ps.SendFunctionTimingData( calls, cycleCount, recursiveCycleCount, suspendCycleCount );
-  for ( map< FunctionID, CalleeFunctionInfo* >::iterator i = calleeMap.begin(); i != calleeMap.end(); i++ )
-  {
-    ps.SendCalleeFunctionData( i->first, i->second->calls, i->second->cycleCount, i->second->recursiveCycleCount );
-  }
-  ps.SendEndCalleeFunctionData();
-}
 
 [ module(dll, uuid = "{A461E20A-C7DC-4A89-A24E-87B5E975A96B}", 
 		 name = "NProfHook", 
