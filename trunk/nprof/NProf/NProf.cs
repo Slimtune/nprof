@@ -155,6 +155,7 @@ namespace NProf
 					e.Handled = true;
 				}
 			};
+			TextBox applicationTextBox=new TextBox();
 			Controls.AddRange(new Control[] 
 			{
 				With(new Panel(), delegate(Panel panel)
@@ -213,47 +214,127 @@ namespace NProf
 					});
 
 				}),
-				With(new FlowLayoutPanel(),delegate(FlowLayoutPanel options)
+				With(new TableLayoutPanel(),delegate(TableLayoutPanel options)
 				{
-					options.FlowDirection = FlowDirection.TopDown;
 					options.Dock = DockStyle.Top;
-
-					options.Controls.Add(With(new FlowLayoutPanel(),delegate(FlowLayoutPanel application)
-					{
-						TextBox applicationBox = new TextBox();
-						application.Controls.Add(With(new Label(), delegate(Label label)
+					options.Controls.Add(With(new Label(), delegate(Label label)
 						{
 							label.Text = "Application to run:";
-						}));
-						application.Controls.Add(applicationBox);
-						application.Controls.Add(With(new Button(),delegate(Button button)
-						{
-							button.Text = "Browse...";
-							button.Click += delegate
-							{
-								OpenFileDialog dialog = new OpenFileDialog();
-								dialog.Filter = "Executable files (*.exe)|*.exe";
-								DialogResult dr = dialog.ShowDialog();
-								if (dr == DialogResult.OK)
-								{
-									applicationBox.Text = dialog.FileName;
-									applicationBox.Focus();
-									applicationBox.SelectAll();
-								}
-							};
-						}));
-
-					}));
-					options.Controls.Add(With(new FlowLayoutPanel(), delegate(FlowLayoutPanel arguments)
+						}),0,0);
+					options.Controls.Add(applicationTextBox,1,0);
+					options.Controls.Add(With(new Button(),delegate(Button button)
 					{
-						arguments.Controls.Add(With(new Label(),delegate(Label label)
+						button.Text = "Browse...";
+						button.Click += delegate
+						{
+							OpenFileDialog dialog = new OpenFileDialog();
+							dialog.Filter = "Executable files (*.exe)|*.exe";
+							DialogResult dr = dialog.ShowDialog();
+							if (dr == DialogResult.OK)
+							{
+								applicationTextBox.Text = dialog.FileName;
+								applicationTextBox.Focus();
+								applicationTextBox.SelectAll();
+							}
+						};
+					}),2,0);
+					options.Controls.Add(With(new Label(),delegate(Label label)
 						{
 							label.Text = "Command line arguments:";
-						}));
-						arguments.Controls.Add(new TextBox());
-					}
-					));
+							label.AutoSize=true;
+						}),0,1);
+					options.Controls.Add(new TextBox(),1,1);
 				}),
+				//    options.Controls.Add(
+				//        With(new FlowLayoutPanel(),delegate(FlowLayoutPanel application)
+				//        {
+				//            TextBox applicationBox = new TextBox();
+				//            application.FlowDirection=FlowDirection.LeftToRight;
+				//            application.Controls.Add(With(new Label(), delegate(Label label)
+				//            {
+				//                label.Text = "Application to run:";
+				//            }));
+				//            application.AutoSize=true;
+				//            application.Controls.Add(applicationBox);
+				//            application.Controls.Add(With(new Button(),delegate(Button button)
+				//            {
+				//                button.Text = "Browse...";
+				//                button.Click += delegate
+				//                {
+				//                    OpenFileDialog dialog = new OpenFileDialog();
+				//                    dialog.Filter = "Executable files (*.exe)|*.exe";
+				//                    DialogResult dr = dialog.ShowDialog();
+				//                    if (dr == DialogResult.OK)
+				//                    {
+				//                        applicationBox.Text = dialog.FileName;
+				//                        applicationBox.Focus();
+				//                        applicationBox.SelectAll();
+				//                    }
+				//                };
+				//            }));
+
+				//        }));
+				//    options.Controls.Add(
+				//        With(new FlowLayoutPanel(), delegate(FlowLayoutPanel arguments)
+				//        {
+				//            arguments.FlowDirection=FlowDirection.LeftToRight;
+				//            arguments.AutoSize=true;
+				//            arguments.Controls.Add(With(new Label(),delegate(Label label)
+				//            {
+				//                label.Text = "Command line arguments:";
+				//                label.AutoSize=true;
+				//            }));
+				//            arguments.Controls.Add(new TextBox());
+				//        }));
+				//}),
+				//With(new FlowLayoutPanel(),delegate(FlowLayoutPanel options)
+				//{
+				//    options.FlowDirection = FlowDirection.TopDown;
+				//    options.Dock = DockStyle.Top;
+
+				//    options.Controls.AddRange(new Control[]
+				//    {
+				//        With(new FlowLayoutPanel(),delegate(FlowLayoutPanel application)
+				//        {
+				//            TextBox applicationBox = new TextBox();
+				//            application.FlowDirection=FlowDirection.LeftToRight;
+				//            application.Controls.Add(With(new Label(), delegate(Label label)
+				//            {
+				//                label.Text = "Application to run:";
+				//            }));
+				//            application.AutoSize=true;
+				//            application.Controls.Add(applicationBox);
+				//            application.Controls.Add(With(new Button(),delegate(Button button)
+				//            {
+				//                button.Text = "Browse...";
+				//                button.Click += delegate
+				//                {
+				//                    OpenFileDialog dialog = new OpenFileDialog();
+				//                    dialog.Filter = "Executable files (*.exe)|*.exe";
+				//                    DialogResult dr = dialog.ShowDialog();
+				//                    if (dr == DialogResult.OK)
+				//                    {
+				//                        applicationBox.Text = dialog.FileName;
+				//                        applicationBox.Focus();
+				//                        applicationBox.SelectAll();
+				//                    }
+				//                };
+				//            }));
+
+				//        }),
+				//        With(new FlowLayoutPanel(), delegate(FlowLayoutPanel arguments)
+				//        {
+				//            arguments.FlowDirection=FlowDirection.LeftToRight;
+				//            arguments.AutoSize=true;
+				//            arguments.Controls.Add(With(new Label(),delegate(Label label)
+				//            {
+				//                label.Text = "Command line arguments:";
+				//                label.AutoSize=true;
+				//            }));
+				//            arguments.Controls.Add(new TextBox());
+				//        })
+				//    });
+				//}),
 				With(new CommandBarManager(), delegate(CommandBarManager manager)
 				{
 					manager.Dock = DockStyle.Top;
@@ -2481,8 +2562,6 @@ namespace NProf
 		[field: NonSerialized]
 		public event MessageHandler Message;
 
-		//[NonSerialized]
-		//private ProcessCompletedHandler completed;
 		private DateTime start;
 		private DateTime end;
 		private Run run;
@@ -2523,15 +2602,6 @@ namespace NProf
 			Console.Out.Flush();
 			System.Threading.Thread.CurrentThread.Name = "GUI Thread";
 			form.Show();
-			//if (form.Project == null)
-			//{
-			//    PropertiesForm options = new PropertiesForm(PropertiesForm.ProfilerProjectMode.CreateProject);
-			//    options.ShowDialog();
-			//    if (form.Project == null)
-			//    {
-			//        form.Project = options.Project;
-			//    }
-			//}
 			Application.Run(form);
 		}
 	}
