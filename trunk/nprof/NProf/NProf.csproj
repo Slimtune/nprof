@@ -118,9 +118,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="NProf.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="OptionsForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <EmbeddedResource Include="AboutForm.resx">
@@ -139,10 +136,6 @@
     <EmbeddedResource Include="Resources\toolbar24.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="OptionsForm.resx">
-      <DependentUpon>OptionsForm.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
     <EmbeddedResource Include="Resources\toolbar16.png" />
   </ItemGroup>
   <ItemGroup>

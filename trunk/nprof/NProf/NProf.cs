@@ -55,57 +55,25 @@ namespace NProf
 			{
 				project = value;
 				UpdateRuns();
-				//}
 			}
 		}
 		private Profiler profiler=new Profiler();
 		private ProjectInfo project;
-		private TreeView runs = new TreeView();
-		private MethodView methods=new MethodView();
-		private MethodView callees=new MethodView();
-		private MethodView callers=new MethodView();
+		public TreeView runs;
+		private MethodView methods;//=new MethodView("Methods");
+		private MethodView callees;
+		private MethodView callers;
 		private TextBox findText = new TextBox();
-		public static Panel methodPanel=new Panel();
-		Run currentRun;
+		public Run currentRun;
+		public delegate void OneDelegate<T>(T t);
+		public T With<T>(T t,OneDelegate<T> del)
+		{
+			del(t);
+			return t;
+		}
 		private ProfilerForm()
 		{
-			runs.DoubleClick += delegate
-			{
-				UpdateFilters((Run)runs.SelectedNode.Tag);// this should also be done when loading a project!!
-			};
-			methods.SelectedItemsChanged += delegate
-			{
-				callees.Items.Clear();
-				callers.Items.Clear();
-
-				if (methods.SelectedItems.Count == 0)
-					return;
-
-				// somebody clicked! empty the forward stack and push this click on the "Back" stack.
-				if (!isNavigating)
-				{
-					forward.Clear();
-					if (_navCurrent != 0)
-					{
-						back.Push(_navCurrent);
-					}
-					else
-					{
-					}
-
-					for (int idx = 0; idx < methods.SelectedItems.Count; ++idx)
-					{
-						if (methods.SelectedItems[idx].Tag != null)
-						{
-							_navCurrent = (methods.SelectedItems[idx].Tag as FunctionInfo).ID;
-							break;
-						}
-					}
-				}
-				//Run run = (Run)runs.SelectedNode.Tag;
-				UpdateCalleeList();
-				UpdateCallerList(currentRun);
-			};
+			Size = new Size(800, 600);
 			Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("NProf.Resources.app-icon.ico"));
 			Text = "NProf";
 
@@ -114,63 +82,67 @@ namespace NProf
 			if (LoadLibrary(dll) == 0)
 				throw new Win32Exception(Marshal.GetLastWin32Error(), "Failed to load msvcr70.dll");
 
-			CommandBarManager commandBarManager = new CommandBarManager();
-			CommandBar commandBar = new CommandBar(CommandBarStyle.ToolBar);
-			commandBar.Items.Add(new CommandBarButton(Images.New, "New", New));
-			commandBar.Items.Add(new CommandBarButton(Images.Save, "Save", Save));
-			commandBar.Items.AddSeparator();
-			commandBar.Items.Add(new CommandBarButton(Images.Back, "Back", Back));
-			commandBar.Items.Add(new CommandBarButton(Images.Forward, "Forward", Forward));
-			commandBar.Items.AddSeparator();
-			commandBar.Items.Add(new CommandBarButton(Images.Run, "Run", delegate { StartRun(null, null); }));
-			commandBarManager.CommandBars.Add(commandBar);
-
-			MenuControl mainMenu = new MenuControl();
-			mainMenu.Dock = DockStyle.Top;
-			mainMenu.MenuCommands.AddRange(new MenuCommand[]
+			runs = With(new TreeView(), delegate(TreeView tree)
 			{
-			new Menu("File",
-				new Menu("&New...","Create a new profile project",New),
-				new Menu("&Open...","Open a profile project",Open),
-				new Menu("-","-",null),
-				new Menu("&Save","Save the active profiler project",Shortcut.CtrlS,Save),
-				new Menu("Save &As...","Save the active profiler project as a specified file name",delegate {SaveProject( Project, true );}),
-				new Menu("-","-",null),
-				new Menu("E&xit","Exit the application",Shortcut.AltF4,
-				delegate {Close();})),
-			new Menu("View",
-				new Menu("Back","Navigate Back",Back),
-				new Menu("Forward","Navigate Forward",Forward)),
-			new Menu("&Project",
-				new Menu("Start","Run the current project",Shortcut.F5,StartRun),
-				new Menu("Properties...","Modify the options for this project",Shortcut.F2,
-					Properties)),
-			new Menu("&Help",
-				new Menu("About nprof...","About nprof",About))
+				tree.Dock = DockStyle.Left;
+				tree.DoubleClick += delegate
+				{
+					UpdateFilters((Run)runs.SelectedNode.Tag);// this should also be done when loading a project!!
+				};
 			});
+			callers = With(new MethodView("Callers"), delegate(MethodView method)
+			{
+				method.DoubleClick += delegate
+				{
+					JumpToID(((FunctionInfo)callees.SelectedItems[0].Tag).ID);
+				};
+				method.Size = new Size(100, 100);
+				method.Dock = DockStyle.Bottom;
 
-			commandBarManager.Dock = DockStyle.Top;
+			});
+			callees = With(new MethodView("Callees"), delegate(MethodView method)
+			{
+				method.DoubleClick += delegate
+				{
+					JumpToID(((CalleeFunctionInfo)callees.SelectedItems[0].Tag).ID);
+				};
+				method.Size = new Size(100, 100);
+				method.Dock = DockStyle.Bottom;
+			});
+			methods = With(new MethodView("Methods"), delegate(MethodView method)
+			{
+				method.Size = new Size(100, 100);
+				method.Dock = DockStyle.Fill;
 
-			Panel panel = new Panel();
-			panel.Dock = DockStyle.Fill;
-			Controls.Add(panel);
+				method.SelectedItemsChanged += delegate
+				{
+					callees.Items.Clear();
+					callers.Items.Clear();
 
-			runs.Dock = DockStyle.Left;
+					if (methods.SelectedItems.Count == 0)
+						return;
 
-			Size = new Size(800, 600);
-			methods.Size = new Size(100, 100);
-
-			callers.Size = new Size(100, 100);
-			callers.Dock = DockStyle.Bottom;
-			callees.Size = new Size(100, 100);
-			callees.Dock = DockStyle.Bottom;
-			methods.Dock = DockStyle.Fill;
-			methodPanel.Size = new Size(100, 100);
-			methodPanel.Dock = DockStyle.Fill;
-			Splitter runSplitter = new Splitter();
-			runSplitter.Dock = DockStyle.Left;
-
-			Label findLabel = new Label();
+					// somebody clicked! empty the forward stack and push this click on the "Back" stack.
+					if (!isNavigating)
+					{
+						forward.Clear();
+						if (_navCurrent != 0)
+						{
+							back.Push(_navCurrent);
+						}
+						for (int idx = 0; idx < methods.SelectedItems.Count; ++idx)
+						{
+							if (methods.SelectedItems[idx].Tag != null)
+							{
+								_navCurrent = (methods.SelectedItems[idx].Tag as FunctionInfo).ID;
+								break;
+							}
+						}
+					}
+					UpdateCalleeList();
+					UpdateCallerList(currentRun);
+				};
+			});
 			findText.TextChanged += delegate
 			{
 				Find(true, false);
@@ -183,53 +155,143 @@ namespace NProf
 					e.Handled = true;
 				}
 			};
-			findLabel.Text = "Find:";
-			findLabel.TextAlign = ContentAlignment.MiddleCenter;
-			findLabel.AutoSize = true;
-			FlowLayoutPanel findPanel = new FlowLayoutPanel();
-			findPanel.WrapContents = false;
-			findPanel.AutoSize = true;
-			Button findNext = new Button();
-			findNext.AutoSize = true;
-			Button findPrevious = new Button();
-			findPrevious.AutoSize = true;
-			findNext.Text = "Find next";
-			findNext.Click += new EventHandler(findNext_Click);
-			findPrevious.Click += new EventHandler(findPrevious_Click);
-			findPrevious.Text = "Find previous";
+			Controls.AddRange(new Control[] 
+			{
+				With(new Panel(), delegate(Panel panel)
+				{
+					panel.Dock = DockStyle.Fill;
+					panel.Controls.AddRange(new Control[] {
+						With(new Panel(),delegate(Panel methodPanel)
+					{
+						methodPanel.Size = new Size(100, 100);
+						methodPanel.Dock = DockStyle.Fill;
+
+						methodPanel.Controls.AddRange(new Control[] {
+							methods,
+							Splitter(DockStyle.Bottom),
+							callees,
+							Splitter(DockStyle.Bottom),
+							callers,
+							With(new FlowLayoutPanel(),delegate(FlowLayoutPanel p)
+							{
+								p.WrapContents = false;
+								p.AutoSize = true;
+								p.Dock = DockStyle.Top;
 
 
-			findPanel.Controls.AddRange(new Control[] {
-				findLabel,
-				findText,
-				findNext,
-				findPrevious
-			});
-			findPanel.Dock = DockStyle.Top;
+								p.Controls.AddRange(new Control[] {
+									With(new Label(),delegate(Label label)
+								{
+									label.Text = "Find:";
+									label.TextAlign = ContentAlignment.MiddleCenter;
+									label.AutoSize = true;
+								}),
+									findText,
+									With(new Button(),delegate(Button button)
+									{
+										button.AutoSize = true;
+										button.Text = "Find next";
+										button.Click += new EventHandler(findNext_Click);
+									}),
+									With(new Button(),delegate(Button button)
+									{
+										button.AutoSize = true;
+										button.Click += new EventHandler(findPrevious_Click);
+										button.Text = "Find previous";
+									})});
+							})
+
+						});
 
 
-			methodPanel.Controls.AddRange(new Control[] {
-				methods,
-				Splitter(DockStyle.Bottom),
-				callees,
-				Splitter(DockStyle.Bottom),
-				callers,
-				findPanel
+					}),
+						With(new Splitter(),delegate(Splitter splitter)
+						{
+							splitter.Dock = DockStyle.Left;
+						}),
+						runs
+					});
 
-			});
-			Label runsLabel = new Label();
-			runsLabel.Text = "Project runs:";
-			FlowLayoutPanel runsPanel = new FlowLayoutPanel();
-			runsPanel.Dock = DockStyle.Left;
-			runsLabel.Controls.Add(runs);
-			runsPanel.Controls.Add(runsLabel);
-			panel.Controls.AddRange(new Control[] {
-				methodPanel,
-				runSplitter,
-				runs
-			});
-			Controls.Add(commandBarManager);
-			Controls.Add(mainMenu);
+				}),
+				With(new FlowLayoutPanel(),delegate(FlowLayoutPanel options)
+				{
+					options.FlowDirection = FlowDirection.TopDown;
+					options.Dock = DockStyle.Top;
+
+					options.Controls.Add(With(new FlowLayoutPanel(),delegate(FlowLayoutPanel application)
+					{
+						TextBox applicationBox = new TextBox();
+						application.Controls.Add(With(new Label(), delegate(Label label)
+						{
+							label.Text = "Application to run:";
+						}));
+						application.Controls.Add(applicationBox);
+						application.Controls.Add(With(new Button(),delegate(Button button)
+						{
+							button.Text = "Browse...";
+							button.Click += delegate
+							{
+								OpenFileDialog dialog = new OpenFileDialog();
+								dialog.Filter = "Executable files (*.exe)|*.exe";
+								DialogResult dr = dialog.ShowDialog();
+								if (dr == DialogResult.OK)
+								{
+									applicationBox.Text = dialog.FileName;
+									applicationBox.Focus();
+									applicationBox.SelectAll();
+								}
+							};
+						}));
+
+					}));
+					options.Controls.Add(With(new FlowLayoutPanel(), delegate(FlowLayoutPanel arguments)
+					{
+						arguments.Controls.Add(With(new Label(),delegate(Label label)
+						{
+							label.Text = "Command line arguments:";
+						}));
+						arguments.Controls.Add(new TextBox());
+					}
+					));
+				}),
+				With(new CommandBarManager(), delegate(CommandBarManager manager)
+				{
+					manager.Dock = DockStyle.Top;
+					manager.CommandBars.Add(With(new CommandBar(CommandBarStyle.ToolBar),
+					delegate(CommandBar bar)
+					{
+						bar.Items.AddRange(new CommandBarItem[] {
+							new CommandBarButton(Images.New, "New", New),
+							new CommandBarButton(Images.Save, "Save", Save),
+							new CommandBarSeparator(),
+							new CommandBarButton(Images.Back, "Back", Back),
+							new CommandBarButton(Images.Forward, "Forward", Forward),
+							new CommandBarSeparator(),
+							new CommandBarButton(Images.Run, "Run", delegate { StartRun(null, null); })}); ;
+					}));
+				}),
+				With(new MenuControl(),delegate(MenuControl mainMenu)
+				{
+					mainMenu.Dock = DockStyle.Top;
+					mainMenu.MenuCommands.AddRange(new MenuCommand[]
+					{
+						new Menu("File",
+							new Menu("&New...","Create a new profile project",New),
+							new Menu("&Open...","Open a profile project",Open),
+							new Menu("-","-",null),
+							new Menu("&Save","Save the active profiler project",Shortcut.CtrlS,Save),
+							new Menu("Save &As...","Save the active profiler project as a specified file name",delegate {SaveProject( Project, true );}),
+							new Menu("-","-",null),
+							new Menu("E&xit","Exit the application",Shortcut.AltF4,delegate {Close();})),
+						new Menu("View",
+							new Menu("Back","Navigate Back",Back),
+							new Menu("Forward","Navigate Forward",Forward)),
+						new Menu("&Project",
+							new Menu("Start","Run the current project",Shortcut.F5,StartRun)),
+						new Menu("&Help",
+							new Menu("About nprof...","About nprof",About))
+					});
+				})});
 		}
 		public static Splitter Splitter(DockStyle dock)
 		{
@@ -255,12 +317,12 @@ namespace NProf
 
 		private void New(object sender, System.EventArgs e)
 		{
-			PropertiesForm form = new PropertiesForm(PropertiesForm.ProfilerProjectMode.CreateProject);
-			form.Mode = PropertiesForm.ProfilerProjectMode.CreateProject;
-			if (form.ShowDialog(this) == DialogResult.OK)
-			{
-				project = form.Project;
-			}
+			//PropertiesForm form = new PropertiesForm(PropertiesForm.ProfilerProjectMode.CreateProject);
+			//form.Mode = PropertiesForm.ProfilerProjectMode.CreateProject;
+			//if (form.ShowDialog(this) == DialogResult.OK)
+			//{
+			//    project = form.Project;
+			//}
 		}
 
 		private void Open(object sender, System.EventArgs e)
@@ -305,14 +367,14 @@ namespace NProf
 			run.Start();
 		}
 
-		private void Properties(object sender, System.EventArgs e)
-		{
-			PropertiesForm properties = new PropertiesForm(PropertiesForm.ProfilerProjectMode.ModifyProject);
-			properties.Project = Project;
-			properties.Mode = PropertiesForm.ProfilerProjectMode.ModifyProject;
+		//private void Properties(object sender, System.EventArgs e)
+		//{
+		//    //PropertiesForm properties = new PropertiesForm(PropertiesForm.ProfilerProjectMode.ModifyProject);
+		//    //properties.Project = Project;
+		//    //properties.Mode = PropertiesForm.ProfilerProjectMode.ModifyProject;
 
-			properties.ShowDialog(this);
-		}
+		//    //properties.ShowDialog(this);
+		//}
 
 		private void Back(object sender, System.EventArgs e)
 		{
@@ -573,6 +635,7 @@ namespace NProf
 						item = methods.SelectedItems[0];
 					}
 				}
+				ContainerListViewItem firstItem = item;
 				while (item != null)
 				{
 					if (item.Text.ToLower().Contains(findText.Text.ToLower()))
@@ -594,8 +657,19 @@ namespace NProf
 						{
 							item = item.PreviousItem;
 						}
+						if (item == null)
+						{
+							if (forward)
+							{
+								item = methods.Items[0];
+							}
+							else
+							{
+								item = methods.Items[methods.Items.Count - 1];
+							}
+						}
 					}
-					if (item == null)
+					if (item == firstItem)
 					{
 						break;
 					}
@@ -612,55 +686,128 @@ namespace NProf
 		}
 		public static ProfilerForm form = new ProfilerForm();
 	}
-	public class MethodItem : ContainerListViewItem
-	{
-		private FunctionInfo function;
-		public MethodItem(FunctionInfo function)
-			: base(function.Signature.Signature)
-		{
-			this.function = function;
-			this.SubItems[1].Text = function.Calls.ToString();
-			this.SubItems[2].Text = function.TimeInMethod.ToString(ProfilerForm.timeFormat);
-			this.Tag = function;
-		}
-	}
+	//public class MethodItem : ContainerListViewItem
+	//{
+	//    private FunctionInfo function;
+	//    public MethodItem(FunctionInfo function)
+	//        : base(function.Signature.Signature)
+	//    {
+	//        this.function = function;
+	//        this.SubItems[1].Text = function.Calls.ToString();
+
+	//        this.SubItems[2].Text = function.TimeInMethod.ToString(ProfilerForm.timeFormat);
+			//int index = ProfilerForm.form.runs.SelectedNode.Index - 1;
+			//if (index >= 0)
+			//{
+			//    Run run=(Run)ProfilerForm.form.runs.Nodes[index].Tag;
+			//    foreach(ThreadInfo thread in run.Process.Threads)
+			//    {
+			//        if(thread.FunctionInfoCollection.ContainsKey(function.ID))
+			//        {
+			//            FunctionInfo oldFunction=thread.FunctionInfoCollection[function.ID];
+			//            SubItems[3].Text = (function.Calls - oldFunction.Calls).ToString();
+			//            break;
+			//        }
+			//    }
+
+			//}
+
+	//        this.Tag = function;
+	//    }
+	//}
 	public class MethodView : ContainerListView
 	{
-		public MethodView()
+		public MethodView(string name)
 		{
-			Columns.Add("Method name");
-			Columns.Add("Number of calls");
-			Columns.Add("Time spent");
+			Columns.Add(name);
+			Columns.Add("Time");
+
 			HeaderStyle = ColumnHeaderStyle.Clickable;
 			Columns[0].Width = 350;
-			this.ColumnSortColor = Color.White;
 			Columns[0].SortDataType = SortDataType.String;
 			Columns[1].SortDataType = SortDataType.Integer;
-			Columns[2].SortDataType = SortDataType.String;
-			this.ClientSizeChanged += new EventHandler(MethodView_ClientSizeChanged);
+			
+			ColumnSortColor = Color.White;
 			Font = new Font("Tahoma", 8.0f);
-
-			Sort(2, SortOrder.Descending, true);
-		}
-
-		void MethodView_ClientSizeChanged(object sender, EventArgs e)
-		{
 		}
 		public void Add(FunctionInfo function)
 		{
 			ContainerListViewItem item = Items.Add(function.Signature.Signature);
-			item.SubItems[1].Text = function.Calls.ToString();
-			item.SubItems[2].Text = function.TimeInMethod.ToString(ProfilerForm.timeFormat);
+			item.SubItems[1].Text = function.TimeInMethod.ToString(ProfilerForm.timeFormat);
 			item.Tag = function;
 		}
 		public void Add(CalleeFunctionInfo function)
 		{
 			ContainerListViewItem item = Items.Add(function.Signature);
-			item.SubItems[1].Text = function.Calls.ToString();
-			item.SubItems[2].Text = function.TimeInMethod.ToString(ProfilerForm.timeFormat);
+			item.SubItems[0].Text = function.Calls.ToString();
+			item.SubItems[1].Text = function.TimeInMethod.ToString(ProfilerForm.timeFormat);
 			item.Tag = function;
 		}
 	}
+	//public class MethodView : ContainerListView
+	//{
+	//    public MethodView()
+	//    {
+	//        Columns.Add("Method name");
+	//        Columns.Add("Number of calls");
+	//        Columns.Add("Time spent");
+	//        Columns.Add("Change in number of calls");
+
+	//        HeaderStyle = ColumnHeaderStyle.Clickable;
+	//        Columns[0].Width = 350;
+	//        this.ColumnSortColor = Color.White;
+	//        Columns[0].SortDataType = SortDataType.String;
+	//        Columns[1].SortDataType = SortDataType.Integer;
+	//        Columns[2].SortDataType = SortDataType.String;
+	//        Columns[3].SortDataType = SortDataType.Integer;
+	//        this.ClientSizeChanged += new EventHandler(MethodView_ClientSizeChanged);
+	//        Font = new Font("Tahoma", 8.0f);
+
+	//        Sort(2, SortOrder.Descending, true);
+	//    }
+
+	//    void MethodView_ClientSizeChanged(object sender, EventArgs e)
+	//    {
+	//    }
+	//    public void Add(FunctionInfo function)
+	//    {
+	//        ContainerListViewItem item = Items.Add(function.Signature.Signature);
+	//        item.SubItems[1].Text = function.Calls.ToString();
+	//        item.SubItems[2].Text = function.TimeInMethod.ToString(ProfilerForm.timeFormat);
+	//        //if (ProfilerForm.form.currentRun!=null)
+	//        //{
+	//        int index = 0;
+	//        //foreach(TreeNode node in ProfilerForm.form.runs.Nodes)
+	//        //{
+	//        //    if (node.Tag == run)
+	//        //    {
+	//        //        index = node.Index-1;
+	//        //    }
+	//        //}
+	//        if (index >= 0)
+	//        {
+	//            Run run = (Run)ProfilerForm.form.runs.Nodes[index].Tag;
+	//            foreach (ThreadInfo thread in run.Process.Threads)
+	//            {
+	//                if (thread.FunctionInfoCollection.ContainsKey(function.ID))
+	//                {
+	//                    FunctionInfo oldFunction = thread.FunctionInfoCollection[function.ID];
+	//                    item.SubItems[3].Text = (function.Calls - oldFunction.Calls).ToString();
+	//                    break;
+	//                }
+	//            }
+	//        }
+	//        //}
+	//        item.Tag = function;
+	//    }
+	//    public void Add(CalleeFunctionInfo function)
+	//    {
+	//        ContainerListViewItem item = Items.Add(function.Signature);
+	//        item.SubItems[1].Text = function.Calls.ToString();
+	//        item.SubItems[2].Text = function.TimeInMethod.ToString(ProfilerForm.timeFormat);
+	//        item.Tag = function;
+	//    }
+	//}
 	public class Menu : MenuCommand
 	{
 		public Menu(string text, string description, EventHandler click)
@@ -2376,15 +2523,15 @@ namespace NProf
 			Console.Out.Flush();
 			System.Threading.Thread.CurrentThread.Name = "GUI Thread";
 			form.Show();
-			if (form.Project == null)
-			{
-				PropertiesForm options = new PropertiesForm(PropertiesForm.ProfilerProjectMode.CreateProject);
-				options.ShowDialog();
-				if (form.Project == null)
-				{
-					form.Project = options.Project;
-				}
-			}
+			//if (form.Project == null)
+			//{
+			//    PropertiesForm options = new PropertiesForm(PropertiesForm.ProfilerProjectMode.CreateProject);
+			//    options.ShowDialog();
+			//    if (form.Project == null)
+			//    {
+			//        form.Project = options.Project;
+			//    }
+			//}
 			Application.Run(form);
 		}
 	}

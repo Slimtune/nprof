@@ -1163,7 +1163,7 @@ public:
 	void ThreadInfo::Dump( ProfilerSocket& ps, ProfilerHelper& profilerHelper )
 	{
 		// the Sleep avoids a strange bug in the SamplingProfiler, where no functions get sent to NProf
-		Sleep(1000);
+		//Sleep(1000);
 		for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
 		{
 			ps.SendFunctionData( profilerHelper, i->first );
@@ -1264,10 +1264,14 @@ private:
 class Profiler
 {
 public: 
+	/*CRITICAL_SECTION criticalSection;*/
+
+	//Initilize the critical section
 	Profiler::Profiler( ICorProfilerInfo2* profilerInfo )
 	{
 		this->profilerInfo = profilerInfo;
 		this->profilerHelper.Initialize( profilerInfo );
+		/*InitializeCriticalSection(&criticalSection);*/
 	}
 	virtual void Leave( FunctionID functionId ){};
 	virtual void Enter( FunctionID functionId ){};
@@ -1289,8 +1293,10 @@ public:
 
 	void ThreadMap( ThreadID threadId, DWORD dwOSThread )
 	{
-	  cout << "ThreadMap( " << threadId << ", " << dwOSThread << ")" << endl;
-	  threadMap[ dwOSThread ] = threadId;
+		//EnterCriticalSection(&criticalSection);
+		cout << "ThreadMap( " << threadId << ", " << dwOSThread << ")" << endl;
+		threadMap[ dwOSThread ] = threadId;
+		//LeaveCriticalSection(&criticalSection);
 	};
 
 	void ThreadEnd( ThreadID threadId )
@@ -1311,9 +1317,11 @@ public:
 
 	void AppDomainStart( AppDomainID appDomainId )
 	{
-	  cout << "AppDomain Created: " << appDomainId << endl;
-	  ProfilerSocket ps;
-	  ps.SendAppDomainCreate( appDomainId );
+		//EnterCriticalSection(&criticalSection);
+		cout << "AppDomain Created: " << appDomainId << endl;
+		ProfilerSocket ps;
+		ps.SendAppDomainCreate( appDomainId );
+		//LeaveCriticalSection(&criticalSection);
 	};
 
 	virtual void End()
@@ -1389,6 +1397,7 @@ HRESULT __stdcall __stdcall StackWalker(
 	BYTE context[  ],
 	void *clientData)
 {
+	//cout << funcId;// << "\n";
 	if(funcId!=0)
 	{
 		((vector<FunctionID>*)clientData)->push_back(funcId);
@@ -1421,7 +1430,7 @@ public:
 		TIMECAPS timeCaps;
 		timeGetDevCaps(&timeCaps, sizeof(TIMECAPS));
 		timer = timeSetEvent(
-		  50,
+		  10,
 		  timeCaps.wPeriodMin, 
 		  TimerFunction, 
 		  (DWORD_PTR)this,     
@@ -1429,13 +1438,12 @@ public:
 	}
 	static UINT timer;
 
-
 	void WalkStack()
 	{
+		//DebugBreak();
 		for(map< DWORD, ThreadID >::iterator i=threadMap.begin();i!=threadMap.end();i++)
 		{
-			i++;
-			//cout<< "threadMap.size():"<<threadMap.size();
+			//i++;
 			DWORD threadId=(*i).first;
 			HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME,false,threadId);
 			if(threadHandle!=NULL)
@@ -1446,13 +1454,16 @@ public:
 		}
 		for(map< DWORD, ThreadID >::iterator i=threadMap.begin();i!=threadMap.end();i++)
 		{
-			i++;
+			//i++;
 			DWORD threadId=(*i).first;
 			HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME|THREAD_QUERY_INFORMATION|THREAD_GET_CONTEXT,false,threadId);
 			if(threadHandle!=NULL)
 			{
 				vector<FunctionID> functions;
 				ThreadID id=i->second;
+				//cout << "stackwalk for thread "<<threadId<<"\n";
+
+
 				profilerInfo->DoStackSnapshot(
 					id,
 					StackWalker,
@@ -1486,8 +1497,78 @@ public:
 				}
 				ResumeThread(threadHandle);
 			}
+			//else
+
+			//{
+			//	cout << "could not open thread\n";
+			//}
 		}
 	}
+	//void WalkStack()
+	//{
+	//	for(map< DWORD, ThreadID >::iterator i=threadMap.begin();i!=threadMap.end();i++)
+	//	{
+	//		i++;
+	//		DWORD threadId=(*i).first;
+	//		HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME,false,threadId);
+	//		if(threadHandle!=NULL)
+	//		{
+
+	//			int suspended=SuspendThread(threadHandle);
+	//		}
+	//	}
+	//	for(map< DWORD, ThreadID >::iterator i=threadMap.begin();i!=threadMap.end();i++)
+	//	{
+	//		i++;
+	//		DWORD threadId=(*i).first;
+	//		HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME|THREAD_QUERY_INFORMATION|THREAD_GET_CONTEXT,false,threadId);
+	//		if(threadHandle!=NULL)
+	//		{
+	//			vector<FunctionID> functions;
+	//			ThreadID id=i->second;
+	//			cout << "stackwalk for thread "<<threadId<<"\n";
+
+
+	//			profilerInfo->DoStackSnapshot(
+	//				id,
+	//				StackWalker,
+	//				COR_PRF_SNAPSHOT_DEFAULT,
+	//				&functions,
+	//				NULL,
+	//				NULL);
+	//			
+	//			ThreadInfo* threadInfo=threadCollection.GetThreadInfo(id);
+
+	//			for(int index=0	;index<functions.size();index++)
+	//			{
+	//				for(int y=index+1;;y++)
+	//				{
+	//					if(y>functions.size()-1)
+	//					{
+	//						FunctionID id=functions[index];
+	//						FunctionInfo* function=threadInfo->GetFunctionInfo(id);
+	//						function->calls++;
+	//						if(index<functions.size()-1)
+	//						{
+	//							function->GetCalleeFunctionInfo(functions[index+1])->calls++;
+	//						}
+	//						break;
+	//					}
+	//					if(functions[y]==functions[index])
+	//					{
+	//						break;
+	//					}
+	//				}
+	//			}
+	//			ResumeThread(threadHandle);
+	//		}
+	//		else
+
+	//		{
+	//			cout << "could not open thread\n";
+	//		}
+	//	}
+	//}
 };
 	//void PushFunction( FunctionInfo* functionInfo, INT64 cycleCount )
 	//{
@@ -1594,362 +1675,385 @@ public:
   }
 
 public:
-  static Profiler* profiler;
-
+	static Profiler* profiler;
+	CRITICAL_SECTION criticalSection;
   // ICorProfilerCallback Methods
 public:
-  static Profiler* GetProfiler()
-  {
-    return profiler;
-  }
+	static Profiler* GetProfiler()
+	{
+		return profiler;
+	}
 
-  STDMETHOD(Initialize)(LPUNKNOWN pICorProfilerInfoUnk)
-  {
-    CComQIPtr< ICorProfilerInfo2 > profilerInfo = pICorProfilerInfoUnk;
+	STDMETHOD(Initialize)(LPUNKNOWN pICorProfilerInfoUnk)
+	{
+		CComQIPtr< ICorProfilerInfo2 > profilerInfo = pICorProfilerInfoUnk;
+		InitializeCriticalSection(&criticalSection);
 
-    ProfilerSocket::Initialize();
+		ProfilerSocket::Initialize();
 
-    cout << "Initializing profiler hook DLL..." << endl;
+		cout << "Initializing profiler hook DLL..." << endl;
 
-    if ( profilerInfo )
-    {
-      profiler = new SamplingProfiler( profilerInfo );
-      //profiler = new InstrumentationProfiler( profilerInfo );
-      cout << "Initializing hooks..." << endl;
-      profilerInfo->SetEnterLeaveFunctionHooks( ( FunctionEnter* )&RawEnter, ( FunctionLeave* )&RawLeave, ( FunctionTailcall* )&RawTailCall );
-      cout << "Ready!" << endl;
-    }
+		if ( profilerInfo )
+		{
+			profiler = new SamplingProfiler( profilerInfo );
+			//profiler = new InstrumentationProfiler( profilerInfo );
+			cout << "Initializing hooks..." << endl;
+			profilerInfo->SetEnterLeaveFunctionHooks( ( FunctionEnter* )&RawEnter, ( FunctionLeave* )&RawLeave, ( FunctionTailcall* )&RawTailCall );
+			cout << "Ready!" << endl;
+		}
 
-    return S_OK;
-  }
-  STDMETHOD(Shutdown)()
-  {
-    cout << "Terminating profiler..." << endl;
-    profiler->End();
-    delete profiler;
-    profiler = NULL;
-    ProfilerSocket profilerSocket;
-    profilerSocket.SendShutdown();
+		return S_OK;
+	}
+	STDMETHOD(Shutdown)()
+	{
+		EnterCriticalSection(&criticalSection);
+		cout << "Terminating profiler..." << endl;
+		profiler->End();
+		delete profiler;
+		profiler = NULL;
+		ProfilerSocket profilerSocket;
+		profilerSocket.SendShutdown();
+		LeaveCriticalSection(&criticalSection);
+		return S_OK;
+	}
+	STDMETHOD(AppDomainCreationStarted)(AppDomainID appDomainId)
+	{
+		EnterCriticalSection(&criticalSection);
+		profiler->AppDomainStart( appDomainId );
+		LeaveCriticalSection(&criticalSection);
+		return S_OK;
+	}
+	STDMETHOD(AppDomainCreationFinished)(AppDomainID appDomainId, HRESULT hrStatus)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(AppDomainShutdownStarted)(AppDomainID appDomainId)
+	{
+		EnterCriticalSection(&criticalSection);
+		profiler->AppDomainEnd( appDomainId );
+		LeaveCriticalSection(&criticalSection);
+		return S_OK;
+	}
+	STDMETHOD(AppDomainShutdownFinished)(AppDomainID appDomainId, HRESULT hrStatus)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(AssemblyLoadStarted)(AssemblyID assemblyId)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(AssemblyLoadFinished)(AssemblyID assemblyId, HRESULT hrStatus)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(AssemblyUnloadStarted)(AssemblyID assemblyId)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(AssemblyUnloadFinished)(AssemblyID assemblyId, HRESULT hrStatus)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ModuleLoadStarted)(ModuleID moduleId)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ModuleLoadFinished)(ModuleID moduleId, HRESULT hrStatus)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ModuleUnloadStarted)(ModuleID moduleId)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ModuleUnloadFinished)(ModuleID moduleId, HRESULT hrStatus)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ModuleAttachedToAssembly)(ModuleID moduleId, AssemblyID assemblyId)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ClassLoadStarted)(ClassID classId)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ClassLoadFinished)(ClassID classId, HRESULT hrStatus)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ClassUnloadStarted)(ClassID classId)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ClassUnloadFinished)(ClassID classId, HRESULT hrStatus)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(FunctionUnloadStarted)(FunctionID functionId)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(JITCompilationStarted)(FunctionID functionId, BOOL fIsSafeToBlock)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(JITCompilationFinished)(FunctionID functionId, HRESULT hrStatus, BOOL fIsSafeToBlock)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(JITCachedFunctionSearchStarted)(FunctionID functionId, BOOL* pbUseCachedFunction)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(JITCachedFunctionSearchFinished)(FunctionID functionId, COR_PRF_JIT_CACHE result)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(JITFunctionPitched)(FunctionID functionId)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(JITInlining)(FunctionID callerId, FunctionID calleeId, BOOL* pfShouldInline)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ThreadCreated)(ThreadID threadId)
+	{
+		EnterCriticalSection(&criticalSection);
+		profiler->ThreadStart( threadId );
+		LeaveCriticalSection(&criticalSection);
+		return S_OK;
+	}
+	STDMETHOD(ThreadDestroyed)(ThreadID threadId)
+	{
+		EnterCriticalSection(&criticalSection);
+		profiler->ThreadEnd( threadId );
+		LeaveCriticalSection(&criticalSection);
+		return S_OK;
+	}
+	STDMETHOD(ThreadAssignedToOSThread)(ThreadID managedThreadId, DWORD osThreadId)
+	{
+		EnterCriticalSection(&criticalSection);
+		profiler->ThreadMap( managedThreadId, osThreadId );
+		LeaveCriticalSection(&criticalSection);
+		return S_OK;
+	}
+	STDMETHOD(RemotingClientInvocationStarted)()
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(RemotingClientSendingMessage)(GUID * pCookie, BOOL fIsAsync)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(RemotingClientReceivingReply)(GUID * pCookie, BOOL fIsAsync)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(RemotingClientInvocationFinished)()
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(RemotingServerReceivingMessage)(GUID * pCookie, BOOL fIsAsync)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(RemotingServerInvocationStarted)()
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(RemotingServerInvocationReturned)()
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(RemotingServerSendingReply)(GUID * pCookie, BOOL fIsAsync)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(UnmanagedToManagedTransition)(FunctionID functionId, COR_PRF_TRANSITION_REASON reason)
+	{
+		EnterCriticalSection(&criticalSection);
+		// Only track returns
+		if ( reason == COR_PRF_TRANSITION_RETURN )
+		  profiler->UnmanagedToManagedCall( functionId );
+		LeaveCriticalSection(&criticalSection);
+		return S_OK;
+	}
+	STDMETHOD(ManagedToUnmanagedTransition)(FunctionID functionId, COR_PRF_TRANSITION_REASON reason)
+	{
+		EnterCriticalSection(&criticalSection);
+		// Only track calls
+		if ( reason == COR_PRF_TRANSITION_CALL )
+		  profiler->ManagedToUnmanagedCall( functionId );
+		LeaveCriticalSection(&criticalSection);
+		return S_OK;
+	}
+	STDMETHOD(RuntimeSuspendStarted)(COR_PRF_SUSPEND_REASON suspendReason)
+	{
+		EnterCriticalSection(&criticalSection);
+		profiler->ThreadSuspend();
+		LeaveCriticalSection(&criticalSection);
+		return S_OK;
+	}
+	STDMETHOD(RuntimeSuspendFinished)()
+	{
+		return S_OK;
+	}
+	STDMETHOD(RuntimeSuspendAborted)()
+	{
+		return S_OK;
+	}
+	STDMETHOD(RuntimeResumeStarted)()
+	{
+		EnterCriticalSection(&criticalSection);
+		profiler->ThreadResume();
+		LeaveCriticalSection(&criticalSection);
+		return S_OK;
+	}
+	STDMETHOD(RuntimeResumeFinished)()
+	{
+		return S_OK;
+	}
+	STDMETHOD(RuntimeThreadSuspended)(ThreadID threadId)
+	{
+		return S_OK;
+	}
+	STDMETHOD(RuntimeThreadResumed)(ThreadID threadId)
+	{
+		return S_OK;
+	}
+	STDMETHOD(MovedReferences)(unsigned long cMovedObjectIDRanges, ObjectID* oldObjectIDRangeStart, ObjectID* newObjectIDRangeStart, unsigned long * cObjectIDRangeLength)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ObjectAllocated)(ObjectID objectId, ClassID classId)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ObjectsAllocatedByClass)(unsigned long cClassCount, ClassID* classIds, unsigned long* cObjects)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ObjectReferences)(ObjectID objectId, ClassID classId, unsigned long cObjectRefs, ObjectID* objectRefIds)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(RootReferences)(unsigned long cRootRefs, ObjectID* rootRefIds)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ExceptionThrown)(ThreadID thrownObjectId)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ExceptionSearchFunctionEnter)(FunctionID functionId)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ExceptionSearchFunctionLeave)()
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ExceptionSearchFilterEnter)(FunctionID functionId)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ExceptionSearchFilterLeave)()
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ExceptionSearchCatcherFound)(FunctionID functionId)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ExceptionOSHandlerEnter)(UINT_PTR __unused)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ExceptionOSHandlerLeave)(UINT_PTR __unused)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ExceptionUnwindFunctionEnter)(FunctionID functionId)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ExceptionUnwindFunctionLeave)()
+	{
+		EnterCriticalSection(&criticalSection);
 
-    return S_OK;
-  }
-  STDMETHOD(AppDomainCreationStarted)(AppDomainID appDomainId)
-  {
-    profiler->AppDomainStart( appDomainId );
-    return S_OK;
-  }
-  STDMETHOD(AppDomainCreationFinished)(AppDomainID appDomainId, HRESULT hrStatus)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(AppDomainShutdownStarted)(AppDomainID appDomainId)
-  {
-    profiler->AppDomainEnd( appDomainId );
-    return S_OK;
-  }
-  STDMETHOD(AppDomainShutdownFinished)(AppDomainID appDomainId, HRESULT hrStatus)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(AssemblyLoadStarted)(AssemblyID assemblyId)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(AssemblyLoadFinished)(AssemblyID assemblyId, HRESULT hrStatus)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(AssemblyUnloadStarted)(AssemblyID assemblyId)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(AssemblyUnloadFinished)(AssemblyID assemblyId, HRESULT hrStatus)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ModuleLoadStarted)(ModuleID moduleId)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ModuleLoadFinished)(ModuleID moduleId, HRESULT hrStatus)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ModuleUnloadStarted)(ModuleID moduleId)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ModuleUnloadFinished)(ModuleID moduleId, HRESULT hrStatus)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ModuleAttachedToAssembly)(ModuleID moduleId, AssemblyID assemblyId)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ClassLoadStarted)(ClassID classId)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ClassLoadFinished)(ClassID classId, HRESULT hrStatus)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ClassUnloadStarted)(ClassID classId)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ClassUnloadFinished)(ClassID classId, HRESULT hrStatus)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(FunctionUnloadStarted)(FunctionID functionId)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(JITCompilationStarted)(FunctionID functionId, BOOL fIsSafeToBlock)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(JITCompilationFinished)(FunctionID functionId, HRESULT hrStatus, BOOL fIsSafeToBlock)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(JITCachedFunctionSearchStarted)(FunctionID functionId, BOOL* pbUseCachedFunction)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(JITCachedFunctionSearchFinished)(FunctionID functionId, COR_PRF_JIT_CACHE result)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(JITFunctionPitched)(FunctionID functionId)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(JITInlining)(FunctionID callerId, FunctionID calleeId, BOOL* pfShouldInline)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ThreadCreated)(ThreadID threadId)
-  {
-    profiler->ThreadStart( threadId );
-    return S_OK;
-  }
-  STDMETHOD(ThreadDestroyed)(ThreadID threadId)
-  {
-    profiler->ThreadEnd( threadId );
-    return S_OK;
-  }
-  STDMETHOD(ThreadAssignedToOSThread)(ThreadID managedThreadId, DWORD osThreadId)
-  {
-	profiler->ThreadMap( managedThreadId, osThreadId );
-	return S_OK;
-  }
-  STDMETHOD(RemotingClientInvocationStarted)()
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(RemotingClientSendingMessage)(GUID * pCookie, BOOL fIsAsync)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(RemotingClientReceivingReply)(GUID * pCookie, BOOL fIsAsync)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(RemotingClientInvocationFinished)()
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(RemotingServerReceivingMessage)(GUID * pCookie, BOOL fIsAsync)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(RemotingServerInvocationStarted)()
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(RemotingServerInvocationReturned)()
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(RemotingServerSendingReply)(GUID * pCookie, BOOL fIsAsync)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(UnmanagedToManagedTransition)(FunctionID functionId, COR_PRF_TRANSITION_REASON reason)
-  {
-    // Only track returns
-    if ( reason == COR_PRF_TRANSITION_RETURN )
-      profiler->UnmanagedToManagedCall( functionId );
-    return S_OK;
-  }
-  STDMETHOD(ManagedToUnmanagedTransition)(FunctionID functionId, COR_PRF_TRANSITION_REASON reason)
-  {
-    // Only track calls
-    if ( reason == COR_PRF_TRANSITION_CALL )
-      profiler->ManagedToUnmanagedCall( functionId );
-    return S_OK;
-  }
-  STDMETHOD(RuntimeSuspendStarted)(COR_PRF_SUSPEND_REASON suspendReason)
-  {
-    profiler->ThreadSuspend();
-    return S_OK;
-  }
-  STDMETHOD(RuntimeSuspendFinished)()
-  {
-    return S_OK;
-  }
-  STDMETHOD(RuntimeSuspendAborted)()
-  {
-    return S_OK;
-  }
-  STDMETHOD(RuntimeResumeStarted)()
-  {
-    profiler->ThreadResume();
-    return S_OK;
-  }
-  STDMETHOD(RuntimeResumeFinished)()
-  {
-    return S_OK;
-  }
-  STDMETHOD(RuntimeThreadSuspended)(ThreadID threadId)
-  {
-    return S_OK;
-  }
-  STDMETHOD(RuntimeThreadResumed)(ThreadID threadId)
-  {
-    return S_OK;
-  }
-  STDMETHOD(MovedReferences)(unsigned long cMovedObjectIDRanges, ObjectID* oldObjectIDRangeStart, ObjectID* newObjectIDRangeStart, unsigned long * cObjectIDRangeLength)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ObjectAllocated)(ObjectID objectId, ClassID classId)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ObjectsAllocatedByClass)(unsigned long cClassCount, ClassID* classIds, unsigned long* cObjects)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ObjectReferences)(ObjectID objectId, ClassID classId, unsigned long cObjectRefs, ObjectID* objectRefIds)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(RootReferences)(unsigned long cRootRefs, ObjectID* rootRefIds)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ExceptionThrown)(ThreadID thrownObjectId)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ExceptionSearchFunctionEnter)(FunctionID functionId)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ExceptionSearchFunctionLeave)()
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ExceptionSearchFilterEnter)(FunctionID functionId)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ExceptionSearchFilterLeave)()
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ExceptionSearchCatcherFound)(FunctionID functionId)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ExceptionOSHandlerEnter)(UINT_PTR __unused)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ExceptionOSHandlerLeave)(UINT_PTR __unused)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ExceptionUnwindFunctionEnter)(FunctionID functionId)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ExceptionUnwindFunctionLeave)()
-  {
-    // Update the call stack as we leave
-    profiler->Leave( 0 );
+		// Update the call stack as we leave
+		profiler->Leave( 0 );
+		LeaveCriticalSection(&criticalSection);
 
-    return S_OK;
-  }
-  STDMETHOD(ExceptionUnwindFinallyEnter)(FunctionID functionId)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ExceptionUnwindFinallyLeave)()
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ExceptionCatcherEnter)(FunctionID functionId, ObjectID objectId)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ExceptionCatcherLeave)()
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(COMClassicVTableCreated)(ClassID wrappedClassId, const GUID& implementedIID, void * pVTable, unsigned long cSlots)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(COMClassicVTableDestroyed)(ClassID wrappedClassId, const GUID& implementedIID, void * pVTable)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ExceptionCLRCatcherFound)()
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ExceptionCLRCatcherExecute)()
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(ThreadNameChanged)(ThreadID threadId, ULONG cchName, WCHAR name[])
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(GarbageCollectionStarted)(int cGenerations, BOOL generationCollected[], COR_PRF_GC_REASON reason)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(SurvivingReferences) (ULONG cSurvivingObjectIDRanges,ObjectID objectIDRangeStart[],ULONG cObjectIDRangeLength[])
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(GarbageCollectionFinished)()
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(FinalizeableObjectQueued)(DWORD finalizerFlags,ObjectID objectID)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(RootReferences2)(ULONG cRootRefs, ObjectID rootRefIds[], COR_PRF_GC_ROOT_KIND rootKinds[],
-              COR_PRF_GC_ROOT_FLAGS rootFlags[], UINT_PTR rootIds[])
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(HandleCreated)(GCHandleID handleId,ObjectID initialObjectId)
-  {
-    return E_NOTIMPL;
-  }
-  STDMETHOD(HandleDestroyed)(GCHandleID handleId)
-  {
-    return E_NOTIMPL;
-  }
+		return S_OK;
+	}
+	STDMETHOD(ExceptionUnwindFinallyEnter)(FunctionID functionId)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ExceptionUnwindFinallyLeave)()
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ExceptionCatcherEnter)(FunctionID functionId, ObjectID objectId)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ExceptionCatcherLeave)()
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(COMClassicVTableCreated)(ClassID wrappedClassId, const GUID& implementedIID, void * pVTable, unsigned long cSlots)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(COMClassicVTableDestroyed)(ClassID wrappedClassId, const GUID& implementedIID, void * pVTable)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ExceptionCLRCatcherFound)()
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ExceptionCLRCatcherExecute)()
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ThreadNameChanged)(ThreadID threadId, ULONG cchName, WCHAR name[])
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(GarbageCollectionStarted)(int cGenerations, BOOL generationCollected[], COR_PRF_GC_REASON reason)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(SurvivingReferences) (ULONG cSurvivingObjectIDRanges,ObjectID objectIDRangeStart[],ULONG cObjectIDRangeLength[])
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(GarbageCollectionFinished)()
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(FinalizeableObjectQueued)(DWORD finalizerFlags,ObjectID objectID)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(RootReferences2)(ULONG cRootRefs, ObjectID rootRefIds[], COR_PRF_GC_ROOT_KIND rootKinds[],
+			  COR_PRF_GC_ROOT_FLAGS rootFlags[], UINT_PTR rootIds[])
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(HandleCreated)(GCHandleID handleId,ObjectID initialObjectId)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(HandleDestroyed)(GCHandleID handleId)
+	{
+		return E_NOTIMPL;
+	}
 };
 
 void __stdcall EnterStub( FunctionID fid )
