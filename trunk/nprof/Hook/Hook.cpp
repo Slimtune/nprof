@@ -751,24 +751,6 @@ public:
 		SendAppDomainID( aid );
 	}
 
-	void ProfilerSocket::SendThreadCreate( ThreadID tid )
-	{
-		operation = "SendThreadCreate";
-
-		SendNetworkMessage( THREAD_CREATE );
-		SendThreadID( tid );
-	}
-
-	void ProfilerSocket::SendThreadEnd( ThreadID tid, UINT64 llThreadStartTime, UINT64 threadEndTime )
-	{
-		operation = "SendThreadEnd";
-
-		SendNetworkMessage( THREAD_END );
-		SendThreadID( tid );
-		SendUINT64( llThreadStartTime );
-		SendUINT64( threadEndTime );
-	}
-
 	void ProfilerSocket::SendStartFunctionData( ThreadID tid )
 	{
 		operation = "SendStartFunctionData";
@@ -1090,7 +1072,7 @@ public:
 		ThreadInfo* threadInfo = GetThreadInfo( threadId );
 		threadInfo->End();
 		ProfilerSocket profilerSocket;
-		profilerSocket.SendThreadEnd( threadId, threadInfo->startTime, threadInfo->endTime );
+		//profilerSocket.SendThreadEnd( threadId, threadInfo->startTime, threadInfo->endTime );
 		Dump( profilerHelper, threadId );
 	}
 
@@ -1191,7 +1173,7 @@ public:
 	{
 	  threadCollection.GetThreadInfo( threadId )->Start();
 	  ProfilerSocket ps;
-	  ps.SendThreadCreate( threadId );
+	  //ps.SendThreadCreate( threadId );
 	};
 
 	void ThreadMap( ThreadID threadId, DWORD dwOSThread )
@@ -1272,8 +1254,6 @@ public:
 			{
 				vector<FunctionID> functions;
 				ThreadID id=i->second;
-				//cout << "stackwalk for thread "<<threadId<<"\n";
-
 
 				profilerInfo->DoStackSnapshot(
 					id,
@@ -1312,17 +1292,12 @@ public:
 	}
 };
 
-
-
 UINT Profiler::timer;
-
-
 
 void RawEnter();
 void RawLeave();
 void RawTailCall();
 
-// INProfCORHook
 [
 	object,
 	uuid("5B94DF43-780B-42FD-AC4C-ABAB35D4A274"),
@@ -1333,7 +1308,6 @@ __interface INProfCORHook : IDispatch
 {
 };
 
-// CNProfCORHook
 [
   coclass,
   threading("apartment"),
@@ -1369,7 +1343,6 @@ public:
 public:
 	static Profiler* profiler;
 	CRITICAL_SECTION criticalSection;
-  // ICorProfilerCallback Methods
 public:
 	static Profiler* GetProfiler()
 	{
@@ -1421,10 +1394,11 @@ public:
 	}
 	STDMETHOD(AppDomainShutdownStarted)(AppDomainID appDomainId)
 	{
-		EnterCriticalSection(&criticalSection);
-		profiler->AppDomainEnd( appDomainId );
-		LeaveCriticalSection(&criticalSection);
-		return S_OK;
+		return E_NOTIMPL;
+		//EnterCriticalSection(&criticalSection);
+		//profiler->AppDomainEnd( appDomainId );
+		//LeaveCriticalSection(&criticalSection);
+		//return S_OK;
 	}
 	STDMETHOD(AppDomainShutdownFinished)(AppDomainID appDomainId, HRESULT hrStatus)
 	{
@@ -1565,55 +1539,59 @@ public:
 	}
 	STDMETHOD(UnmanagedToManagedTransition)(FunctionID functionId, COR_PRF_TRANSITION_REASON reason)
 	{
-		EnterCriticalSection(&criticalSection);
-		// Only track returns
-		if ( reason == COR_PRF_TRANSITION_RETURN )
-		  profiler->UnmanagedToManagedCall( functionId );
-		LeaveCriticalSection(&criticalSection);
-		return S_OK;
+		return E_NOTIMPL;
+		//EnterCriticalSection(&criticalSection);
+		//// Only track returns
+		//if ( reason == COR_PRF_TRANSITION_RETURN )
+		//  profiler->UnmanagedToManagedCall( functionId );
+		//LeaveCriticalSection(&criticalSection);
+		//return S_OK;
 	}
 	STDMETHOD(ManagedToUnmanagedTransition)(FunctionID functionId, COR_PRF_TRANSITION_REASON reason)
 	{
-		EnterCriticalSection(&criticalSection);
-		// Only track calls
-		if ( reason == COR_PRF_TRANSITION_CALL )
-		  profiler->ManagedToUnmanagedCall( functionId );
-		LeaveCriticalSection(&criticalSection);
-		return S_OK;
+		return E_NOTIMPL;
+		//EnterCriticalSection(&criticalSection);
+		//// Only track calls
+		//if ( reason == COR_PRF_TRANSITION_CALL )
+		//  profiler->ManagedToUnmanagedCall( functionId );
+		//LeaveCriticalSection(&criticalSection);
+		//return S_OK;
 	}
 	STDMETHOD(RuntimeSuspendStarted)(COR_PRF_SUSPEND_REASON suspendReason)
 	{
-		EnterCriticalSection(&criticalSection);
-		profiler->ThreadSuspend();
-		LeaveCriticalSection(&criticalSection);
-		return S_OK;
+		return E_NOTIMPL;
+		//EnterCriticalSection(&criticalSection);
+		//profiler->ThreadSuspend();
+		//LeaveCriticalSection(&criticalSection);
+		//return S_OK;
 	}
 	STDMETHOD(RuntimeSuspendFinished)()
 	{
-		return S_OK;
+		return E_NOTIMPL;
 	}
 	STDMETHOD(RuntimeSuspendAborted)()
 	{
-		return S_OK;
+		return E_NOTIMPL;
 	}
 	STDMETHOD(RuntimeResumeStarted)()
 	{
-		EnterCriticalSection(&criticalSection);
-		profiler->ThreadResume();
-		LeaveCriticalSection(&criticalSection);
-		return S_OK;
+		return E_NOTIMPL;
+		//EnterCriticalSection(&criticalSection);
+		//profiler->ThreadResume();
+		//LeaveCriticalSection(&criticalSection);
+		//return S_OK;
 	}
 	STDMETHOD(RuntimeResumeFinished)()
 	{
-		return S_OK;
+		return E_NOTIMPL;
 	}
 	STDMETHOD(RuntimeThreadSuspended)(ThreadID threadId)
 	{
-		return S_OK;
+		return E_NOTIMPL;
 	}
 	STDMETHOD(RuntimeThreadResumed)(ThreadID threadId)
 	{
-		return S_OK;
+		return E_NOTIMPL;
 	}
 	STDMETHOD(MovedReferences)(unsigned long cMovedObjectIDRanges, ObjectID* oldObjectIDRangeStart, ObjectID* newObjectIDRangeStart, unsigned long * cObjectIDRangeLength)
 	{
@@ -1673,13 +1651,14 @@ public:
 	}
 	STDMETHOD(ExceptionUnwindFunctionLeave)()
 	{
-		EnterCriticalSection(&criticalSection);
+		return E_NOTIMPL;
+		//EnterCriticalSection(&criticalSection);
 
-		// Update the call stack as we leave
-		profiler->Leave( 0 );
-		LeaveCriticalSection(&criticalSection);
+		//// Update the call stack as we leave
+		//profiler->Leave( 0 );
+		//LeaveCriticalSection(&criticalSection);
 
-		return S_OK;
+		//return S_OK;
 	}
 	STDMETHOD(ExceptionUnwindFinallyEnter)(FunctionID functionId)
 	{

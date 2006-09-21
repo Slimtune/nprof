@@ -637,7 +637,7 @@ namespace NProf
 			HeaderStyle = ColumnHeaderStyle.Clickable;
 			Columns[0].Width = 350;
 			Columns[0].SortDataType = SortDataType.String;
-			Columns[1].SortDataType = SortDataType.Integer;
+			Columns[1].SortDataType = SortDataType.Double;
 			
 			ColumnSortColor = Color.White;
 			Font = new Font("Tahoma", 8.0f);
@@ -645,14 +645,14 @@ namespace NProf
 		public void Add(FunctionInfo function)
 		{
 			ContainerListViewItem item = Items.Add(function.Signature.Signature);
-			item.SubItems[1].Text = function.TimeInMethod.ToString(NProf.timeFormat);
+			item.SubItems[1].Text = function.Calls.ToString(NProf.timeFormat);
+			//item.SubItems[1].Text = function.TimeInMethod.ToString(NProf.timeFormat);
 			item.Tag = function;
 		}
 		public void Add(CalleeFunctionInfo function)
 		{
 			ContainerListViewItem item = Items.Add(function.Signature);
-			item.SubItems[0].Text = function.Calls.ToString();
-			item.SubItems[1].Text = function.TimeInMethod.ToString(NProf.timeFormat);
+			item.SubItems[1].Text = function.Calls.ToString();
 			item.Tag = function;
 		}
 	}
@@ -909,17 +909,19 @@ namespace NProf
 								break;
 							}
 
-						case NetworkMessage.THREAD_CREATE:
-							threadId = reader.ReadInt32();
-							run.Messages.AddMessage("Thread created: " + threadId);
-							break;
+						//case NetworkMessage.THREAD_CREATE:
+						//    break;
+						//    threadId = reader.ReadInt32();
+						//    run.Messages.AddMessage("Thread created: " + threadId);
+						//    break;
 
-						case NetworkMessage.THREAD_END:
-							threadId = reader.ReadInt32();
-							currentProcess.Threads[threadId].StartTime = reader.ReadInt64();
-							currentProcess.Threads[threadId].EndTime = reader.ReadInt64();
-							run.Messages.AddMessage("Thread completed: " + threadId);
-							break;
+						//case NetworkMessage.THREAD_END:
+						//    break;
+						//    threadId = reader.ReadInt32();
+						//    currentProcess.Threads[threadId].StartTime = reader.ReadInt64();
+						//    currentProcess.Threads[threadId].EndTime = reader.ReadInt64();
+						//    run.Messages.AddMessage("Thread completed: " + threadId);
+						//    break;
 
 						case NetworkMessage.FUNCTION_DATA:
 							{
@@ -1010,8 +1012,8 @@ namespace NProf
 			INITIALIZE = 0,
 			SHUTDOWN,
 			APPDOMAIN_CREATE,
-			THREAD_CREATE,
-			THREAD_END,
+			//THREAD_CREATE,
+			//THREAD_END,
 			FUNCTION_DATA,
 			PROFILER_MESSAGE,
 		};
@@ -1029,6 +1031,360 @@ namespace NProf
 		private Run run;
 		private bool hasStopped;
 	}
+	//public class ProfilerSocketServer
+	//{
+	//    public ProfilerSocketServer(Run run)
+	//    {
+	//        this.run = run;
+	//        this.stopFlag = 0;
+	//        this.hasStopped = false;
+	//        this.currentApplicationID = 0;
+	//        this.profileCount = 0;
+	//        this.run.Messages.AddMessage("Waiting for application...");
+	//    }
+	//    public void Start()
+	//    {
+	//        thread = new Thread(new ThreadStart(ListenThread));
+	//        resetStarted = new ManualResetEvent(false);
+	//        thread.Start();
+	//        resetStarted.WaitOne();
+	//    }
+	//    public void Stop()
+	//    {
+	//        lock (socket)
+	//            Interlocked.Increment(ref stopFlag);
+	//        socket.Close();
+	//    }
+	//    public bool HasStoppedGracefully
+	//    {
+	//        get { return hasStopped; }
+	//    }
+	//    private void ListenThread()
+	//    {
+	//        Thread.CurrentThread.Name = "ProfilerSocketServer Listen Thread";
+	//        try
+	//        {
+	//            resetMessageReceived = new ManualResetEvent(false);
+	//            using (socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+	//            {
+	//                IPEndPoint ep = new IPEndPoint(IPAddress.Loopback, 0);
+	//                socket.Bind(ep);
+	//                port = ((IPEndPoint)socket.LocalEndPoint).Port;
+	//                resetStarted.Set();
+	//                socket.Listen(100);
+
+	//                while (true)
+	//                {
+	//                    resetMessageReceived.Reset();
+	//                    lock (socket)
+	//                        if (stopFlag == 1)
+	//                            break;
+	//                    socket.BeginAccept(new AsyncCallback(AcceptConnection), socket);
+	//                    resetMessageReceived.WaitOne();
+	//                }
+	//            }
+	//        }
+	//        catch (Exception e)
+	//        {
+	//            resetStarted.Set();
+	//        }
+	//    }
+	//    private string ReadLengthEncodedASCIIString(BinaryReader br)
+	//    {
+	//        int length = br.ReadInt32();
+	//        if (length > 2000 || length < 0)
+	//        {
+	//            byte[] abNextBytes = new byte[8];
+	//            br.Read(abNextBytes, 0, 8);
+	//            string strError = "Length was abnormally large or small (" + length.ToString("x") + ").  Next bytes were ";
+	//            foreach (byte b in abNextBytes)
+	//                strError += b.ToString("x") + " (" + (Char.IsControl((char)b) ? '-' : (char)b) + ") ";
+
+	//            throw new InvalidOperationException(strError);
+	//        }
+
+	//        byte[] abString = new byte[length];
+	//        int nRead = 0;
+
+	//        DateTime dt = DateTime.Now;
+
+	//        while (nRead < length)
+	//        {
+	//            nRead += br.Read(abString, nRead, length - nRead);
+
+	//            // Make this loop finite (30 seconds)
+	//            TimeSpan ts = DateTime.Now - dt;
+	//            if (ts.TotalSeconds > 30)
+	//                throw new InvalidOperationException("Timed out while waiting for length encoded string");
+	//        }
+
+	//        return System.Text.ASCIIEncoding.ASCII.GetString(abString, 0, length);
+	//    }
+	//    ProcessInfo currentProcess = null;
+
+	//    private void AcceptConnection(IAsyncResult ar)
+	//    {
+	//        lock (socket)
+	//        {
+	//            if (stopFlag == 1)
+	//            {
+	//                resetMessageReceived.Set();
+	//                return;
+	//            }
+	//        }
+
+	//        // Note that this fails if you call EndAccept on a closed socket
+	//        Socket s = ((Socket)ar.AsyncState).EndAccept(ar);
+	//        resetMessageReceived.Set();
+
+	//        try
+	//        {
+	//            using (NetworkStream stream = new NetworkStream(s, true))
+	//            {
+	//                BinaryReader reader = new BinaryReader(stream);
+	//                NetworkMessage message = (NetworkMessage)reader.ReadInt16();
+
+	//                int appDomainID, threadId, functionId;
+	//                //ProcessInfo currentProcess = null;
+
+	//                // All socket connections send their application ID first for all messages
+	//                // except "INITIALIZE"
+	//                int applicationID = -1;
+	//                if (message != NetworkMessage.INITIALIZE)
+	//                {
+	//                    applicationID = reader.ReadInt32();
+
+	//                    if (currentProcess == null)
+	//                    {
+	//                        currentProcess = new ProcessInfo(applicationID);
+	//                    }
+	//                    //currentProcess = run.Processes[ applicationID ];
+
+	//                    if (currentProcess == null)
+	//                    {
+	//                        run.Messages.AddMessage("Invalid application ID from profilee: " + applicationID);
+	//                        run.Messages.AddMessage("Closing socket connection");
+	//                        stream.Close();
+
+	//                        return;
+	//                    }
+	//                }
+
+	//                switch (message)
+	//                {
+	//                    case NetworkMessage.INITIALIZE:
+	//                        {
+	//                            if (((IPEndPoint)s.RemoteEndPoint).Address != IPAddress.Loopback)
+	//                            {
+	//                                // Prompt the user?
+	//                            }
+
+	//                            //if (run.State == RunState.Running)
+	//                            //{
+	//                            //    //ns.WriteByte( 0 );
+	//                            //}
+
+	//                            int networkProtocolVersion = reader.ReadInt32();
+	//                            if (networkProtocolVersion != NETWORK_PROTOCOL_VERSION)
+	//                            {
+	//                                // Wrong version, write a negative byte
+	//                                stream.WriteByte(0);
+	//                                if (Error != null)
+	//                                    Error(new InvalidOperationException("Profiler hook is wrong version: was "
+	//                                        + networkProtocolVersion + ", expected " + NETWORK_PROTOCOL_VERSION));
+	//                            }
+	//                            else
+	//                            {
+	//                                // Version was okay, write a positive byte
+	//                                if (NProf.form.Project.DebugProfiler)
+	//                                //if (run.Project.DebugProfiler)
+	//                                //if (run.Project.DebugProfiler)
+	//                                {
+	//                                    stream.WriteByte(2);
+	//                                }
+	//                                else
+	//                                {
+	//                                    stream.WriteByte(1);
+	//                                }
+
+	//                                // Set up the new application
+	//                                applicationID = currentApplicationID++;
+
+	//                                currentProcess = new ProcessInfo();
+
+	//                                run.Process = currentProcess;
+
+	//                                stream.WriteByte((byte)applicationID);
+
+	//                                currentProcess.ProcessID = (int)reader.ReadUInt32();
+	//                                int argCount = (int)reader.ReadUInt32();
+
+	//                                if (argCount > 0)
+	//                                {
+	//                                    string strFullFilename = ReadLengthEncodedASCIIString(reader);
+	//                                    strFullFilename = strFullFilename.Replace("\"", "");
+
+	//                                    currentProcess.Name = Path.GetFileName(strFullFilename);
+	//                                }
+
+	//                                while (argCount > 1)
+	//                                {
+	//                                    argCount--;
+	//                                    ReadLengthEncodedASCIIString(reader);
+	//                                }
+
+	//                                profileCount++;
+	//                                run.Messages.AddMessage("Connected to " + currentProcess.Name + " with process ID " + currentProcess.ProcessID);
+	//                            }
+
+	//                            // We're off!
+	//                            //run.State = RunState.Running;
+	//                            break;
+	//                        }
+
+	//                    case NetworkMessage.SHUTDOWN:
+	//                        {
+	//                            profileCount--;
+	//                            run.Messages.AddMessage("Profiling completed for " + currentProcess.Name);
+
+	//                            if (profileCount == 0)
+	//                            {
+	//                                hasStopped = true;
+	//                                run.Messages.AddMessage("Profiling completed.");
+	//                                if (Exited != null)
+	//                                    Exited(this, EventArgs.Empty);
+	//                            }
+
+	//                            break;
+	//                        }
+
+	//                    case NetworkMessage.APPDOMAIN_CREATE:
+	//                        {
+	//                            appDomainID = reader.ReadInt32();
+	//                            run.Messages.AddMessage("AppDomain created: " + appDomainID);
+	//                            break;
+	//                        }
+
+	//                    case NetworkMessage.THREAD_CREATE:
+	//                        threadId = reader.ReadInt32();
+	//                        run.Messages.AddMessage("Thread created: " + threadId);
+	//                        break;
+
+	//                    case NetworkMessage.THREAD_END:
+	//                        threadId = reader.ReadInt32();
+	//                        currentProcess.Threads[threadId].StartTime = reader.ReadInt64();
+	//                        currentProcess.Threads[threadId].EndTime = reader.ReadInt64();
+	//                        run.Messages.AddMessage("Thread completed: " + threadId);
+	//                        break;
+
+	//                    case NetworkMessage.FUNCTION_DATA:
+	//                        {
+	//                            threadId = reader.ReadInt32();
+	//                            run.Messages.AddMessage("Receiving function data for thread  " + threadId + "...");
+
+	//                            functionId = reader.ReadInt32();
+	//                            int nIndex = 0;
+
+	//                            //while (functionId != -1)
+	//                            while (functionId != -1)
+	//                            {
+	//                                UInt32 uiFlags = reader.ReadUInt32();
+	//                                string returnValue = ReadLengthEncodedASCIIString(reader);
+	//                                string className = ReadLengthEncodedASCIIString(reader);
+	//                                string functionName = ReadLengthEncodedASCIIString(reader);
+	//                                string parameters = ReadLengthEncodedASCIIString(reader);
+
+	//                                FunctionSignature fs = new FunctionSignature(
+	//                                    uiFlags,
+	//                                    returnValue,
+	//                                    className,
+	//                                    functionName,
+	//                                    parameters
+	//                                );
+	//                                currentProcess.Functions.MapSignature(functionId, fs);
+
+	//                                int callCount = reader.ReadInt32();
+	//                                long totalTime = reader.ReadInt64();
+	//                                long totalRecursiveTime = reader.ReadInt64();
+	//                                long totalSuspendTime = reader.ReadInt64();
+	//                                List<CalleeFunctionInfo> callees = new List<CalleeFunctionInfo>();
+	//                                int calleeFunctionId = reader.ReadInt32();
+
+	//                                while (calleeFunctionId != -1)
+	//                                {
+	//                                    int calleeCallCount = reader.ReadInt32();
+	//                                    long calleeTotalTime = reader.ReadInt64();
+	//                                    long calleeRecursiveTime = reader.ReadInt64();
+
+	//                                    callees.Add(new CalleeFunctionInfo(currentProcess.Functions, calleeFunctionId, calleeCallCount, calleeTotalTime, calleeRecursiveTime));
+	//                                    calleeFunctionId = reader.ReadInt32();
+	//                                }
+	//                                //CalleeFunctionInfo[] acfi = ( CalleeFunctionInfo[] )callees.ToArray( typeof( CalleeFunctionInfo ) );
+
+	//                                FunctionInfo function = new FunctionInfo(currentProcess.Threads[threadId], functionId, fs, callCount, totalTime, totalRecursiveTime, totalSuspendTime, callees.ToArray());
+	//                                currentProcess.Threads[threadId].FunctionInfoCollection.Add(function.ID, function);
+	//                                //currentProcess.Threads[threadId].FunctionInfoCollection.Add(function);
+
+	//                                functionId = reader.ReadInt32();
+	//                                nIndex++;
+	//                            }
+
+	//                            run.Messages.AddMessage("Received " + nIndex + " item(s) for thread  " + threadId);
+	//                            break;
+	//                        }
+
+	//                    case NetworkMessage.PROFILER_MESSAGE:
+	//                        string text = ReadLengthEncodedASCIIString(reader);
+	//                        run.Messages.AddMessage(text);
+
+	//                        break;
+	//                }
+	//            }
+	//        }
+	//        catch (Exception e)
+	//        {
+	//            if (Error != null)
+	//                Error(e);
+	//        }
+	//    }
+
+	//    public int Port
+	//    {
+	//        get { return port; }
+	//    }
+
+	//    public event EventHandler Exited;
+	//    public event ErrorHandler Error;
+	//    public event MessageHandler Message;
+
+	//    public delegate void ErrorHandler(Exception e);
+	//    public delegate void MessageHandler(string strMessage);
+
+	//    // Sync with profiler_socket.h
+	//    enum NetworkMessage
+	//    {
+	//        INITIALIZE = 0,
+	//        SHUTDOWN,
+	//        APPDOMAIN_CREATE,
+	//        THREAD_CREATE,
+	//        THREAD_END,
+	//        FUNCTION_DATA,
+	//        PROFILER_MESSAGE,
+	//    };
+
+	//    const int NETWORK_PROTOCOL_VERSION = 3;
+
+	//    private int port;
+	//    private int stopFlag;
+	//    private int currentApplicationID;
+	//    private int profileCount;
+	//    private ManualResetEvent resetStarted;
+	//    private ManualResetEvent resetMessageReceived;
+	//    private Thread thread;
+	//    private Socket socket;
+	//    private Run run;
+	//    private bool hasStopped;
+	//}
 	public class CalleeFunctionInfo
 	{
 		public CalleeFunctionInfo()
