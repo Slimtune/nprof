@@ -45,8 +45,8 @@ namespace NProf.Test
 			public override object GetResult(out int level)
 			{
 				level = 1;
-				ProjectInfo project = new ProjectInfo(ProjectType.File);
-				ProfilerForm.form.Project = project;
+				ProjectInfo project = new ProjectInfo();
+				NProf.form.Project = project;
 				Profiler profiler = new Profiler();
 				//project.ApplicationName = @"D:\Meta\0.2\bin\Debug\Meta.exe";
 				//project.Arguments = "-test";
@@ -54,8 +54,6 @@ namespace NProf.Test
 
 				run = project.CreateRun(profiler);
 				run.profiler.Completed += new EventHandler(profiler_Completed);
-				//run.StateChanged += new RunStateEventHandler(run_StateChanged);
-				//run.StateChanged += new RunStateEventHandler(run_StateChanged);
 				run.Start();
 
 				while (result == null)

@@ -43,8 +43,29 @@ using System.Globalization;
 
 namespace NProf
 {
-	public class ProfilerForm : Form
+	public class NProf : Form
 	{
+		[STAThread]
+		static void Main(string[] args)
+		{
+			Application.EnableVisualStyles();
+
+			Console.WriteLine("NProf version {0} (C) 2003 by Matthew Mastracci", Profiler.Version);
+			Console.WriteLine("http://nprof.sourceforge.net");
+			Console.WriteLine();
+			Console.WriteLine("This is free software, and you are welcome to redistribute it under certain");
+			Console.WriteLine("conditions set out by the GNU General Public License.  A copy of the license");
+			Console.WriteLine("is available in the distribution package and from the NProf web site.");
+			Console.WriteLine();
+
+			NProf form = NProf.form;
+
+			Console.Out.Flush();
+			System.Threading.Thread.CurrentThread.Name = "GUI Thread";
+			form.Project = new ProjectInfo();
+			form.Show();
+			Application.Run(form);
+		}
 		public ProjectInfo Project
 		{
 			get
@@ -60,7 +81,7 @@ namespace NProf
 		private Profiler profiler=new Profiler();
 		private ProjectInfo project;
 		public TreeView runs;
-		private MethodView methods;//=new MethodView("Methods");
+		private MethodView methods;
 		private MethodView callees;
 		private MethodView callers;
 		private TextBox findText = new TextBox();
@@ -71,7 +92,7 @@ namespace NProf
 			del(t);
 			return t;
 		}
-		private ProfilerForm()
+		private NProf()
 		{
 			Size = new Size(800, 600);
 			Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("NProf.Resources.app-icon.ico"));
@@ -126,7 +147,7 @@ namespace NProf
 						forward.Clear();
 						if (currentPosition != 0)
 						{
-							back.Push(currentPosition);
+							backward.Push(currentPosition);
 						}
 						for (int idx = 0; idx < methods.SelectedItems.Count; ++idx)
 						{
@@ -154,6 +175,10 @@ namespace NProf
 				}
 			};
 			TextBox applicationTextBox=new TextBox();
+			applicationTextBox.TextChanged += delegate
+			{
+				Project.ApplicationName = applicationTextBox.Text;
+			};
 			Controls.AddRange(new Control[] 
 			{
 				With(new Panel(), delegate(Panel panel)
@@ -247,7 +272,13 @@ namespace NProf
 							label.Text = "Command line arguments:";
 							label.AutoSize=true;
 						}),0,1);
-					options.Controls.Add(new TextBox(),1,1);
+					options.Controls.Add(With(new TextBox(),delegate(TextBox textBox)
+					{
+						textBox.TextChanged+=delegate
+						{
+							Project.Arguments=textBox.Text;
+						};
+					}),1,1);
 				}),
 				With(new CommandBarManager(), delegate(CommandBarManager manager)
 				{
@@ -321,29 +352,24 @@ namespace NProf
 		}
 		private void Back(object sender, System.EventArgs e)
 		{
-			if (back.Count == 0)
-				return;
+			Navigate(backward);
+		}
+		private void Navigate(Stack<int> stack)
+		{
+			if (stack.Count != 0)
+			{
+				stack.Push(currentPosition);
+				currentPosition = stack.Pop();
 
-			forward.Push(currentPosition);
-			currentPosition = back.Pop();
-
-			isNavigating = true;
-			JumpToID(currentPosition);
-			isNavigating = false;
+				isNavigating = true;
+				JumpToID(currentPosition);
+				isNavigating = false;
+			}
 		}
 		private void Forward(object sender, System.EventArgs e)
 		{
-			if (forward.Count == 0)
-				return;
-
-			back.Push(currentPosition);
-			currentPosition = forward.Pop();
-
-			isNavigating = true;
-			JumpToID(currentPosition);
-			isNavigating = false;
+			Navigate(forward);
 		}
-
 		private void About(object sender, System.EventArgs e)
 		{
 			new AboutForm().ShowDialog(this);
@@ -399,7 +425,7 @@ namespace NProf
 			public static Image FolderProperties { get { return images[36]; } }
 			public static Image Run { get { return images[37]; } }
 		}
-		private Stack<int> back = new Stack<int>();
+		private Stack<int> backward = new Stack<int>();
 		private Stack<int> forward = new Stack<int>();
 
 		private int currentPosition = 0;
@@ -483,7 +509,7 @@ namespace NProf
 
 				ContainerListViewItem inMethod = callees.Items.Add("(in method)");
 				inMethod.SubItems[1].Text = fi.Calls.ToString();
-				inMethod.SubItems[2].Text = fi.TimeInMethod.ToString(timeFormat);
+				//inMethod.SubItems[2].Text = fi.TimeInMethod.ToString(timeFormat);
 				inMethod.Tag = fi;
 			}
 			callees.Sort();
@@ -599,7 +625,7 @@ namespace NProf
 		{
 			Find(false,true);
 		}
-		public static ProfilerForm form = new ProfilerForm();
+		public static NProf form = new NProf();
 	}
 	public class MethodView : ContainerListView
 	{
@@ -619,14 +645,14 @@ namespace NProf
 		public void Add(FunctionInfo function)
 		{
 			ContainerListViewItem item = Items.Add(function.Signature.Signature);
-			item.SubItems[1].Text = function.TimeInMethod.ToString(ProfilerForm.timeFormat);
+			item.SubItems[1].Text = function.TimeInMethod.ToString(NProf.timeFormat);
 			item.Tag = function;
 		}
 		public void Add(CalleeFunctionInfo function)
 		{
 			ContainerListViewItem item = Items.Add(function.Signature);
 			item.SubItems[0].Text = function.Calls.ToString();
-			item.SubItems[1].Text = function.TimeInMethod.ToString(ProfilerForm.timeFormat);
+			item.SubItems[1].Text = function.TimeInMethod.ToString(NProf.timeFormat);
 			item.Tag = function;
 		}
 	}
@@ -814,7 +840,7 @@ namespace NProf
 								else
 								{
 									// Version was okay, write a positive byte
-									if (ProfilerForm.form.Project.DebugProfiler)
+									if (NProf.form.Project.DebugProfiler)
 									//if (run.Project.DebugProfiler)
 									//if (run.Project.DebugProfiler)
 									{
@@ -1510,13 +1536,10 @@ namespace NProf
 
 	public class ProjectInfo
 	{
-		//public ProjectInfo() : this(ProjectType.File) { } // JC: added default constructor for serialization
-
-		public ProjectInfo(ProjectType projectType)
+		public ProjectInfo()
 		{
 			this.name = null;
 			this.runs = new RunCollection(this);
-			this.projectType = projectType;
 		}
 
 		public string Name
@@ -1568,11 +1591,6 @@ namespace NProf
 			}
 		}
 
-		public ProjectType ProjectType
-		{
-			get { return projectType; }
-		}
-
 		private void Fire_ProjectInfoChanged()
 		{
 			if (ProjectInfoChanged != null)
@@ -1588,24 +1606,6 @@ namespace NProf
 		private string name;
 		private bool debugHook;
 		private RunCollection runs;
-		private ProjectType projectType;
-	}
-
-	// remove
-	public enum ProjectType
-	{
-		/// <summary>
-		/// The project references a file on the filesystem.
-		/// </summary>
-		File,
-		/// <summary>
-		/// The project is run from VS.NET.
-		/// </summary>
-		VSNet,
-		/// <summary>
-		/// The project attaches to ASP.NET.
-		/// </summary>
-		AspNet,
 	}
 	public class Run
 	{
@@ -1840,9 +1840,7 @@ namespace NProf
 		{
 			this.start = DateTime.Now;
 			this.project = pi;
-			//this.completed = pch;
 			this.run = run;
-			//this.run.State = RunState.Initializing;
 
 			socketServer = new ProfilerSocketServer(run);
 			socketServer.Start();
@@ -1850,65 +1848,18 @@ namespace NProf
 			socketServer.Error += new ProfilerSocketServer.ErrorHandler(OnError);
 			socketServer.Message += new ProfilerSocketServer.MessageHandler(OnMessage);
 
-			switch (pi.ProjectType)
-			{
-				case ProjectType.File:
-					{
-						process = new Process();
-						process.StartInfo = new ProcessStartInfo(pi.ApplicationName, pi.Arguments);
-						process.StartInfo.EnvironmentVariables["COR_ENABLE_PROFILING"] = "0x1";
-						process.StartInfo.EnvironmentVariables["COR_PROFILER"] = PROFILER_GUID;
-						process.StartInfo.EnvironmentVariables["NPROF_PROFILING_SOCKET"] = socketServer.Port.ToString();
-						process.StartInfo.UseShellExecute = false;
-						process.StartInfo.Arguments = pi.Arguments;
-						process.StartInfo.WorkingDirectory = pi.WorkingDirectory;
-						process.EnableRaisingEvents = true;
-						//_p.Exited += new EventHandler( OnProcessExited );
+			process = new Process();
+			process.StartInfo = new ProcessStartInfo(pi.ApplicationName, pi.Arguments);
+			process.StartInfo.EnvironmentVariables["COR_ENABLE_PROFILING"] = "0x1";
+			process.StartInfo.EnvironmentVariables["COR_PROFILER"] = PROFILER_GUID;
+			process.StartInfo.EnvironmentVariables["NPROF_PROFILING_SOCKET"] = socketServer.Port.ToString();
+			process.StartInfo.UseShellExecute = false;
+			process.StartInfo.Arguments = pi.Arguments;
+			process.StartInfo.WorkingDirectory = pi.WorkingDirectory;
+			process.EnableRaisingEvents = true;
 
-						return process.Start();
-					}
-
-				case ProjectType.AspNet:
-					{
-						using (RegistryKey rk = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\W3SVC", true))
-						{
-							if (rk != null)
-								SetRegistryKeys(rk, true);
-						}
-
-						using (RegistryKey rk = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\IISADMIN", true))
-						{
-							if (rk != null)
-								SetRegistryKeys(rk, true);
-						}
-
-						Process p = Process.Start("iisreset.exe", "");
-						p.WaitForExit();
-						this.run.Messages.AddMessage("Navigate to your project and ASP.NET will connect to the profiler");
-						this.run.Messages.AddMessage("NOTE: ASP.NET must be set to run under the SYSTEM account in machine.config");
-						this.run.Messages.AddMessage(@"If ASP.NET cannot be profiled, ensure that the userName=""SYSTEM"" in the <processModel> section of machine.config.");
-
-						return true;
-					}
-
-				case ProjectType.VSNet:
-					{
-						SetEnvironmentVariable("COR_ENABLE_PROFILING", "0x1");
-						SetEnvironmentVariable("COR_PROFILER", PROFILER_GUID);
-						SetEnvironmentVariable("NPROF_PROFILING_SOCKET", socketServer.Port.ToString());
-
-						return true;
-					}
-
-				default:
-					throw new InvalidOperationException("Unknown project type: " + pi.ProjectType);
-			}
+			return process.Start();
 		}
-		public void Disable()
-		{
-			SetEnvironmentVariable("COR_ENABLE_PROFILING", "0x0");
-		}
-
 		public void Stop()
 		{
 			Run r;
@@ -1933,29 +1884,12 @@ namespace NProf
 				r.Success = false;
 			//}
 
-			if (project.ProjectType == ProjectType.AspNet)
-			{
-				using (RegistryKey rk = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\W3SVC", true))
-				{
-					if (rk != null)
-						SetRegistryKeys(rk, false);
-				}
 
-				using (RegistryKey rk = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\IISADMIN", true))
-				{
-					if (rk != null)
-						SetRegistryKeys(rk, false);
-				}
-
-				r.Messages.AddMessage("Terminating ASP.NET...");
-				Process.Start("iisreset.exe", "/stop").WaitForExit();
-			}
 		}
 
 		private void OnProcessExited(object oSender, EventArgs ea)
 		{
 			Run r;
-
 			lock (runLock)
 			{
 				r = run;
@@ -2025,57 +1959,7 @@ namespace NProf
 		{
 			return (string)functionMap[nFunctionID];
 		}
-
-		private void SetRegistryKeys(RegistryKey key, bool isSet)
-		{
-			if (key == null)
-				return;
-
-			if (!isSet)
-			{
-				// Get rid of the environment
-				key.DeleteValue("Environment", false);
-				return;
-			}
-
-			object oKeys = key.GetValue("Environment");
-
-			// If it's not something we expected, fix it
-			if (oKeys == null || !(oKeys is string[]))
-				oKeys = new string[0];
-
-			// Save the environment the first time through
-			if (key.GetValue("nprof Saved Environment") == null && ((string[])oKeys).Length > 0)
-				key.SetValue("nprof Saved Environment", oKeys);
-
-			Hashtable items = new Hashtable(Environment.GetEnvironmentVariables());
-
-			// Set the environment to be the default system environment
-			using (RegistryKey rkEnv = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Session Manager\Environment"))
-			{
-				if (rkEnv == null)
-					throw new InvalidOperationException("Unable to locate machine environment key");
-
-				foreach (string strValueName in rkEnv.GetValueNames())
-					items[strValueName] = rkEnv.GetValue(strValueName);
-
-			}
-
-			items.Remove("COR_ENABLE_PROFILING");
-			items.Remove("COR_PROFILER");
-			items.Remove("NPROF_PROFILING_SOCKET");
-
-			items.Add("COR_ENABLE_PROFILING", "0x1");
-			items.Add("COR_PROFILER", PROFILER_GUID);
-			items.Add("NPROF_PROFILING_SOCKET", socketServer.Port.ToString());
-
-			ArrayList itemList = new ArrayList();
-			foreach (DictionaryEntry de in items)
-				itemList.Add(String.Format("{0}={1}", de.Key, de.Value));
-
-			key.SetValue("Environment", (string[])itemList.ToArray(typeof(string)));
-		}
-
+		
 		public delegate void ProcessCompletedHandler(Run run);
 		public delegate void ErrorHandler(Exception e);
 		public delegate void MessageHandler(string strMessage);
@@ -2086,35 +1970,9 @@ namespace NProf
 		private Run run;
 		private object runLock = 0;
 
-		[DllImport("Kernel32.dll", CharSet = CharSet.Auto)]
-		private static extern bool SetEnvironmentVariable(string strVariable, string strNewValue);
-
 		private Hashtable functionMap;
 		private Process process;
 		private ProjectInfo project;
 		private ProfilerSocketServer socketServer;
-	}
-	public class NProf
-	{
-		[STAThread]
-		static void Main(string[] args)
-		{
-			Application.EnableVisualStyles();
-
-			Console.WriteLine("NProf version {0} (C) 2003 by Matthew Mastracci", Profiler.Version);
-			Console.WriteLine("http://nprof.sourceforge.net");
-			Console.WriteLine();
-			Console.WriteLine("This is free software, and you are welcome to redistribute it under certain");
-			Console.WriteLine("conditions set out by the GNU General Public License.  A copy of the license");
-			Console.WriteLine("is available in the distribution package and from the NProf web site.");
-			Console.WriteLine();
-
-			ProfilerForm form = ProfilerForm.form;
-
-			Console.Out.Flush();
-			System.Threading.Thread.CurrentThread.Name = "GUI Thread";
-			form.Show();
-			Application.Run(form);
-		}
 	}
 }
