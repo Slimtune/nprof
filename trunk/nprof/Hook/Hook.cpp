@@ -1002,105 +1002,6 @@ public:
 	map< FunctionID, CalleeFunctionInfo* > calleeMap;
 };
 
-class ThreadInfo;
-
-class StackEntryInfo {
-public: 
-	StackEntryInfo::StackEntryInfo( FunctionInfo* functionInfo, INT64 cycleStart )
-	{
-		this->functionInfo = functionInfo;
-		this->cycleStart = cycleStart;
-	}
-	StackEntryInfo::StackEntryInfo( const StackEntryInfo& stackEntry )
-	{
-		this->functionInfo = stackEntry.functionInfo;
-		this->cycleStart = stackEntry.cycleStart;
-	}
-	INT64 cycleStart;
-	FunctionInfo* functionInfo;
-};
-class StackInfo {
-public: 
-	void ResumeFunction( INT64 cycleCount );
-
-	StackInfo( ThreadInfo* threadInfo )
-	{
-		this->threadInfo = threadInfo;
-	}
-	void PushFunction( FunctionInfo* functionInfo, INT64 cycleCount )
-	{
-		if ( functionStack.size() > 0 )
-		{
-			// Increment the recursive count of this callee function info so we don't double-book entries
-			FunctionInfo* callerFunction = functionStack.top().functionInfo;
-			FunctionID calleeId = functionInfo->functionId;
-			
-			CalleeFunctionInfo* calleeFunction = callerFunction->GetCalleeFunctionInfo( calleeId );
-			calleeFunction->recursiveCount++;
-			calleeFunction->calls++;
-		}
-
-		// Increment the recursive count of this function info so we don't double-book entries
-		functionInfo->recursiveCount++;
-		functionInfo->calls++;
-
-		functionStack.push( StackEntryInfo( functionInfo, cycleCount ) );
-	}
-
-	INT64 PopFunction( INT64 cycleCount )
-	{
-		INT64 elapsed = cycleCount - functionStack.top().cycleStart;
-		FunctionInfo* functionInfo = functionStack.top().functionInfo;
-
-		FunctionID calleeId = functionInfo->functionId;
-
-		// Only add the time if we're at the lowest call to the function on the stack
-		// Prevents double-accounting of recursive functions
-		functionInfo->recursiveCount--;
-		if ( functionInfo->recursiveCount == 0 )
-			functionInfo->cycleCount += elapsed;
-		else
-			functionInfo->recursiveCycleCount += elapsed;
-
-		functionStack.pop();
-
-		if ( functionStack.size() > 0 )
-		{
-			CalleeFunctionInfo* calleeFunction = functionStack.top().functionInfo->GetCalleeFunctionInfo( calleeId );
-
-			// Only add the time if we're at the lowest call to the function on the stack
-			// Prevents double-accounting of recursive functions
-			calleeFunction->recursiveCount--;
-			if ( calleeFunction->recursiveCount == 0 )
-				calleeFunction->cycleCount += elapsed;
-			else
-				calleeFunction->recursiveCycleCount += elapsed;
-		}
-
-		return elapsed;
-	}
-
-	void SuspendFunction( INT64 cycleCount )
-	{
-		suspendStart = cycleCount;
-		if ( functionStack.size() == 0 ) 
-		{
-			//cout << "Suspend with no call stack!" << endl;
-			return;
-		}
-		//cout << "Suspended function ID: " << functionStack.top().functionInfo->fid << endl;
-	}
-	void StackInfo::Trace()
-	{
-		cout << "Stack depth = " << functionStack.size() << endl;
-	}
-private:
-  INT64 suspendStart;
-  stack< StackEntryInfo > functionStack;
-  ThreadInfo* threadInfo;
-};
-
-
 class ThreadInfo
 {
 public: 
@@ -1108,12 +1009,6 @@ public:
 	{
 		this->isRunning = false;
 		this->suspendTime = 0;
-		this->stackInfo = new StackInfo( this );
-	}
-
-	ThreadInfo::~ThreadInfo()
-	{
-		delete stackInfo;
 	}
 
 	void ThreadInfo::Start()
@@ -1131,11 +1026,6 @@ public:
 	bool ThreadInfo::IsRunning()
 	{
 		return isRunning;
-	}
-
-	StackInfo* ThreadInfo::GetStackInfo()
-	{
-		return stackInfo;
 	}
 
 	FunctionInfo* ThreadInfo::GetFunctionInfo( FunctionID functionId )
@@ -1162,8 +1052,6 @@ public:
 
 	void ThreadInfo::Dump( ProfilerSocket& ps, ProfilerHelper& profilerHelper )
 	{
-		// the Sleep avoids a strange bug in the SamplingProfiler, where no functions get sent to NProf
-		//Sleep(1000);
 		for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
 		{
 			ps.SendFunctionData( profilerHelper, i->first );
@@ -1176,24 +1064,8 @@ public:
   
 private:
 	bool  isRunning;
-	StackInfo* stackInfo;
 	map< FunctionID, FunctionInfo* > functionMap;
 };
-void StackInfo::ResumeFunction( INT64 cycleCount )
-{
-	INT64 elapsed = cycleCount - suspendStart;
-	// Resume with no call stack, ignore
-	if ( functionStack.size() == 0 ) 
-	{
-		//cout << "Resume with no call stack!" << endl;
-		return;
-	}
-	functionStack.top().functionInfo->suspendCycleCount += elapsed;
-	threadInfo->suspendTime += elapsed;
-	//cout << "Resumed function ID: " << functionStack.top().functionInfo->fid << endl;
-}
-
-
 
 class ThreadInfoCollection
 {
@@ -1260,18 +1132,49 @@ private:
 	map< ThreadID, ThreadInfo* > threadMap;
 };
 
+HRESULT __stdcall __stdcall StackWalker( 
+	FunctionID funcId,
+	UINT_PTR ip,
+	COR_PRF_FRAME_INFO frameInfo,
+	ULONG32 contextSize,
+	BYTE context[  ],
+	void *clientData)
+{
+	//cout << funcId;// << "\n";
+	if(funcId!=0)
+	{
+		((vector<FunctionID>*)clientData)->push_back(funcId);
+	}
+	return S_OK;
+}
+
 
 class Profiler
 {
 public: 
-	/*CRITICAL_SECTION criticalSection;*/
-
-	//Initilize the critical section
 	Profiler::Profiler( ICorProfilerInfo2* profilerInfo )
 	{
 		this->profilerInfo = profilerInfo;
 		this->profilerHelper.Initialize( profilerInfo );
-		/*InitializeCriticalSection(&criticalSection);*/
+		profilerInfo->SetEventMask( 
+			COR_PRF_ENABLE_STACK_SNAPSHOT|
+			COR_PRF_MONITOR_THREADS	|
+			COR_PRF_DISABLE_INLINING |
+			COR_PRF_MONITOR_SUSPENDS |    
+			COR_PRF_MONITOR_EXCEPTIONS |  
+			COR_PRF_MONITOR_APPDOMAIN_LOADS |
+			COR_PRF_MONITOR_ASSEMBLY_LOADS |
+			COR_PRF_MONITOR_CACHE_SEARCHES |
+			COR_PRF_MONITOR_JIT_COMPILATION);
+
+		TIMECAPS timeCaps;
+		timeGetDevCaps(&timeCaps, sizeof(TIMECAPS));
+		timer = timeSetEvent(
+			10,
+			timeCaps.wPeriodMin, 
+			TimerFunction, 
+			(DWORD_PTR)this,     
+			TIME_PERIODIC);      
 	}
 	virtual void Leave( FunctionID functionId ){};
 	virtual void Enter( FunctionID functionId ){};
@@ -1281,7 +1184,7 @@ public:
 	
 	void ManagedToUnmanagedCall( FunctionID functionId )
 	{
-	  GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
+	  //GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
 	};
 
 	void ThreadStart( ThreadID threadId )
@@ -1293,10 +1196,8 @@ public:
 
 	void ThreadMap( ThreadID threadId, DWORD dwOSThread )
 	{
-		//EnterCriticalSection(&criticalSection);
 		cout << "ThreadMap( " << threadId << ", " << dwOSThread << ")" << endl;
 		threadMap[ dwOSThread ] = threadId;
-		//LeaveCriticalSection(&criticalSection);
 	};
 
 	void ThreadEnd( ThreadID threadId )
@@ -1307,21 +1208,19 @@ public:
 
 	void ThreadSuspend()
 	{
-	  threadCollection.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->SuspendFunction( rdtsc() );
+	  //threadCollection.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->SuspendFunction( rdtsc() );
 	};
 
 	void ThreadResume()
 	{
-	  threadCollection.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->ResumeFunction( rdtsc() );
+	  //threadCollection.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->ResumeFunction( rdtsc() );
 	};
 
 	void AppDomainStart( AppDomainID appDomainId )
 	{
-		//EnterCriticalSection(&criticalSection);
 		cout << "AppDomain Created: " << appDomainId << endl;
 		ProfilerSocket ps;
 		ps.SendAppDomainCreate( appDomainId );
-		//LeaveCriticalSection(&criticalSection);
 	};
 
 	virtual void End()
@@ -1344,106 +1243,19 @@ protected:
 	ProfilerHelper profilerHelper;
 	map< DWORD, ThreadID > threadMap;
 	bool statistical;
-};
-
-class InstrumentationProfiler:public Profiler
-{
-public:
-	InstrumentationProfiler( ICorProfilerInfo2* profilerInfo ):Profiler(profilerInfo)
-	{
-		profilerInfo->SetEventMask( 
-			COR_PRF_ENABLE_STACK_SNAPSHOT|
-			COR_PRF_MONITOR_THREADS	|
-			COR_PRF_DISABLE_INLINING |
-			COR_PRF_MONITOR_SUSPENDS |    
-			COR_PRF_MONITOR_ENTERLEAVE |
-			COR_PRF_MONITOR_EXCEPTIONS |  
-			COR_PRF_MONITOR_APPDOMAIN_LOADS |
-			COR_PRF_MONITOR_ASSEMBLY_LOADS |
-			COR_PRF_MONITOR_CACHE_SEARCHES |
-			COR_PRF_MONITOR_JIT_COMPILATION | 
-			COR_PRF_MONITOR_CODE_TRANSITIONS);
-	}
-	
-	void Enter( FunctionID functionId )
-	{
-	  ThreadInfo* threadInfo=GetCurrentThreadInfo();
-	  FunctionInfo* functionInfo = threadInfo->GetFunctionInfo( functionId );
-	  threadInfo->GetStackInfo()->PushFunction( functionInfo, rdtsc() );
-	};
-	void Leave( FunctionID functionId )
-	{
-		GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
-	};
-
-	void TailCall( FunctionID functionId )
-	{
-		GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
-	};
-
-	void UnmanagedToManagedCall( FunctionID functionId )
-	{
-		ThreadInfo* threadInfo=GetCurrentThreadInfo();
-		FunctionInfo* functionInfo = threadInfo->GetFunctionInfo( functionId );
-		threadInfo->GetStackInfo()->PushFunction( functionInfo, rdtsc() );
-	};
-};
-
-HRESULT __stdcall __stdcall StackWalker( 
-	FunctionID funcId,
-	UINT_PTR ip,
-	COR_PRF_FRAME_INFO frameInfo,
-	ULONG32 contextSize,
-	BYTE context[  ],
-	void *clientData)
-{
-	//cout << funcId;// << "\n";
-	if(funcId!=0)
-	{
-		((vector<FunctionID>*)clientData)->push_back(funcId);
-	}
-	return S_OK;
-}
-
-class SamplingProfiler:public Profiler
-{
 public:
 	static void CALLBACK TimerFunction(UINT wTimerID, UINT msg, 
 		DWORD dwUser, DWORD dw1, DWORD dw2) 
 	{
-		SamplingProfiler* profiler=(SamplingProfiler*)dwUser;
+		Profiler* profiler=(Profiler*)dwUser;
 		profiler->WalkStack();
-	}
-	SamplingProfiler(ICorProfilerInfo2* profilerInfo):Profiler(profilerInfo)
-	{
-		  profilerInfo->SetEventMask( 
-			COR_PRF_ENABLE_STACK_SNAPSHOT|
-			COR_PRF_MONITOR_THREADS	|
-			COR_PRF_DISABLE_INLINING |
-			COR_PRF_MONITOR_SUSPENDS |    
-			COR_PRF_MONITOR_EXCEPTIONS |  
-			COR_PRF_MONITOR_APPDOMAIN_LOADS |
-			COR_PRF_MONITOR_ASSEMBLY_LOADS |
-			COR_PRF_MONITOR_CACHE_SEARCHES |
-			COR_PRF_MONITOR_JIT_COMPILATION);
-
-		TIMECAPS timeCaps;
-		timeGetDevCaps(&timeCaps, sizeof(TIMECAPS));
-		timer = timeSetEvent(
-		  10,
-		  timeCaps.wPeriodMin, 
-		  TimerFunction, 
-		  (DWORD_PTR)this,     
-		  TIME_PERIODIC);      
 	}
 	static UINT timer;
 
 	void WalkStack()
 	{
-		//DebugBreak();
 		for(map< DWORD, ThreadID >::iterator i=threadMap.begin();i!=threadMap.end();i++)
 		{
-			//i++;
 			DWORD threadId=(*i).first;
 			HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME,false,threadId);
 			if(threadHandle!=NULL)
@@ -1454,7 +1266,6 @@ public:
 		}
 		for(map< DWORD, ThreadID >::iterator i=threadMap.begin();i!=threadMap.end();i++)
 		{
-			//i++;
 			DWORD threadId=(*i).first;
 			HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME|THREAD_QUERY_INFORMATION|THREAD_GET_CONTEXT,false,threadId);
 			if(threadHandle!=NULL)
@@ -1497,132 +1308,13 @@ public:
 				}
 				ResumeThread(threadHandle);
 			}
-			//else
-
-			//{
-			//	cout << "could not open thread\n";
-			//}
 		}
 	}
-	//void WalkStack()
-	//{
-	//	for(map< DWORD, ThreadID >::iterator i=threadMap.begin();i!=threadMap.end();i++)
-	//	{
-	//		i++;
-	//		DWORD threadId=(*i).first;
-	//		HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME,false,threadId);
-	//		if(threadHandle!=NULL)
-	//		{
-
-	//			int suspended=SuspendThread(threadHandle);
-	//		}
-	//	}
-	//	for(map< DWORD, ThreadID >::iterator i=threadMap.begin();i!=threadMap.end();i++)
-	//	{
-	//		i++;
-	//		DWORD threadId=(*i).first;
-	//		HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME|THREAD_QUERY_INFORMATION|THREAD_GET_CONTEXT,false,threadId);
-	//		if(threadHandle!=NULL)
-	//		{
-	//			vector<FunctionID> functions;
-	//			ThreadID id=i->second;
-	//			cout << "stackwalk for thread "<<threadId<<"\n";
-
-
-	//			profilerInfo->DoStackSnapshot(
-	//				id,
-	//				StackWalker,
-	//				COR_PRF_SNAPSHOT_DEFAULT,
-	//				&functions,
-	//				NULL,
-	//				NULL);
-	//			
-	//			ThreadInfo* threadInfo=threadCollection.GetThreadInfo(id);
-
-	//			for(int index=0	;index<functions.size();index++)
-	//			{
-	//				for(int y=index+1;;y++)
-	//				{
-	//					if(y>functions.size()-1)
-	//					{
-	//						FunctionID id=functions[index];
-	//						FunctionInfo* function=threadInfo->GetFunctionInfo(id);
-	//						function->calls++;
-	//						if(index<functions.size()-1)
-	//						{
-	//							function->GetCalleeFunctionInfo(functions[index+1])->calls++;
-	//						}
-	//						break;
-	//					}
-	//					if(functions[y]==functions[index])
-	//					{
-	//						break;
-	//					}
-	//				}
-	//			}
-	//			ResumeThread(threadHandle);
-	//		}
-	//		else
-
-	//		{
-	//			cout << "could not open thread\n";
-	//		}
-	//	}
-	//}
 };
-	//void PushFunction( FunctionInfo* functionInfo, INT64 cycleCount )
-	//{
-	//	if ( functionStack.size() > 0 )
-	//	{
-	//		// Increment the recursive count of this callee function info so we don't double-book entries
-	//		FunctionInfo* callerFunction = functionStack.top().functionInfo;
-	//		FunctionID calleeId = functionInfo->functionId;
-	//		
-	//		CalleeFunctionInfo* calleeFunction = callerFunction->GetCalleeFunctionInfo( calleeId );
-	//		calleeFunction->recursiveCount++;
-	//		calleeFunction->calls++;
-	//	}
 
-	//	// Increment the recursive count of this function info so we don't double-book entries
-	//	functionInfo->recursiveCount++;
-	//	functionInfo->calls++;
 
-	//	functionStack.push( StackEntryInfo( functionInfo, cycleCount ) );
-	//}
-	//INT64 PopFunction( INT64 cycleCount )
-	//{
-	//	INT64 elapsed = cycleCount - functionStack.top().cycleStart;
-	//	FunctionInfo* functionInfo = functionStack.top().functionInfo;
 
-	//	FunctionID calleeId = functionInfo->functionId;
-
-	//	// Only add the time if we're at the lowest call to the function on the stack
-	//	// Prevents double-accounting of recursive functions
-	//	functionInfo->recursiveCount--;
-	//	if ( functionInfo->recursiveCount == 0 )
-	//		functionInfo->cycleCount += elapsed;
-	//	else
-	//		functionInfo->recursiveCycleCount += elapsed;
-
-	//	functionStack.pop();
-
-	//	if ( functionStack.size() > 0 )
-	//	{
-	//		CalleeFunctionInfo* calleeFunction = functionStack.top().functionInfo->GetCalleeFunctionInfo( calleeId );
-
-	//		// Only add the time if we're at the lowest call to the function on the stack
-	//		// Prevents double-accounting of recursive functions
-	//		calleeFunction->recursiveCount--;
-	//		if ( calleeFunction->recursiveCount == 0 )
-	//			calleeFunction->cycleCount += elapsed;
-	//		else
-	//			calleeFunction->recursiveCycleCount += elapsed;
-	//	}
-
-	//	return elapsed;
-	//}
-
-UINT SamplingProfiler::timer;
+UINT Profiler::timer;
 
 
 
@@ -1695,7 +1387,7 @@ public:
 
 		if ( profilerInfo )
 		{
-			profiler = new SamplingProfiler( profilerInfo );
+			profiler = new Profiler( profilerInfo );
 			//profiler = new InstrumentationProfiler( profilerInfo );
 			cout << "Initializing hooks..." << endl;
 			profilerInfo->SetEnterLeaveFunctionHooks( ( FunctionEnter* )&RawEnter, ( FunctionLeave* )&RawLeave, ( FunctionTailcall* )&RawTailCall );

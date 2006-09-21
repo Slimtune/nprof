@@ -79,8 +79,6 @@ namespace NProf
 
 			string directory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 			string dll = Path.Combine(directory, "msvcr70.dll");
-			if (LoadLibrary(dll) == 0)
-				throw new Win32Exception(Marshal.GetLastWin32Error(), "Failed to load msvcr70.dll");
 
 			runs = With(new TreeView(), delegate(TreeView tree)
 			{
@@ -126,15 +124,15 @@ namespace NProf
 					if (!isNavigating)
 					{
 						forward.Clear();
-						if (_navCurrent != 0)
+						if (currentPosition != 0)
 						{
-							back.Push(_navCurrent);
+							back.Push(currentPosition);
 						}
 						for (int idx = 0; idx < methods.SelectedItems.Count; ++idx)
 						{
 							if (methods.SelectedItems[idx].Tag != null)
 							{
-								_navCurrent = (methods.SelectedItems[idx].Tag as FunctionInfo).ID;
+								currentPosition = (methods.SelectedItems[idx].Tag as FunctionInfo).ID;
 								break;
 							}
 						}
@@ -169,9 +167,15 @@ namespace NProf
 
 						methodPanel.Controls.AddRange(new Control[] {
 							methods,
-							Splitter(DockStyle.Bottom),
+							With(new Splitter(),delegate(Splitter splitter)
+							{
+								splitter.Dock=DockStyle.Bottom;
+							}),
 							callees,
-							Splitter(DockStyle.Bottom),
+							With(new Splitter(),delegate(Splitter splitter)
+							{
+								splitter.Dock=DockStyle.Bottom;
+							}),
 							callers,
 							With(new FlowLayoutPanel(),delegate(FlowLayoutPanel p)
 							{
@@ -245,96 +249,6 @@ namespace NProf
 						}),0,1);
 					options.Controls.Add(new TextBox(),1,1);
 				}),
-				//    options.Controls.Add(
-				//        With(new FlowLayoutPanel(),delegate(FlowLayoutPanel application)
-				//        {
-				//            TextBox applicationBox = new TextBox();
-				//            application.FlowDirection=FlowDirection.LeftToRight;
-				//            application.Controls.Add(With(new Label(), delegate(Label label)
-				//            {
-				//                label.Text = "Application to run:";
-				//            }));
-				//            application.AutoSize=true;
-				//            application.Controls.Add(applicationBox);
-				//            application.Controls.Add(With(new Button(),delegate(Button button)
-				//            {
-				//                button.Text = "Browse...";
-				//                button.Click += delegate
-				//                {
-				//                    OpenFileDialog dialog = new OpenFileDialog();
-				//                    dialog.Filter = "Executable files (*.exe)|*.exe";
-				//                    DialogResult dr = dialog.ShowDialog();
-				//                    if (dr == DialogResult.OK)
-				//                    {
-				//                        applicationBox.Text = dialog.FileName;
-				//                        applicationBox.Focus();
-				//                        applicationBox.SelectAll();
-				//                    }
-				//                };
-				//            }));
-
-				//        }));
-				//    options.Controls.Add(
-				//        With(new FlowLayoutPanel(), delegate(FlowLayoutPanel arguments)
-				//        {
-				//            arguments.FlowDirection=FlowDirection.LeftToRight;
-				//            arguments.AutoSize=true;
-				//            arguments.Controls.Add(With(new Label(),delegate(Label label)
-				//            {
-				//                label.Text = "Command line arguments:";
-				//                label.AutoSize=true;
-				//            }));
-				//            arguments.Controls.Add(new TextBox());
-				//        }));
-				//}),
-				//With(new FlowLayoutPanel(),delegate(FlowLayoutPanel options)
-				//{
-				//    options.FlowDirection = FlowDirection.TopDown;
-				//    options.Dock = DockStyle.Top;
-
-				//    options.Controls.AddRange(new Control[]
-				//    {
-				//        With(new FlowLayoutPanel(),delegate(FlowLayoutPanel application)
-				//        {
-				//            TextBox applicationBox = new TextBox();
-				//            application.FlowDirection=FlowDirection.LeftToRight;
-				//            application.Controls.Add(With(new Label(), delegate(Label label)
-				//            {
-				//                label.Text = "Application to run:";
-				//            }));
-				//            application.AutoSize=true;
-				//            application.Controls.Add(applicationBox);
-				//            application.Controls.Add(With(new Button(),delegate(Button button)
-				//            {
-				//                button.Text = "Browse...";
-				//                button.Click += delegate
-				//                {
-				//                    OpenFileDialog dialog = new OpenFileDialog();
-				//                    dialog.Filter = "Executable files (*.exe)|*.exe";
-				//                    DialogResult dr = dialog.ShowDialog();
-				//                    if (dr == DialogResult.OK)
-				//                    {
-				//                        applicationBox.Text = dialog.FileName;
-				//                        applicationBox.Focus();
-				//                        applicationBox.SelectAll();
-				//                    }
-				//                };
-				//            }));
-
-				//        }),
-				//        With(new FlowLayoutPanel(), delegate(FlowLayoutPanel arguments)
-				//        {
-				//            arguments.FlowDirection=FlowDirection.LeftToRight;
-				//            arguments.AutoSize=true;
-				//            arguments.Controls.Add(With(new Label(),delegate(Label label)
-				//            {
-				//                label.Text = "Command line arguments:";
-				//                label.AutoSize=true;
-				//            }));
-				//            arguments.Controls.Add(new TextBox());
-				//        })
-				//    });
-				//}),
 				With(new CommandBarManager(), delegate(CommandBarManager manager)
 				{
 					manager.Dock = DockStyle.Top;
@@ -342,9 +256,9 @@ namespace NProf
 					delegate(CommandBar bar)
 					{
 						bar.Items.AddRange(new CommandBarItem[] {
-							new CommandBarButton(Images.New, "New", New),
-							new CommandBarButton(Images.Save, "Save", Save),
-							new CommandBarSeparator(),
+							//new CommandBarButton(Images.New, "New", New),
+							//new CommandBarButton(Images.Save, "Save", Save),
+							//new CommandBarSeparator(),
 							new CommandBarButton(Images.Back, "Back", Back),
 							new CommandBarButton(Images.Forward, "Forward", Forward),
 							new CommandBarSeparator(),
@@ -357,12 +271,12 @@ namespace NProf
 					mainMenu.MenuCommands.AddRange(new MenuCommand[]
 					{
 						new Menu("File",
-							new Menu("&New...","Create a new profile project",New),
-							new Menu("&Open...","Open a profile project",Open),
-							new Menu("-","-",null),
-							new Menu("&Save","Save the active profiler project",Shortcut.CtrlS,Save),
-							new Menu("Save &As...","Save the active profiler project as a specified file name",delegate {SaveProject( Project, true );}),
-							new Menu("-","-",null),
+							//new Menu("&New...","Create a new profile project",New),
+							//new Menu("&Open...","Open a profile project",Open),
+							//new Menu("-","-",null),
+							//new Menu("&Save","Save the active profiler project",Shortcut.CtrlS,Save),
+							//new Menu("Save &As...","Save the active profiler project as a specified file name",delegate {SaveProject( Project, true );}),
+							//new Menu("-","-",null),
 							new Menu("E&xit","Exit the application",Shortcut.AltF4,delegate {Close();})),
 						new Menu("View",
 							new Menu("Back","Navigate Back",Back),
@@ -374,15 +288,6 @@ namespace NProf
 					});
 				})});
 		}
-		public static Splitter Splitter(DockStyle dock)
-		{
-			Splitter splitter = new Splitter();
-			splitter.Dock = dock;
-			return splitter;
-		}
-		[DllImport("kernel32.dll", SetLastError = true)]
-		static extern int LoadLibrary(string strLibFileName);
-
 		private delegate void HandleProfileComplete(Run run);
 
 		private void ProfilerForm_Load(object sender, System.EventArgs e)
@@ -420,10 +325,10 @@ namespace NProf
 			}
 		}
 
-		private void Save(object sender, System.EventArgs e)
-		{
-			SaveProject(Project, false);
-		}
+		//private void Save(object sender, System.EventArgs e)
+		//{
+		//    SaveProject(Project, false);
+		//}
 
 		private void StartRun(object sender, System.EventArgs e)
 		{
@@ -443,43 +348,30 @@ namespace NProf
 					 UpdateRuns();
 				}));
 			};
-
-			//run.StateChanged += new RunStateEventHandler(OnRunStateChanged);
 			run.Start();
 		}
-
-		//private void Properties(object sender, System.EventArgs e)
-		//{
-		//    //PropertiesForm properties = new PropertiesForm(PropertiesForm.ProfilerProjectMode.ModifyProject);
-		//    //properties.Project = Project;
-		//    //properties.Mode = PropertiesForm.ProfilerProjectMode.ModifyProject;
-
-		//    //properties.ShowDialog(this);
-		//}
-
 		private void Back(object sender, System.EventArgs e)
 		{
 			if (back.Count == 0)
 				return;
 
-			forward.Push(_navCurrent);
-			_navCurrent = back.Pop();
+			forward.Push(currentPosition);
+			currentPosition = back.Pop();
 
 			isNavigating = true;
-			JumpToID(_navCurrent);
+			JumpToID(currentPosition);
 			isNavigating = false;
 		}
-
 		private void Forward(object sender, System.EventArgs e)
 		{
 			if (forward.Count == 0)
 				return;
 
-			back.Push(_navCurrent);
-			_navCurrent = forward.Pop();
+			back.Push(currentPosition);
+			currentPosition = forward.Pop();
 
 			isNavigating = true;
-			JumpToID(_navCurrent);
+			JumpToID(currentPosition);
 			isNavigating = false;
 		}
 
@@ -488,32 +380,32 @@ namespace NProf
 			new AboutForm().ShowDialog(this);
 		}
 
-		private bool SaveProject(ProjectInfo project, bool forceSaveDialog)
-		{
-			if (project == null)
-				return true;
+		//private bool SaveProject(ProjectInfo project, bool forceSaveDialog)
+		//{
+		//    if (project == null)
+		//        return true;
 
-			string filename = SerializationHandler.GetFilename(project);
+		//    string filename = SerializationHandler.GetFilename(project);
 
-			if (forceSaveDialog || filename == string.Empty)
-			{
-				SaveFileDialog saveDlg = new SaveFileDialog();
+		//    if (forceSaveDialog || filename == string.Empty)
+		//    {
+		//        SaveFileDialog saveDlg = new SaveFileDialog();
 
-				saveDlg.DefaultExt = "nprof";
-				saveDlg.FileName = SerializationHandler.GetFilename(project); ;
-				saveDlg.Filter = "NProf projects (*.nprof)|*.nprof|All files (*.*)|*.*";
-				saveDlg.Title = "Save a NProf project file";
+		//        saveDlg.DefaultExt = "nprof";
+		//        saveDlg.FileName = SerializationHandler.GetFilename(project); ;
+		//        saveDlg.Filter = "NProf projects (*.nprof)|*.nprof|All files (*.*)|*.*";
+		//        saveDlg.Title = "Save a NProf project file";
 
-				if (saveDlg.ShowDialog(this) != DialogResult.OK)
-					return false;
+		//        if (saveDlg.ShowDialog(this) != DialogResult.OK)
+		//            return false;
 
-				project.Name = Path.GetFileNameWithoutExtension(saveDlg.FileName);
-				filename = saveDlg.FileName;
-			}
-			SerializationHandler.SaveProjectInfo(project, filename);
+		//        project.Name = Path.GetFileNameWithoutExtension(saveDlg.FileName);
+		//        filename = saveDlg.FileName;
+		//    }
+		//    SerializationHandler.SaveProjectInfo(project, filename);
 
-			return true;
-		}
+		//    return true;
+		//}
 		private class Images
 		{
 			private static Image[] images = null;
@@ -568,7 +460,7 @@ namespace NProf
 		private Stack<int> back = new Stack<int>();
 		private Stack<int> forward = new Stack<int>();
 
-		private int _navCurrent = 0;
+		private int currentPosition = 0;
 
 		private bool isNavigating = false;
 
