@@ -678,7 +678,6 @@ namespace NProf
 			this.run = run;
 			this.stopFlag = 0;
 			this.hasStopped = false;
-			//this.currentApplicationID = 0;
 			this.profileCount = 0;
 			this.run.Messages.AddMessage("Waiting for application...");
 		}
@@ -823,26 +822,20 @@ namespace NProf
 									{
 										stream.WriteByte(1);
 									}
+									//reader.ReadUInt32();
+									//int argCount = (int)reader.ReadUInt32();
 
-									// Set up the new application
-									//applicationID = currentApplicationID++;
+									//if (argCount > 0)
+									//{
+									//    string strFullFilename = ReadLengthEncodedASCIIString(reader);
+									//    strFullFilename = strFullFilename.Replace("\"", "");
+									//}
 
-									//stream.WriteByte((byte)applicationID);
-
-									reader.ReadUInt32();
-									int argCount = (int)reader.ReadUInt32();
-
-									if (argCount > 0)
-									{
-										string strFullFilename = ReadLengthEncodedASCIIString(reader);
-										strFullFilename = strFullFilename.Replace("\"", "");
-									}
-
-									while (argCount > 1)
-									{
-										argCount--;
-										ReadLengthEncodedASCIIString(reader);
-									}
+									//while (argCount > 1)
+									//{
+									//    argCount--;
+									//    ReadLengthEncodedASCIIString(reader);
+									//}
 
 									profileCount++;
 								}
@@ -873,18 +866,6 @@ namespace NProf
 								run.Messages.AddMessage("AppDomain created: " + appDomainID);
 								break;
 							}
-
-						//case NetworkMessage.THREAD_CREATE:
-						//    threadId = reader.ReadInt32();
-						//    run.Messages.AddMessage("Thread created: " + threadId);
-						//    break;
-
-						//case NetworkMessage.THREAD_END:
-						//    threadId = reader.ReadInt32();
-						//    reader.ReadInt64();
-						//    reader.ReadInt64();
-						//    run.Messages.AddMessage("Thread completed: " + threadId);
-						//    break;
 
 						case NetworkMessage.FUNCTION_DATA:
 							{

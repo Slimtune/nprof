@@ -674,23 +674,6 @@ public:
 
 			if ( b == 1 )
 			{
-				//ReadByte( b );
-				//applicationId = b;
-
-				SendUINT32( ::GetCurrentProcessId() );
-				
-				int nArgs;
-				LPWSTR* pstrCmdLine = ::CommandLineToArgvW( ::GetCommandLineW(), &nArgs );
-
-				SendUINT32( nArgs );
-
-				for ( int nArg = 0; nArg < nArgs; nArg++ )
-				{
-					string strArg = CW2A( pstrCmdLine[ nArg ] );
-					SendString( strArg );
-				}
-				
-				::GlobalFree( pstrCmdLine );
 
 				isInitialized = true;
 			}
@@ -1486,5 +1469,4 @@ public:
 		 resource_name = "IDR_NPROFHOOK") ];
 
 bool ProfilerSocket::isInitialized = false;
-//int ProfilerSocket::applicationId = -1;
 Profiler* CNProfCORHook::profiler;
