@@ -653,11 +653,11 @@ public:
 		WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
 		ProfilerSocket ps;
 	}
-	void ProfilerSocket::SendStartFunctionData( ThreadID tid )
-	{
-		SendNetworkMessage( FUNCTION_DATA );
-		SendThreadID( tid );
-	}
+	//void ProfilerSocket::SendStartFunctionData( ThreadID tid )
+	//{
+	//	//SendNetworkMessage( FUNCTION_DATA );
+	//	//SendThreadID( tid );
+	//}
 
 	void ProfilerSocket::SendFunctionData( ProfilerHelper& ph, FunctionID fid )
 	{
@@ -846,7 +846,7 @@ public:
 		ProfilerSocket profilerSocket;
 
 		ProfilerSocket socket;
-		socket.SendStartFunctionData(0);
+		//socket.SendStartFunctionData(0);
 		for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
 		{
 			socket.SendFunctionData( profilerHelper, i->first );

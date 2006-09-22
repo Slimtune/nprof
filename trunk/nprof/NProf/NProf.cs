@@ -558,7 +558,7 @@ namespace NProf
 		}
 		public void Add(FunctionInfo function)
 		{
-			ContainerListViewItem item=Items.Add(function.Signature.Signature);
+			ContainerListViewItem item=Items.Add(function.Signature);
 			item.SubItems[1].Text=function.Calls.ToString(NProf.timeFormat);
 			item.Tag = function;
 			foreach (CalleeFunctionInfo callee in function.CalleeInfo)
@@ -579,13 +579,13 @@ namespace NProf
 
 			HeaderStyle = ColumnHeaderStyle.Clickable;
 			Columns[0].Width = 350;
-			
+	
 			ColumnSortColor = Color.White;
 			Font = new Font("Tahoma", 8.0f);
 		}
 		public void Add(FunctionInfo function)
 		{
-			DotNetLib.Windows.Forms.ContainerListViewItem item = Items.Add(function.Signature.Signature);
+			DotNetLib.Windows.Forms.ContainerListViewItem item = Items.Add(function.Signature);
 			item.SubItems[1].Text = function.Calls.ToString(NProf.timeFormat);
 			item.Tag = function;
 		}
@@ -716,61 +716,37 @@ namespace NProf
 				using (NetworkStream stream = new NetworkStream(s, true))
 				{
 					BinaryReader reader = new BinaryReader(stream);
-					NetworkMessage message = (NetworkMessage)reader.ReadInt16();
-
-					//int appDomainID;
-					int threadId;
-					int functionId;
-
-					switch (message)
+					while (true)
 					{
-						case NetworkMessage.FUNCTION_DATA:
+						int functionId= reader.ReadInt32();
+						if(functionId==-1)
+						{
+							break;
+						}
+						run.signatures.MapSignature(functionId,new FunctionSignature(
+							reader.ReadUInt32(),
+							ReadLengthEncodedASCIIString(reader),
+							ReadLengthEncodedASCIIString(reader),
+							ReadLengthEncodedASCIIString(reader),
+							ReadLengthEncodedASCIIString(reader)
+						));
+
+						int callCount = reader.ReadInt32();
+						List<CalleeFunctionInfo> callees = new List<CalleeFunctionInfo>();
+
+						while (true)
+						{
+							int calleeFunctionId = reader.ReadInt32();
+							if (calleeFunctionId == -1)
 							{
-								threadId = reader.ReadInt32();
-
-								functionId = reader.ReadInt32();
-								int nIndex = 0;
-
-								while (functionId != -1)
-								{
-									UInt32 uiFlags = reader.ReadUInt32();
-									string returnValue = ReadLengthEncodedASCIIString(reader);
-									string className = ReadLengthEncodedASCIIString(reader);
-									string functionName = ReadLengthEncodedASCIIString(reader);
-									string parameters = ReadLengthEncodedASCIIString(reader);
-
-									FunctionSignature fs = new FunctionSignature(
-										uiFlags,
-										returnValue,
-										className,
-										functionName,
-										parameters
-									);
-									run.signatures.MapSignature(functionId, fs);
-
-									int callCount = reader.ReadInt32();
-									List<CalleeFunctionInfo> callees = new List<CalleeFunctionInfo>();
-
-									while (true)
-									{
-										int calleeFunctionId = reader.ReadInt32();
-										if (calleeFunctionId == -1)
-										{
-											break;
-										}
-										int calleeCallCount = reader.ReadInt32();
-										callees.Add(new CalleeFunctionInfo(run.signatures, calleeFunctionId, calleeCallCount));
-									}
-
-									FunctionInfo function = new FunctionInfo(functionId, fs, callCount, callees.ToArray());
-									run.functions.Add(function.ID, function);
-
-									functionId = reader.ReadInt32();
-									nIndex++;
-								}
-
 								break;
 							}
+							int calleeCallCount = reader.ReadInt32();
+							callees.Add(new CalleeFunctionInfo(run.signatures, calleeFunctionId, calleeCallCount));
+						}
+
+						FunctionInfo function = new FunctionInfo(functionId,run.signatures, callCount, callees.ToArray());
+						run.functions.Add(function.ID, function);
 					}
 				}
 			}
@@ -811,10 +787,6 @@ namespace NProf
 	}
 	public class CalleeFunctionInfo
 	{
-		public CalleeFunctionInfo()
-		{
-			signatures = new FunctionSignatureMap();
-		}
 		public CalleeFunctionInfo(FunctionSignatureMap signatures, int id, int calls)
 		{
 			this.id = id;
@@ -835,29 +807,19 @@ namespace NProf
 			get { return calls; }
 			set { calls = value; }
 		}
-		internal FunctionInfo FunctionInfo
-		{
-			set { function = value; }
-		}
 		private int id;
 		private int calls;
-		private FunctionInfo function;
 		private FunctionSignatureMap signatures;
 	}
 	public class FunctionInfo
 	{
-		public FunctionInfo()
-		{
-		}
-		public FunctionInfo(int nID, FunctionSignature signature, int calls,CalleeFunctionInfo[] callees)
+		FunctionSignatureMap signatures;
+		public FunctionInfo(int nID, FunctionSignatureMap signatures, int calls,CalleeFunctionInfo[] callees)
 		{
 			this.id = nID;
-			this.signature = signature;
 			this.calls = calls;
 			this.callees = callees;
-
-			foreach (CalleeFunctionInfo callee in callees)
-				callee.FunctionInfo = this;
+			this.signatures = signatures;
 		}
 
 		public int ID
@@ -865,11 +827,9 @@ namespace NProf
 			get { return id; }
 			set { id = value; }
 		}
-
-		public FunctionSignature Signature
+		public string Signature
 		{
-			get { return signature; }
-			set { signature = value; }
+			get { return signatures.GetFunctionSignature(id); }
 		}
 
 		public CalleeFunctionInfo[] CalleeInfo
@@ -883,14 +843,10 @@ namespace NProf
 		}
 		private int id;
 		private int calls;
-		private FunctionSignature signature;
 		private CalleeFunctionInfo[] callees;
 	}
 	public class FunctionSignature
 	{
-		public FunctionSignature()
-		{
-		}
 		public FunctionSignature(UInt32 methodAttributes, string returnType, string className, string functionName, string parameters)
 		{
 			CorMethodAttr cma = (CorMethodAttr)methodAttributes;
