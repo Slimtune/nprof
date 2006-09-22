@@ -730,6 +730,15 @@ namespace NProf
 							ReadLengthEncodedASCIIString(reader),
 							ReadLengthEncodedASCIIString(reader)
 						));
+					}
+					while(true)
+					{
+
+						int functionId = reader.ReadInt32();
+						if (functionId == -1)
+						{
+							break;
+						}
 
 						int callCount = reader.ReadInt32();
 						List<CalleeFunctionInfo> callees = new List<CalleeFunctionInfo>();

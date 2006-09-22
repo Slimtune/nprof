@@ -752,10 +752,12 @@ private:
 		SAFE_SEND( socket, threadId );
 	}
 
+	public:
 	void ProfilerSocket::SendFunctionID( FunctionID functionId )
 	{
 		SAFE_SEND( socket, functionId );
 	}
+	private:
 	SOCKET socket;
 };
 
@@ -846,12 +848,23 @@ public:
 		ProfilerSocket profilerSocket;
 
 		ProfilerSocket socket;
-		//socket.SendStartFunctionData(0);
 		for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
 		{
 			socket.SendFunctionData( profilerHelper, i->first );
+			//i->second->Dump( socket, profilerHelper );
+		}
+		socket.SendEndFunctionData();
+		for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
+		{
+			socket.SendFunctionID( i->first );
+			//socket.SendFunctionData( profilerHelper, i->first );
 			i->second->Dump( socket, profilerHelper );
 		}
+		//for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
+		//{
+		//	socket.SendFunctionData( profilerHelper, i->first );
+		//	i->second->Dump( socket, profilerHelper );
+		//}
 		socket.SendEndFunctionData();
 	}
 	Profiler::Profiler( ICorProfilerInfo2* profilerInfo )
