@@ -420,7 +420,7 @@ namespace NProf
 			FunctionInfo mfi = (FunctionInfo)methods.SelectedItems[0].Tag;
 			foreach (FunctionInfo fi in run.functions.Values)
 			{
-				foreach (FunctionInfo cfi in fi.CalleeInfo)
+				foreach (FunctionInfo cfi in fi.Callees)
 				{
 					if (cfi.ID == mfi.ID)
 					{
@@ -561,7 +561,7 @@ namespace NProf
 			ContainerListViewItem item=Items.Add(function.Signature);
 			item.SubItems[1].Text=function.Calls.ToString(NProf.timeFormat);
 			item.Tag = function;
-			foreach (FunctionInfo callee in function.CalleeInfo)
+			foreach (FunctionInfo callee in function.Callees)
 			{
 				ContainerListViewItem subItem=item.Items.Add(callee.Signature);
 				subItem.Tag = callee;
@@ -731,38 +731,41 @@ namespace NProf
 							ReadLengthEncodedASCIIString(reader)
 						));
 					}
-					while(true)
-					{
-
-						int functionId = reader.ReadInt32();
-						if (functionId == -1)
-						{
-							break;
-						}
-
-						int callCount = reader.ReadInt32();
-						List<FunctionInfo> callees = new List<FunctionInfo>();
-
-						while (true)
-						{
-							int calleeFunctionId = reader.ReadInt32();
-							if (calleeFunctionId == -1)
-							{
-								break;
-							}
-							int calleeCallCount = reader.ReadInt32();
-							callees.Add(new FunctionInfo(calleeFunctionId, run.signatures, calleeCallCount));
-						}
-
-						FunctionInfo function = new FunctionInfo(functionId,run.signatures, callCount, callees.ToArray());
-						run.functions.Add(function.ID, function);
-					}
+					GetFunctions(reader);
 				}
 			}
 			catch (Exception e)
 			{
 				if (Error != null)
 					Error(e);
+			}
+		}
+
+		private void GetFunctions(BinaryReader reader)
+		{
+			while (true)
+			{
+				int functionId = reader.ReadInt32();
+				if (functionId == -1)
+				{
+					break;
+				}
+
+				int callCount = reader.ReadInt32();
+				FunctionInfo function = new FunctionInfo(functionId, run.signatures, callCount);
+				
+				while (true)
+				{
+					int calleeFunctionId = reader.ReadInt32();
+					if (calleeFunctionId == -1)
+					{
+						break;
+					}
+					int calleeCallCount = reader.ReadInt32();
+					function.Callees.Add(new FunctionInfo(calleeFunctionId, run.signatures, calleeCallCount));
+				}
+
+				run.functions.Add(function.ID, function);
 			}
 		}
 
@@ -794,40 +797,13 @@ namespace NProf
 		private Run run;
 		private bool hasStopped;
 	}
-	//public class CalleeFunctionInfo
-	//{
-	//    public CalleeFunctionInfo(FunctionSignatureMap signatures, int id, int calls)
-	//    {
-	//        this.id = id;
-	//        this.calls = calls;
-	//        this.signatures = signatures;
-	//    }
-	//    public int ID
-	//    {
-	//        get { return id; }
-	//        set { id = value; }
-	//    }
-	//    public string Signature
-	//    {
-	//        get { return signatures.GetFunctionSignature(ID); }
-	//    }
-	//    public int Calls
-	//    {
-	//        get { return calls; }
-	//        set { calls = value; }
-	//    }
-	//    private int id;
-	//    private int calls;
-	//    private FunctionSignatureMap signatures;
-	//}
 	public class FunctionInfo
 	{
-		FunctionSignatureMap signatures;
-		public FunctionInfo(int nID, FunctionSignatureMap signatures, int calls,params FunctionInfo[] callees)
+		//FunctionSignatureMap signatures;
+		public FunctionInfo(int nID, FunctionSignatureMap signatures, int calls)
 		{
 			this.id = nID;
 			this.calls = calls;
-			this.callees = callees;
 			this.signatures = signatures;
 		}
 
@@ -841,7 +817,7 @@ namespace NProf
 			get { return signatures.GetFunctionSignature(id); }
 		}
 
-		public FunctionInfo[] CalleeInfo
+		public List<FunctionInfo> Callees
 		{
 			get { return callees; }
 			set { callees = value; }
@@ -852,7 +828,8 @@ namespace NProf
 		}
 		private int id;
 		private int calls;
-		private FunctionInfo[] callees;
+		private List<FunctionInfo> callees=new List<FunctionInfo>();
+		FunctionSignatureMap signatures;
 	}
 	public class FunctionSignature
 	{
@@ -1094,19 +1071,13 @@ namespace NProf
 	{
 		public FunctionSignatureMap signatures = new FunctionSignatureMap();
 		public Dictionary<int, FunctionInfo> functions = new Dictionary<int, FunctionInfo>();
-		public Run()
-		{
-			//this.messages = new RunMessageCollection();
-		}
 
 		public Run(Profiler p, ProjectInfo pi)
 		{
 			this.profiler = p;
 			this.start = DateTime.Now;
 			this.end = DateTime.MaxValue;
-			//this.runState = RunState.Initializing;
 			this.project = pi;
-			//this.messages = new RunMessageCollection();
 			this.isSuccess = false;
 		}
 		public bool Start()
