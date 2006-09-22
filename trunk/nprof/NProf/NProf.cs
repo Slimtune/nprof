@@ -678,7 +678,7 @@ namespace NProf
 			this.run = run;
 			this.stopFlag = 0;
 			this.hasStopped = false;
-			this.profileCount = 0;
+			//this.profileCount = 0;
 			this.run.Messages.AddMessage("Waiting for application...");
 		}
 		public void Start()
@@ -813,31 +813,16 @@ namespace NProf
 								else
 								{
 									// Version was okay, write a positive byte
-									if (NProf.form.Project.DebugProfiler)
+									//if (NProf.form.Project.DebugProfiler)
 
-									{
-										stream.WriteByte(2);
-									}
-									else
-									{
+									//{
+									//    stream.WriteByte(2);
+									//}
+									//else
+									//{
 										stream.WriteByte(1);
-									}
-									//reader.ReadUInt32();
-									//int argCount = (int)reader.ReadUInt32();
-
-									//if (argCount > 0)
-									//{
-									//    string strFullFilename = ReadLengthEncodedASCIIString(reader);
-									//    strFullFilename = strFullFilename.Replace("\"", "");
 									//}
-
-									//while (argCount > 1)
-									//{
-									//    argCount--;
-									//    ReadLengthEncodedASCIIString(reader);
-									//}
-
-									profileCount++;
+									//profileCount++;
 								}
 
 								// We're off!
@@ -847,16 +832,10 @@ namespace NProf
 
 						case NetworkMessage.SHUTDOWN:
 							{
-								profileCount--;
-
-								if (profileCount == 0)
-								{
-									hasStopped = true;
-									run.Messages.AddMessage("Profiling completed.");
-									if (Exited != null)
-										Exited(this, EventArgs.Empty);
-								}
-
+								hasStopped = true;
+								run.Messages.AddMessage("Profiling completed.");
+								if (Exited != null)
+									Exited(this, EventArgs.Empty);
 								break;
 							}
 
@@ -964,7 +943,7 @@ namespace NProf
 		private int port;
 		private int stopFlag;
 		//private int currentApplicationID;
-		private int profileCount;
+		//private int profileCount;
 		private ManualResetEvent resetStarted;
 		private ManualResetEvent resetMessageReceived;
 		private Thread thread;

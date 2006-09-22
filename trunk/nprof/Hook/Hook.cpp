@@ -666,15 +666,13 @@ public:
 		BYTE b;
 		if ( ReadByte( b ) == 0 )
 		{
-			if ( b == 2 )
-			{
-				b = 1;
-				::DebugBreak();
-			}
-
+			//if ( b == 2 )
+			//{
+			//	b = 1;
+			//	::DebugBreak();
+			//}
 			if ( b == 1 )
 			{
-
 				isInitialized = true;
 			}
 			else
