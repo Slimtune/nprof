@@ -751,6 +751,24 @@ public:
 		SendAppDomainID( aid );
 	}
 
+	void ProfilerSocket::SendThreadCreate( ThreadID tid )
+	{
+		operation = "SendThreadCreate";
+
+		SendNetworkMessage( THREAD_CREATE );
+		SendThreadID( tid );
+	}
+
+	void ProfilerSocket::SendThreadEnd( ThreadID tid, UINT64 llThreadStartTime, UINT64 threadEndTime )
+	{
+		operation = "SendThreadEnd";
+
+		SendNetworkMessage( THREAD_END );
+		SendThreadID( tid );
+		SendUINT64( llThreadStartTime );
+		SendUINT64( threadEndTime );
+	}
+
 	void ProfilerSocket::SendStartFunctionData( ThreadID tid )
 	{
 		operation = "SendStartFunctionData";
@@ -1072,7 +1090,7 @@ public:
 		ThreadInfo* threadInfo = GetThreadInfo( threadId );
 		threadInfo->End();
 		ProfilerSocket profilerSocket;
-		//profilerSocket.SendThreadEnd( threadId, threadInfo->startTime, threadInfo->endTime );
+		profilerSocket.SendThreadEnd( threadId, threadInfo->startTime, threadInfo->endTime );
 		Dump( profilerHelper, threadId );
 	}
 
@@ -1173,7 +1191,7 @@ public:
 	{
 	  threadCollection.GetThreadInfo( threadId )->Start();
 	  ProfilerSocket ps;
-	  //ps.SendThreadCreate( threadId );
+	  ps.SendThreadCreate( threadId );
 	};
 
 	void ThreadMap( ThreadID threadId, DWORD dwOSThread )

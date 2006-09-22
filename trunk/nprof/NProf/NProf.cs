@@ -452,13 +452,18 @@ namespace NProf
 
 			currentRun = run;
 			methods.BeginUpdate();
-			foreach (ThreadInfo thread in run.Process.Threads)
+			//foreach (ThreadInfo thread in run.Process.Threads)
+			//{
+			foreach (FunctionInfo method in run.Process.functions.Values)
 			{
-				foreach (FunctionInfo method in thread.FunctionInfoCollection.Values)
-				{
-					methods.Add(method);
-				}
+				methods.Add(method);
 			}
+
+			//foreach (FunctionInfo method in thread.FunctionInfoCollection.Values)
+			//{
+			//    methods.Add(method);
+			//}
+			//}
 			methods.EndUpdate();
 		}
 		private void UpdateCallerList(Run run)
@@ -471,9 +476,9 @@ namespace NProf
 			callers.ShowTreeLines = multipleSelected;
 
 			FunctionInfo mfi = (FunctionInfo)methods.SelectedItems[0].Tag;
-			foreach (ThreadInfo thread in run.Process.Threads)
-			{
-				foreach (FunctionInfo fi in thread.FunctionInfoCollection.Values)
+			//foreach (ThreadInfo thread in run.Process.Threads)
+			//{
+				foreach (FunctionInfo fi in run.Process.functions.Values)
 				{
 					foreach (CalleeFunctionInfo cfi in fi.CalleeInfo)
 					{
@@ -483,7 +488,7 @@ namespace NProf
 						}
 					}
 				}
-			}
+			//}
 			callers.Sort();
 			callers.EndUpdate();
 		}
@@ -909,19 +914,19 @@ namespace NProf
 								break;
 							}
 
-						//case NetworkMessage.THREAD_CREATE:
-						//    break;
-						//    threadId = reader.ReadInt32();
-						//    run.Messages.AddMessage("Thread created: " + threadId);
-						//    break;
+						case NetworkMessage.THREAD_CREATE:
+							threadId = reader.ReadInt32();
+							run.Messages.AddMessage("Thread created: " + threadId);
+							break;
 
-						//case NetworkMessage.THREAD_END:
-						//    break;
-						//    threadId = reader.ReadInt32();
-						//    currentProcess.Threads[threadId].StartTime = reader.ReadInt64();
-						//    currentProcess.Threads[threadId].EndTime = reader.ReadInt64();
-						//    run.Messages.AddMessage("Thread completed: " + threadId);
-						//    break;
+						case NetworkMessage.THREAD_END:
+							threadId = reader.ReadInt32();
+							reader.ReadInt64();
+							reader.ReadInt64();
+							//currentProcess.Threads[threadId].StartTime = reader.ReadInt64();
+							//currentProcess.Threads[threadId].EndTime = reader.ReadInt64();
+							run.Messages.AddMessage("Thread completed: " + threadId);
+							break;
 
 						case NetworkMessage.FUNCTION_DATA:
 							{
@@ -967,8 +972,9 @@ namespace NProf
 									}
 									//CalleeFunctionInfo[] acfi = ( CalleeFunctionInfo[] )callees.ToArray( typeof( CalleeFunctionInfo ) );
 
-									FunctionInfo function = new FunctionInfo(currentProcess.Threads[threadId], functionId, fs, callCount, totalTime, totalRecursiveTime, totalSuspendTime, callees.ToArray());
-									currentProcess.Threads[threadId].FunctionInfoCollection.Add(function.ID, function);
+									FunctionInfo function = new FunctionInfo(functionId, fs, callCount, totalTime, totalRecursiveTime, totalSuspendTime, callees.ToArray());
+									//FunctionInfo function = new FunctionInfo(currentProcess.Threads[threadId], functionId, fs, callCount, totalTime, totalRecursiveTime, totalSuspendTime, callees.ToArray());
+									currentProcess.functions.Add(function.ID, function);
 									//currentProcess.Threads[threadId].FunctionInfoCollection.Add(function);
 
 									functionId = reader.ReadInt32();
@@ -1012,8 +1018,8 @@ namespace NProf
 			INITIALIZE = 0,
 			SHUTDOWN,
 			APPDOMAIN_CREATE,
-			//THREAD_CREATE,
-			//THREAD_END,
+			THREAD_CREATE,
+			THREAD_END,
 			FUNCTION_DATA,
 			PROFILER_MESSAGE,
 		};
@@ -1425,11 +1431,11 @@ namespace NProf
 			get { return totalRecursiveTime; }
 			set { totalRecursiveTime = value; }
 		}
-		[XmlIgnore]
-		public double TimeInMethod
-		{
-			get { return (double)totalTime / (double)function.ThreadTotalTicks; }
-		}
+		//[XmlIgnore]
+		//public double TimeInMethod
+		//{
+		//    get { return (double)totalTime / (double)function.ThreadTotalTicks; }
+		//}
 		[XmlIgnore]
 		public double TimeOfParentInMethod
 		{
@@ -1451,9 +1457,9 @@ namespace NProf
 		public FunctionInfo()
 		{
 		}
-		public FunctionInfo(ThreadInfo ti, int nID, FunctionSignature signature, int calls, long totalTime, long totalRecursiveTime, long totalSuspendedTime, CalleeFunctionInfo[] callees)
+		public FunctionInfo(int nID, FunctionSignature signature, int calls, long totalTime, long totalRecursiveTime, long totalSuspendedTime, CalleeFunctionInfo[] callees)
 		{
-			this.thread = ti;
+			//this.thread = ti;
 			this.id = nID;
 			this.signature = signature;
 			this.calls = calls;
@@ -1487,11 +1493,11 @@ namespace NProf
 		{
 			get { return calls; }
 		}
-		[XmlIgnore]
-		public long ThreadTotalTicks
-		{
-			get { return thread.TotalTime; }
-		}
+		//[XmlIgnore]
+		//public long ThreadTotalTicks
+		//{
+		//    get { return thread.TotalTime; }
+		//}
 		[XmlIgnore]
 		public long TotalTicks
 		{
@@ -1531,20 +1537,20 @@ namespace NProf
 				return totalChildrenRecursiveTime;
 			}
 		}
-		[XmlIgnore]
-		public double TimeInMethod
-		{
-			get
-			{
-				if (ThreadTotalTicks == 0)
-					return 0;
+		//[XmlIgnore]
+		//public double TimeInMethod
+		//{
+		//    get
+		//    {
+		//        if (ThreadTotalTicks == 0)
+		//            return 0;
 
-				return (
-					(double)(TotalTicks + TotalRecursiveTicks - TotalChildrenTicks - TotalChildrenRecursiveTicks)
-					/
-					(double)ThreadTotalTicks);
-			}
-		}
+		//        return (
+		//            (double)(TotalTicks + TotalRecursiveTicks - TotalChildrenTicks - TotalChildrenRecursiveTicks)
+		//            /
+		//            (double)ThreadTotalTicks);
+		//    }
+		//}
 		private int id;
 		private int calls;
 		private long totalTime;
@@ -1552,7 +1558,7 @@ namespace NProf
 		private long totalSuspendedTime;
 		private FunctionSignature signature;
 		private CalleeFunctionInfo[] callees;
-		private ThreadInfo thread;
+		//private ThreadInfo thread;
 	}
 	public class FunctionSignature
 	{
@@ -1722,10 +1728,11 @@ namespace NProf
 	// remove
 	public class ProcessInfo
 	{
+		public Dictionary<int, FunctionInfo> functions=new Dictionary<int,FunctionInfo>();
 		public ProcessInfo()
 		{
 			this.id = 0;
-			this.threads = new ThreadInfoCollection();
+			//this.threads = new ThreadInfoCollection();
 			this.signatures = new FunctionSignatureMap();
 		}
 
@@ -1759,11 +1766,11 @@ namespace NProf
 			set { signatures = value; }
 		}
 
-		public ThreadInfoCollection Threads
-		{
-			get { return threads; }
-			set { threads = value; }
-		}
+		//public ThreadInfoCollection Threads
+		//{
+		//    get { return threads; }
+		//    set { threads = value; }
+		//}
 
 		public override string ToString()
 		{
@@ -1773,7 +1780,7 @@ namespace NProf
 		private int id;
 		private int processId;
 		private FunctionSignatureMap signatures;
-		private ThreadInfoCollection threads;
+		//private ThreadInfoCollection threads;
 		private string name;
 	}
 	public class ProcessInfoCollection : IEnumerable
@@ -1812,83 +1819,84 @@ namespace NProf
 		}
 		private Dictionary<int, ProcessInfo> processes;
 	}
-	public class ThreadInfo
-	{
-		public ThreadInfo()
-		{
-			this.functions = new Dictionary<int, FunctionInfo>();
-			this.id = 0;
-			this.startTime = 0;
-			this.endTime = 0;
-		}
+	//public class ThreadInfo
+	//{
+	//    public ThreadInfo()
+	//    {
+	//        this.functions = new Dictionary<int, FunctionInfo>();
+	//        this.id = 0;
+	//        this.startTime = 0;
+	//        this.endTime = 0;
+	//    }
 
-		public ThreadInfo(int threadId)
-			: this()
-		{
-			this.id = threadId;
-		}
+	//    public ThreadInfo(int threadId)
+	//        : this()
+	//    {
+	//        this.id = threadId;
+	//    }
 
-		[XmlIgnore]
-		public int ID
-		{
-			get { return id; }
-		}
-		[XmlIgnore]
-		public long StartTime
-		{
-			get { return startTime; }
-			set { startTime = value; }
-		}
-		[XmlIgnore]
-		public long EndTime
-		{
-			get { return endTime; }
-			set { endTime = value; }
-		}
-		[XmlIgnore]
-		public long TotalTime
-		{
-			get { return endTime - startTime; }
-		}
+	//    [XmlIgnore]
+	//    public int ID
+	//    {
+	//        get { return id; }
+	//    }
+	//    [XmlIgnore]
+	//    public long StartTime
+	//    {
+	//        get { return startTime; }
+	//        set { startTime = value; }
+	//    }
+	//    [XmlIgnore]
+	//    public long EndTime
+	//    {
+	//        get { return endTime; }
+	//        set { endTime = value; }
+	//    }
+	//    [XmlIgnore]
+	//    public long TotalTime
+	//    {
+	//        get { return endTime - startTime; }
+	//    }
 
-		public Dictionary<int, FunctionInfo> FunctionInfoCollection
-		{
-			get { return functions; }
-		}
+	//    public Dictionary<int, FunctionInfo> FunctionInfoCollection
+	//    {
+	//        get { return functions; }
+	//    }
 
-		public override string ToString()
-		{
-			return "Thread #" + id;
-		}
+	//    public override string ToString()
+	//    {
+	//        return "Thread #" + id;
+	//    }
 
-		private int id;
-		private long startTime, endTime;
-		private Dictionary<int, FunctionInfo> functions;
-	}
-	public class ThreadInfoCollection : IEnumerable
-	{
-		public IEnumerator GetEnumerator()
-		{
-			return threads.Values.GetEnumerator();
-		}
-		public ThreadInfo this[int threadId]
-		{
-			get
-			{
-				lock (threads)
-				{
-					ThreadInfo thread;
-					if (!threads.TryGetValue(threadId, out thread))
-					{
-						thread = new ThreadInfo(threadId);
-						threads[threadId] = thread;
-					}
-					return thread;
-				}
-			}
-		}
-		private Dictionary<int, ThreadInfo> threads = new Dictionary<int, ThreadInfo>();
-	}
+	//    private int id;
+	//    private long startTime, endTime;
+	//    private Dictionary<int, FunctionInfo> functions;
+	//}
+
+	//public class ThreadInfoCollection : IEnumerable
+	//{
+	//    public IEnumerator GetEnumerator()
+	//    {
+	//        return threads.Values.GetEnumerator();
+	//    }
+	//    public ThreadInfo this[int threadId]
+	//    {
+	//        get
+	//        {
+	//            lock (threads)
+	//            {
+	//                ThreadInfo thread;
+	//                if (!threads.TryGetValue(threadId, out thread))
+	//                {
+	//                    thread = new ThreadInfo(threadId);
+	//                    threads[threadId] = thread;
+	//                }
+	//                return thread;
+	//            }
+	//        }
+	//    }
+	//    private Dictionary<int, ThreadInfo> threads = new Dictionary<int, ThreadInfo>();
+	//}
 
 	public class ProjectInfo
 	{
