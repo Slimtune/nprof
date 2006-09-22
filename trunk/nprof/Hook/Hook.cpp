@@ -1049,24 +1049,24 @@ private:
 class ThreadInfoCollection
 {
 public: 
-	void ThreadInfoCollection::EndAll( ProfilerHelper& profilerHelper )
-	{
-		for ( map< ThreadID, ThreadInfo* >::iterator i = threadMap.begin(); i != threadMap.end(); i++ )
-		{
-			EndThread( profilerHelper, i->first );
-		}
-	}
+	//void ThreadInfoCollection::EndAll( ProfilerHelper& profilerHelper )
+	//{
+	//	for ( map< ThreadID, ThreadInfo* >::iterator i = threadMap.begin(); i != threadMap.end(); i++ )
+	//	{
+	//		EndThread( profilerHelper, i->first );
+	//	}
+	//}
 
-	void ThreadInfoCollection::EndThread( ProfilerHelper& profilerHelper, ThreadID threadId )
-	{
-		ProfilerSocket profilerSocket;
-		profilerSocket.SendThreadEnd( threadId, 0, 0 );
+	//void ThreadInfoCollection::EndThread( ProfilerHelper& profilerHelper, ThreadID threadId )
+	//{
+	//	ProfilerSocket profilerSocket;
+	//	profilerSocket.SendThreadEnd( threadId, 0, 0 );
 
-		ProfilerSocket socket;
-		socket.SendStartFunctionData( threadId );
-		GetThreadInfo( threadId )->Dump( socket, profilerHelper );
-		socket.SendEndFunctionData();
-	}
+	//	ProfilerSocket socket;
+	//	socket.SendStartFunctionData( threadId );
+	//	GetThreadInfo( threadId )->Dump( socket, profilerHelper );
+	//	socket.SendEndFunctionData();
+	//}
 
 	ThreadInfo* ThreadInfoCollection::GetThreadInfo( ThreadID threadId )
 	{
@@ -1079,9 +1079,9 @@ public:
 		}
 		return found->second;
 	}
+	map< ThreadID, ThreadInfo* > threadMap;
 
 private:
-	map< ThreadID, ThreadInfo* > threadMap;
 };
 
 HRESULT __stdcall __stdcall StackWalker( 
@@ -1103,6 +1103,24 @@ HRESULT __stdcall __stdcall StackWalker(
 class Profiler
 {
 public: 
+	void EndAll( ProfilerHelper& profilerHelper )
+	{
+		for ( map< ThreadID, ThreadInfo* >::iterator i =  threadCollection.threadMap.begin(); i != threadCollection.threadMap.end(); i++ )
+		{
+			EndThread( profilerHelper, i->first );
+		}
+	}
+
+	void EndThread( ProfilerHelper& profilerHelper, ThreadID threadId )
+	{
+		ProfilerSocket profilerSocket;
+		profilerSocket.SendThreadEnd( threadId, 0, 0 );
+
+		ProfilerSocket socket;
+		socket.SendStartFunctionData( threadId );
+		threadCollection.GetThreadInfo( threadId )->Dump( socket, profilerHelper );
+		socket.SendEndFunctionData();
+	}
 	Profiler::Profiler( ICorProfilerInfo2* profilerInfo )
 	{
 		this->profilerInfo = profilerInfo;
@@ -1142,7 +1160,8 @@ public:
 
 	void ThreadEnd( ThreadID threadId )
 	{
-	  threadCollection.EndThread( profilerHelper, threadId );
+	  EndThread( profilerHelper, threadId );
+	  //threadCollection.EndThread( profilerHelper, threadId );
 	  cout << "ThreadEnd( " << threadId << " )" << endl;
 	};
 	void AppDomainStart( AppDomainID appDomainId )
@@ -1156,7 +1175,8 @@ public:
 	{
 		timeKillEvent(timer);
 		cout << "End()" << endl;
-		threadCollection.EndAll( profilerHelper );
+		EndAll( profilerHelper );
+		//threadCollection.EndAll( profilerHelper );
 	};
 
 protected:
