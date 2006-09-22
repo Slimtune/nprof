@@ -690,8 +690,6 @@ namespace NProf
 			this.run = run;
 			this.stopFlag = 0;
 			this.hasStopped = false;
-			//this.profileCount = 0;
-			//this.run.Messages.AddMessage("Waiting for application...");
 		}
 		public void Start()
 		{
@@ -874,23 +872,20 @@ namespace NProf
 									run.signatures.MapSignature(functionId, fs);
 
 									int callCount = reader.ReadInt32();
-									long totalTime = reader.ReadInt64();
-									long totalRecursiveTime = reader.ReadInt64();
-									long totalSuspendTime = reader.ReadInt64();
 									List<CalleeFunctionInfo> callees = new List<CalleeFunctionInfo>();
-									int calleeFunctionId = reader.ReadInt32();
 
-									while (calleeFunctionId != -1)
+									while (true)
 									{
+										int calleeFunctionId = reader.ReadInt32();
+										if (calleeFunctionId == -1)
+										{
+											break;
+										}
 										int calleeCallCount = reader.ReadInt32();
-										long calleeTotalTime = reader.ReadInt64();
-										long calleeRecursiveTime = reader.ReadInt64();
-
-										callees.Add(new CalleeFunctionInfo(run.signatures, calleeFunctionId, calleeCallCount, calleeTotalTime, calleeRecursiveTime));
-										calleeFunctionId = reader.ReadInt32();
+										callees.Add(new CalleeFunctionInfo(run.signatures, calleeFunctionId, calleeCallCount));
 									}
 
-									FunctionInfo function = new FunctionInfo(functionId, fs, callCount, totalTime, totalRecursiveTime, totalSuspendTime, callees.ToArray());
+									FunctionInfo function = new FunctionInfo(functionId, fs, callCount, callees.ToArray());
 									run.functions.Add(function.ID, function);
 
 									functionId = reader.ReadInt32();
@@ -923,7 +918,6 @@ namespace NProf
 
 		public event EventHandler Exited;
 		public event ErrorHandler Error;
-		public event MessageHandler Message;
 
 		public delegate void ErrorHandler(Exception e);
 		public delegate void MessageHandler(string strMessage);
@@ -934,8 +928,6 @@ namespace NProf
 			INITIALIZE = 0,
 			SHUTDOWN,
 			APPDOMAIN_CREATE,
-			//THREAD_CREATE,
-			//THREAD_END,
 			FUNCTION_DATA,
 			PROFILER_MESSAGE,
 		};
@@ -944,8 +936,6 @@ namespace NProf
 
 		private int port;
 		private int stopFlag;
-		//private int currentApplicationID;
-		//private int profileCount;
 		private ManualResetEvent resetStarted;
 		private ManualResetEvent resetMessageReceived;
 		private Thread thread;
@@ -959,7 +949,7 @@ namespace NProf
 		{
 			signatures = new FunctionSignatureMap();
 		}
-		public CalleeFunctionInfo(FunctionSignatureMap signatures, int id, int calls, long totalTime, long totalRecursiveTime)
+		public CalleeFunctionInfo(FunctionSignatureMap signatures, int id, int calls)
 		{
 			this.id = id;
 			this.calls = calls;
@@ -993,7 +983,7 @@ namespace NProf
 		public FunctionInfo()
 		{
 		}
-		public FunctionInfo(int nID, FunctionSignature signature, int calls, long totalTime, long totalRecursiveTime, long totalSuspendedTime, CalleeFunctionInfo[] callees)
+		public FunctionInfo(int nID, FunctionSignature signature, int calls,CalleeFunctionInfo[] callees)
 		{
 			this.id = nID;
 			this.signature = signature;
@@ -1475,7 +1465,6 @@ namespace NProf
 			socketServer.Start();
 			socketServer.Exited += new EventHandler(OnProcessExited);
 			socketServer.Error += new ProfilerSocketServer.ErrorHandler(OnError);
-			socketServer.Message += new ProfilerSocketServer.MessageHandler(OnMessage);
 
 			process = new Process();
 			process.StartInfo = new ProcessStartInfo(pi.ApplicationName, pi.Arguments);

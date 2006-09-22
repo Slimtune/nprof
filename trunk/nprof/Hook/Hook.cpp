@@ -732,17 +732,17 @@ public:
 	void ProfilerSocket::SendFunctionTimingData( int calls, UINT64 cycleCount, UINT64 recursiveCycleCount, UINT64 suspendCycleCount )
 	{
 		SendUINT32( calls );
-		SendUINT64( cycleCount );
-		SendUINT64( recursiveCycleCount );
-		SendUINT64( suspendCycleCount );
+		//SendUINT64( cycleCount );
+		//SendUINT64( recursiveCycleCount );
+		//SendUINT64( suspendCycleCount );
 	}
 
 	void ProfilerSocket::SendCalleeFunctionData( FunctionID fid, int calls, UINT64 cycleCount, UINT64 recursiveCycleCount )
 	{
 		SendFunctionID( fid );
 		SendUINT32( calls );
-		SendUINT64( cycleCount );
-		SendUINT64( recursiveCycleCount );
+		//SendUINT64( cycleCount );
+		//SendUINT64( recursiveCycleCount );
 	}
 
 	void ProfilerSocket::SendEndFunctionData()
@@ -843,13 +843,13 @@ class CalleeFunctionInfo {
 public: 
 	CalleeFunctionInfo::CalleeFunctionInfo()
 	{
-		this->cycleCount = 0;
-		this->recursiveCycleCount = 0;
+		//this->cycleCount = 0;
+		//this->recursiveCycleCount = 0;
 		this->recursiveCount = 0;
 		this->calls = 0;
 	}
-	INT64 cycleCount;
-	INT64 recursiveCycleCount;
+	//INT64 cycleCount;
+	//INT64 recursiveCycleCount;
 	int calls;
 	int recursiveCount;
 };
@@ -859,9 +859,7 @@ public:
 
 	FunctionInfo::FunctionInfo( FunctionID functionId )
 	{
-		this->cycleCount = -1;
-		this->recursiveCycleCount = -1;
-		this->suspendCycleCount = 0;
+
 		this->calls = 0;
 		this->recursiveCount = 0;
 		this->functionId = functionId;
@@ -879,35 +877,21 @@ public:
 		return found->second;
 	}
 
-	void FunctionInfo::Trace( ProfilerHelper& profilerHelper )
-	{
-		cout << "  Calls: " << calls << endl;
-		cout << "  Time: " << cycleCount << endl;
-		cout << "  Avg. time: " << cycleCount / calls << endl;
-
-		for ( map< FunctionID, CalleeFunctionInfo* >::iterator i = calleeMap.begin(); i != calleeMap.end(); i++ )
-		{
-			cout << "  Callee Function ID " << i->first << ":" << endl;
-			cout << "    Calls: " << i->second->calls << endl;
-			cout << "    Time: " << i->second->cycleCount << endl;
-			cout << "    Avg. time: " << i->second->cycleCount / i->second->calls << endl;
-		}
-	}    
-
 	void FunctionInfo::Dump( ProfilerSocket& ps, ProfilerHelper& profilerHelper )
 	{
-		ps.SendFunctionTimingData( calls, cycleCount, recursiveCycleCount, suspendCycleCount );
+		ps.SendFunctionTimingData( calls, 100, 100, 100);
 		for ( map< FunctionID, CalleeFunctionInfo* >::iterator i = calleeMap.begin(); i != calleeMap.end(); i++ )
 		{
-			ps.SendCalleeFunctionData( i->first, i->second->calls, i->second->cycleCount, i->second->recursiveCycleCount );
+			ps.SendCalleeFunctionData( i->first, i->second->calls, 100, 100);
+			//ps.SendCalleeFunctionData( i->first, i->second->calls, i->second->cycleCount, i->second->recursiveCycleCount );
 		}
 		ps.SendEndCalleeFunctionData();
 	}
 	int calls;
 	int recursiveCount;
-	INT64 cycleCount;
-	INT64 recursiveCycleCount;
-	INT64 suspendCycleCount;
+	//INT64 cycleCount;
+	//INT64 recursiveCycleCount;
+	//INT64 suspendCycleCount;
 	FunctionID functionId;
 	map< FunctionID, CalleeFunctionInfo* > calleeMap;
 };
