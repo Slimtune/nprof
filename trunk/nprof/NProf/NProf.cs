@@ -39,7 +39,7 @@ using Genghis.Windows.Forms;
 using Reflector.UserInterface;
 using Crownwood.Magic.Menus;
 using System.Globalization;
-using SynapticEffect.Forms;
+using DotNetLib.Windows.Forms;
 
 namespace NProf
 {
@@ -122,9 +122,9 @@ namespace NProf
 				method.Size = new Size(100, 100);
 				method.Dock = DockStyle.Fill;
 
-				method.Click+=delegate
+				method.SelectedItemsChanged+=delegate
 				{
-					if (methods.SelectedNodes.Count == 0)
+					if (methods.SelectedItems.Count == 0)
 						return;
 					callers.Items.Clear();
 					if (!isNavigating)
@@ -134,7 +134,7 @@ namespace NProf
 						{
 							backward.Push(currentPosition);
 						}
-						currentPosition = (methods.SelectedNodes[0].Tag as FunctionInfo).ID;
+						currentPosition = (methods.SelectedItems[0].Tag as FunctionInfo).ID;
 					}
 					UpdateCallerList(currentRun);
 				};
@@ -404,26 +404,20 @@ namespace NProf
 		private void UpdateFilters(Run run)
 		{
 			methods.Items.Clear();
-			//callees.Items.Clear();
 			callers.Items.Clear();
 
 			currentRun = run;
-			//methods.BeginUpdate();
 			foreach (FunctionInfo method in run.functions.Values)
 			{
 				methods.Add(method);
 			}
-			//methods.EndUpdate();
 		}
 		private void UpdateCallerList(Run run)
 		{
 			callers.BeginUpdate();
-			bool multipleSelected = (methods.SelectedItems.Count > 1);
-			callers.ShowPlusMinus = multipleSelected;
-			callers.ShowRootTreeLines = multipleSelected;
-			callers.ShowTreeLines = multipleSelected;
+			ListView l;
 
-			FunctionInfo mfi = (FunctionInfo)methods.SelectedNodes[0].Tag;
+			FunctionInfo mfi = (FunctionInfo)methods.SelectedItems[0].Tag;
 			foreach (FunctionInfo fi in run.functions.Values)
 			{
 				foreach (CalleeFunctionInfo cfi in fi.CalleeInfo)
@@ -440,7 +434,7 @@ namespace NProf
 		public const string timeFormat = ".00;-.00;.0";
 		private void JumpToID(int id)
 		{
-			methods.SelectedNodes.Clear();
+			methods.SelectedItems.Clear();
 			foreach (ContainerListViewItem lvi in methods.Items)
 			{
 				FunctionInfo fi = (FunctionInfo)lvi.Tag;
@@ -459,22 +453,22 @@ namespace NProf
 		}
 		private int GetSelectedID()
 		{
-			return ((FunctionInfo)methods.SelectedNodes[0].Tag).ID;
+			return ((FunctionInfo)methods.SelectedItems[0].Tag).ID;
 		}
 		private void Find(bool forward,bool step)
 		{
 			if (findText.Text != "")
 			{
-				TreeListNode item;
-				if (methods.SelectedNodes.Count == 0)
+				ContainerListViewItem item;
+				if (methods.SelectedItems.Count == 0)
 				{
-					if (methods.Nodes.Count == 0)
+					if (methods.SelectedItems.Count == 0)
 					{
 						item = null;
 					}
 					else
 					{
-						item = methods.Nodes[0];
+						item = methods.Items[0];
 					}
 				}
 				else
@@ -483,24 +477,25 @@ namespace NProf
 					{
 						if (forward)
 						{
-							item = methods.SelectedNodes[0];
+							item = methods.SelectedItems[0];
 						}
 						else
 						{
-							item = methods.SelectedNodes[0];
+							item = methods.SelectedItems[0];
 						}
 					}
 					else
 					{
-						item = methods.SelectedNodes[0];
+						item = methods.SelectedItems[0];
 					}
 				}
-				TreeListNode firstItem = item;
+				ContainerListViewItem firstItem = item;
 				while (item != null)
 				{
 					if (item.Text.ToLower().Contains(findText.Text.ToLower()))
 					{
-						methods.SelectedNodes.Clear();
+						methods.SelectedItems.Clear();
+						//methods.SelectedNodes.Clear();
 						item.Focused = true;
 						item.Selected = true;
 						this.Invalidate();
@@ -510,21 +505,22 @@ namespace NProf
 					{
 						if (forward)
 						{
-							item = (TreeListNode)item.PreviousSibling();//.NextVisibleItem;
+							item = item.NextItem;//.NextVisibleItem;
+							//item = (TreeListNode)item.PreviousSibling();//.NextVisibleItem;
 						}
 						else
 						{
-							item = (TreeListNode)item.NextSibling();//.PrevVisibleItem;
+							item = item.PreviousItem;//.PrevVisibleItem;
 						}
 						if (item == null)
 						{
 							if (forward)
 							{
-								item = methods.Nodes[0];
+								item = methods.Items[0];
 							}
 							else
 							{
-								item = methods.Nodes[methods.Nodes.Count - 1];
+								item = methods.Items[methods.Items.Count - 1];
 							}
 						}
 					}
@@ -545,35 +541,32 @@ namespace NProf
 		}
 		public static NProf form = new NProf();
 	}
-	public class MethodView : TreeListView
+	public class MethodView : ContainerListView
 	{
 		public MethodView()
 		{
-			ToggleColumnHeader tch = new ToggleColumnHeader();
-			tch.Text = "Methods";
-			Columns.Add(tch);
-			tch = new ToggleColumnHeader();
-			tch.Text = "Time";
-			Columns.Add(tch);
+			Columns.Add("Methods");
+			Columns.Add("Time");
+			Columns[0].Width = 350;
+			Columns[1].SortDataType = SortDataType.Double;
+			this.ShowPlusMinus = true;
+			ShowRootTreeLines = true;
+			ShowTreeLines = true;
 
-			ColumnTrackColor = Color.White;
 			HeaderStyle = ColumnHeaderStyle.Clickable;
 			Font = new Font("Tahoma", 8.0f);
 		}
 		public void Add(FunctionInfo function)
 		{
-			TreeListNode item = new TreeListNode();
-			item.Text = function.Signature.Signature;
-			Nodes.Add(item);
-			item.SubItems.Add(function.Calls.ToString(NProf.timeFormat));
+			ContainerListViewItem item=Items.Add(function.Signature.Signature);
+			item.SubItems[1].Text=function.Calls.ToString(NProf.timeFormat);
 			item.Tag = function;
 			foreach (CalleeFunctionInfo callee in function.CalleeInfo)
 			{
-				TreeListNode subItem = new TreeListNode();
-				subItem.Text=callee.Signature;
-				subItem.SubItems.Add(callee.Calls.ToString(NProf.timeFormat));
+				ContainerListViewItem subItem=item.Items.Add(callee.Signature);
 				subItem.Tag = callee;
-				item.Nodes.Add(subItem);
+				subItem.SubItems[0].Text = callee.Signature;
+				subItem.SubItems[1].Text=callee.Calls.ToString(NProf.timeFormat);
 			}
 		}
 	}
