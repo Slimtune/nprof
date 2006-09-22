@@ -653,11 +653,6 @@ public:
 		WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
 		ProfilerSocket ps;
 	}
-	//void ProfilerSocket::SendStartFunctionData( ThreadID tid )
-	//{
-	//	//SendNetworkMessage( FUNCTION_DATA );
-	//	//SendThreadID( tid );
-	//}
 
 	void ProfilerSocket::SendFunctionData( ProfilerHelper& ph, FunctionID fid )
 	{
@@ -672,7 +667,7 @@ public:
 		SendString( functionName );
 		SendString( parameters );
 	}
-	void ProfilerSocket::SendFunctionTimingData( int calls, UINT64 cycleCount, UINT64 recursiveCycleCount, UINT64 suspendCycleCount )
+	void ProfilerSocket::SendFunctionTimingData( int calls)
 	{
 		SendUINT32( calls );
 	}
@@ -695,16 +690,10 @@ public:
 
 	void ProfilerSocket::HandleError( const char* caller, int error )
 	{
-	//	std::ofstream outf;
-	//	outf.open( "c:\\nprof.log", ios::app );
-	//	outf << operation << " " << caller << " Error: " << nError << " on socket " << _s << endl;
 	}
 
 	void ProfilerSocket::HandleWrongSentLength( const char* caller, int expected, int sent )
 	{
-	//	std::ofstream outf;
-	//	outf.open( "c:\\nprof.log", ios::app );
-	//	outf << operation << " " << caller << " Expected to send " << expected << ", sent " << sent << " instead." << endl;
 	}
 
 	ProfilerSocket::~ProfilerSocket(void)
@@ -761,16 +750,6 @@ private:
 	SOCKET socket;
 };
 
-class CalleeFunctionInfo {
-public: 
-	CalleeFunctionInfo::CalleeFunctionInfo()
-	{
-		this->recursiveCount = 0;
-		this->calls = 0;
-	}
-	int calls;
-	int recursiveCount;
-};
 class FunctionInfo
 {
 public: 
@@ -782,23 +761,21 @@ public:
 		this->recursiveCount = 0;
 		this->functionId = functionId;
 	}
-
-	CalleeFunctionInfo* FunctionInfo::GetCalleeFunctionInfo( FunctionID functionId )
+	FunctionInfo* GetCalleeFunctionInfo( FunctionID functionId )
 	{
-		map< FunctionID, CalleeFunctionInfo* >::iterator found = calleeMap.find( functionId );
+		map< FunctionID, FunctionInfo* >::iterator found = calleeMap.find( functionId );
 		if ( found == calleeMap.end() )
 		{
-			CalleeFunctionInfo* functionInfo = new CalleeFunctionInfo();
+			FunctionInfo* functionInfo = new FunctionInfo(functionId);
 			calleeMap.insert( make_pair( functionId, functionInfo ) );
 			return functionInfo;
 		}
 		return found->second;
 	}
-
-	void FunctionInfo::Dump( ProfilerSocket& ps, ProfilerHelper& profilerHelper )
+	void Dump( ProfilerSocket& ps, ProfilerHelper& profilerHelper )
 	{
-		ps.SendFunctionTimingData( calls, 100, 100, 100);
-		for ( map< FunctionID, CalleeFunctionInfo* >::iterator i = calleeMap.begin(); i != calleeMap.end(); i++ )
+		ps.SendFunctionTimingData( calls);
+		for ( map< FunctionID, FunctionInfo* >::iterator i = calleeMap.begin(); i != calleeMap.end(); i++ )
 		{
 			ps.SendCalleeFunctionData( i->first, i->second->calls, 100, 100);
 			ps.SendEndCalleeFunctionData();
@@ -808,7 +785,7 @@ public:
 	int calls;
 	int recursiveCount;
 	FunctionID functionId;
-	map< FunctionID, CalleeFunctionInfo* > calleeMap;
+	map< FunctionID, FunctionInfo* > calleeMap;
 };
 
 HRESULT __stdcall __stdcall StackWalker( 
@@ -919,7 +896,6 @@ public:
 			HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME,false,threadId);
 			if(threadHandle!=NULL)
 			{
-
 				int suspended=SuspendThread(threadHandle);
 			}
 		}

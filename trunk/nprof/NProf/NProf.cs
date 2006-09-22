@@ -548,6 +548,7 @@ namespace NProf
 			Columns.Add("Methods");
 			Columns.Add("Time");
 			Columns[0].Width = 350;
+			Columns[0].SortDataType = SortDataType.String;
 			Columns[1].SortDataType = SortDataType.Double;
 			this.ShowPlusMinus = true;
 			ShowRootTreeLines = true;
@@ -752,19 +753,7 @@ namespace NProf
 				}
 				int callCount = reader.ReadInt32();
 				FunctionInfo function = new FunctionInfo(functionId, run.signatures, callCount);
-
 				GetFunctions(reader, function.Callees);
-				//while (true)
-				//{
-				//    int calleeFunctionId = reader.ReadInt32();
-				//    if (calleeFunctionId == -1)
-				//    {
-				//        break;
-				//    }
-				//    int calleeCallCount = reader.ReadInt32();
-				//    function.Callees.Add(new FunctionInfo(calleeFunctionId, run.signatures, calleeCallCount));
-				//}
-
 				functions.Add(function);
 			}
 		}
