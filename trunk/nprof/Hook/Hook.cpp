@@ -1087,10 +1087,10 @@ public:
 
 	void ThreadInfoCollection::EndThread( ProfilerHelper& profilerHelper, ThreadID threadId )
 	{
-		ThreadInfo* threadInfo = GetThreadInfo( threadId );
-		threadInfo->End();
+		//ThreadInfo* threadInfo = GetThreadInfo( threadId );
+		//threadInfo->End();
 		ProfilerSocket profilerSocket;
-		profilerSocket.SendThreadEnd( threadId, threadInfo->startTime, threadInfo->endTime );
+		profilerSocket.SendThreadEnd( threadId, 0, 0 );
 		Dump( profilerHelper, threadId );
 	}
 
@@ -1140,7 +1140,6 @@ HRESULT __stdcall __stdcall StackWalker(
 	BYTE context[  ],
 	void *clientData)
 {
-	//cout << funcId;// << "\n";
 	if(funcId!=0)
 	{
 		((vector<FunctionID>*)clientData)->push_back(funcId);
@@ -1176,16 +1175,15 @@ public:
 			(DWORD_PTR)this,     
 			TIME_PERIODIC);      
 	}
-	virtual void Leave( FunctionID functionId ){};
-	virtual void Enter( FunctionID functionId ){};
-	virtual void TailCall( FunctionID functionId ){};
-	virtual void UnmanagedToManagedCall( FunctionID functionId ){};
-	virtual void AppDomainEnd( AppDomainID appDomainId ){};
-	
-	void ManagedToUnmanagedCall( FunctionID functionId )
-	{
-	  //GetCurrentThreadInfo()->GetStackInfo()->PopFunction( rdtsc() );
-	};
+	//virtual void Leave( FunctionID functionId ){};
+	//virtual void Enter( FunctionID functionId ){};
+	//virtual void TailCall( FunctionID functionId ){};
+	//virtual void UnmanagedToManagedCall( FunctionID functionId ){};
+	//virtual void AppDomainEnd( AppDomainID appDomainId ){};
+	//
+	//void ManagedToUnmanagedCall( FunctionID functionId )
+	//{
+	//};
 
 	void ThreadStart( ThreadID threadId )
 	{
@@ -1206,15 +1204,15 @@ public:
 	  cout << "ThreadEnd( " << threadId << " )" << endl;
 	};
 
-	void ThreadSuspend()
-	{
-	  //threadCollection.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->SuspendFunction( rdtsc() );
-	};
+	//void ThreadSuspend()
+	//{
+	//  //threadCollection.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->SuspendFunction( rdtsc() );
+	//};
 
-	void ThreadResume()
-	{
-	  //threadCollection.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->ResumeFunction( rdtsc() );
-	};
+	//void ThreadResume()
+	//{
+	//  //threadCollection.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->ResumeFunction( rdtsc() );
+	//};
 
 	void AppDomainStart( AppDomainID appDomainId )
 	{
@@ -1312,9 +1310,9 @@ public:
 
 UINT Profiler::timer;
 
-void RawEnter();
-void RawLeave();
-void RawTailCall();
+//void RawEnter();
+//void RawLeave();
+//void RawTailCall();
 
 [
 	object,
@@ -1380,9 +1378,9 @@ public:
 		{
 			profiler = new Profiler( profilerInfo );
 			//profiler = new InstrumentationProfiler( profilerInfo );
-			cout << "Initializing hooks..." << endl;
-			profilerInfo->SetEnterLeaveFunctionHooks( ( FunctionEnter* )&RawEnter, ( FunctionLeave* )&RawLeave, ( FunctionTailcall* )&RawTailCall );
-			cout << "Ready!" << endl;
+			//cout << "Initializing hooks..." << endl;
+			//profilerInfo->SetEnterLeaveFunctionHooks( ( FunctionEnter* )&RawEnter, ( FunctionLeave* )&RawLeave, ( FunctionTailcall* )&RawTailCall );
+			//cout << "Ready!" << endl;
 		}
 
 		return S_OK;
@@ -1744,69 +1742,7 @@ public:
 		return E_NOTIMPL;
 	}
 };
-
-void __stdcall EnterStub( FunctionID fid )
-{
-  CNProfCORHook::GetProfiler()->Enter( fid );
-}
-
-void __stdcall LeaveStub( FunctionID fid )
-{
-  CNProfCORHook::GetProfiler()->Leave( fid );
-}
-
-void __stdcall TailCallStub( FunctionID fid )
-{
-  CNProfCORHook::GetProfiler()->TailCall( fid );
-}
-
-void __declspec( naked ) RawEnter()
-{
-    __asm
-    {
-        push eax
-        push ecx
-        push edx
-        push [esp + 16]
-        call EnterStub
-        pop edx
-        pop ecx
-        pop eax
-        ret 4
-    }   
-}
-
-void __declspec( naked ) RawLeave()
-{
-    __asm
-    {
-        push eax
-        push ecx
-        push edx
-        push [esp + 16]
-        call LeaveStub
-        pop edx
-        pop ecx
-        pop eax
-        ret 4
-    }   
-}
-
-void __declspec( naked ) RawTailCall()
-{
-    __asm
-    {
-        push eax
-        push ecx
-        push edx
-        push [esp + 16]
-        call TailCallStub
-        pop edx
-        pop ecx
-        pop eax
-        ret 4
-    }  
-}
+// remove
 #ifdef WIN32
   __declspec(naked) UINT64 __fastcall rdtsc()
   {
@@ -1832,9 +1768,6 @@ void __declspec( naked ) RawTailCall()
 		 name = "NProfHook", 
 		 helpstring = "NProf.Hook 1.0 Type Library",
 		 resource_name = "IDR_NPROFHOOK") ];
-
-
-
 
 
 bool ProfilerSocket::isInitialized = false;
