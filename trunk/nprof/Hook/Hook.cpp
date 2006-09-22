@@ -851,20 +851,13 @@ public:
 		for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
 		{
 			socket.SendFunctionData( profilerHelper, i->first );
-			//i->second->Dump( socket, profilerHelper );
 		}
 		socket.SendEndFunctionData();
 		for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
 		{
 			socket.SendFunctionID( i->first );
-			//socket.SendFunctionData( profilerHelper, i->first );
 			i->second->Dump( socket, profilerHelper );
 		}
-		//for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
-		//{
-		//	socket.SendFunctionData( profilerHelper, i->first );
-		//	i->second->Dump( socket, profilerHelper );
-		//}
 		socket.SendEndFunctionData();
 	}
 	Profiler::Profiler( ICorProfilerInfo2* profilerInfo )

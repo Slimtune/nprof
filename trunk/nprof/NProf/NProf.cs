@@ -420,7 +420,7 @@ namespace NProf
 			FunctionInfo mfi = (FunctionInfo)methods.SelectedItems[0].Tag;
 			foreach (FunctionInfo fi in run.functions.Values)
 			{
-				foreach (CalleeFunctionInfo cfi in fi.CalleeInfo)
+				foreach (FunctionInfo cfi in fi.CalleeInfo)
 				{
 					if (cfi.ID == mfi.ID)
 					{
@@ -561,7 +561,7 @@ namespace NProf
 			ContainerListViewItem item=Items.Add(function.Signature);
 			item.SubItems[1].Text=function.Calls.ToString(NProf.timeFormat);
 			item.Tag = function;
-			foreach (CalleeFunctionInfo callee in function.CalleeInfo)
+			foreach (FunctionInfo callee in function.CalleeInfo)
 			{
 				ContainerListViewItem subItem=item.Items.Add(callee.Signature);
 				subItem.Tag = callee;
@@ -741,7 +741,7 @@ namespace NProf
 						}
 
 						int callCount = reader.ReadInt32();
-						List<CalleeFunctionInfo> callees = new List<CalleeFunctionInfo>();
+						List<FunctionInfo> callees = new List<FunctionInfo>();
 
 						while (true)
 						{
@@ -751,7 +751,7 @@ namespace NProf
 								break;
 							}
 							int calleeCallCount = reader.ReadInt32();
-							callees.Add(new CalleeFunctionInfo(run.signatures, calleeFunctionId, calleeCallCount));
+							callees.Add(new FunctionInfo(calleeFunctionId, run.signatures, calleeCallCount));
 						}
 
 						FunctionInfo function = new FunctionInfo(functionId,run.signatures, callCount, callees.ToArray());
@@ -794,36 +794,36 @@ namespace NProf
 		private Run run;
 		private bool hasStopped;
 	}
-	public class CalleeFunctionInfo
-	{
-		public CalleeFunctionInfo(FunctionSignatureMap signatures, int id, int calls)
-		{
-			this.id = id;
-			this.calls = calls;
-			this.signatures = signatures;
-		}
-		public int ID
-		{
-			get { return id; }
-			set { id = value; }
-		}
-		public string Signature
-		{
-			get { return signatures.GetFunctionSignature(ID); }
-		}
-		public int Calls
-		{
-			get { return calls; }
-			set { calls = value; }
-		}
-		private int id;
-		private int calls;
-		private FunctionSignatureMap signatures;
-	}
+	//public class CalleeFunctionInfo
+	//{
+	//    public CalleeFunctionInfo(FunctionSignatureMap signatures, int id, int calls)
+	//    {
+	//        this.id = id;
+	//        this.calls = calls;
+	//        this.signatures = signatures;
+	//    }
+	//    public int ID
+	//    {
+	//        get { return id; }
+	//        set { id = value; }
+	//    }
+	//    public string Signature
+	//    {
+	//        get { return signatures.GetFunctionSignature(ID); }
+	//    }
+	//    public int Calls
+	//    {
+	//        get { return calls; }
+	//        set { calls = value; }
+	//    }
+	//    private int id;
+	//    private int calls;
+	//    private FunctionSignatureMap signatures;
+	//}
 	public class FunctionInfo
 	{
 		FunctionSignatureMap signatures;
-		public FunctionInfo(int nID, FunctionSignatureMap signatures, int calls,CalleeFunctionInfo[] callees)
+		public FunctionInfo(int nID, FunctionSignatureMap signatures, int calls,params FunctionInfo[] callees)
 		{
 			this.id = nID;
 			this.calls = calls;
@@ -841,7 +841,7 @@ namespace NProf
 			get { return signatures.GetFunctionSignature(id); }
 		}
 
-		public CalleeFunctionInfo[] CalleeInfo
+		public FunctionInfo[] CalleeInfo
 		{
 			get { return callees; }
 			set { callees = value; }
@@ -852,7 +852,7 @@ namespace NProf
 		}
 		private int id;
 		private int calls;
-		private CalleeFunctionInfo[] callees;
+		private FunctionInfo[] callees;
 	}
 	public class FunctionSignature
 	{
