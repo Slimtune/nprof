@@ -45,7 +45,7 @@ namespace NProf
 {
 	public class NProf : Form
 	{
-		public static TextBox applicationTextBox = new TextBox();
+		public static TextBox application;
 		public static TextBox arguments;
 		
 		[STAThread]
@@ -177,10 +177,6 @@ namespace NProf
 					e.Handled = true;
 				}
 			};
-			applicationTextBox.TextChanged += delegate
-			{
-				Project.ApplicationName = applicationTextBox.Text;
-			};
 			Controls.AddRange(new Control[] 
 			{
 				With(new Panel(), delegate(Panel panel)
@@ -245,17 +241,37 @@ namespace NProf
 					});
 
 				}),
-				With(new TableLayoutPanel(),delegate(TableLayoutPanel options)
+				With(new TableLayoutPanel(),delegate(TableLayoutPanel panel)
 				{
-					options.Dock = DockStyle.Top;
-					options.Controls.Add(With(new Label(), delegate(Label label)
+					application = With(new TextBox(),delegate(TextBox textBox)
+					{
+						textBox.TextChanged += delegate
 						{
-							label.Text = "Application to run:";
-						}),0,0);
-					options.Controls.Add(applicationTextBox,1,0);
-					options.Controls.Add(With(new Button(),delegate(Button button)
+							Project.ApplicationName = application.Text;
+						};
+						textBox.Width=300;
+					});
+					arguments = With(new TextBox(),delegate(TextBox textBox)
+					{
+						textBox.TextChanged+=delegate
+						{
+							Project.Arguments=textBox.Text;
+						};
+						textBox.Width=300;
+					});
+					panel.Height=100;
+					panel.AutoSize=true;
+					panel.Dock = DockStyle.Top;
+					panel.Controls.Add(With(new Label(), delegate(Label label)
+					{
+						label.Text = "Application to run:";
+					}),0,0);
+					panel.Controls.Add(application,1,0);
+
+					panel.Controls.Add(With(new Button(),delegate(Button button)
 					{
 						button.Text = "Browse...";
+						button.Focus();
 						button.Click += delegate
 						{
 							OpenFileDialog dialog = new OpenFileDialog();
@@ -263,25 +279,18 @@ namespace NProf
 							DialogResult dr = dialog.ShowDialog();
 							if (dr == DialogResult.OK)
 							{
-								applicationTextBox.Text = dialog.FileName;
-								applicationTextBox.Focus();
-								applicationTextBox.SelectAll();
+								application.Text = dialog.FileName;
+								application.Focus();
+								application.SelectAll();
 							}
 						};
 					}),2,0);
-					options.Controls.Add(With(new Label(),delegate(Label label)
+					panel.Controls.Add(With(new Label(),delegate(Label label)
 						{
 							label.Text = "Command line arguments:";
 							label.AutoSize=true;
 						}),0,1);
-					arguments=With(new TextBox(),delegate(TextBox textBox)
-					{
-						textBox.TextChanged+=delegate
-						{
-							Project.Arguments=textBox.Text;
-						};
-					});
-					options.Controls.Add(arguments,1,1);
+					panel.Controls.Add(arguments,1,1);
 				}),
 				With(new CommandBarManager(), delegate(CommandBarManager manager)
 				{
@@ -333,7 +342,10 @@ namespace NProf
 		{
 			runs.Nodes.Clear();
 			NProf.arguments.Text = "";
-			NProf.applicationTextBox.Text = "";
+			NProf.application.Text = "";
+			methods.Items.Clear();
+			callers.Items.Clear();
+			callees.Items.Clear();
 		}
 		private void StartRun(object sender, System.EventArgs e)
 		{
@@ -679,7 +691,7 @@ namespace NProf
 			this.stopFlag = 0;
 			this.hasStopped = false;
 			//this.profileCount = 0;
-			this.run.Messages.AddMessage("Waiting for application...");
+			//this.run.Messages.AddMessage("Waiting for application...");
 		}
 		public void Start()
 		{
@@ -812,17 +824,7 @@ namespace NProf
 								}
 								else
 								{
-									// Version was okay, write a positive byte
-									//if (NProf.form.Project.DebugProfiler)
-
-									//{
-									//    stream.WriteByte(2);
-									//}
-									//else
-									//{
-										stream.WriteByte(1);
-									//}
-									//profileCount++;
+									stream.WriteByte(1);
 								}
 
 								// We're off!
@@ -833,7 +835,7 @@ namespace NProf
 						case NetworkMessage.SHUTDOWN:
 							{
 								hasStopped = true;
-								run.Messages.AddMessage("Profiling completed.");
+								//run.Messages.AddMessage("Profiling completed.");
 								if (Exited != null)
 									Exited(this, EventArgs.Empty);
 								break;
@@ -842,14 +844,14 @@ namespace NProf
 						case NetworkMessage.APPDOMAIN_CREATE:
 							{
 								appDomainID = reader.ReadInt32();
-								run.Messages.AddMessage("AppDomain created: " + appDomainID);
+								//run.Messages.AddMessage("AppDomain created: " + appDomainID);
 								break;
 							}
 
 						case NetworkMessage.FUNCTION_DATA:
 							{
 								threadId = reader.ReadInt32();
-								run.Messages.AddMessage("Receiving function data for thread  " + threadId + "...");
+								//run.Messages.AddMessage("Receiving function data for thread  " + threadId + "...");
 
 								functionId = reader.ReadInt32();
 								int nIndex = 0;
@@ -895,13 +897,13 @@ namespace NProf
 									nIndex++;
 								}
 
-								run.Messages.AddMessage("Received " + nIndex + " item(s) for thread  " + threadId);
+								//run.Messages.AddMessage("Received " + nIndex + " item(s) for thread  " + threadId);
 								break;
 							}
 
 						case NetworkMessage.PROFILER_MESSAGE:
 							string text = ReadLengthEncodedASCIIString(reader);
-							run.Messages.AddMessage(text);
+							//run.Messages.AddMessage(text);
 
 							break;
 					}
@@ -961,8 +963,6 @@ namespace NProf
 		{
 			this.id = id;
 			this.calls = calls;
-			this.totalTime = totalTime;
-			this.totalRecursiveTime = totalRecursiveTime;
 			this.signatures = signatures;
 		}
 		public int ID
@@ -979,23 +979,6 @@ namespace NProf
 			get { return calls; }
 			set { calls = value; }
 		}
-		[XmlIgnore]
-		public long TotalTime
-		{
-			get { return totalTime; }
-			set { totalTime = value; }
-		}
-		[XmlIgnore]
-		public long TotalRecursiveTime
-		{
-			get { return totalRecursiveTime; }
-			set { totalRecursiveTime = value; }
-		}
-		[XmlIgnore]
-		public double TimeOfParentInMethod
-		{
-			get { return (double)totalTime / (double)function.TotalTicks; }
-		}
 		internal FunctionInfo FunctionInfo
 		{
 			set { function = value; }
@@ -1004,8 +987,6 @@ namespace NProf
 		private int calls;
 		private FunctionInfo function;
 		private FunctionSignatureMap signatures;
-		private long totalTime;
-		private long totalRecursiveTime;
 	}
 	public class FunctionInfo
 	{
@@ -1017,9 +998,6 @@ namespace NProf
 			this.id = nID;
 			this.signature = signature;
 			this.calls = calls;
-			this.totalTime = totalTime;
-			this.totalRecursiveTime = totalRecursiveTime;
-			this.totalSuspendedTime = totalSuspendedTime;
 			this.callees = callees;
 
 			foreach (CalleeFunctionInfo callee in callees)
@@ -1047,50 +1025,8 @@ namespace NProf
 		{
 			get { return calls; }
 		}
-		[XmlIgnore]
-		public long TotalTicks
-		{
-			get { return totalTime; }
-		}
-		[XmlIgnore]
-		public long TotalRecursiveTicks
-		{
-			get { return totalRecursiveTime; }
-		}
-		[XmlIgnore]
-		public long TotalSuspendedTicks
-		{
-			get { return totalSuspendedTime; }
-		}
-		[XmlIgnore]
-		public long TotalChildrenTicks
-		{
-			get
-			{
-				long totalChildrenTime = 0;
-				foreach (CalleeFunctionInfo callee in callees)
-					totalChildrenTime += callee.TotalTime;
-
-				return totalChildrenTime;
-			}
-		}
-		[XmlIgnore]
-		public long TotalChildrenRecursiveTicks
-		{
-			get
-			{
-				long totalChildrenRecursiveTime = 0;
-				foreach (CalleeFunctionInfo callee in callees)
-					totalChildrenRecursiveTime += callee.TotalRecursiveTime;
-
-				return totalChildrenRecursiveTime;
-			}
-		}
 		private int id;
 		private int calls;
-		private long totalTime;
-		private long totalRecursiveTime;
-		private long totalSuspendedTime;
 		private FunctionSignature signature;
 		private CalleeFunctionInfo[] callees;
 	}
@@ -1339,7 +1275,7 @@ namespace NProf
 		public Dictionary<int, FunctionInfo> functions = new Dictionary<int, FunctionInfo>();
 		public Run()
 		{
-			this.messages = new RunMessageCollection();
+			//this.messages = new RunMessageCollection();
 		}
 
 		public Run(Profiler p, ProjectInfo pi)
@@ -1349,7 +1285,7 @@ namespace NProf
 			this.end = DateTime.MaxValue;
 			//this.runState = RunState.Initializing;
 			this.project = pi;
-			this.messages = new RunMessageCollection();
+			//this.messages = new RunMessageCollection();
 			this.isSuccess = false;
 		}
 		public bool Start()
@@ -1379,11 +1315,11 @@ namespace NProf
 			set { end = value; }
 		}
 
-		[XmlIgnore]
-		public RunMessageCollection Messages
-		{
-			get { return messages; }
-		}
+		//[XmlIgnore]
+		//public RunMessageCollection Messages
+		//{
+		//    get { return messages; }
+		//}
 
 		public bool Success
 		{
@@ -1395,7 +1331,7 @@ namespace NProf
 		private DateTime end;
 		private ProjectInfo project;
 		public Profiler profiler;
-		private RunMessageCollection messages;
+		//private RunMessageCollection messages;
 	}
 	// remove
 	public class RunCollection : IEnumerable
@@ -1444,61 +1380,61 @@ namespace NProf
 		private ProjectInfo project;
 	}
 	// remove??
-	public class RunMessageCollection : IEnumerable
-	{
-		public IEnumerator GetEnumerator()
-		{
-			return AllMessages.GetEnumerator();
-		}
-		public string[] AllMessages
-		{
-			get
-			{
-				lock (messages)
-				{
-					return (string[])messages.ToArray(typeof(string));
-				}
-			}
-		}
+	//public class RunMessageCollection : IEnumerable
+	//{
+	//    public IEnumerator GetEnumerator()
+	//    {
+	//        return AllMessages.GetEnumerator();
+	//    }
+	//    public string[] AllMessages
+	//    {
+	//        get
+	//        {
+	//            lock (messages)
+	//            {
+	//                return (string[])messages.ToArray(typeof(string));
+	//            }
+	//        }
+	//    }
 
-		public string[] StartListening(MessageHandler handler)
-		{
-			lock (messages)
-			{
-				Message += handler;
-				return AllMessages;
-			}
-		}
+	//    public string[] StartListening(MessageHandler handler)
+	//    {
+	//        lock (messages)
+	//        {
+	//            Message += handler;
+	//            return AllMessages;
+	//        }
+	//    }
 
-		public void StopListening(MessageHandler handler)
-		{
-			lock (messages)
-			{
-				Message -= handler;
-			}
-		}
+	//    public void StopListening(MessageHandler handler)
+	//    {
+	//        lock (messages)
+	//        {
+	//            Message -= handler;
+	//        }
+	//    }
 
-		public void Add(object oMessage)
-		{
-			// For XML serialization
-			AddMessage((string)oMessage);
-		}
+	//    public void Add(object oMessage)
+	//    {
+	//        // For XML serialization
+	//        AddMessage((string)oMessage);
+	//    }
 
-		public void AddMessage(string message)
-		{
-			lock (messages)
-			{
-				messages.Add(message);
-				if (Message != null)
-					Message(message);
-			}
-		}
+	//    public void AddMessage(string message)
+	//    {
+	//        lock (messages)
+	//        {
+	//            messages.Add(message);
+	//            if (Message != null)
+	//                Message(message);
+	//        }
+	//    }
 
-		private ArrayList messages = new ArrayList();
+	//    private ArrayList messages = new ArrayList();
 
-		public delegate void MessageHandler(string message);
-		private event MessageHandler Message;
-	}
+	//    public delegate void MessageHandler(string message);
+	//    private event MessageHandler Message;
+	//}
 	public class Profiler
 	{
 		private const string PROFILER_GUID = "{791DA9FE-05A0-495E-94BF-9AD875C4DF0F}";
@@ -1571,7 +1507,7 @@ namespace NProf
 			// Stop the profiler socket server if profilee hasn't connected
 			//if (r.State == RunState.Initializing)
 			//{
-				r.Messages.AddMessage("Shutting down profiler...");
+				//r.Messages.AddMessage("Shutting down profiler...");
 				socketServer.Stop();
 				//r.State = RunState.Finished;
 				r.Success = false;
@@ -1608,7 +1544,7 @@ namespace NProf
 
 				r.Success = false;
 				//r.State = RunState.Finished;
-				r.Messages.AddMessage("Profiler run did not complete successfully.");
+				//r.Messages.AddMessage("Profiler run did not complete successfully.");
 			}
 			else
 			{
@@ -1616,7 +1552,7 @@ namespace NProf
 			}
 
 			end = DateTime.Now;
-			r.Messages.AddMessage("Stopping profiler listener...");
+			//r.Messages.AddMessage("Stopping profiler listener...");
 			socketServer.Stop();
 			//			if ( ProcessCompleted != null )
 			//				ProcessCompleted( _pss.ThreadInfoCollection );

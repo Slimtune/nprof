@@ -985,13 +985,13 @@ public:
 
 	void ThreadMap( ThreadID threadId, DWORD dwOSThread )
 	{
-		cout << "ThreadMap( " << threadId << ", " << dwOSThread << ")" << endl;
+		//cout << "ThreadMap( " << threadId << ", " << dwOSThread << ")" << endl;
 		threadMap[ dwOSThread ] = threadId;
 	};
 
 	void AppDomainStart( AppDomainID appDomainId )
 	{
-		cout << "AppDomain Created: " << appDomainId << endl;
+		//cout << "AppDomain Created: " << appDomainId << endl;
 		ProfilerSocket ps;
 		ps.SendAppDomainCreate( appDomainId );
 	};
@@ -999,7 +999,7 @@ public:
 	virtual void End()
 	{
 		timeKillEvent(timer);
-		cout << "End()" << endl;
+		//cout << "End()" << endl;
 		EndAll( profilerHelper );
 	};
 
@@ -1140,7 +1140,7 @@ public:
 	STDMETHOD(Shutdown)()
 	{
 		EnterCriticalSection(&criticalSection);
-		cout << "Terminating profiler..." << endl;
+		//cout << "Terminating profiler..." << endl;
 		profiler->End();
 		delete profiler;
 		profiler = NULL;
