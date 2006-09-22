@@ -38,7 +38,6 @@ using NProf;
 using Genghis.Windows.Forms;
 using Reflector.UserInterface;
 using Crownwood.Magic.Menus;
-//using DotNetLib.Windows.Forms;
 using System.Globalization;
 using SynapticEffect.Forms;
 
@@ -86,7 +85,6 @@ namespace NProf
 		private ProjectInfo project;
 		public TreeView runs;
 		private MethodView methods;
-		//private CallerView callees;
 		private CallerView callers;
 		private TextBox findText = new TextBox();
 		public Run currentRun;
@@ -115,28 +113,20 @@ namespace NProf
 			});
 			callers = With(new CallerView("Callers"), delegate(CallerView method)
 			{
-				//method.DoubleClick += delegate
-				//{
-				//    JumpToID(((FunctionInfo)callees.SelectedItems[0].Tag).ID);
-				//};
 				method.Size = new Size(100, 100);
 				method.Dock = DockStyle.Bottom;
 
 			});
-			methods = With(new MethodView("Methods"), delegate(MethodView method)
+			methods = With(new MethodView(), delegate(MethodView method)
 			{
 				method.Size = new Size(100, 100);
 				method.Dock = DockStyle.Fill;
 
-				method.SelectedIndexChanged += delegate
+				method.Click+=delegate
 				{
-					//callees.Items.Clear();
-					callers.Items.Clear();
-
-					if (methods.SelectedItems.Count == 0)
+					if (methods.SelectedNodes.Count == 0)
 						return;
-
-					// somebody clicked! empty the forward stack and push this click on the "Back" stack.
+					callers.Items.Clear();
 					if (!isNavigating)
 					{
 						forward.Clear();
@@ -144,16 +134,8 @@ namespace NProf
 						{
 							backward.Push(currentPosition);
 						}
-						for (int idx = 0; idx < methods.SelectedItems.Count; ++idx)
-						{
-							if (methods.SelectedItems[idx].Tag != null)
-							{
-								currentPosition = (methods.SelectedItems[idx].Tag as FunctionInfo).ID;
-								break;
-							}
-						}
+						currentPosition = (methods.SelectedNodes[0].Tag as FunctionInfo).ID;
 					}
-					//UpdateCalleeList();
 					UpdateCallerList(currentRun);
 				};
 			});
@@ -186,7 +168,6 @@ namespace NProf
 							{
 								splitter.Dock=DockStyle.Bottom;
 							}),
-							//callees,
 							With(new Splitter(),delegate(Splitter splitter)
 							{
 								splitter.Dock=DockStyle.Bottom;
@@ -337,7 +318,6 @@ namespace NProf
 			NProf.application.Text = "";
 			methods.Items.Clear();
 			callers.Items.Clear();
-			//callees.Items.Clear();
 		}
 		private void StartRun(object sender, System.EventArgs e)
 		{
@@ -437,14 +417,13 @@ namespace NProf
 		}
 		private void UpdateCallerList(Run run)
 		{
-			//callers.BeginUpdate();
-
+			callers.BeginUpdate();
 			bool multipleSelected = (methods.SelectedItems.Count > 1);
 			callers.ShowPlusMinus = multipleSelected;
 			callers.ShowRootTreeLines = multipleSelected;
 			callers.ShowTreeLines = multipleSelected;
 
-			FunctionInfo mfi = (FunctionInfo)methods.SelectedItems[0].Tag;
+			FunctionInfo mfi = (FunctionInfo)methods.SelectedNodes[0].Tag;
 			foreach (FunctionInfo fi in run.functions.Values)
 			{
 				foreach (CalleeFunctionInfo cfi in fi.CalleeInfo)
@@ -456,33 +435,12 @@ namespace NProf
 				}
 			}
 			callers.Sort();
-			//callers.EndUpdate();
+			callers.EndUpdate();
 		}
 		public const string timeFormat = ".00;-.00;.0";
-		//private void UpdateCalleeList()
-		//{
-		//    //callees.Items.Clear();
-		//    //callees.BeginUpdate();
-
-		//    foreach (ContainerListViewItem item in methods.SelectedItems)
-		//    {
-		//        FunctionInfo fi = (FunctionInfo)item.Tag;
-
-		//        foreach (CalleeFunctionInfo cfi in fi.CalleeInfo)
-		//        {
-		//            callees.Add(cfi);
-		//        }
-
-		//        ContainerListViewItem inMethod = callees.Items.Add("(in method)");
-		//        inMethod.SubItems[1].Text = fi.Calls.ToString();
-		//        inMethod.Tag = fi;
-		//    }
-		//    callees.Sort();
-		//    callees.EndUpdate();
-		//}
 		private void JumpToID(int id)
 		{
-			methods.SelectedItems.Clear();
+			methods.SelectedNodes.Clear();
 			foreach (ContainerListViewItem lvi in methods.Items)
 			{
 				FunctionInfo fi = (FunctionInfo)lvi.Tag;
@@ -497,30 +455,26 @@ namespace NProf
 					break;
 				}
 			}
-			//methods.EnsureVisible();
 			methods.Focus();
 		}
 		private int GetSelectedID()
 		{
-			//if (callees.SelectedItems.Count == 0)
-			//    return -1;
-
-			return ((FunctionInfo)methods.SelectedItems[0].Tag).ID;
+			return ((FunctionInfo)methods.SelectedNodes[0].Tag).ID;
 		}
 		private void Find(bool forward,bool step)
 		{
 			if (findText.Text != "")
 			{
-				ContainerListViewItem item;
-				if (methods.SelectedItems.Count == 0)
+				TreeListNode item;
+				if (methods.SelectedNodes.Count == 0)
 				{
-					if (methods.Items.Count == 0)
+					if (methods.Nodes.Count == 0)
 					{
 						item = null;
 					}
 					else
 					{
-						item = methods.Items[0];
+						item = methods.Nodes[0];
 					}
 				}
 				else
@@ -529,29 +483,26 @@ namespace NProf
 					{
 						if (forward)
 						{
-							item = methods.SelectedItems[0];
-							//item = methods.SelectedItems[0].NextItem;
+							item = methods.SelectedNodes[0];
 						}
 						else
 						{
-							item = methods.SelectedItems[0];
-							//item = methods.SelectedItems[0].PreviousItem;
+							item = methods.SelectedNodes[0];
 						}
 					}
 					else
 					{
-						item = methods.SelectedItems[0];
+						item = methods.SelectedNodes[0];
 					}
 				}
-				ContainerListViewItem firstItem = item;
+				TreeListNode firstItem = item;
 				while (item != null)
 				{
 					if (item.Text.ToLower().Contains(findText.Text.ToLower()))
 					{
-						methods.SelectedItems.Clear();
+						methods.SelectedNodes.Clear();
 						item.Focused = true;
 						item.Selected = true;
-						//methods.EnsureVisible(methods.SelectedItems[0].Index);
 						this.Invalidate();
 						break;
 					}
@@ -559,21 +510,21 @@ namespace NProf
 					{
 						if (forward)
 						{
-							item = item;//.NextVisibleItem;
+							item = (TreeListNode)item.PreviousSibling();//.NextVisibleItem;
 						}
 						else
 						{
-							item = item;//.PrevVisibleItem;
+							item = (TreeListNode)item.NextSibling();//.PrevVisibleItem;
 						}
 						if (item == null)
 						{
 							if (forward)
 							{
-								item = methods.Items[0];
+								item = methods.Nodes[0];
 							}
 							else
 							{
-								item = methods.Items[methods.Items.Count - 1];
+								item = methods.Nodes[methods.Nodes.Count - 1];
 							}
 						}
 					}
@@ -596,18 +547,17 @@ namespace NProf
 	}
 	public class MethodView : TreeListView
 	{
-		public MethodView(string name)
+		public MethodView()
 		{
-			//Columns.Add(name);
-			//Columns.Add("Time");
+			ToggleColumnHeader tch = new ToggleColumnHeader();
+			tch.Text = "Methods";
+			Columns.Add(tch);
+			tch = new ToggleColumnHeader();
+			tch.Text = "Time";
+			Columns.Add(tch);
 
+			ColumnTrackColor = Color.White;
 			HeaderStyle = ColumnHeaderStyle.Clickable;
-			Columns[0].Width = 350;
-			Columns[0].Width = 100;
-			//Columns[0].SortDataType = SortDataType.String;
-			//Columns[1].SortDataType = SortDataType.Double;
-
-			//ColumnSortColor = Color.White;
 			Font = new Font("Tahoma", 8.0f);
 		}
 		public void Add(FunctionInfo function)
@@ -625,46 +575,8 @@ namespace NProf
 				subItem.Tag = callee;
 				item.Nodes.Add(subItem);
 			}
-
-			//ContainerListViewItem item = Items.Add(function.Signature.Signature);
-			//item.SubItems[1].Text = function.Calls.ToString(NProf.timeFormat);
-			//item.Tag = function;
 		}
-		//public void Add(CalleeFunctionInfo function)
-		//{
-		//    ContainerListViewItem item = Items.Add(function.Signature);
-		//    item.SubItems[1].Text = function.Calls.ToString();
-		//    item.Tag = function;
-		//}
 	}
-	//public class MethodView : ContainerListView
-	//{
-	//    public MethodView(string name)
-	//    {
-	//        Columns.Add(name);
-	//        Columns.Add("Time");
-
-	//        HeaderStyle = ColumnHeaderStyle.Clickable;
-	//        Columns[0].Width = 350;
-	//        Columns[0].SortDataType = SortDataType.String;
-	//        Columns[1].SortDataType = SortDataType.Double;
-
-	//        ColumnSortColor = Color.White;
-	//        Font = new Font("Tahoma", 8.0f);
-	//    }
-	//    public void Add(FunctionInfo function)
-	//    {
-	//        ContainerListViewItem item = Items.Add(function.Signature.Signature);
-	//        item.SubItems[1].Text = function.Calls.ToString(NProf.timeFormat);
-	//        item.Tag = function;
-	//    }
-	//    public void Add(CalleeFunctionInfo function)
-	//    {
-	//        ContainerListViewItem item = Items.Add(function.Signature);
-	//        item.SubItems[1].Text = function.Calls.ToString();
-	//        item.Tag = function;
-	//    }
-	//}
 	public class CallerView : DotNetLib.Windows.Forms.ContainerListView
 	{
 		public CallerView(string name)
@@ -674,8 +586,6 @@ namespace NProf
 
 			HeaderStyle = ColumnHeaderStyle.Clickable;
 			Columns[0].Width = 350;
-			//Columns[0].SortDataType = SortDataType.String;
-			//Columns[1].SortDataType = SortDataType.Double;
 			
 			ColumnSortColor = Color.White;
 			Font = new Font("Tahoma", 8.0f);
@@ -821,46 +731,6 @@ namespace NProf
 
 					switch (message)
 					{
-						//case NetworkMessage.INITIALIZE:
-						//    {
-						//        if (((IPEndPoint)s.RemoteEndPoint).Address != IPAddress.Loopback)
-						//        {
-						//            // Prompt the user?
-						//        }
-
-						//        int networkProtocolVersion = reader.ReadInt32();
-						//        if (networkProtocolVersion != NETWORK_PROTOCOL_VERSION)
-						//        {
-						//            // Wrong version, write a negative byte
-						//            stream.WriteByte(0);
-						//            if (Error != null)
-						//                Error(new InvalidOperationException("Profiler hook is wrong version: was "
-						//                    + networkProtocolVersion + ", expected " + NETWORK_PROTOCOL_VERSION));
-						//        }
-						//        else
-						//        {
-						//            stream.WriteByte(1);
-						//        }
-
-						//        // We're off!
-						//        //run.State = RunState.Running;
-						//        break;
-						//    }
-
-						//case NetworkMessage.SHUTDOWN:
-						//    {
-						//        hasStopped = true;
-						//        if (Exited != null)
-						//            Exited(this, EventArgs.Empty);
-						//        break;
-						//    }
-
-						//case NetworkMessage.APPDOMAIN_CREATE:
-						//    {
-						//        appDomainID = reader.ReadInt32();
-						//        break;
-						//    }
-
 						case NetworkMessage.FUNCTION_DATA:
 							{
 								threadId = reader.ReadInt32();
@@ -1308,12 +1178,6 @@ namespace NProf
 			set { end = value; }
 		}
 
-		//[XmlIgnore]
-		//public RunMessageCollection Messages
-		//{
-		//    get { return messages; }
-		//}
-
 		public bool Success
 		{
 			get { return isSuccess; }
@@ -1324,7 +1188,6 @@ namespace NProf
 		private DateTime end;
 		private ProjectInfo project;
 		public Profiler profiler;
-		//private RunMessageCollection messages;
 	}
 	// remove
 	public class RunCollection : IEnumerable
@@ -1372,62 +1235,6 @@ namespace NProf
 		private ArrayList items;
 		private ProjectInfo project;
 	}
-	// remove??
-	//public class RunMessageCollection : IEnumerable
-	//{
-	//    public IEnumerator GetEnumerator()
-	//    {
-	//        return AllMessages.GetEnumerator();
-	//    }
-	//    public string[] AllMessages
-	//    {
-	//        get
-	//        {
-	//            lock (messages)
-	//            {
-	//                return (string[])messages.ToArray(typeof(string));
-	//            }
-	//        }
-	//    }
-
-	//    public string[] StartListening(MessageHandler handler)
-	//    {
-	//        lock (messages)
-	//        {
-	//            Message += handler;
-	//            return AllMessages;
-	//        }
-	//    }
-
-	//    public void StopListening(MessageHandler handler)
-	//    {
-	//        lock (messages)
-	//        {
-	//            Message -= handler;
-	//        }
-	//    }
-
-	//    public void Add(object oMessage)
-	//    {
-	//        // For XML serialization
-	//        AddMessage((string)oMessage);
-	//    }
-
-	//    public void AddMessage(string message)
-	//    {
-	//        lock (messages)
-	//        {
-	//            messages.Add(message);
-	//            if (Message != null)
-	//                Message(message);
-	//        }
-	//    }
-
-	//    private ArrayList messages = new ArrayList();
-
-	//    public delegate void MessageHandler(string message);
-	//    private event MessageHandler Message;
-	//}
 	public class Profiler
 	{
 		private const string PROFILER_GUID = "{791DA9FE-05A0-495E-94BF-9AD875C4DF0F}";
@@ -1496,15 +1303,8 @@ namespace NProf
 
 				run = null;
 			}
-
-			// Stop the profiler socket server if profilee hasn't connected
-			//if (r.State == RunState.Initializing)
-			//{
-				//r.Messages.AddMessage("Shutting down profiler...");
 				socketServer.Stop();
-				//r.State = RunState.Finished;
 				r.Success = false;
-			//}
 
 
 		}
@@ -1525,19 +1325,7 @@ namespace NProf
 
 			if (!socketServer.HasStoppedGracefully)
 			{
-				//if (r.State == RunState.Initializing)
-				//{
-				//    r.Messages.AddMessage("No connection made with profiled application.");
-				//    r.Messages.AddMessage("Application might not support .NET.");
-				//}
-				//else
-				//{
-				//    r.Messages.AddMessage("Application stopped before profiler information could be retrieved.");
-				//}
-
 				r.Success = false;
-				//r.State = RunState.Finished;
-				//r.Messages.AddMessage("Profiler run did not complete successfully.");
 			}
 			else
 			{
@@ -1545,10 +1333,7 @@ namespace NProf
 			}
 
 			end = DateTime.Now;
-			//r.Messages.AddMessage("Stopping profiler listener...");
 			socketServer.Stop();
-			//			if ( ProcessCompleted != null )
-			//				ProcessCompleted( _pss.ThreadInfoCollection );
 
 			r.EndTime = end;
 
@@ -1556,14 +1341,11 @@ namespace NProf
 			{
 				Completed(this, new EventArgs());
 			}
-			//completed(r);
 		}
 
 		private void OnError(Exception e)
 		{
 			MessageBox.Show("An internal exception occurred:\n\n" + e.ToString(), "Error");
-			//if ( Error != null )
-			//    Error( e );
 		}
 
 		private void OnMessage(string strMessage)
