@@ -104,13 +104,6 @@ public:
 	{
 		this->profilerInfo = profilerInfo;
 	}
-	ThreadID ProfilerHelper::GetCurrentThreadID()
-	{
-		ThreadID threadId;
-		profilerInfo->GetCurrentThreadID( &threadId );
-
-		return threadId;
-	}
 	string ProfilerHelper::GetCurrentThreadName()
 	{
 		return "";
@@ -588,8 +581,8 @@ enum NetworkMessage
 	INITIALIZE = 0,
 	SHUTDOWN,
 	APPDOMAIN_CREATE,
-	THREAD_CREATE,
-	THREAD_END,
+	//THREAD_CREATE,
+	//THREAD_END,
 	FUNCTION_DATA,
 	PROFILER_MESSAGE,
 };
@@ -755,18 +748,18 @@ public:
 	{
 		operation = "SendThreadCreate";
 
-		SendNetworkMessage( THREAD_CREATE );
-		SendThreadID( tid );
+		//SendNetworkMessage( THREAD_CREATE );
+		//SendThreadID( tid );
 	}
 
 	void ProfilerSocket::SendThreadEnd( ThreadID tid, UINT64 llThreadStartTime, UINT64 threadEndTime )
 	{
 		operation = "SendThreadEnd";
 
-		SendNetworkMessage( THREAD_END );
-		SendThreadID( tid );
-		SendUINT64( llThreadStartTime );
-		SendUINT64( threadEndTime );
+		//SendNetworkMessage( THREAD_END );
+		//SendThreadID( tid );
+		//SendUINT64( llThreadStartTime );
+		//SendUINT64( threadEndTime );
 	}
 
 	void ProfilerSocket::SendStartFunctionData( ThreadID tid )
@@ -1005,28 +998,28 @@ public:
 class ThreadInfo
 {
 public: 
-	ThreadInfo::ThreadInfo()
-	{
-		this->isRunning = false;
-		this->suspendTime = 0;
-	}
+	//ThreadInfo::ThreadInfo()
+	//{
+	//	this->isRunning = true;
+	//	this->suspendTime = 0;
+	//}
 
-	void ThreadInfo::Start()
-	{
-		startTime = rdtsc();
-		isRunning = true;
-	}
+	//void ThreadInfo::Start()
+	//{
+	//	startTime = rdtsc();
+	//	isRunning = true;
+	//}
 
-	void ThreadInfo::End()
-	{
-		endTime = rdtsc();
-		isRunning = false;
-	}
+	//void ThreadInfo::End()
+	//{
+	//	endTime = rdtsc();
+	//	isRunning = false;
+	//}
 
-	bool ThreadInfo::IsRunning()
-	{
-		return isRunning;
-	}
+	//bool ThreadInfo::IsRunning()
+	//{
+	//	return isRunning;
+	//}
 
 	FunctionInfo* ThreadInfo::GetFunctionInfo( FunctionID functionId )
 	{
@@ -1041,15 +1034,6 @@ public:
 		return found->second;
 	}
 
-	void ThreadInfo::Trace( ProfilerHelper& profilerHelper )
-	{
-		for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
-		{
-			cout << "Function ID " << i->first << ":" << endl;
-			i->second->Trace( profilerHelper );
-		}
-	}
-
 	void ThreadInfo::Dump( ProfilerSocket& ps, ProfilerHelper& profilerHelper )
 	{
 		for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
@@ -1058,40 +1042,30 @@ public:
 			i->second->Dump( ps, profilerHelper );
 		}
 	}
-	INT64 startTime;
-	INT64 endTime;
-	INT64 suspendTime;
-  
 private:
-	bool  isRunning;
 	map< FunctionID, FunctionInfo* > functionMap;
 };
 
 class ThreadInfoCollection
 {
 public: 
-	void Dump( ProfilerHelper& profilerHelper, ThreadID threadId )
-	{
-	  ProfilerSocket profilerSocket;
-	  profilerSocket.SendStartFunctionData( threadId );
-	  GetThreadInfo( threadId )->Dump( profilerSocket, profilerHelper );
-	  profilerSocket.SendEndFunctionData();
-	}
-
 	void ThreadInfoCollection::EndAll( ProfilerHelper& profilerHelper )
 	{
 		for ( map< ThreadID, ThreadInfo* >::iterator i = threadMap.begin(); i != threadMap.end(); i++ )
-		if ( i->second->IsRunning() )
-		EndThread( profilerHelper, i->first );
+		{
+			EndThread( profilerHelper, i->first );
+		}
 	}
 
 	void ThreadInfoCollection::EndThread( ProfilerHelper& profilerHelper, ThreadID threadId )
 	{
-		//ThreadInfo* threadInfo = GetThreadInfo( threadId );
-		//threadInfo->End();
 		ProfilerSocket profilerSocket;
 		profilerSocket.SendThreadEnd( threadId, 0, 0 );
-		Dump( profilerHelper, threadId );
+
+		ProfilerSocket socket;
+		socket.SendStartFunctionData( threadId );
+		GetThreadInfo( threadId )->Dump( socket, profilerHelper );
+		socket.SendEndFunctionData();
 	}
 
 	ThreadInfo* ThreadInfoCollection::GetThreadInfo( ThreadID threadId )
@@ -1106,28 +1080,6 @@ public:
 		return found->second;
 	}
 
-	void ThreadInfoCollection::Trace( ProfilerHelper& profilerHelper )
-	{
-		for ( map< ThreadID, ThreadInfo* >::iterator i = threadMap.begin(); i != threadMap.end(); i++ )
-		{
-			cout << "Thread ID " << i->first << ":" << endl;
-			i->second->Trace( profilerHelper );
-		}
-	}
-
-	void ThreadInfoCollection::DumpAll( ProfilerHelper& profilerHelper )
-	{
-		for ( map< ThreadID, ThreadInfo* >::iterator i = threadMap.begin(); i != threadMap.end(); i++ )
-		{
-			if ( i->second->IsRunning() )
-			{
-				ProfilerSocket profilerSocket;
-				profilerSocket.SendStartFunctionData( i->first );
-				i->second->Dump( profilerSocket, profilerHelper );
-				profilerSocket.SendEndFunctionData();
-			}
-		}
-	}
 private:
 	map< ThreadID, ThreadInfo* > threadMap;
 };
@@ -1175,19 +1127,9 @@ public:
 			(DWORD_PTR)this,     
 			TIME_PERIODIC);      
 	}
-	//virtual void Leave( FunctionID functionId ){};
-	//virtual void Enter( FunctionID functionId ){};
-	//virtual void TailCall( FunctionID functionId ){};
-	//virtual void UnmanagedToManagedCall( FunctionID functionId ){};
-	//virtual void AppDomainEnd( AppDomainID appDomainId ){};
-	//
-	//void ManagedToUnmanagedCall( FunctionID functionId )
-	//{
-	//};
-
 	void ThreadStart( ThreadID threadId )
 	{
-	  threadCollection.GetThreadInfo( threadId )->Start();
+	  //threadCollection.GetThreadInfo( threadId )->Start();
 	  ProfilerSocket ps;
 	  ps.SendThreadCreate( threadId );
 	};
@@ -1203,17 +1145,6 @@ public:
 	  threadCollection.EndThread( profilerHelper, threadId );
 	  cout << "ThreadEnd( " << threadId << " )" << endl;
 	};
-
-	//void ThreadSuspend()
-	//{
-	//  //threadCollection.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->SuspendFunction( rdtsc() );
-	//};
-
-	//void ThreadResume()
-	//{
-	//  //threadCollection.GetThreadInfo( GetCurrentThreadID() )->GetStackInfo()->ResumeFunction( rdtsc() );
-	//};
-
 	void AppDomainStart( AppDomainID appDomainId )
 	{
 		cout << "AppDomain Created: " << appDomainId << endl;
@@ -1223,20 +1154,17 @@ public:
 
 	virtual void End()
 	{
+		timeKillEvent(timer);
 		cout << "End()" << endl;
 		threadCollection.EndAll( profilerHelper );
 	};
 
 protected:
 	CComPtr< ICorProfilerInfo2 > profilerInfo;
-	ThreadID GetCurrentThreadID()
-	{
-		return profilerHelper.GetCurrentThreadID();
-	}
-	ThreadInfo* GetCurrentThreadInfo()
-	{
-	  return threadCollection.GetThreadInfo( GetCurrentThreadID() );
-	};
+	//ThreadID GetCurrentThreadID()
+	//{
+	//	return profilerHelper.GetCurrentThreadID();
+	//}
 	ThreadInfoCollection threadCollection;
 	ProfilerHelper profilerHelper;
 	map< DWORD, ThreadID > threadMap;
@@ -1309,10 +1237,6 @@ public:
 };
 
 UINT Profiler::timer;
-
-//void RawEnter();
-//void RawLeave();
-//void RawTailCall();
 
 [
 	object,
@@ -1556,30 +1480,14 @@ public:
 	STDMETHOD(UnmanagedToManagedTransition)(FunctionID functionId, COR_PRF_TRANSITION_REASON reason)
 	{
 		return E_NOTIMPL;
-		//EnterCriticalSection(&criticalSection);
-		//// Only track returns
-		//if ( reason == COR_PRF_TRANSITION_RETURN )
-		//  profiler->UnmanagedToManagedCall( functionId );
-		//LeaveCriticalSection(&criticalSection);
-		//return S_OK;
 	}
 	STDMETHOD(ManagedToUnmanagedTransition)(FunctionID functionId, COR_PRF_TRANSITION_REASON reason)
 	{
 		return E_NOTIMPL;
-		//EnterCriticalSection(&criticalSection);
-		//// Only track calls
-		//if ( reason == COR_PRF_TRANSITION_CALL )
-		//  profiler->ManagedToUnmanagedCall( functionId );
-		//LeaveCriticalSection(&criticalSection);
-		//return S_OK;
 	}
 	STDMETHOD(RuntimeSuspendStarted)(COR_PRF_SUSPEND_REASON suspendReason)
 	{
 		return E_NOTIMPL;
-		//EnterCriticalSection(&criticalSection);
-		//profiler->ThreadSuspend();
-		//LeaveCriticalSection(&criticalSection);
-		//return S_OK;
 	}
 	STDMETHOD(RuntimeSuspendFinished)()
 	{
@@ -1592,10 +1500,6 @@ public:
 	STDMETHOD(RuntimeResumeStarted)()
 	{
 		return E_NOTIMPL;
-		//EnterCriticalSection(&criticalSection);
-		//profiler->ThreadResume();
-		//LeaveCriticalSection(&criticalSection);
-		//return S_OK;
 	}
 	STDMETHOD(RuntimeResumeFinished)()
 	{
@@ -1668,13 +1572,6 @@ public:
 	STDMETHOD(ExceptionUnwindFunctionLeave)()
 	{
 		return E_NOTIMPL;
-		//EnterCriticalSection(&criticalSection);
-
-		//// Update the call stack as we leave
-		//profiler->Leave( 0 );
-		//LeaveCriticalSection(&criticalSection);
-
-		//return S_OK;
 	}
 	STDMETHOD(ExceptionUnwindFinallyEnter)(FunctionID functionId)
 	{
@@ -1742,7 +1639,7 @@ public:
 		return E_NOTIMPL;
 	}
 };
-// remove
+
 #ifdef WIN32
   __declspec(naked) UINT64 __fastcall rdtsc()
   {
@@ -1762,13 +1659,10 @@ public:
 #endif
 #endif
 
-
-
 [ module(dll, uuid = "{A461E20A-C7DC-4A89-A24E-87B5E975A96B}", 
 		 name = "NProfHook", 
 		 helpstring = "NProf.Hook 1.0 Type Library",
 		 resource_name = "IDR_NPROFHOOK") ];
-
 
 bool ProfilerSocket::isInitialized = false;
 int ProfilerSocket::applicationId = -1;

@@ -874,17 +874,17 @@ namespace NProf
 								break;
 							}
 
-						case NetworkMessage.THREAD_CREATE:
-							threadId = reader.ReadInt32();
-							run.Messages.AddMessage("Thread created: " + threadId);
-							break;
+						//case NetworkMessage.THREAD_CREATE:
+						//    threadId = reader.ReadInt32();
+						//    run.Messages.AddMessage("Thread created: " + threadId);
+						//    break;
 
-						case NetworkMessage.THREAD_END:
-							threadId = reader.ReadInt32();
-							reader.ReadInt64();
-							reader.ReadInt64();
-							run.Messages.AddMessage("Thread completed: " + threadId);
-							break;
+						//case NetworkMessage.THREAD_END:
+						//    threadId = reader.ReadInt32();
+						//    reader.ReadInt64();
+						//    reader.ReadInt64();
+						//    run.Messages.AddMessage("Thread completed: " + threadId);
+						//    break;
 
 						case NetworkMessage.FUNCTION_DATA:
 							{
@@ -972,8 +972,8 @@ namespace NProf
 			INITIALIZE = 0,
 			SHUTDOWN,
 			APPDOMAIN_CREATE,
-			THREAD_CREATE,
-			THREAD_END,
+			//THREAD_CREATE,
+			//THREAD_END,
 			FUNCTION_DATA,
 			PROFILER_MESSAGE,
 		};
