@@ -801,6 +801,7 @@ public:
 		for ( map< FunctionID, CalleeFunctionInfo* >::iterator i = calleeMap.begin(); i != calleeMap.end(); i++ )
 		{
 			ps.SendCalleeFunctionData( i->first, i->second->calls, 100, 100);
+			ps.SendEndCalleeFunctionData();
 		}
 		ps.SendEndCalleeFunctionData();
 	}

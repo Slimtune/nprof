@@ -407,7 +407,7 @@ namespace NProf
 			callers.Items.Clear();
 
 			currentRun = run;
-			foreach (FunctionInfo method in run.functions.Values)
+			foreach (FunctionInfo method in run.functions)
 			{
 				methods.Add(method);
 			}
@@ -418,7 +418,7 @@ namespace NProf
 			ListView l;
 
 			FunctionInfo mfi = (FunctionInfo)methods.SelectedItems[0].Tag;
-			foreach (FunctionInfo fi in run.functions.Values)
+			foreach (FunctionInfo fi in run.functions)
 			{
 				foreach (FunctionInfo cfi in fi.Callees)
 				{
@@ -731,7 +731,7 @@ namespace NProf
 							ReadLengthEncodedASCIIString(reader)
 						));
 					}
-					GetFunctions(reader);
+					GetFunctions(reader,run.functions);
 				}
 			}
 			catch (Exception e)
@@ -741,7 +741,7 @@ namespace NProf
 			}
 		}
 
-		private void GetFunctions(BinaryReader reader)
+		private void GetFunctions(BinaryReader reader,List<FunctionInfo> functions)
 		{
 			while (true)
 			{
@@ -750,22 +750,22 @@ namespace NProf
 				{
 					break;
 				}
-
 				int callCount = reader.ReadInt32();
 				FunctionInfo function = new FunctionInfo(functionId, run.signatures, callCount);
-				
-				while (true)
-				{
-					int calleeFunctionId = reader.ReadInt32();
-					if (calleeFunctionId == -1)
-					{
-						break;
-					}
-					int calleeCallCount = reader.ReadInt32();
-					function.Callees.Add(new FunctionInfo(calleeFunctionId, run.signatures, calleeCallCount));
-				}
 
-				run.functions.Add(function.ID, function);
+				GetFunctions(reader, function.Callees);
+				//while (true)
+				//{
+				//    int calleeFunctionId = reader.ReadInt32();
+				//    if (calleeFunctionId == -1)
+				//    {
+				//        break;
+				//    }
+				//    int calleeCallCount = reader.ReadInt32();
+				//    function.Callees.Add(new FunctionInfo(calleeFunctionId, run.signatures, calleeCallCount));
+				//}
+
+				functions.Add(function);
 			}
 		}
 
@@ -1070,7 +1070,8 @@ namespace NProf
 	public class Run
 	{
 		public FunctionSignatureMap signatures = new FunctionSignatureMap();
-		public Dictionary<int, FunctionInfo> functions = new Dictionary<int, FunctionInfo>();
+		public List<FunctionInfo> functions = new List<FunctionInfo>();
+		//public Dictionary<int, FunctionInfo> functions = new Dictionary<int, FunctionInfo>();
 
 		public Run(Profiler p, ProjectInfo pi)
 		{
