@@ -998,52 +998,19 @@ public:
 class ThreadInfo
 {
 public: 
-	//ThreadInfo::ThreadInfo()
+	//FunctionInfo* ThreadInfo::GetFunctionInfo( FunctionID functionId )
 	//{
-	//	this->isRunning = true;
-	//	this->suspendTime = 0;
+	//	map< FunctionID, FunctionInfo* >::iterator found = functionMap.find( functionId );
+	//	if ( found == functionMap.end() )
+	//	{
+	//		FunctionInfo* functionInfo = new FunctionInfo( functionId );
+	//		functionMap.insert( make_pair( functionId, functionInfo ) );
+	//		return functionInfo;
+	//	}
+
+	//	return found->second;
 	//}
-
-	//void ThreadInfo::Start()
-	//{
-	//	startTime = rdtsc();
-	//	isRunning = true;
-	//}
-
-	//void ThreadInfo::End()
-	//{
-	//	endTime = rdtsc();
-	//	isRunning = false;
-	//}
-
-	//bool ThreadInfo::IsRunning()
-	//{
-	//	return isRunning;
-	//}
-
-	FunctionInfo* ThreadInfo::GetFunctionInfo( FunctionID functionId )
-	{
-		map< FunctionID, FunctionInfo* >::iterator found = functionMap.find( functionId );
-		if ( found == functionMap.end() )
-		{
-			FunctionInfo* functionInfo = new FunctionInfo( functionId );
-			functionMap.insert( make_pair( functionId, functionInfo ) );
-			return functionInfo;
-		}
-
-		return found->second;
-	}
-
-	void ThreadInfo::Dump( ProfilerSocket& ps, ProfilerHelper& profilerHelper )
-	{
-		for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
-		{
-			ps.SendFunctionData( profilerHelper, i->first );
-			i->second->Dump( ps, profilerHelper );
-		}
-	}
-private:
-	map< FunctionID, FunctionInfo* > functionMap;
+	//map< FunctionID, FunctionInfo* > functionMap;
 };
 
 class ThreadInfoCollection
@@ -1103,6 +1070,29 @@ HRESULT __stdcall __stdcall StackWalker(
 class Profiler
 {
 public: 
+	FunctionInfo* GetFunctionInfo( FunctionID functionId )
+	{
+		map< FunctionID, FunctionInfo* >::iterator found = functionMap.find( functionId );
+		if ( found == functionMap.end() )
+		{
+			FunctionInfo* functionInfo = new FunctionInfo( functionId );
+			functionMap.insert( make_pair( functionId, functionInfo ) );
+			return functionInfo;
+		}
+
+		return found->second;
+	}
+	map< FunctionID, FunctionInfo* > functionMap;
+
+	//void DumpThread( ProfilerSocket& ps, ProfilerHelper& profilerHelper ,ThreadInfo* threadInfo)
+	//{
+		//for ( map< FunctionID, FunctionInfo* >::iterator i = threadInfo->functionMap.begin(); i != threadInfo->functionMap.end(); i++ )
+		////for ( map< FunctionID, FunctionInfo* >::iterator i = threadInfo->functionMap.begin(); i != threadInfo->functionMap.end(); i++ )
+		//{
+		//	ps.SendFunctionData( profilerHelper, i->first );
+		//	i->second->Dump( ps, profilerHelper );
+		//}
+	//}
 	void EndAll( ProfilerHelper& profilerHelper )
 	{
 		for ( map< ThreadID, ThreadInfo* >::iterator i =  threadCollection.threadMap.begin(); i != threadCollection.threadMap.end(); i++ )
@@ -1110,15 +1100,20 @@ public:
 			EndThread( profilerHelper, i->first );
 		}
 	}
-
 	void EndThread( ProfilerHelper& profilerHelper, ThreadID threadId )
 	{
 		ProfilerSocket profilerSocket;
 		profilerSocket.SendThreadEnd( threadId, 0, 0 );
 
 		ProfilerSocket socket;
-		socket.SendStartFunctionData( threadId );
-		threadCollection.GetThreadInfo( threadId )->Dump( socket, profilerHelper );
+		socket.SendStartFunctionData(threadId);
+		for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
+		{
+			socket.SendFunctionData( profilerHelper, i->first );
+			i->second->Dump( socket, profilerHelper );
+		}
+
+		//DumpThread(socket, profilerHelper , threadCollection.GetThreadInfo( threadId ));
 		socket.SendEndFunctionData();
 	}
 	Profiler::Profiler( ICorProfilerInfo2* profilerInfo )
@@ -1236,7 +1231,8 @@ public:
 						if(y>functions.size()-1)
 						{
 							FunctionID id=functions[index];
-							FunctionInfo* function=threadInfo->GetFunctionInfo(id);
+							FunctionInfo* function=GetFunctionInfo(id);
+							//FunctionInfo* function=threadInfo->GetFunctionInfo(id);
 							function->calls++;
 							if(index<functions.size()-1)
 							{
