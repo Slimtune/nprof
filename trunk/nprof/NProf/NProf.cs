@@ -38,8 +38,9 @@ using NProf;
 using Genghis.Windows.Forms;
 using Reflector.UserInterface;
 using Crownwood.Magic.Menus;
-using DotNetLib.Windows.Forms;
+//using DotNetLib.Windows.Forms;
 using System.Globalization;
+using SynapticEffect.Forms;
 
 namespace NProf
 {
@@ -85,8 +86,8 @@ namespace NProf
 		private ProjectInfo project;
 		public TreeView runs;
 		private MethodView methods;
-		private MethodView callees;
-		private MethodView callers;
+		//private CallerView callees;
+		private CallerView callers;
 		private TextBox findText = new TextBox();
 		public Run currentRun;
 		public delegate void OneDelegate<T>(T t);
@@ -112,33 +113,24 @@ namespace NProf
 					UpdateFilters((Run)runs.SelectedNode.Tag);// this should also be done when loading a project!!
 				};
 			});
-			callers = With(new MethodView("Callers"), delegate(MethodView method)
+			callers = With(new CallerView("Callers"), delegate(CallerView method)
 			{
-				method.DoubleClick += delegate
-				{
-					JumpToID(((FunctionInfo)callees.SelectedItems[0].Tag).ID);
-				};
+				//method.DoubleClick += delegate
+				//{
+				//    JumpToID(((FunctionInfo)callees.SelectedItems[0].Tag).ID);
+				//};
 				method.Size = new Size(100, 100);
 				method.Dock = DockStyle.Bottom;
 
-			});
-			callees = With(new MethodView("Callees"), delegate(MethodView method)
-			{
-				method.DoubleClick += delegate
-				{
-					JumpToID(((CalleeFunctionInfo)callees.SelectedItems[0].Tag).ID);
-				};
-				method.Size = new Size(100, 100);
-				method.Dock = DockStyle.Bottom;
 			});
 			methods = With(new MethodView("Methods"), delegate(MethodView method)
 			{
 				method.Size = new Size(100, 100);
 				method.Dock = DockStyle.Fill;
 
-				method.SelectedItemsChanged += delegate
+				method.SelectedIndexChanged += delegate
 				{
-					callees.Items.Clear();
+					//callees.Items.Clear();
 					callers.Items.Clear();
 
 					if (methods.SelectedItems.Count == 0)
@@ -161,7 +153,7 @@ namespace NProf
 							}
 						}
 					}
-					UpdateCalleeList();
+					//UpdateCalleeList();
 					UpdateCallerList(currentRun);
 				};
 			});
@@ -194,7 +186,7 @@ namespace NProf
 							{
 								splitter.Dock=DockStyle.Bottom;
 							}),
-							callees,
+							//callees,
 							With(new Splitter(),delegate(Splitter splitter)
 							{
 								splitter.Dock=DockStyle.Bottom;
@@ -316,12 +308,12 @@ namespace NProf
 							new Menu("&New...","Create a new profile project",New),
 							new Menu("-","-",null),
 							new Menu("E&xit","Exit the application",Shortcut.AltF4,delegate {Close();})),
-						new Menu("View",
+						new Menu("Project",
+							new Menu("Start","Run the current project",Shortcut.F5,StartRun),
+							new Menu("-","-",null),
 							new Menu("Back","Navigate Back",Back),
-							new Menu("Forward","Navigate Forward",Forward)),
-						new Menu("&Project",
-							new Menu("Start","Run the current project",Shortcut.F5,StartRun)),
-						new Menu("&Help",
+							new Menu("Forward","Navigate Forward",Forward),
+							new Menu("-","-",null),
 							new Menu("About nprof...","About nprof",About))
 					});
 				})});
@@ -345,7 +337,7 @@ namespace NProf
 			NProf.application.Text = "";
 			methods.Items.Clear();
 			callers.Items.Clear();
-			callees.Items.Clear();
+			//callees.Items.Clear();
 		}
 		private void StartRun(object sender, System.EventArgs e)
 		{
@@ -407,39 +399,8 @@ namespace NProf
 				}
 			}
 			public static Image New { get { return images[0]; } }
-			public static Image Open { get { return images[1]; } }
-			public static Image Save { get { return images[2]; } }
-			public static Image Delete { get { return images[6]; } }
-			public static Image Properties { get { return images[7]; } }
-			public static Image Undo { get { return images[8]; } }
-			public static Image Redo { get { return images[9]; } }
-			public static Image Preview { get { return images[10]; } }
-			public static Image Print { get { return images[11]; } }
-			public static Image Search { get { return images[12]; } }
-			public static Image ReSearch { get { return images[13]; } }
-			public static Image Help { get { return images[14]; } }
-			public static Image ZoomIn { get { return images[15]; } }
-			public static Image ZoomOut { get { return images[16]; } }
 			public static Image Back { get { return images[17]; } }
 			public static Image Forward { get { return images[18]; } }
-			public static Image Favorites { get { return images[19]; } }
-			public static Image AddToFavorites { get { return images[20]; } }
-			public static Image Stop { get { return images[21]; } }
-			public static Image Refresh { get { return images[22]; } }
-			public static Image Home { get { return images[23]; } }
-			public static Image Edit { get { return images[24]; } }
-			public static Image Tools { get { return images[25]; } }
-			public static Image Tiles { get { return images[26]; } }
-			public static Image Icons { get { return images[27]; } }
-			public static Image List { get { return images[28]; } }
-			public static Image Details { get { return images[29]; } }
-			public static Image Pane { get { return images[30]; } }
-			public static Image Culture { get { return images[31]; } }
-			public static Image Languages { get { return images[32]; } }
-			public static Image History { get { return images[33]; } }
-			public static Image Mail { get { return images[34]; } }
-			public static Image Parent { get { return images[35]; } }
-			public static Image FolderProperties { get { return images[36]; } }
 			public static Image Run { get { return images[37]; } }
 		}
 		private Stack<int> backward = new Stack<int>();
@@ -463,20 +424,20 @@ namespace NProf
 		private void UpdateFilters(Run run)
 		{
 			methods.Items.Clear();
-			callees.Items.Clear();
+			//callees.Items.Clear();
 			callers.Items.Clear();
 
 			currentRun = run;
-			methods.BeginUpdate();
+			//methods.BeginUpdate();
 			foreach (FunctionInfo method in run.functions.Values)
 			{
 				methods.Add(method);
 			}
-			methods.EndUpdate();
+			//methods.EndUpdate();
 		}
 		private void UpdateCallerList(Run run)
 		{
-			callers.BeginUpdate();
+			//callers.BeginUpdate();
 
 			bool multipleSelected = (methods.SelectedItems.Count > 1);
 			callers.ShowPlusMinus = multipleSelected;
@@ -495,35 +456,30 @@ namespace NProf
 				}
 			}
 			callers.Sort();
-			callers.EndUpdate();
+			//callers.EndUpdate();
 		}
 		public const string timeFormat = ".00;-.00;.0";
-		private void UpdateCalleeList()
-		{
-			callees.Items.Clear();
-			callees.BeginUpdate();
+		//private void UpdateCalleeList()
+		//{
+		//    //callees.Items.Clear();
+		//    //callees.BeginUpdate();
 
-			bool multipleSelected = (methods.SelectedItems.Count > 1);
-			callees.ShowPlusMinus = multipleSelected;
-			callees.ShowRootTreeLines = multipleSelected;
-			callees.ShowTreeLines = multipleSelected;
+		//    foreach (ContainerListViewItem item in methods.SelectedItems)
+		//    {
+		//        FunctionInfo fi = (FunctionInfo)item.Tag;
 
-			foreach (ContainerListViewItem item in methods.SelectedItems)
-			{
-				FunctionInfo fi = (FunctionInfo)item.Tag;
+		//        foreach (CalleeFunctionInfo cfi in fi.CalleeInfo)
+		//        {
+		//            callees.Add(cfi);
+		//        }
 
-				foreach (CalleeFunctionInfo cfi in fi.CalleeInfo)
-				{
-					callees.Add(cfi);
-				}
-
-				ContainerListViewItem inMethod = callees.Items.Add("(in method)");
-				inMethod.SubItems[1].Text = fi.Calls.ToString();
-				inMethod.Tag = fi;
-			}
-			callees.Sort();
-			callees.EndUpdate();
-		}
+		//        ContainerListViewItem inMethod = callees.Items.Add("(in method)");
+		//        inMethod.SubItems[1].Text = fi.Calls.ToString();
+		//        inMethod.Tag = fi;
+		//    }
+		//    callees.Sort();
+		//    callees.EndUpdate();
+		//}
 		private void JumpToID(int id)
 		{
 			methods.SelectedItems.Clear();
@@ -541,13 +497,13 @@ namespace NProf
 					break;
 				}
 			}
-			methods.EnsureVisible();
+			//methods.EnsureVisible();
 			methods.Focus();
 		}
 		private int GetSelectedID()
 		{
-			if (callees.SelectedItems.Count == 0)
-				return -1;
+			//if (callees.SelectedItems.Count == 0)
+			//    return -1;
 
 			return ((FunctionInfo)methods.SelectedItems[0].Tag).ID;
 		}
@@ -573,11 +529,13 @@ namespace NProf
 					{
 						if (forward)
 						{
-							item = methods.SelectedItems[0].NextItem;
+							item = methods.SelectedItems[0];
+							//item = methods.SelectedItems[0].NextItem;
 						}
 						else
 						{
-							item = methods.SelectedItems[0].PreviousItem;
+							item = methods.SelectedItems[0];
+							//item = methods.SelectedItems[0].PreviousItem;
 						}
 					}
 					else
@@ -593,7 +551,7 @@ namespace NProf
 						methods.SelectedItems.Clear();
 						item.Focused = true;
 						item.Selected = true;
-						methods.EnsureVisible();
+						//methods.EnsureVisible(methods.SelectedItems[0].Index);
 						this.Invalidate();
 						break;
 					}
@@ -601,11 +559,11 @@ namespace NProf
 					{
 						if (forward)
 						{
-							item = item.NextItem;
+							item = item;//.NextVisibleItem;
 						}
 						else
 						{
-							item = item.PreviousItem;
+							item = item;//.PrevVisibleItem;
 						}
 						if (item == null)
 						{
@@ -636,31 +594,96 @@ namespace NProf
 		}
 		public static NProf form = new NProf();
 	}
-	public class MethodView : ContainerListView
+	public class MethodView : TreeListView
 	{
 		public MethodView(string name)
+		{
+			//Columns.Add(name);
+			//Columns.Add("Time");
+
+			HeaderStyle = ColumnHeaderStyle.Clickable;
+			Columns[0].Width = 350;
+			Columns[0].Width = 100;
+			//Columns[0].SortDataType = SortDataType.String;
+			//Columns[1].SortDataType = SortDataType.Double;
+
+			//ColumnSortColor = Color.White;
+			Font = new Font("Tahoma", 8.0f);
+		}
+		public void Add(FunctionInfo function)
+		{
+			TreeListNode item = new TreeListNode();
+			item.Text = function.Signature.Signature;
+			Nodes.Add(item);
+			item.SubItems.Add(function.Calls.ToString(NProf.timeFormat));
+			item.Tag = function;
+			foreach (CalleeFunctionInfo callee in function.CalleeInfo)
+			{
+				TreeListNode subItem = new TreeListNode();
+				subItem.Text=callee.Signature;
+				subItem.SubItems.Add(callee.Calls.ToString(NProf.timeFormat));
+				subItem.Tag = callee;
+				item.Nodes.Add(subItem);
+			}
+
+			//ContainerListViewItem item = Items.Add(function.Signature.Signature);
+			//item.SubItems[1].Text = function.Calls.ToString(NProf.timeFormat);
+			//item.Tag = function;
+		}
+		//public void Add(CalleeFunctionInfo function)
+		//{
+		//    ContainerListViewItem item = Items.Add(function.Signature);
+		//    item.SubItems[1].Text = function.Calls.ToString();
+		//    item.Tag = function;
+		//}
+	}
+	//public class MethodView : ContainerListView
+	//{
+	//    public MethodView(string name)
+	//    {
+	//        Columns.Add(name);
+	//        Columns.Add("Time");
+
+	//        HeaderStyle = ColumnHeaderStyle.Clickable;
+	//        Columns[0].Width = 350;
+	//        Columns[0].SortDataType = SortDataType.String;
+	//        Columns[1].SortDataType = SortDataType.Double;
+
+	//        ColumnSortColor = Color.White;
+	//        Font = new Font("Tahoma", 8.0f);
+	//    }
+	//    public void Add(FunctionInfo function)
+	//    {
+	//        ContainerListViewItem item = Items.Add(function.Signature.Signature);
+	//        item.SubItems[1].Text = function.Calls.ToString(NProf.timeFormat);
+	//        item.Tag = function;
+	//    }
+	//    public void Add(CalleeFunctionInfo function)
+	//    {
+	//        ContainerListViewItem item = Items.Add(function.Signature);
+	//        item.SubItems[1].Text = function.Calls.ToString();
+	//        item.Tag = function;
+	//    }
+	//}
+	public class CallerView : DotNetLib.Windows.Forms.ContainerListView
+	{
+		public CallerView(string name)
 		{
 			Columns.Add(name);
 			Columns.Add("Time");
 
 			HeaderStyle = ColumnHeaderStyle.Clickable;
 			Columns[0].Width = 350;
-			Columns[0].SortDataType = SortDataType.String;
-			Columns[1].SortDataType = SortDataType.Double;
+			//Columns[0].SortDataType = SortDataType.String;
+			//Columns[1].SortDataType = SortDataType.Double;
 			
 			ColumnSortColor = Color.White;
 			Font = new Font("Tahoma", 8.0f);
 		}
 		public void Add(FunctionInfo function)
 		{
-			ContainerListViewItem item = Items.Add(function.Signature.Signature);
+			DotNetLib.Windows.Forms.ContainerListViewItem item = Items.Add(function.Signature.Signature);
 			item.SubItems[1].Text = function.Calls.ToString(NProf.timeFormat);
-			item.Tag = function;
-		}
-		public void Add(CalleeFunctionInfo function)
-		{
-			ContainerListViewItem item = Items.Add(function.Signature);
-			item.SubItems[1].Text = function.Calls.ToString();
 			item.Tag = function;
 		}
 	}
@@ -792,7 +815,9 @@ namespace NProf
 					BinaryReader reader = new BinaryReader(stream);
 					NetworkMessage message = (NetworkMessage)reader.ReadInt16();
 
-					int appDomainID, threadId, functionId;
+					//int appDomainID;
+					int threadId;
+					int functionId;
 
 					switch (message)
 					{
@@ -822,19 +847,19 @@ namespace NProf
 						//        break;
 						//    }
 
-						case NetworkMessage.SHUTDOWN:
-							{
-								hasStopped = true;
-								if (Exited != null)
-									Exited(this, EventArgs.Empty);
-								break;
-							}
+						//case NetworkMessage.SHUTDOWN:
+						//    {
+						//        hasStopped = true;
+						//        if (Exited != null)
+						//            Exited(this, EventArgs.Empty);
+						//        break;
+						//    }
 
-						case NetworkMessage.APPDOMAIN_CREATE:
-							{
-								appDomainID = reader.ReadInt32();
-								break;
-							}
+						//case NetworkMessage.APPDOMAIN_CREATE:
+						//    {
+						//        appDomainID = reader.ReadInt32();
+						//        break;
+						//    }
 
 						case NetworkMessage.FUNCTION_DATA:
 							{
@@ -907,9 +932,6 @@ namespace NProf
 		// Sync with profiler_socket.h
 		enum NetworkMessage
 		{
-			//INITIALIZE = 0,
-			SHUTDOWN,
-			APPDOMAIN_CREATE,
 			FUNCTION_DATA,
 		};
 
@@ -1444,7 +1466,7 @@ namespace NProf
 
 			socketServer = new ProfilerSocketServer(run);
 			socketServer.Start();
-			socketServer.Exited += new EventHandler(OnProcessExited);
+			//socketServer.Exited += new EventHandler(OnProcessExited);
 			socketServer.Error += new ProfilerSocketServer.ErrorHandler(OnError);
 
 			process = new Process();
@@ -1456,6 +1478,7 @@ namespace NProf
 			process.StartInfo.Arguments = pi.Arguments;
 			process.StartInfo.WorkingDirectory = pi.WorkingDirectory;
 			process.EnableRaisingEvents = true;
+			process.Exited += new EventHandler(OnProcessExited);
 
 			return process.Start();
 		}

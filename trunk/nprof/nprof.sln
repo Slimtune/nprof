@@ -51,7 +51,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		XCSharpSolutionEnabled = False
 		XCSharpProjectsDisabled = 
+		XCSharpSolutionEnabled = False
 	EndGlobalSection
 EndGlobal

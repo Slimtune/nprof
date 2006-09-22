@@ -570,11 +570,7 @@ private:
 
 enum NetworkMessage
 {
-	//INITIALIZE = 0,
-	SHUTDOWN,
-	APPDOMAIN_CREATE,
-	FUNCTION_DATA,
-	//PROFILER_MESSAGE,
+	FUNCTION_DATA
 };
 
 const int NETWORK_PROTOCOL_VERSION = 3;
@@ -656,53 +652,7 @@ public:
 		WSADATA wsaData;
 		WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
 		ProfilerSocket ps;
-		ps.SendInitialize();
 	}
-
-	void ProfilerSocket::SendInitialize()
-	{
-		//SendNetworkMessage( INITIALIZE );
-		//SendUINT32( NETWORK_PROTOCOL_VERSION );
-		//BYTE b;
-		//if ( ReadByte( b ) == 0 )
-		//{
-		//	//if ( b == 2 )
-		//	//{
-		//	//	b = 1;
-		//	//	::DebugBreak();
-		//	//}
-		//	if ( b == 1 )
-		//	{
-				isInitialized = true;
-		//	}
-		//	else
-		//	{
-		//		cout << "We weren't allowed to initialize!" << endl;
-		//		isInitialized = false;
-		//	}
-		//}
-		//else
-		//{
-		//	cout << "Could not initialize!" << endl;
-		//	isInitialized = false;
-		//}
-	}
-
-	void ProfilerSocket::SendShutdown()
-	{
-		if ( !isInitialized )
-			return;
-		//operation = "SendShutdown";
-
-		SendNetworkMessage( SHUTDOWN );
-	}
-
-	void ProfilerSocket::SendAppDomainCreate( AppDomainID aid )
-	{
-		SendNetworkMessage( APPDOMAIN_CREATE );
-		SendAppDomainID( aid );
-	}
-
 	void ProfilerSocket::SendStartFunctionData( ThreadID tid )
 	{
 		SendNetworkMessage( FUNCTION_DATA );
@@ -742,13 +692,6 @@ public:
 		SendFunctionID( 0xffffffff );
 	}
 
-	int ProfilerSocket::ReadByte( BYTE& b )
-	{
-		int result;
-		SAFE_READ( socket, b, result );
-
-		return result;
-	}
 
 	void ProfilerSocket::HandleError( const char* caller, int error )
 	{
@@ -758,13 +701,6 @@ public:
 	}
 
 	void ProfilerSocket::HandleWrongSentLength( const char* caller, int expected, int sent )
-	{
-	//	std::ofstream outf;
-	//	outf.open( "c:\\nprof.log", ios::app );
-	//	outf << operation << " " << caller << " Expected to send " << expected << ", sent " << sent << " instead." << endl;
-	}
-
-	void ProfilerSocket::HandleWrongRecvLength( const char* caller, int expected, int sent )
 	{
 	//	std::ofstream outf;
 	//	outf.open( "c:\\nprof.log", ios::app );
@@ -821,22 +757,15 @@ private:
 		SAFE_SEND( socket, functionId );
 	}
 	SOCKET socket;
-
-	static bool isInitialized;
-	//static int applicationId;
 };
 
 class CalleeFunctionInfo {
 public: 
 	CalleeFunctionInfo::CalleeFunctionInfo()
 	{
-		//this->cycleCount = 0;
-		//this->recursiveCycleCount = 0;
 		this->recursiveCount = 0;
 		this->calls = 0;
 	}
-	//INT64 cycleCount;
-	//INT64 recursiveCycleCount;
 	int calls;
 	int recursiveCount;
 };
@@ -870,15 +799,11 @@ public:
 		for ( map< FunctionID, CalleeFunctionInfo* >::iterator i = calleeMap.begin(); i != calleeMap.end(); i++ )
 		{
 			ps.SendCalleeFunctionData( i->first, i->second->calls, 100, 100);
-			//ps.SendCalleeFunctionData( i->first, i->second->calls, i->second->cycleCount, i->second->recursiveCycleCount );
 		}
 		ps.SendEndCalleeFunctionData();
 	}
 	int calls;
 	int recursiveCount;
-	//INT64 cycleCount;
-	//INT64 recursiveCycleCount;
-	//INT64 suspendCycleCount;
 	FunctionID functionId;
 	map< FunctionID, CalleeFunctionInfo* > calleeMap;
 };
@@ -956,21 +881,12 @@ public:
 
 	void ThreadMap( ThreadID threadId, DWORD dwOSThread )
 	{
-		//cout << "ThreadMap( " << threadId << ", " << dwOSThread << ")" << endl;
 		threadMap[ dwOSThread ] = threadId;
-	};
-
-	void AppDomainStart( AppDomainID appDomainId )
-	{
-		//cout << "AppDomain Created: " << appDomainId << endl;
-		ProfilerSocket ps;
-		ps.SendAppDomainCreate( appDomainId );
 	};
 
 	virtual void End()
 	{
 		timeKillEvent(timer);
-		//cout << "End()" << endl;
 		EndAll( profilerHelper );
 	};
 
@@ -1101,31 +1017,24 @@ public:
 		CComQIPtr< ICorProfilerInfo2 > profilerInfo = pICorProfilerInfoUnk;
 		InitializeCriticalSection(&criticalSection);
 		ProfilerSocket::Initialize();
-		//cout << "Initializing profiler hook DLL..." << endl;
-		//if ( profilerInfo )
-		//{
+
 		profiler = new Profiler( profilerInfo );
-		//}
+
 		return S_OK;
 	}
 	STDMETHOD(Shutdown)()
 	{
 		EnterCriticalSection(&criticalSection);
-		//cout << "Terminating profiler..." << endl;
+
 		profiler->End();
 		delete profiler;
 		profiler = NULL;
-		ProfilerSocket profilerSocket;
-		profilerSocket.SendShutdown();
 		LeaveCriticalSection(&criticalSection);
 		return S_OK;
 	}
 	STDMETHOD(AppDomainCreationStarted)(AppDomainID appDomainId)
 	{
-		EnterCriticalSection(&criticalSection);
-		profiler->AppDomainStart( appDomainId );
-		LeaveCriticalSection(&criticalSection);
-		return S_OK;
+		return E_NOTIMPL;
 	}
 	STDMETHOD(AppDomainCreationFinished)(AppDomainID appDomainId, HRESULT hrStatus)
 	{
@@ -1437,5 +1346,4 @@ public:
 		 helpstring = "NProf.Hook 1.0 Type Library",
 		 resource_name = "IDR_NPROFHOOK") ];
 
-bool ProfilerSocket::isInitialized = false;
 Profiler* CNProfCORHook::profiler;

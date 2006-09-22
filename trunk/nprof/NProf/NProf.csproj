@@ -91,6 +91,10 @@
       <HintPath>..\Libraries\MagicLibrary\MagicLibrary.DLL</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="SynapticEffect.Forms, Version=0.9.9.27064, Culture=neutral">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ExtendedListViews_lib\SynapticEffect.Forms.dll</HintPath>
+    </Reference>
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
