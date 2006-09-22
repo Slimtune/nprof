@@ -794,41 +794,33 @@ namespace NProf
 
 					int appDomainID, threadId, functionId;
 
-					// All socket connections send their application ID first for all messages
-					// except "INITIALIZE"
-					//int applicationID = -1;
-					if (message != NetworkMessage.INITIALIZE)
-					{
-						//applicationID = reader.ReadInt32();
-					}
-
 					switch (message)
 					{
-						case NetworkMessage.INITIALIZE:
-							{
-								if (((IPEndPoint)s.RemoteEndPoint).Address != IPAddress.Loopback)
-								{
-									// Prompt the user?
-								}
+						//case NetworkMessage.INITIALIZE:
+						//    {
+						//        if (((IPEndPoint)s.RemoteEndPoint).Address != IPAddress.Loopback)
+						//        {
+						//            // Prompt the user?
+						//        }
 
-								int networkProtocolVersion = reader.ReadInt32();
-								if (networkProtocolVersion != NETWORK_PROTOCOL_VERSION)
-								{
-									// Wrong version, write a negative byte
-									stream.WriteByte(0);
-									if (Error != null)
-										Error(new InvalidOperationException("Profiler hook is wrong version: was "
-											+ networkProtocolVersion + ", expected " + NETWORK_PROTOCOL_VERSION));
-								}
-								else
-								{
-									stream.WriteByte(1);
-								}
+						//        int networkProtocolVersion = reader.ReadInt32();
+						//        if (networkProtocolVersion != NETWORK_PROTOCOL_VERSION)
+						//        {
+						//            // Wrong version, write a negative byte
+						//            stream.WriteByte(0);
+						//            if (Error != null)
+						//                Error(new InvalidOperationException("Profiler hook is wrong version: was "
+						//                    + networkProtocolVersion + ", expected " + NETWORK_PROTOCOL_VERSION));
+						//        }
+						//        else
+						//        {
+						//            stream.WriteByte(1);
+						//        }
 
-								// We're off!
-								//run.State = RunState.Running;
-								break;
-							}
+						//        // We're off!
+						//        //run.State = RunState.Running;
+						//        break;
+						//    }
 
 						case NetworkMessage.SHUTDOWN:
 							{
@@ -847,7 +839,6 @@ namespace NProf
 						case NetworkMessage.FUNCTION_DATA:
 							{
 								threadId = reader.ReadInt32();
-								//run.Messages.AddMessage("Receiving function data for thread  " + threadId + "...");
 
 								functionId = reader.ReadInt32();
 								int nIndex = 0;
@@ -916,7 +907,7 @@ namespace NProf
 		// Sync with profiler_socket.h
 		enum NetworkMessage
 		{
-			INITIALIZE = 0,
+			//INITIALIZE = 0,
 			SHUTDOWN,
 			APPDOMAIN_CREATE,
 			FUNCTION_DATA,

@@ -570,7 +570,7 @@ private:
 
 enum NetworkMessage
 {
-	INITIALIZE = 0,
+	//INITIALIZE = 0,
 	SHUTDOWN,
 	APPDOMAIN_CREATE,
 	FUNCTION_DATA,
@@ -661,31 +661,31 @@ public:
 
 	void ProfilerSocket::SendInitialize()
 	{
-		SendNetworkMessage( INITIALIZE );
-		SendUINT32( NETWORK_PROTOCOL_VERSION );
-		BYTE b;
-		if ( ReadByte( b ) == 0 )
-		{
-			//if ( b == 2 )
-			//{
-			//	b = 1;
-			//	::DebugBreak();
-			//}
-			if ( b == 1 )
-			{
+		//SendNetworkMessage( INITIALIZE );
+		//SendUINT32( NETWORK_PROTOCOL_VERSION );
+		//BYTE b;
+		//if ( ReadByte( b ) == 0 )
+		//{
+		//	//if ( b == 2 )
+		//	//{
+		//	//	b = 1;
+		//	//	::DebugBreak();
+		//	//}
+		//	if ( b == 1 )
+		//	{
 				isInitialized = true;
-			}
-			else
-			{
-				cout << "We weren't allowed to initialize!" << endl;
-				isInitialized = false;
-			}
-		}
-		else
-		{
-			cout << "Could not initialize!" << endl;
-			isInitialized = false;
-		}
+		//	}
+		//	else
+		//	{
+		//		cout << "We weren't allowed to initialize!" << endl;
+		//		isInitialized = false;
+		//	}
+		//}
+		//else
+		//{
+		//	cout << "Could not initialize!" << endl;
+		//	isInitialized = false;
+		//}
 	}
 
 	void ProfilerSocket::SendShutdown()
