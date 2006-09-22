@@ -82,18 +82,10 @@ using namespace std;
 #include "corhlpr.h"
 #include "corerror.h"
 
-//#include "corsym.h"
 #include "corpub.h"
 #include "corprof.h"
 
 #define MAX_FUNCTION_LENGTH 2048
-
-
-#ifdef WIN32
-  UINT64 __fastcall rdtsc();
-#else
-  __inline__ unsigned UINT64 int rdtsc(void);
-#endif
 
 
 
@@ -581,8 +573,6 @@ enum NetworkMessage
 	INITIALIZE = 0,
 	SHUTDOWN,
 	APPDOMAIN_CREATE,
-	//THREAD_CREATE,
-	//THREAD_END,
 	FUNCTION_DATA,
 	PROFILER_MESSAGE,
 };
@@ -629,9 +619,6 @@ class ProfilerSocket
 public:
 	ProfilerSocket::ProfilerSocket()
 	{
-		this->operation = "ctor";
-		this->isApplicationIdSent = false;
-
 		sockaddr_in sa;
 		sa.sin_family = AF_INET;
 		sa.sin_port = htons( atoi( getenv( "NPROF_PROFILING_SOCKET" ) ) );
@@ -668,16 +655,12 @@ public:
 	{
 		WSADATA wsaData;
 		WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
-		cout << "WSAStartup: " << WSAGetLastError() << endl;
-		cout << "port = " << atoi( getenv( "NPROF_PROFILING_SOCKET" ) ) << endl;
 		ProfilerSocket ps;
 		ps.SendInitialize();
 	}
 
 	void ProfilerSocket::SendInitialize()
 	{
-		operation = "SendInitialize";
-
 		SendNetworkMessage( INITIALIZE );
 		SendUINT32( NETWORK_PROTOCOL_VERSION );
 		BYTE b;
@@ -691,11 +674,8 @@ public:
 
 			if ( b == 1 )
 			{
-				cout << "Successfully initialized profiler socket!" << endl;
-				ReadByte( b );
-				applicationId = b;
-
-				cout << "Application ID = " << applicationId << endl;
+				//ReadByte( b );
+				//applicationId = b;
 
 				SendUINT32( ::GetCurrentProcessId() );
 				
@@ -731,49 +711,25 @@ public:
 	{
 		if ( !isInitialized )
 			return;
-		operation = "SendShutdown";
+		//operation = "SendShutdown";
 
 		SendNetworkMessage( SHUTDOWN );
 	}
 
 	void ProfilerSocket::SendAppDomainCreate( AppDomainID aid )
 	{
-		operation = "SendAppDomainCreate";
-
 		SendNetworkMessage( APPDOMAIN_CREATE );
 		SendAppDomainID( aid );
 	}
 
-	void ProfilerSocket::SendThreadCreate( ThreadID tid )
-	{
-		operation = "SendThreadCreate";
-
-		//SendNetworkMessage( THREAD_CREATE );
-		//SendThreadID( tid );
-	}
-
-	void ProfilerSocket::SendThreadEnd( ThreadID tid, UINT64 llThreadStartTime, UINT64 threadEndTime )
-	{
-		operation = "SendThreadEnd";
-
-		//SendNetworkMessage( THREAD_END );
-		//SendThreadID( tid );
-		//SendUINT64( llThreadStartTime );
-		//SendUINT64( threadEndTime );
-	}
-
 	void ProfilerSocket::SendStartFunctionData( ThreadID tid )
 	{
-		operation = "SendStartFunctionData";
-
 		SendNetworkMessage( FUNCTION_DATA );
 		SendThreadID( tid );
 	}
 
 	void ProfilerSocket::SendFunctionData( ProfilerHelper& ph, FunctionID fid )
 	{
-		operation = "SendFunctionData";
-
 		SendFunctionID( fid );
 		string returnType, className, functionName, parameters;
 		UINT32 methodAttributes;
@@ -788,16 +744,12 @@ public:
 
 	void ProfilerSocket::SendProfilerMessage( const string& strMessage )
 	{
-		operation = "SendProfilerMessage";
-
 		SendNetworkMessage( PROFILER_MESSAGE );
 		SendString( strMessage );
 	}
 
 	void ProfilerSocket::SendFunctionTimingData( int calls, UINT64 cycleCount, UINT64 recursiveCycleCount, UINT64 suspendCycleCount )
 	{
-		operation = "SendFunctionTimingData";
-
 		SendUINT32( calls );
 		SendUINT64( cycleCount );
 		SendUINT64( recursiveCycleCount );
@@ -806,8 +758,6 @@ public:
 
 	void ProfilerSocket::SendCalleeFunctionData( FunctionID fid, int calls, UINT64 cycleCount, UINT64 recursiveCycleCount )
 	{
-		operation = "SendCalleeFunctionData";
-
 		SendFunctionID( fid );
 		SendUINT32( calls );
 		SendUINT64( cycleCount );
@@ -816,15 +766,11 @@ public:
 
 	void ProfilerSocket::SendEndFunctionData()
 	{
-		operation = "SendEndFunctionData";
-
 		SendFunctionID( 0xffffffff );
 	}
 
 	void ProfilerSocket::SendEndCalleeFunctionData()
 	{
-		operation = "SendEndCalleeFunctionData";
-
 		SendFunctionID( 0xffffffff );
 	}
 
@@ -890,14 +836,6 @@ private:
 	{
 		UINT16 mess = networkMessage;
 		SAFE_SEND( socket, mess );
-
-		if ( !isApplicationIdSent)
-		{
-			if ( networkMessage != INITIALIZE )
-				SendUINT32( applicationId );
-
-			isApplicationIdSent = true;
-		}
 	}
 
 	void ProfilerSocket::SendAppDomainID( AppDomainID appDomainId )
@@ -915,11 +853,9 @@ private:
 		SAFE_SEND( socket, functionId );
 	}
 	SOCKET socket;
-	const char* operation;
-	bool isApplicationIdSent;
 
 	static bool isInitialized;
-	static int applicationId;
+	//static int applicationId;
 };
 
 class CalleeFunctionInfo {
@@ -995,62 +931,6 @@ public:
 	map< FunctionID, CalleeFunctionInfo* > calleeMap;
 };
 
-//class ThreadInfo
-//{
-//public: 
-//	//FunctionInfo* ThreadInfo::GetFunctionInfo( FunctionID functionId )
-//	//{
-//	//	map< FunctionID, FunctionInfo* >::iterator found = functionMap.find( functionId );
-//	//	if ( found == functionMap.end() )
-//	//	{
-//	//		FunctionInfo* functionInfo = new FunctionInfo( functionId );
-//	//		functionMap.insert( make_pair( functionId, functionInfo ) );
-//	//		return functionInfo;
-//	//	}
-//
-//	//	return found->second;
-//	//}
-//	//map< FunctionID, FunctionInfo* > functionMap;
-//};
-
-//class ThreadInfoCollection
-//{
-//public: 
-//	//void ThreadInfoCollection::EndAll( ProfilerHelper& profilerHelper )
-//	//{
-//	//	for ( map< ThreadID, ThreadInfo* >::iterator i = threadMap.begin(); i != threadMap.end(); i++ )
-//	//	{
-//	//		EndThread( profilerHelper, i->first );
-//	//	}
-//	//}
-//
-//	//void ThreadInfoCollection::EndThread( ProfilerHelper& profilerHelper, ThreadID threadId )
-//	//{
-//	//	ProfilerSocket profilerSocket;
-//	//	profilerSocket.SendThreadEnd( threadId, 0, 0 );
-//
-//	//	ProfilerSocket socket;
-//	//	socket.SendStartFunctionData( threadId );
-//	//	GetThreadInfo( threadId )->Dump( socket, profilerHelper );
-//	//	socket.SendEndFunctionData();
-//	//}
-//
-//	//ThreadInfo* ThreadInfoCollection::GetThreadInfo( ThreadID threadId )
-//	//{
-//	//	map< ThreadID, ThreadInfo* >::iterator found = threadMap.find( threadId );
-//	//	if ( found == threadMap.end() )
-//	//	{
-//	//		ThreadInfo* threadInfo = new ThreadInfo();
-//	//		threadMap.insert( make_pair( threadId, threadInfo ) );
-//	//		return threadInfo;
-//	//	}
-//	//	return found->second;
-//	//}
-//	//map< ThreadID, ThreadInfo* > threadMap;
-//
-//private:
-//};
-
 HRESULT __stdcall __stdcall StackWalker( 
 	FunctionID funcId,
 	UINT_PTR ip,
@@ -1084,19 +964,9 @@ public:
 	}
 	map< FunctionID, FunctionInfo* > functionMap;
 
-	//void DumpThread( ProfilerSocket& ps, ProfilerHelper& profilerHelper ,ThreadInfo* threadInfo)
-	//{
-		//for ( map< FunctionID, FunctionInfo* >::iterator i = threadInfo->functionMap.begin(); i != threadInfo->functionMap.end(); i++ )
-		////for ( map< FunctionID, FunctionInfo* >::iterator i = threadInfo->functionMap.begin(); i != threadInfo->functionMap.end(); i++ )
-		//{
-		//	ps.SendFunctionData( profilerHelper, i->first );
-		//	i->second->Dump( ps, profilerHelper );
-		//}
-	//}
 	void EndAll( ProfilerHelper& profilerHelper )
 	{
 		ProfilerSocket profilerSocket;
-		//profilerSocket.SendThreadEnd( threadId, 0, 0 );
 
 		ProfilerSocket socket;
 		socket.SendStartFunctionData(0);
@@ -1105,33 +975,8 @@ public:
 			socket.SendFunctionData( profilerHelper, i->first );
 			i->second->Dump( socket, profilerHelper );
 		}
-
-		//DumpThread(socket, profilerHelper , threadCollection.GetThreadInfo( threadId ));
 		socket.SendEndFunctionData();
 	}
-	//void EndAll( ProfilerHelper& profilerHelper )
-	//{
-	//	for ( map< ThreadID, ThreadInfo* >::iterator i =  threadCollection.threadMap.begin(); i != threadCollection.threadMap.end(); i++ )
-	//	{
-	//		EndThread( profilerHelper, i->first );
-	//	}
-	//}
-	//void EndThread( ProfilerHelper& profilerHelper, ThreadID threadId )
-	//{
-	//	ProfilerSocket profilerSocket;
-	//	profilerSocket.SendThreadEnd( threadId, 0, 0 );
-
-	//	ProfilerSocket socket;
-	//	socket.SendStartFunctionData(threadId);
-	//	for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
-	//	{
-	//		socket.SendFunctionData( profilerHelper, i->first );
-	//		i->second->Dump( socket, profilerHelper );
-	//	}
-
-	//	//DumpThread(socket, profilerHelper , threadCollection.GetThreadInfo( threadId ));
-	//	socket.SendEndFunctionData();
-	//}
 	Profiler::Profiler( ICorProfilerInfo2* profilerInfo )
 	{
 		this->profilerInfo = profilerInfo;
@@ -1156,12 +1001,6 @@ public:
 			(DWORD_PTR)this,     
 			TIME_PERIODIC);      
 	}
-	void ThreadStart( ThreadID threadId )
-	{
-	  //threadCollection.GetThreadInfo( threadId )->Start();
-	  ProfilerSocket ps;
-	  ps.SendThreadCreate( threadId );
-	};
 
 	void ThreadMap( ThreadID threadId, DWORD dwOSThread )
 	{
@@ -1169,12 +1008,6 @@ public:
 		threadMap[ dwOSThread ] = threadId;
 	};
 
-	void ThreadEnd( ThreadID threadId )
-	{
-	  //EndThread( profilerHelper, threadId );
-	  //threadCollection.EndThread( profilerHelper, threadId );
-	  cout << "ThreadEnd( " << threadId << " )" << endl;
-	};
 	void AppDomainStart( AppDomainID appDomainId )
 	{
 		cout << "AppDomain Created: " << appDomainId << endl;
@@ -1187,16 +1020,10 @@ public:
 		timeKillEvent(timer);
 		cout << "End()" << endl;
 		EndAll( profilerHelper );
-		//threadCollection.EndAll( profilerHelper );
 	};
 
 protected:
 	CComPtr< ICorProfilerInfo2 > profilerInfo;
-	//ThreadID GetCurrentThreadID()
-	//{
-	//	return profilerHelper.GetCurrentThreadID();
-	//}
-	//ThreadInfoCollection threadCollection;
 	ProfilerHelper profilerHelper;
 	map< DWORD, ThreadID > threadMap;
 	bool statistical;
@@ -1237,8 +1064,6 @@ public:
 					&functions,
 					NULL,
 					NULL);
-				
-				//ThreadInfo* threadInfo=threadCollection.GetThreadInfo(id);
 
 				for(int index=0	;index<functions.size();index++)
 				{
@@ -1248,7 +1073,6 @@ public:
 						{
 							FunctionID id=functions[index];
 							FunctionInfo* function=GetFunctionInfo(id);
-							//FunctionInfo* function=threadInfo->GetFunctionInfo(id);
 							function->calls++;
 							if(index<functions.size()-1)
 							{
@@ -1320,25 +1144,16 @@ public:
 	{
 		return profiler;
 	}
-
 	STDMETHOD(Initialize)(LPUNKNOWN pICorProfilerInfoUnk)
 	{
 		CComQIPtr< ICorProfilerInfo2 > profilerInfo = pICorProfilerInfoUnk;
 		InitializeCriticalSection(&criticalSection);
-
 		ProfilerSocket::Initialize();
-
-		cout << "Initializing profiler hook DLL..." << endl;
-
-		if ( profilerInfo )
-		{
-			profiler = new Profiler( profilerInfo );
-			//profiler = new InstrumentationProfiler( profilerInfo );
-			//cout << "Initializing hooks..." << endl;
-			//profilerInfo->SetEnterLeaveFunctionHooks( ( FunctionEnter* )&RawEnter, ( FunctionLeave* )&RawLeave, ( FunctionTailcall* )&RawTailCall );
-			//cout << "Ready!" << endl;
-		}
-
+		//cout << "Initializing profiler hook DLL..." << endl;
+		//if ( profilerInfo )
+		//{
+		profiler = new Profiler( profilerInfo );
+		//}
 		return S_OK;
 	}
 	STDMETHOD(Shutdown)()
@@ -1367,10 +1182,6 @@ public:
 	STDMETHOD(AppDomainShutdownStarted)(AppDomainID appDomainId)
 	{
 		return E_NOTIMPL;
-		//EnterCriticalSection(&criticalSection);
-		//profiler->AppDomainEnd( appDomainId );
-		//LeaveCriticalSection(&criticalSection);
-		//return S_OK;
 	}
 	STDMETHOD(AppDomainShutdownFinished)(AppDomainID appDomainId, HRESULT hrStatus)
 	{
@@ -1458,17 +1269,11 @@ public:
 	}
 	STDMETHOD(ThreadCreated)(ThreadID threadId)
 	{
-		EnterCriticalSection(&criticalSection);
-		profiler->ThreadStart( threadId );
-		LeaveCriticalSection(&criticalSection);
-		return S_OK;
+		return E_NOTIMPL;
 	}
 	STDMETHOD(ThreadDestroyed)(ThreadID threadId)
 	{
-		EnterCriticalSection(&criticalSection);
-		profiler->ThreadEnd( threadId );
-		LeaveCriticalSection(&criticalSection);
-		return S_OK;
+		return E_NOTIMPL;
 	}
 	STDMETHOD(ThreadAssignedToOSThread)(ThreadID managedThreadId, DWORD osThreadId)
 	{
@@ -1672,23 +1477,7 @@ public:
 	}
 };
 
-#ifdef WIN32
-  __declspec(naked) UINT64 __fastcall rdtsc()
-  {
-    __asm
-    {
-      rdtsc;
-      ret;
-    }
-  }
-#else
-  __inline__ unsigned UINT64 int rdtsc(void)
-  {
-    unsigned long long int x;
-    __asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
-    return x;
-  }
-#endif
+
 #endif
 
 [ module(dll, uuid = "{A461E20A-C7DC-4A89-A24E-87B5E975A96B}", 
@@ -1697,5 +1486,5 @@ public:
 		 resource_name = "IDR_NPROFHOOK") ];
 
 bool ProfilerSocket::isInitialized = false;
-int ProfilerSocket::applicationId = -1;
+//int ProfilerSocket::applicationId = -1;
 Profiler* CNProfCORHook::profiler;

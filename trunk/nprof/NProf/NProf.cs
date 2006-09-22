@@ -678,7 +678,7 @@ namespace NProf
 			this.run = run;
 			this.stopFlag = 0;
 			this.hasStopped = false;
-			this.currentApplicationID = 0;
+			//this.currentApplicationID = 0;
 			this.profileCount = 0;
 			this.run.Messages.AddMessage("Waiting for application...");
 		}
@@ -787,10 +787,10 @@ namespace NProf
 
 					// All socket connections send their application ID first for all messages
 					// except "INITIALIZE"
-					int applicationID = -1;
+					//int applicationID = -1;
 					if (message != NetworkMessage.INITIALIZE)
 					{
-						applicationID = reader.ReadInt32();
+						//applicationID = reader.ReadInt32();
 					}
 
 					switch (message)
@@ -825,9 +825,9 @@ namespace NProf
 									}
 
 									// Set up the new application
-									applicationID = currentApplicationID++;
+									//applicationID = currentApplicationID++;
 
-									stream.WriteByte((byte)applicationID);
+									//stream.WriteByte((byte)applicationID);
 
 									reader.ReadUInt32();
 									int argCount = (int)reader.ReadUInt32();
@@ -982,7 +982,7 @@ namespace NProf
 
 		private int port;
 		private int stopFlag;
-		private int currentApplicationID;
+		//private int currentApplicationID;
 		private int profileCount;
 		private ManualResetEvent resetStarted;
 		private ManualResetEvent resetMessageReceived;
