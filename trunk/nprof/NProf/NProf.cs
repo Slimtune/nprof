@@ -452,18 +452,10 @@ namespace NProf
 
 			currentRun = run;
 			methods.BeginUpdate();
-			//foreach (ThreadInfo thread in run.Process.Threads)
-			//{
-			foreach (FunctionInfo method in run.Process.functions.Values)
+			foreach (FunctionInfo method in run.functions.Values)
 			{
 				methods.Add(method);
 			}
-
-			//foreach (FunctionInfo method in thread.FunctionInfoCollection.Values)
-			//{
-			//    methods.Add(method);
-			//}
-			//}
 			methods.EndUpdate();
 		}
 		private void UpdateCallerList(Run run)
@@ -478,7 +470,7 @@ namespace NProf
 			FunctionInfo mfi = (FunctionInfo)methods.SelectedItems[0].Tag;
 			//foreach (ThreadInfo thread in run.Process.Threads)
 			//{
-				foreach (FunctionInfo fi in run.Process.functions.Values)
+				foreach (FunctionInfo fi in run.functions.Values)
 				{
 					foreach (CalleeFunctionInfo cfi in fi.CalleeInfo)
 					{
@@ -769,7 +761,7 @@ namespace NProf
 
 			return System.Text.ASCIIEncoding.ASCII.GetString(abString, 0, length);
 		}
-		ProcessInfo currentProcess = null;
+		//ProcessInfo currentProcess = null;
 
 		private void AcceptConnection(IAsyncResult ar)
 		{
@@ -803,20 +795,20 @@ namespace NProf
 					{
 						applicationID = reader.ReadInt32();
 
-						if (currentProcess == null)
-						{
-							currentProcess = new ProcessInfo(applicationID);
-						}
+						//if (currentProcess == null)
+						//{
+						//    currentProcess = new ProcessInfo(applicationID);
+						//}
 						//currentProcess = run.Processes[ applicationID ];
 
-						if (currentProcess == null)
-						{
-							run.Messages.AddMessage("Invalid application ID from profilee: " + applicationID);
-							run.Messages.AddMessage("Closing socket connection");
-							stream.Close();
+						//if (currentProcess == null)
+						//{
+						//    run.Messages.AddMessage("Invalid application ID from profilee: " + applicationID);
+						//    run.Messages.AddMessage("Closing socket connection");
+						//    stream.Close();
 
-							return;
-						}
+						//    return;
+						//}
 					}
 
 					switch (message)
@@ -859,13 +851,14 @@ namespace NProf
 									// Set up the new application
 									applicationID = currentApplicationID++;
 
-									currentProcess = new ProcessInfo();
+									//currentProcess = new ProcessInfo();
 
-									run.Process = currentProcess;
+									//run.Process = currentProcess;
 
 									stream.WriteByte((byte)applicationID);
 
-									currentProcess.ProcessID = (int)reader.ReadUInt32();
+									reader.ReadUInt32();
+									//currentProcess.ProcessID = (int)reader.ReadUInt32();
 									int argCount = (int)reader.ReadUInt32();
 
 									if (argCount > 0)
@@ -873,7 +866,7 @@ namespace NProf
 										string strFullFilename = ReadLengthEncodedASCIIString(reader);
 										strFullFilename = strFullFilename.Replace("\"", "");
 
-										currentProcess.Name = Path.GetFileName(strFullFilename);
+										//currentProcess.Name = Path.GetFileName(strFullFilename);
 									}
 
 									while (argCount > 1)
@@ -883,7 +876,7 @@ namespace NProf
 									}
 
 									profileCount++;
-									run.Messages.AddMessage("Connected to " + currentProcess.Name + " with process ID " + currentProcess.ProcessID);
+									//run.Messages.AddMessage("Connected to " + currentProcess.Name + " with process ID " + currentProcess.ProcessID);
 								}
 
 								// We're off!
@@ -894,7 +887,7 @@ namespace NProf
 						case NetworkMessage.SHUTDOWN:
 							{
 								profileCount--;
-								run.Messages.AddMessage("Profiling completed for " + currentProcess.Name);
+								//run.Messages.AddMessage("Profiling completed for " + currentProcess.Name);
 
 								if (profileCount == 0)
 								{
@@ -952,7 +945,7 @@ namespace NProf
 										functionName,
 										parameters
 									);
-									currentProcess.Functions.MapSignature(functionId, fs);
+									run.signatures.MapSignature(functionId, fs);
 
 									int callCount = reader.ReadInt32();
 									long totalTime = reader.ReadInt64();
@@ -967,14 +960,15 @@ namespace NProf
 										long calleeTotalTime = reader.ReadInt64();
 										long calleeRecursiveTime = reader.ReadInt64();
 
-										callees.Add(new CalleeFunctionInfo(currentProcess.Functions, calleeFunctionId, calleeCallCount, calleeTotalTime, calleeRecursiveTime));
+										callees.Add(new CalleeFunctionInfo(run.signatures, calleeFunctionId, calleeCallCount, calleeTotalTime, calleeRecursiveTime));
+										//callees.Add(new CalleeFunctionInfo(currentProcess.Functions, calleeFunctionId, calleeCallCount, calleeTotalTime, calleeRecursiveTime));
 										calleeFunctionId = reader.ReadInt32();
 									}
 									//CalleeFunctionInfo[] acfi = ( CalleeFunctionInfo[] )callees.ToArray( typeof( CalleeFunctionInfo ) );
 
 									FunctionInfo function = new FunctionInfo(functionId, fs, callCount, totalTime, totalRecursiveTime, totalSuspendTime, callees.ToArray());
 									//FunctionInfo function = new FunctionInfo(currentProcess.Threads[threadId], functionId, fs, callCount, totalTime, totalRecursiveTime, totalSuspendTime, callees.ToArray());
-									currentProcess.functions.Add(function.ID, function);
+									run.functions.Add(function.ID, function);
 									//currentProcess.Threads[threadId].FunctionInfoCollection.Add(function);
 
 									functionId = reader.ReadInt32();
@@ -1726,177 +1720,92 @@ namespace NProf
 		private Hashtable signatures;
 	}
 	// remove
-	public class ProcessInfo
-	{
-		public Dictionary<int, FunctionInfo> functions=new Dictionary<int,FunctionInfo>();
-		public ProcessInfo()
-		{
-			this.id = 0;
-			//this.threads = new ThreadInfoCollection();
-			this.signatures = new FunctionSignatureMap();
-		}
-
-		public ProcessInfo(int id)
-			: this()
-		{
-			this.id = id;
-		}
-
-		public int ID
-		{
-			get { return id; }
-		}
-
-		[XmlIgnore]
-		public int ProcessID
-		{
-			get { return processId; }
-			set { processId = value; }
-		}
-
-		public string Name
-		{
-			get { return name; }
-			set { name = value; }
-		}
-
-		public FunctionSignatureMap Functions
-		{
-			get { return signatures; }
-			set { signatures = value; }
-		}
-
-		//public ThreadInfoCollection Threads
-		//{
-		//    get { return threads; }
-		//    set { threads = value; }
-		//}
-
-		public override string ToString()
-		{
-			return String.Format("{0} ({1})", name, processId);
-		}
-
-		private int id;
-		private int processId;
-		private FunctionSignatureMap signatures;
-		//private ThreadInfoCollection threads;
-		private string name;
-	}
-	public class ProcessInfoCollection : IEnumerable
-	{
-		public ProcessInfoCollection()
-		{
-			processes = new Dictionary<int, ProcessInfo>();
-		}
-
-		public IEnumerator GetEnumerator()
-		{
-			return processes.Values.GetEnumerator();
-		}
-
-		public void Add(ProcessInfo process)
-		{
-			processes[process.ID] = process;
-		}
-
-		public ProcessInfo this[int nProcessID]
-		{
-			get
-			{
-				lock (processes)
-				{
-					ProcessInfo pi = (ProcessInfo)processes[nProcessID];
-					if (pi == null)
-					{
-						pi = new ProcessInfo(nProcessID);
-						processes[nProcessID] = pi;
-					}
-
-					return pi;
-				}
-			}
-		}
-		private Dictionary<int, ProcessInfo> processes;
-	}
-	//public class ThreadInfo
+	//public class ProcessInfo
 	//{
-	//    public ThreadInfo()
+	//    public Dictionary<int, FunctionInfo> functions=new Dictionary<int,FunctionInfo>();
+	//    public ProcessInfo()
 	//    {
-	//        this.functions = new Dictionary<int, FunctionInfo>();
 	//        this.id = 0;
-	//        this.startTime = 0;
-	//        this.endTime = 0;
+	//        this.signatures = new FunctionSignatureMap();
 	//    }
 
-	//    public ThreadInfo(int threadId)
+	//    public ProcessInfo(int id)
 	//        : this()
 	//    {
-	//        this.id = threadId;
+	//        this.id = id;
 	//    }
 
-	//    [XmlIgnore]
 	//    public int ID
 	//    {
 	//        get { return id; }
 	//    }
+
 	//    [XmlIgnore]
-	//    public long StartTime
+	//    public int ProcessID
 	//    {
-	//        get { return startTime; }
-	//        set { startTime = value; }
-	//    }
-	//    [XmlIgnore]
-	//    public long EndTime
-	//    {
-	//        get { return endTime; }
-	//        set { endTime = value; }
-	//    }
-	//    [XmlIgnore]
-	//    public long TotalTime
-	//    {
-	//        get { return endTime - startTime; }
+	//        get { return processId; }
+	//        set { processId = value; }
 	//    }
 
-	//    public Dictionary<int, FunctionInfo> FunctionInfoCollection
+	//    public string Name
 	//    {
-	//        get { return functions; }
+	//        get { return name; }
+	//        set { name = value; }
+	//    }
+
+	//    public FunctionSignatureMap Functions
+	//    {
+	//        get { return signatures; }
+	//        set { signatures = value; }
 	//    }
 
 	//    public override string ToString()
 	//    {
-	//        return "Thread #" + id;
+	//        return String.Format("{0} ({1})", name, processId);
 	//    }
 
 	//    private int id;
-	//    private long startTime, endTime;
-	//    private Dictionary<int, FunctionInfo> functions;
+	//    private int processId;
+	//    private FunctionSignatureMap signatures;
+	//    private string name;
 	//}
-
-	//public class ThreadInfoCollection : IEnumerable
+	//public class ProcessInfoCollection : IEnumerable
 	//{
+	//    public ProcessInfoCollection()
+	//    {
+	//        processes = new Dictionary<int, ProcessInfo>();
+	//    }
+
 	//    public IEnumerator GetEnumerator()
 	//    {
-	//        return threads.Values.GetEnumerator();
+	//        return processes.Values.GetEnumerator();
 	//    }
-	//    public ThreadInfo this[int threadId]
+
+	//    public void Add(ProcessInfo process)
+	//    {
+	//        processes[process.ID] = process;
+	//    }
+
+	//    public ProcessInfo this[int nProcessID]
 	//    {
 	//        get
 	//        {
-	//            lock (threads)
+	//            lock (processes)
 	//            {
-	//                ThreadInfo thread;
-	//                if (!threads.TryGetValue(threadId, out thread))
+	//                ProcessInfo pi = (ProcessInfo)processes[nProcessID];
+	//                if (pi == null)
 	//                {
-	//                    thread = new ThreadInfo(threadId);
-	//                    threads[threadId] = thread;
+	//                    pi = new ProcessInfo(nProcessID);
+	//                    processes[nProcessID] = pi;
 	//                }
-	//                return thread;
+
+	//                return pi;
 	//            }
 	//        }
 	//    }
-	//    private Dictionary<int, ThreadInfo> threads = new Dictionary<int, ThreadInfo>();
+	//    private Dictionary<int, ProcessInfo> processes;
 	//}
+
 
 	public class ProjectInfo
 	{
@@ -1973,6 +1882,8 @@ namespace NProf
 	}
 	public class Run
 	{
+		public FunctionSignatureMap signatures = new FunctionSignatureMap();
+		public Dictionary<int, FunctionInfo> functions = new Dictionary<int, FunctionInfo>();
 		public Run()
 		{
 			this.messages = new RunMessageCollection();
@@ -2054,19 +1965,19 @@ namespace NProf
 		private ProjectInfo project;
 		public Profiler profiler;
 		private RunMessageCollection messages;
-		private ProcessInfo process;
+		//private ProcessInfo process;
 
-		public ProcessInfo Process
-		{
-			get
-			{
-				return process;
-			}
-			set
-			{
-				process = value;
-			}
-		}
+		//public ProcessInfo Process
+		//{
+		//    get
+		//    {
+		//        return process;
+		//    }
+		//    set
+		//    {
+		//        process = value;
+		//    }
+		//}
 	}
 	// remove
 	public class RunCollection : IEnumerable
