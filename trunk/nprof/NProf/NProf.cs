@@ -833,7 +833,6 @@ namespace NProf
 						case NetworkMessage.SHUTDOWN:
 							{
 								hasStopped = true;
-								//run.Messages.AddMessage("Profiling completed.");
 								if (Exited != null)
 									Exited(this, EventArgs.Empty);
 								break;
@@ -842,7 +841,6 @@ namespace NProf
 						case NetworkMessage.APPDOMAIN_CREATE:
 							{
 								appDomainID = reader.ReadInt32();
-								//run.Messages.AddMessage("AppDomain created: " + appDomainID);
 								break;
 							}
 
@@ -892,15 +890,8 @@ namespace NProf
 									nIndex++;
 								}
 
-								//run.Messages.AddMessage("Received " + nIndex + " item(s) for thread  " + threadId);
 								break;
 							}
-
-						case NetworkMessage.PROFILER_MESSAGE:
-							string text = ReadLengthEncodedASCIIString(reader);
-							//run.Messages.AddMessage(text);
-
-							break;
 					}
 				}
 			}
@@ -929,7 +920,6 @@ namespace NProf
 			SHUTDOWN,
 			APPDOMAIN_CREATE,
 			FUNCTION_DATA,
-			PROFILER_MESSAGE,
 		};
 
 		const int NETWORK_PROTOCOL_VERSION = 3;

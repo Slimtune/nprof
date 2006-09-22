@@ -574,7 +574,7 @@ enum NetworkMessage
 	SHUTDOWN,
 	APPDOMAIN_CREATE,
 	FUNCTION_DATA,
-	PROFILER_MESSAGE,
+	//PROFILER_MESSAGE,
 };
 
 const int NETWORK_PROTOCOL_VERSION = 3;
@@ -722,27 +722,14 @@ public:
 		SendString( functionName );
 		SendString( parameters );
 	}
-
-	void ProfilerSocket::SendProfilerMessage( const string& strMessage )
-	{
-		SendNetworkMessage( PROFILER_MESSAGE );
-		SendString( strMessage );
-	}
-
 	void ProfilerSocket::SendFunctionTimingData( int calls, UINT64 cycleCount, UINT64 recursiveCycleCount, UINT64 suspendCycleCount )
 	{
 		SendUINT32( calls );
-		//SendUINT64( cycleCount );
-		//SendUINT64( recursiveCycleCount );
-		//SendUINT64( suspendCycleCount );
 	}
-
 	void ProfilerSocket::SendCalleeFunctionData( FunctionID fid, int calls, UINT64 cycleCount, UINT64 recursiveCycleCount )
 	{
 		SendFunctionID( fid );
 		SendUINT32( calls );
-		//SendUINT64( cycleCount );
-		//SendUINT64( recursiveCycleCount );
 	}
 
 	void ProfilerSocket::SendEndFunctionData()
