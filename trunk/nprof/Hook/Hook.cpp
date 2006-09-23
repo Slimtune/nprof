@@ -654,19 +654,19 @@ public:
 		ProfilerSocket ps;
 	}
 
-	void ProfilerSocket::SendFunctionData( ProfilerHelper& ph, FunctionID fid )
-	{
-		SendFunctionID( fid );
-		string returnType, className, functionName, parameters;
-		UINT32 methodAttributes;
-		ph.GetFunctionSignature( fid, methodAttributes, returnType, className, functionName, parameters );
+	//void ProfilerSocket::SendFunctionData( ProfilerHelper& ph, FunctionID fid )
+	//{
+	//	SendFunctionID( fid );
+	//	string returnType, className, functionName, parameters;
+	//	UINT32 methodAttributes;
+	//	ph.GetFunctionSignature( fid, methodAttributes, returnType, className, functionName, parameters );
 
-		SendUINT32( methodAttributes );
-		SendString( returnType );
-		SendString( className );
-		SendString( functionName );
-		SendString( parameters );
-	}
+	//	SendUINT32( methodAttributes );
+	//	SendString( returnType );
+	//	SendString( className );
+	//	SendString( functionName );
+	//	SendString( parameters );
+	//}
 	//void ProfilerSocket::SendFunctionTimingData( int calls)
 	//{
 	//	SendUINT32( calls );
@@ -819,16 +819,23 @@ public:
 		ProfilerSocket socket;
 		for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
 		{
-			socket.SendFunctionData( profilerHelper, i->first );
-		}
-		socket.SendFunctionID( 0xffffffff );
-		for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
-		{
 			FunctionInfo* function=i->second;
 			socket.SendFunctionID( function->functionId);
-			socket.SendUINT32( function->calls );
-			DumpCallees(&function->calleeMap,socket, profilerHelper );
+			string returnType;
+			string className;
+			string functionName;
+			string parameters;
+			UINT32 methodAttributes;
+			profilerHelper.GetFunctionSignature( function->functionId, methodAttributes, returnType, className, functionName, parameters );
+
+			socket.SendUINT32( methodAttributes );
+			socket.SendString( returnType );
+			socket.SendString( className );
+			socket.SendString( functionName );
+			socket.SendString( parameters );
 		}
+		socket.SendFunctionID( 0xffffffff );
+		DumpCallees(&functionMap,socket,profilerHelper);
 		socket.SendFunctionID( 0xffffffff );
 	}
 	void DumpCallees(map<FunctionID,FunctionInfo*>* functions, ProfilerSocket& ps, ProfilerHelper& profilerHelper )
