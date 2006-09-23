@@ -667,25 +667,25 @@ public:
 		SendString( functionName );
 		SendString( parameters );
 	}
-	void ProfilerSocket::SendFunctionTimingData( int calls)
-	{
-		SendUINT32( calls );
-	}
-	void ProfilerSocket::SendCalleeFunctionData( FunctionID fid, int calls, UINT64 cycleCount, UINT64 recursiveCycleCount )
-	{
-		SendFunctionID( fid );
-		SendUINT32( calls );
-	}
+	//void ProfilerSocket::SendFunctionTimingData( int calls)
+	//{
+	//	SendUINT32( calls );
+	//}
+	//void ProfilerSocket::SendCalleeFunctionData( FunctionID fid, int calls, UINT64 cycleCount, UINT64 recursiveCycleCount )
+	//{
+	//	SendFunctionID( fid );
+	//	SendUINT32( calls );
+	//}
 
-	void ProfilerSocket::SendEndFunctionData()
-	{
-		SendFunctionID( 0xffffffff );
-	}
+	//void ProfilerSocket::SendEndFunctionData()
+	//{
+	//	SendFunctionID( 0xffffffff );
+	//}
 
-	void ProfilerSocket::SendEndCalleeFunctionData()
-	{
-		SendFunctionID( 0xffffffff );
-	}
+	//void ProfilerSocket::SendEndCalleeFunctionData()
+	//{
+	//	SendFunctionID( 0xffffffff );
+	//}
 
 
 	void ProfilerSocket::HandleError( const char* caller, int error )
@@ -702,7 +702,7 @@ public:
 	}
 
 
-private:
+public:
 
 	void ProfilerSocket::SendBool( bool boolean )
 	{
@@ -774,13 +774,17 @@ public:
 	}
 	void Dump( ProfilerSocket& ps, ProfilerHelper& profilerHelper )
 	{
-		ps.SendFunctionTimingData( calls);
+		ps.SendUINT32( calls );
 		for ( map< FunctionID, FunctionInfo* >::iterator i = calleeMap.begin(); i != calleeMap.end(); i++ )
 		{
-			ps.SendCalleeFunctionData( i->first, i->second->calls, 100, 100);
-			ps.SendEndCalleeFunctionData();
+			FunctionInfo* function=i->second;
+			ps.SendFunctionID( function->functionId);
+			ps.SendUINT32( function->calls);
+			ps.SendFunctionID( 0xffffffff );
+			//ps.SendEndCalleeFunctionData();
 		}
-		ps.SendEndCalleeFunctionData();
+		ps.SendFunctionID( 0xffffffff );
+		//ps.SendEndCalleeFunctionData();
 	}
 	int calls;
 	int recursiveCount;
@@ -830,13 +834,13 @@ public:
 		{
 			socket.SendFunctionData( profilerHelper, i->first );
 		}
-		socket.SendEndFunctionData();
+		socket.SendFunctionID( 0xffffffff );
 		for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
 		{
 			socket.SendFunctionID( i->first );
 			i->second->Dump( socket, profilerHelper );
 		}
-		socket.SendEndFunctionData();
+		socket.SendFunctionID( 0xffffffff );
 	}
 	Profiler::Profiler( ICorProfilerInfo2* profilerInfo )
 	{
