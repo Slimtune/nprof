@@ -772,20 +772,7 @@ public:
 		}
 		return found->second;
 	}
-	void Dump( ProfilerSocket& ps, ProfilerHelper& profilerHelper )
-	{
-		ps.SendUINT32( calls );
-		for ( map< FunctionID, FunctionInfo* >::iterator i = calleeMap.begin(); i != calleeMap.end(); i++ )
-		{
-			FunctionInfo* function=i->second;
-			ps.SendFunctionID( function->functionId);
-			ps.SendUINT32( function->calls);
-			ps.SendFunctionID( 0xffffffff );
-			//ps.SendEndCalleeFunctionData();
-		}
-		ps.SendFunctionID( 0xffffffff );
-		//ps.SendEndCalleeFunctionData();
-	}
+
 	int calls;
 	int recursiveCount;
 	FunctionID functionId;
@@ -837,10 +824,23 @@ public:
 		socket.SendFunctionID( 0xffffffff );
 		for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
 		{
-			socket.SendFunctionID( i->first );
-			i->second->Dump( socket, profilerHelper );
+			FunctionInfo* function=i->second;
+			socket.SendFunctionID( function->functionId);
+			socket.SendUINT32( function->calls );
+			DumpCallees(&function->calleeMap,socket, profilerHelper );
 		}
 		socket.SendFunctionID( 0xffffffff );
+	}
+	void DumpCallees(map<FunctionID,FunctionInfo*>* functions, ProfilerSocket& ps, ProfilerHelper& profilerHelper )
+	{
+		for ( map< FunctionID, FunctionInfo* >::iterator i = functions->begin(); i != functions->end(); i++ )
+		{
+			FunctionInfo* function=i->second;
+			ps.SendFunctionID( function->functionId);
+			ps.SendUINT32( function->calls);
+			ps.SendFunctionID( 0xffffffff );
+		}
+		ps.SendFunctionID( 0xffffffff );
 	}
 	Profiler::Profiler( ICorProfilerInfo2* profilerInfo )
 	{
