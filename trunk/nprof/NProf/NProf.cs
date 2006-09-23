@@ -541,6 +541,21 @@ namespace NProf
 		}
 		public static NProf form = new NProf();
 	}
+	//public class FunctionItem : ContainerListViewItem
+	//{
+	//    public FunctionItem(FunctionInfo function):base(function.Signature)
+	//    {
+	//        SubItems[1].Text = function.Calls.ToString(NProf.timeFormat);
+	//        Tag = function;
+	//        foreach (FunctionInfo callee in function.Callees)
+	//        {
+	//            Items.Add(new FunctionItem(callee));
+	//            //ContainerListViewItem subItem = item.Items.Add(callee.Signature);
+	//            //subItem.Tag = callee;
+	//            //subItem.SubItems[1].Text = callee.Calls.ToString(NProf.timeFormat);
+	//        }
+	//    }
+	//}
 	public class MethodView : ContainerListView
 	{
 		public MethodView()
@@ -557,18 +572,19 @@ namespace NProf
 			HeaderStyle = ColumnHeaderStyle.Clickable;
 			Font = new Font("Tahoma", 8.0f);
 		}
-		public void Add(FunctionInfo function)
+		public void FunctionItem(ContainerListViewItemCollection parent,FunctionInfo function)
 		{
-			ContainerListViewItem item=Items.Add(function.Signature);
-			item.SubItems[1].Text=function.Calls.ToString(NProf.timeFormat);
+			ContainerListViewItem item=parent.Add(function.Signature);
+			item.SubItems[1].Text = function.Calls.ToString(NProf.timeFormat);
 			item.Tag = function;
 			foreach (FunctionInfo callee in function.Callees)
 			{
-				ContainerListViewItem subItem=item.Items.Add(callee.Signature);
-				subItem.Tag = callee;
-				subItem.SubItems[0].Text = callee.Signature;
-				subItem.SubItems[1].Text=callee.Calls.ToString(NProf.timeFormat);
+				FunctionItem(item.Items,callee);
 			}
+		}
+		public void Add(FunctionInfo function)
+		{
+			FunctionItem(Items, function);
 		}
 	}
 	public class CallerView : DotNetLib.Windows.Forms.ContainerListView

@@ -798,13 +798,13 @@ HRESULT __stdcall __stdcall StackWalker(
 class Profiler
 {
 public: 
-	FunctionInfo* GetFunctionInfo( FunctionID functionId )
+	FunctionInfo* GetFunctionInfo(map<FunctionID,FunctionInfo*>* data, FunctionID functionId )
 	{
-		map< FunctionID, FunctionInfo* >::iterator found = functionMap.find( functionId );
-		if ( found == functionMap.end() )
+		map< FunctionID, FunctionInfo* >::iterator found = data->find( functionId );
+		if ( found == data->end() )
 		{
 			FunctionInfo* functionInfo = new FunctionInfo( functionId );
-			functionMap.insert( make_pair( functionId, functionInfo ) );
+			data->insert( make_pair( functionId, functionInfo ) );
 			return functionInfo;
 		}
 
@@ -850,7 +850,6 @@ public:
 			FunctionInfo* function=i->second;
 			ps.SendFunctionID( function->functionId);
 			ps.SendUINT32( function->calls);
-			//ps.SendFunctionID( 0xffffffff );
 			DumpCallees(&function->calleeMap,ps,profilerHelper);
 		}
 		ps.SendFunctionID( 0xffffffff );
@@ -933,27 +932,59 @@ public:
 					NULL,
 					NULL);
 
-				for(int index=0	;index<functions.size();index++)
+				map<FunctionID,FunctionInfo*>* currentMap=&functionMap;
+				for(int index=functions.size()-1;index>=0;index--)
 				{
-					for(int y=index+1;;y++)
-					{
-						if(y>functions.size()-1)
-						{
-							FunctionID id=functions[index];
-							FunctionInfo* function=GetFunctionInfo(id);
-							function->calls++;
-							if(index<functions.size()-1)
-							{
-								function->GetCalleeFunctionInfo(functions[index+1])->calls++;
-							}
-							break;
-						}
-						if(functions[y]==functions[index])
-						{
-							break;
-						}
-					}
+					//timeKillEvent(timer);
+					//DebugBreak();
+					FunctionID id=functions[index];
+					FunctionInfo* function=GetFunctionInfo(currentMap,id);
+					function->calls++;
+					currentMap=&function->calleeMap;
+					//if(index<functions.size()-1)
+					//{
+					//	function->GetCalleeFunctionInfo(functions[index+1])->calls++;
+					//}
+					//for(int y=index+1;;y++)
+					//{
+					//	if(y>functions.size()-1)
+					//	{
+					//		FunctionID id=functions[index];
+					//		FunctionInfo* function=GetFunctionInfo(id);
+					//		function->calls++;
+					//		if(index<functions.size()-1)
+					//		{
+					//			function->GetCalleeFunctionInfo(functions[index+1])->calls++;
+					//		}
+					//		break;
+					//	}
+					//	if(functions[y]==functions[index])
+					//	{
+					//		break;
+					//	}
+					//}
 				}
+				//for(int index=0	;index<functions.size();index++)
+				//{
+				//	for(int y=index+1;;y++)
+				//	{
+				//		if(y>functions.size()-1)
+				//		{
+				//			FunctionID id=functions[index];
+				//			FunctionInfo* function=GetFunctionInfo(&functionMap,id);
+				//			function->calls++;
+				//			if(index<functions.size()-1)
+				//			{
+				//				function->GetCalleeFunctionInfo(functions[index+1])->calls++;
+				//			}
+				//			break;
+				//		}
+				//		if(functions[y]==functions[index])
+				//		{
+				//			break;
+				//		}
+				//	}
+				//}
 				ResumeThread(threadHandle);
 			}
 		}
