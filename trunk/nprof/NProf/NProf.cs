@@ -610,167 +610,6 @@ namespace NProf
 			MenuCommands.AddRange(commands);
 		}
 	}
-	//public class ProfilerSocketServer
-	//{
-	//    public ProfilerSocketServer(Run run)
-	//    {
-	//        this.run = run;
-	//    }
-	//    public void Start()
-	//    {
-	//        thread = new Thread(new ThreadStart(ListenThread));
-	//        thread.Start();
-	//    }
-	//    private void ListenThread()
-	//    {
-	//        Thread.CurrentThread.Name = "ProfilerSocketServer Listen Thread";
-	//        try
-	//        {
-	//            using (socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
-	//            {
-	//                IPEndPoint ep = new IPEndPoint(IPAddress.Loopback, 0);
-	//                socket.Bind(ep);
-	//                port = ((IPEndPoint)socket.LocalEndPoint).Port;
-	//                resetStarted.Set();
-	//                socket.Listen(100);
-
-	//                while (true)
-	//                {
-	//                    Thread.Sleep(100);
-	//                    lock (socket)
-	//                        if (stopFlag == 1)
-	//                            break;
-	//                    socket.BeginAccept(new AsyncCallback(AcceptConnection), socket);
-	//                    resetMessageReceived.WaitOne();
-	//                }
-	//            }
-	//        }
-	//        catch (Exception e)
-	//        {
-	//            resetStarted.Set();
-	//        }
-	//    }
-	//    private string ReadLengthEncodedASCIIString(BinaryReader br)
-	//    {
-	//        int length = br.ReadInt32();
-	//        if (length > 2000 || length < 0)
-	//        {
-	//            byte[] abNextBytes = new byte[8];
-	//            br.Read(abNextBytes, 0, 8);
-	//            string strError = "Length was abnormally large or small (" + length.ToString("x") + ").  Next bytes were ";
-	//            foreach (byte b in abNextBytes)
-	//                strError += b.ToString("x") + " (" + (Char.IsControl((char)b) ? '-' : (char)b) + ") ";
-
-	//            throw new InvalidOperationException(strError);
-	//        }
-
-	//        byte[] abString = new byte[length];
-	//        int nRead = 0;
-
-	//        DateTime dt = DateTime.Now;
-
-	//        while (nRead < length)
-	//        {
-	//            nRead += br.Read(abString, nRead, length - nRead);
-
-	//            // Make this loop finite (30 seconds)
-	//            TimeSpan ts = DateTime.Now - dt;
-	//            if (ts.TotalSeconds > 30)
-	//                throw new InvalidOperationException("Timed out while waiting for length encoded string");
-	//        }
-
-	//        return System.Text.ASCIIEncoding.ASCII.GetString(abString, 0, length);
-	//    }
-
-	//    private void AcceptConnection(IAsyncResult ar)
-	//    {
-	//        lock (socket)
-	//        {
-	//            if (stopFlag == 1)
-	//            {
-	//                resetMessageReceived.Set();
-	//                return;
-	//            }
-	//        }
-
-	//        // Note that this fails if you call EndAccept on a closed socket
-	//        Socket s = ((Socket)ar.AsyncState).EndAccept(ar);
-	//        resetMessageReceived.Set();
-
-	//        try
-	//        {
-	//            using (NetworkStream stream = new NetworkStream(s, true))
-	//            {
-	//                BinaryReader reader = new BinaryReader(stream);
-	//                while (true)
-	//                {
-	//                    int functionId = reader.ReadInt32();
-	//                    if (functionId == -1)
-	//                    {
-	//                        break;
-	//                    }
-	//                    run.signatures.MapSignature(functionId, new FunctionSignature(
-	//                        reader.ReadUInt32(),
-	//                        ReadLengthEncodedASCIIString(reader),
-	//                        ReadLengthEncodedASCIIString(reader),
-	//                        ReadLengthEncodedASCIIString(reader),
-	//                        ReadLengthEncodedASCIIString(reader)
-	//                    ));
-	//                }
-	//                GetFunctions(reader, run.functions);
-	//            }
-	//        }
-	//        catch (Exception e)
-	//        {
-	//            if (Error != null)
-	//                Error(e);
-	//        }
-	//    }
-
-	//    private void GetFunctions(BinaryReader reader, List<FunctionInfo> functions)
-	//    {
-	//        while (true)
-	//        {
-	//            int functionId = reader.ReadInt32();
-	//            if (functionId == -1)
-	//            {
-	//                break;
-	//            }
-	//            int callCount = reader.ReadInt32();
-	//            FunctionInfo function = new FunctionInfo(functionId, run.signatures, callCount);
-	//            GetFunctions(reader, function.Callees);
-	//            functions.Add(function);
-	//        }
-	//    }
-
-	//    public int Port
-	//    {
-	//        get { return port; }
-	//    }
-
-	//    public event EventHandler Exited;
-	//    public event ErrorHandler Error;
-
-	//    public delegate void ErrorHandler(Exception e);
-	//    public delegate void MessageHandler(string strMessage);
-
-	//    // Sync with profiler_socket.h
-	//    enum NetworkMessage
-	//    {
-	//        FUNCTION_DATA,
-	//    };
-
-	//    const int NETWORK_PROTOCOL_VERSION = 3;
-
-	//    private int port;
-	//    private int stopFlag;
-	//    private ManualResetEvent resetStarted;
-	//    private ManualResetEvent resetMessageReceived;
-	//    private Thread thread;
-	//    private Socket socket;
-	//    private Run run;
-	//    private bool hasStopped;
-	//}
 	public class ProfilerSocketServer
 	{
 		public ProfilerSocketServer(Run run)
@@ -826,38 +665,6 @@ namespace NProf
 				resetStarted.Set();
 			}
 		}
-		private string ReadLengthEncodedASCIIString(BinaryReader br)
-		{
-			int length = br.ReadInt32();
-			if (length > 2000 || length < 0)
-			{
-				byte[] abNextBytes = new byte[8];
-				br.Read(abNextBytes, 0, 8);
-				string strError = "Length was abnormally large or small (" + length.ToString("x") + ").  Next bytes were ";
-				foreach (byte b in abNextBytes)
-					strError += b.ToString("x") + " (" + (Char.IsControl((char)b) ? '-' : (char)b) + ") ";
-
-				throw new InvalidOperationException(strError);
-			}
-
-			byte[] abString = new byte[length];
-			int nRead = 0;
-
-			DateTime dt = DateTime.Now;
-
-			while (nRead < length)
-			{
-				nRead += br.Read(abString, nRead, length - nRead);
-
-				// Make this loop finite (30 seconds)
-				TimeSpan ts = DateTime.Now - dt;
-				if (ts.TotalSeconds > 30)
-					throw new InvalidOperationException("Timed out while waiting for length encoded string");
-			}
-
-			return System.Text.ASCIIEncoding.ASCII.GetString(abString, 0, length);
-		}
-
 		private void AcceptConnection(IAsyncResult ar)
 		{
 			lock (socket)
@@ -902,7 +709,37 @@ namespace NProf
 					Error(e);
 			}
 		}
+		private string ReadLengthEncodedASCIIString(BinaryReader br)
+		{
+			int length = br.ReadInt32();
+			if (length > 2000 || length < 0)
+			{
+				byte[] abNextBytes = new byte[8];
+				br.Read(abNextBytes, 0, 8);
+				string strError = "Length was abnormally large or small (" + length.ToString("x") + ").  Next bytes were ";
+				foreach (byte b in abNextBytes)
+					strError += b.ToString("x") + " (" + (Char.IsControl((char)b) ? '-' : (char)b) + ") ";
 
+				throw new InvalidOperationException(strError);
+			}
+
+			byte[] abString = new byte[length];
+			int nRead = 0;
+
+			DateTime dt = DateTime.Now;
+
+			while (nRead < length)
+			{
+				nRead += br.Read(abString, nRead, length - nRead);
+
+				// Make this loop finite (30 seconds)
+				TimeSpan ts = DateTime.Now - dt;
+				if (ts.TotalSeconds > 30)
+					throw new InvalidOperationException("Timed out while waiting for length encoded string");
+			}
+
+			return System.Text.ASCIIEncoding.ASCII.GetString(abString, 0, length);
+		}
 		private void GetFunctions(BinaryReader reader, List<FunctionInfo> functions)
 		{
 			while (true)
@@ -924,19 +761,11 @@ namespace NProf
 			get { return port; }
 		}
 
-		public event EventHandler Exited;
 		public event ErrorHandler Error;
 
 		public delegate void ErrorHandler(Exception e);
 		public delegate void MessageHandler(string strMessage);
 
-		// Sync with profiler_socket.h
-		enum NetworkMessage
-		{
-			FUNCTION_DATA,
-		};
-
-		const int NETWORK_PROTOCOL_VERSION = 3;
 
 		private int port;
 		private int stopFlag;
@@ -1125,7 +954,6 @@ namespace NProf
 	//}
 	public class FunctionInfo
 	{
-		//FunctionSignatureMap signatures;
 		public FunctionInfo(int nID, FunctionSignatureMap signatures, int calls)
 		{
 			this.id = nID;

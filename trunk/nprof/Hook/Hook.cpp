@@ -568,10 +568,10 @@ private:
 	CComPtr< ICorProfilerInfo2 > profilerInfo;
 };
 
-enum NetworkMessage
-{
-	FUNCTION_DATA
-};
+//enum NetworkMessage
+//{
+//	FUNCTION_DATA
+//};
 
 const int NETWORK_PROTOCOL_VERSION = 3;
 
@@ -651,7 +651,7 @@ public:
 	{
 		WSADATA wsaData;
 		WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
-		ProfilerSocket ps;
+		//ProfilerSocket ps;
 	}
 
 	//void ProfilerSocket::SendFunctionData( ProfilerHelper& ph, FunctionID fid )
@@ -725,11 +725,11 @@ public:
 		SAFE_SEND_RAW( socket, signature.c_str(), ( int )signature.length() );
 	}
 
-	void ProfilerSocket::SendNetworkMessage( NetworkMessage networkMessage )
-	{
-		UINT16 mess = networkMessage;
-		SAFE_SEND( socket, mess );
-	}
+	//void ProfilerSocket::SendNetworkMessage( NetworkMessage networkMessage )
+	//{
+	//	UINT16 mess = networkMessage;
+	//	SAFE_SEND( socket, mess );
+	//}
 
 	void ProfilerSocket::SendAppDomainID( AppDomainID appDomainId )
 	{
@@ -814,9 +814,17 @@ public:
 
 	void EndAll( ProfilerHelper& profilerHelper )
 	{
-		ProfilerSocket profilerSocket;
+		//ProfilerSocket profilerSocket;
 
 		ProfilerSocket socket;
+		DumpSignatures(socket,profilerHelper);
+
+		socket.SendFunctionID( 0xffffffff );
+		DumpCallees(&functionMap,socket,profilerHelper);
+		socket.SendFunctionID( 0xffffffff );
+	}
+	void DumpSignatures(ProfilerSocket& socket,ProfilerHelper& helper)
+	{
 		for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
 		{
 			FunctionInfo* function=i->second;
@@ -834,9 +842,6 @@ public:
 			socket.SendString( functionName );
 			socket.SendString( parameters );
 		}
-		socket.SendFunctionID( 0xffffffff );
-		DumpCallees(&functionMap,socket,profilerHelper);
-		socket.SendFunctionID( 0xffffffff );
 	}
 	void DumpCallees(map<FunctionID,FunctionInfo*>* functions, ProfilerSocket& ps, ProfilerHelper& profilerHelper )
 	{
@@ -845,7 +850,8 @@ public:
 			FunctionInfo* function=i->second;
 			ps.SendFunctionID( function->functionId);
 			ps.SendUINT32( function->calls);
-			ps.SendFunctionID( 0xffffffff );
+			//ps.SendFunctionID( 0xffffffff );
+			DumpCallees(&function->calleeMap,ps,profilerHelper);
 		}
 		ps.SendFunctionID( 0xffffffff );
 	}
