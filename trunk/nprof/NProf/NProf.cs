@@ -107,7 +107,7 @@ namespace NProf
 				tree.Dock = DockStyle.Left;
 				tree.DoubleClick += delegate
 				{
-					UpdateFilters((Run)runs.SelectedNode.Tag);// this should also be done when loading a project!!
+					UpdateFilters((Run)runs.SelectedNode.Tag);
 				};
 			});
 			callers = With(new CallerView("Callers"), delegate(CallerView method)
@@ -126,15 +126,6 @@ namespace NProf
 					if (methods.SelectedItems.Count == 0)
 						return;
 					callers.Items.Clear();
-					//if (!isNavigating)
-					//{
-					//    forward.Clear();
-					//    if (currentPosition != 0)
-					//    {
-					//        backward.Push(currentPosition);
-					//    }
-					//    currentPosition = (methods.SelectedItems[0].Tag as FunctionInfo).ID;
-					//}
 					UpdateCallerList(currentRun);
 				};
 			});
@@ -167,10 +158,6 @@ namespace NProf
 							{
 								splitter.Dock=DockStyle.Bottom;
 							}),
-							With(new Splitter(),delegate(Splitter splitter)
-							{
-								splitter.Dock=DockStyle.Bottom;
-							}),
 							callers,
 							With(new FlowLayoutPanel(),delegate(FlowLayoutPanel p)
 							{
@@ -185,19 +172,19 @@ namespace NProf
 							        label.TextAlign = ContentAlignment.MiddleLeft;
 							        label.AutoSize = true;
 							    }),
-							        findText,
-							        With(new Button(),delegate(Button button)
-							        {
-							            button.AutoSize = true;
-							            button.Text = "Find next";
-							            button.Click += new EventHandler(findNext_Click);
-							        }),
-							        With(new Button(),delegate(Button button)
-							        {
-							            button.AutoSize = true;
-							            button.Click += new EventHandler(findPrevious_Click);
-							            button.Text = "Find previous";
-							        })});
+						        findText,
+						        With(new Button(),delegate(Button button)
+						        {
+						            button.AutoSize = true;
+						            button.Text = "Find next";
+						            button.Click += new EventHandler(findNext_Click);
+						        }),
+						        With(new Button(),delegate(Button button)
+						        {
+						            button.AutoSize = true;
+						            button.Click += new EventHandler(findPrevious_Click);
+						            button.Text = "Find previous";
+						        })});
 							}
 							)
 
@@ -345,7 +332,7 @@ namespace NProf
 		}
 		public void UpdateRuns(Run run)
 		{
-			TreeNode node = new TreeNode(run.StartTime.ToString(CultureInfo.CurrentCulture.DateTimeFormat.LongTimePattern));
+			TreeNode node = new TreeNode(DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.LongTimePattern));
 			node.Tag = run;
 			runs.Nodes.Add(node);
 			UpdateFilters(run);
@@ -449,7 +436,6 @@ namespace NProf
 					if (item.Text.ToLower().Contains(findText.Text.ToLower()))
 					{
 						methods.SelectedItems.Clear();
-						//methods.SelectedNodes.Clear();
 						item.Focused = true;
 						item.Selected = true;
 						this.Invalidate();
@@ -459,12 +445,11 @@ namespace NProf
 					{
 						if (forward)
 						{
-							item = item.NextItem;//.NextVisibleItem;
-							//item = (TreeListNode)item.PreviousSibling();//.NextVisibleItem;
+							item = item.NextItem;
 						}
 						else
 						{
-							item = item.PreviousItem;//.PrevVisibleItem;
+							item = item.PreviousItem;
 						}
 						if (item == null)
 						{
@@ -499,7 +484,7 @@ namespace NProf
 	{
 		public MethodView()
 		{
-			Columns.Add("Methods");
+			Columns.Add("Callees");
 			Columns.Add("Time");
 			Columns[0].Width = 350;
 			Columns[0].SortDataType = SortDataType.String;
@@ -510,17 +495,62 @@ namespace NProf
 
 			HeaderStyle = ColumnHeaderStyle.Clickable;
 			Font = new Font("Tahoma", 8.0f);
+			this.Click += new EventHandler(MethodView_Click);
+			this.KeyDown += new KeyEventHandler(MethodView_KeyDown);
+			this.ControlAdded += new ControlEventHandler(MethodView_ControlAdded);
+		}
+
+		void MethodView_ControlAdded(object sender, ControlEventArgs e)
+		{
+		}
+
+		void UpdateView()
+		{
+			SuspendLayout();
+			BeginUpdate();
+			ContainerListViewItem item = this.BottomItemPartiallyVisible;
+			while(item!=null)
+			{
+				foreach (ContainerListViewItem subItem in item.Items)
+				{
+					if (subItem.Items.Count == 0)
+					{
+						foreach (FunctionInfo function in ((FunctionInfo)subItem.Tag).Callees)
+						{
+							FunctionItem(subItem.Items, function);
+						}
+					}
+				}
+				item = item.PreviousVisibleItem;
+			}
+			EndUpdate();
+			ResumeLayout();
+		}
+		void MethodView_KeyDown(object sender, KeyEventArgs e)
+		{
+			UpdateView();
+		}
+		void MethodView_Click(object sender, EventArgs e)
+		{
+			UpdateView();
 		}
 		public static int counter = 0;
 		public void FunctionItem(ContainerListViewItemCollection parent,FunctionInfo function)
 		{
-			counter++;
 			ContainerListViewItem item=parent.Add(function.Signature);
 			item.SubItems[1].Text = function.Time.ToString(NProf.timeFormat);
 			item.Tag = function;
-			foreach (FunctionInfo callee in function.Callees)
+			foreach (FunctionInfo subCallee in function.Callees)
 			{
-				FunctionItem(item.Items,callee);
+				ContainerListViewItem subItem = item.Items.Add(subCallee.Signature);
+				subItem.SubItems[1].Text = subCallee.Time.ToString(NProf.timeFormat);
+				subItem.Tag = subCallee;
+				foreach (FunctionInfo callee in subCallee.Callees)
+				{
+					ContainerListViewItem i = subItem.Items.Add(callee.Signature);
+					i.SubItems[1].Text = callee.Time.ToString(NProf.timeFormat);
+					i.Tag = callee;
+				}
 			}
 		}
 		public void Add(FunctionInfo function)
@@ -764,21 +794,6 @@ namespace NProf
 
 			return System.Text.ASCIIEncoding.ASCII.GetString(abString, 0, length);
 		}
-		//private void GetFunctions(BinaryReader reader, List<FunctionInfo> functions, FunctionInfo parent)
-		//{
-		//    while (true)
-		//    {
-		//        int functionId = reader.ReadInt32();
-		//        if (functionId == -1)
-		//        {
-		//            break;
-		//        }
-		//        int callCount = reader.ReadInt32();
-		//        FunctionInfo function = new FunctionInfo(functionId, run.signatures, callCount);
-		//        GetFunctions(reader, function.Callees, function);
-		//        functions.Add(function);
-		//    }
-		//}
 
 		public int Port
 		{
@@ -800,204 +815,6 @@ namespace NProf
 		private Run run;
 		private bool hasStopped;
 	}
-	//public class ProfilerSocketServer
-	//{
-	//    public ProfilerSocketServer(Run run)
-	//    {
-	//        this.run = run;
-	//        this.stopFlag = 0;
-	//        this.hasStopped = false;
-	//    }
-	//    public void Start()
-	//    {
-	//        thread = new Thread(new ThreadStart(ListenThread));
-	//        resetStarted = new ManualResetEvent(false);
-	//        thread.Start();
-	//        resetStarted.WaitOne();
-	//    }
-	//    public void Stop()
-	//    {
-	//        lock (socket)
-	//            Interlocked.Increment(ref stopFlag);
-	//        socket.Close();
-	//    }
-	//    public bool HasStoppedGracefully
-	//    {
-	//        get { return hasStopped; }
-	//    }
-	//    private void ListenThread()
-	//    {
-	//        Thread.CurrentThread.Name = "ProfilerSocketServer Listen Thread";
-	//        try
-	//        {
-	//            resetMessageReceived = new ManualResetEvent(false);
-	//            using (socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
-	//            {
-	//                IPEndPoint ep = new IPEndPoint(IPAddress.Loopback, 0);
-	//                socket.Bind(ep);
-	//                port = ((IPEndPoint)socket.LocalEndPoint).Port;
-	//                resetStarted.Set();
-	//                socket.Listen(100);
-
-	//                while (true)
-	//                {
-	//                    resetMessageReceived.Reset();
-	//                    lock (socket)
-	//                        if (stopFlag == 1)
-	//                            break;
-	//                    socket.BeginAccept(new AsyncCallback(AcceptConnection), socket);
-	//                    resetMessageReceived.WaitOne();
-	//                }
-	//            }
-	//        }
-	//        catch (Exception e)
-	//        {
-	//            resetStarted.Set();
-	//        }
-	//    }
-	//    private void AcceptConnection(IAsyncResult ar)
-	//    {
-	//        lock (socket)
-	//        {
-	//            if (stopFlag == 1)
-	//            {
-	//                resetMessageReceived.Set();
-	//                return;
-	//            }
-	//        }
-
-	//        // Note that this fails if you call EndAccept on a closed socket
-	//        Socket s = ((Socket)ar.AsyncState).EndAccept(ar);
-	//        resetMessageReceived.Set();
-
-	//        try
-	//        {
-	//            using (NetworkStream stream = new NetworkStream(s, true))
-	//            {
-	//                BinaryReader reader = new BinaryReader(stream);
-	//                while (true)
-	//                {
-	//                    int functionId = reader.ReadInt32();
-	//                    if (functionId == -1)
-	//                    {
-	//                        break;
-	//                    }
-	//                    run.signatures.MapSignature(functionId, new FunctionSignature(
-	//                        reader.ReadUInt32(),
-	//                        ReadLengthEncodedASCIIString(reader),
-	//                        ReadLengthEncodedASCIIString(reader),
-	//                        ReadLengthEncodedASCIIString(reader),
-	//                        ReadLengthEncodedASCIIString(reader)
-	//                    ));
-	//                }
-	//                List<FunctionInfo> functions = new List<FunctionInfo>();
-	//                GetFunctions(reader, functions,null);
-	//                StartFix(functions,null);
-	//            }
-	//        }
-	//        catch (Exception e)
-	//        {
-	//            if (Error != null)
-	//                Error(e);
-	//        }
-	//    }
-
-	//    private void StartFix(List<FunctionInfo> functions,FunctionInfo parent)
-	//    {
-	//        FixFunctions(functions,run.functions,parent);
-	//        foreach (FunctionInfo f in functions)
-	//        {
-	//            StartFix(f.Callees,f);
-	//        }
-	//    }
-	//    private void FixFunctions(List<FunctionInfo> functions, List<FunctionInfo> targetFunctions,FunctionInfo parent)
-	//    {
-	//        foreach (FunctionInfo f in functions)
-	//        {
-	//            FunctionInfo function = GetFunctionInfo(targetFunctions, f.ID, run.signatures,parent);
-	//            function.calls += f.calls;
-	//            FixFunctions(f.Callees, function.Callees,function);
-	//        }
-	//    }
-	//    private static FunctionInfo GetFunctionInfo(List<FunctionInfo> functions, int id,FunctionSignatureMap signatures,FunctionInfo parent)
-	//    {
-	//        foreach (FunctionInfo function in functions)
-	//        {
-	//            if (function.ID == id)
-	//            {
-	//                return function;
-	//            }
-	//        }
-	//        functions.Add(new FunctionInfo(id,signatures,0));
-	//        return functions[functions.Count-1];
-	//    }
-	//    private string ReadLengthEncodedASCIIString(BinaryReader br)
-	//    {
-	//        int length = br.ReadInt32();
-	//        if (length > 2000 || length < 0)
-	//        {
-	//            byte[] abNextBytes = new byte[8];
-	//            br.Read(abNextBytes, 0, 8);
-	//            string strError = "Length was abnormally large or small (" + length.ToString("x") + ").  Next bytes were ";
-	//            foreach (byte b in abNextBytes)
-	//                strError += b.ToString("x") + " (" + (Char.IsControl((char)b) ? '-' : (char)b) + ") ";
-
-	//            throw new InvalidOperationException(strError);
-	//        }
-
-	//        byte[] abString = new byte[length];
-	//        int nRead = 0;
-
-	//        DateTime dt = DateTime.Now;
-
-	//        while (nRead < length)
-	//        {
-	//            nRead += br.Read(abString, nRead, length - nRead);
-
-	//            // Make this loop finite (30 seconds)
-	//            TimeSpan ts = DateTime.Now - dt;
-	//            if (ts.TotalSeconds > 30)
-	//                throw new InvalidOperationException("Timed out while waiting for length encoded string");
-	//        }
-
-	//        return System.Text.ASCIIEncoding.ASCII.GetString(abString, 0, length);
-	//    }
-	//    private void GetFunctions(BinaryReader reader, List<FunctionInfo> functions,FunctionInfo parent)
-	//    {
-	//        while (true)
-	//        {
-	//            int functionId = reader.ReadInt32();
-	//            if (functionId == -1)
-	//            {
-	//                break;
-	//            }
-	//            int callCount = reader.ReadInt32();
-	//            FunctionInfo function = new FunctionInfo(functionId, run.signatures, callCount);
-	//            GetFunctions(reader, function.Callees,function);
-	//            functions.Add(function);
-	//        }
-	//    }
-
-	//    public int Port
-	//    {
-	//        get { return port; }
-	//    }
-
-	//    public event ErrorHandler Error;
-
-	//    public delegate void ErrorHandler(Exception e);
-	//    public delegate void MessageHandler(string strMessage);
-
-
-	//    private int port;
-	//    private int stopFlag;
-	//    private ManualResetEvent resetStarted;
-	//    private ManualResetEvent resetMessageReceived;
-	//    private Thread thread;
-	//    private Socket socket;
-	//    private Run run;
-	//    private bool hasStopped;
-	//}
 	public class FunctionInfo
 	{
 		private const double frequency = 10.0;
@@ -1031,10 +848,6 @@ namespace NProf
 			get { return callees; }
 			set { callees = value; }
 		}
-		//public double Calls
-		//{
-		//    get { return calls/1000.0d; }
-		//}
 		private int id;
 		public int calls;
 		private List<FunctionInfo> callees=new List<FunctionInfo>();
@@ -1121,7 +934,6 @@ namespace NProf
 			get
 			{
 				return signature;
-				//return className + "." + functionName + "(" + parameters + ")";
 			}
 		}
 
@@ -1184,38 +996,18 @@ namespace NProf
 
 		public void MapSignature(int functionID, FunctionSignature signature)
 		{
-			lock (signatures.SyncRoot)
-			{
-				signatures[functionID] = signature;
-			}
+			signatures[functionID] = signature;
 		}
 		public string GetFunctionSignature(int functionID)
 		{
-			//lock (signatures.SyncRoot)
-			//{
-				FunctionSignature signature = (FunctionSignature)signatures[functionID];
-				if (signature == null)
-				{
-					return "Unknown!";
-				}
+			FunctionSignature signature = (FunctionSignature)signatures[functionID];
+			if (signature == null)
+			{
+				return "Unknown!";
+			}
 
-				return signature.Signature;
-			//}
+			return signature.Signature;
 		}
-		//public string GetFunctionSignature(int functionID)
-		//{
-		//    lock (signatures.SyncRoot)
-		//    {
-		//        FunctionSignature signature = (FunctionSignature)signatures[functionID];
-		//        if (signature == null)
-		//        {
-		//            return "Unknown!";
-		//        }
-
-		//        return signature.Signature;
-		//    }
-		//}
-
 		private Hashtable signatures;
 	}
 
@@ -1224,7 +1016,7 @@ namespace NProf
 		public ProjectInfo()
 		{
 			this.name = null;
-			this.runs = new RunCollection(this);
+			this.runs = new List<Run>();
 		}
 
 		public string Name
@@ -1251,7 +1043,7 @@ namespace NProf
 			set { workingDirectory = value; Fire_ProjectInfoChanged(); }
 		}
 
-		public RunCollection Runs
+		public List<Run> Runs
 		{
 			get { return runs; }
 		}
@@ -1290,7 +1082,7 @@ namespace NProf
 		private string workingDirectory;
 		private string name;
 		private bool debugHook;
-		private RunCollection runs;
+		private List<Run> runs;
 	}
 	public class Run
 	{
@@ -1304,7 +1096,6 @@ namespace NProf
 		}
 		public FunctionSignatureMap signatures = new FunctionSignatureMap();
 		public List<FunctionInfo> functions = new List<FunctionInfo>();
-		//public Dictionary<int, FunctionInfo> functions = new Dictionary<int, FunctionInfo>();
 
 		public Run(Profiler p, ProjectInfo pi)
 		{
@@ -1328,18 +1119,6 @@ namespace NProf
 			return true;
 		}
 
-		[XmlIgnore]
-		public DateTime StartTime
-		{
-			get { return start; }
-			set { start = value; }
-		}
-		[XmlIgnore]
-		public DateTime EndTime
-		{
-			get { return end; }
-			set { end = value; }
-		}
 
 		public bool Success
 		{
@@ -1352,66 +1131,15 @@ namespace NProf
 		private ProjectInfo project;
 		public Profiler profiler;
 	}
-	// remove
-	public class RunCollection : IEnumerable
-	{
-		public RunCollection(ProjectInfo pi)
-		{
-			this.project = pi;
-			items = new ArrayList();
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return items.GetEnumerator();
-		}
-
-		public int Count
-		{
-			get { return items.Count; }
-		}
-
-		public void Add(Run run)
-		{
-			items.Add(run);
-			if (RunAdded != null)
-				RunAdded(project, this, run, items.Count - 1);
-		}
-
-		public void RemoveAt(int index)
-		{
-			Run run = this[index];
-			items.RemoveAt(index);
-			if (RunRemoved != null)
-				RunRemoved(project, this, run, index);
-		}
-
-		public Run this[int nIndex]
-		{
-			get { return (Run)items[nIndex]; }
-		}
-		public event RunEventHandler RunAdded;
-		public event RunEventHandler RunRemoved;
-
-		public delegate void RunEventHandler(ProjectInfo pi, RunCollection runs, Run run, int nIndex);
-
-		private ArrayList items;
-		private ProjectInfo project;
-	}
 	public class Profiler
 	{
 		private const string PROFILER_GUID = "{791DA9FE-05A0-495E-94BF-9AD875C4DF0F}";
-		public Profiler()
-		{
-			functionMap = new Hashtable();
-		}
 
 		public static string Version
 		{
 			get { return "0.9-alpha"; }
 		}
 		public event EventHandler Completed;
-
 
 		public bool CheckSetup(out string message)
 		{
@@ -1430,13 +1158,11 @@ namespace NProf
 
 		public bool Start(ProjectInfo pi, Run run)
 		{
-			this.start = DateTime.Now;
 			this.project = pi;
 			this.run = run;
 
 			socketServer = new ProfilerSocketServer(run);
 			socketServer.Start();
-			//socketServer.Exited += new EventHandler(OnProcessExited);
 			socketServer.Error += new ProfilerSocketServer.ErrorHandler(OnError);
 
 			process = new Process();
@@ -1456,35 +1182,27 @@ namespace NProf
 		{
 			Run r;
 
-			lock (runLock)
-			{
-				r = run;
+			r = run;
 
-				// Is there anything to stop?
-				if (run == null)
-					return;
+			// Is there anything to stop?
+			if (run == null)
+				return;
 
-				run = null;
-			}
-				socketServer.Stop();
-				r.Success = false;
-
-
+			run = null;
+			socketServer.Stop();
+			r.Success = false;
 		}
 
 		private void OnProcessExited(object oSender, EventArgs ea)
 		{
 			Run r;
-			lock (runLock)
-			{
-				r = run;
+			r = run;
 
-				// This gets called twice for file projects - FIXME
-				if (run == null)
-					return;
+			// This gets called twice for file projects - FIXME
+			if (run == null)
+				return;
 
-				run = null;
-			}
+			run = null;
 
 			if (!socketServer.HasStoppedGracefully)
 			{
@@ -1495,49 +1213,19 @@ namespace NProf
 				r.Success = true;
 			}
 
-			end = DateTime.Now;
 			socketServer.Stop();
-
-			r.EndTime = end;
 
 			if (Completed != null)
 			{
 				Completed(this, new EventArgs());
 			}
 		}
-
 		private void OnError(Exception e)
 		{
 			MessageBox.Show("An internal exception occurred:\n\n" + e.ToString(), "Error");
 		}
-
-		private void OnMessage(string strMessage)
-		{
-			if (Message != null)
-				Message(strMessage);
-		}
-
-		public int[] GetFunctionIDs()
-		{
-			return (int[])new ArrayList(functionMap.Keys).ToArray(typeof(int));
-		}
-
-		public string GetFunctionSignature(int nFunctionID)
-		{
-			return (string)functionMap[nFunctionID];
-		}
-		
-		public delegate void ProcessCompletedHandler(Run run);
-		public delegate void ErrorHandler(Exception e);
-		public delegate void MessageHandler(string strMessage);
-		public event MessageHandler Message;
-
-		private DateTime start;
-		private DateTime end;
 		private Run run;
-		private object runLock = 0;
 
-		private Hashtable functionMap;
 		private Process process;
 		private ProjectInfo project;
 		private ProfilerSocketServer socketServer;

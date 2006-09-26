@@ -814,26 +814,20 @@ public:
 		return found->second;
 	}
 	vector<vector<FunctionID>*> stackWalks;
-	//map< FunctionID, FunctionInfo* > functionMap;
 	map< FunctionID, FunctionInfo* > signatures;
 
 	void EndAll( ProfilerHelper& profilerHelper )
 	{
-		//ProfilerSocket profilerSocket;
-
 		ProfilerSocket socket;
 		DumpSignatures(socket,profilerHelper);
 
-		socket.SendFunctionID( 0xffffffff );
+		socket.SendFunctionID( -1);
 		DumpStackWalks(socket,profilerHelper);
-		//DumpCallees(&functionMap,socket,profilerHelper);
 		socket.SendFunctionID( -2 );
-		//socket.SendFunctionID( 0xffffffff );
 	}
 	void DumpSignatures(ProfilerSocket& socket,ProfilerHelper& helper)
 	{
 		for ( map< FunctionID, FunctionInfo* >::iterator i = signatures.begin(); i != signatures.end(); i++ )
-		//for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
 		{
 			FunctionInfo* function=i->second;
 			socket.SendFunctionID( function->functionId);
@@ -862,14 +856,6 @@ public:
 			ps.SendFunctionID( 0xffffffff );
 		}
 		ps.SendFunctionID( 0xffffffff );
-		//for ( map< FunctionID, FunctionInfo* >::iterator i = functions->begin(); i != functions->end(); i++ )
-		//{
-		//	FunctionInfo* function=i->second;
-		//	ps.SendFunctionID( function->functionId);
-		//	ps.SendUINT32( function->calls);
-		//	DumpCallees(&function->calleeMap,ps,profilerHelper);
-		//}
-		//ps.SendFunctionID( 0xffffffff );
 	}
 	void DumpCallees(map<FunctionID,FunctionInfo*>* functions, ProfilerSocket& ps, ProfilerHelper& profilerHelper )
 	{
@@ -967,34 +953,11 @@ public:
 					functions,
 					NULL,
 					NULL);
-				//DebugBreak();
-
-
 				stackWalks.push_back(functions);
 				for(int index=0;index<functions->size();index++)
 				{
 					GetFunctionInfo(&signatures,functions->at(index));
 				}
-
-				//currentStackWalk++;
-				//for(int i=0;i<functions.size();i++)
-				//{
-				//	map<FunctionID,FunctionInfo*>* currentMap=&functionMap;
-					//for(int index=functions.size()-1;index>=0;index--)
-					////for(int index=functions.size()-1-i;index>=0;index--)
-					//{
-					//	FunctionID id=functions[index];
-					//	FunctionInfo* function=GetFunctionInfo(currentMap,id);
-
-					//	//if(!(function->lastStackWalk==currentStackWalk && function->functionId==id))
-					//	//{
-					//		function->calls++;
-					//	//}
-					//	GetFunctionInfo(&signatures,id);
-					//	function->lastStackWalk=currentStackWalk;
-					//	currentMap=&function->calleeMap;
-					//}
-				//}
 				ResumeThread(threadHandle);
 			}
 		}
