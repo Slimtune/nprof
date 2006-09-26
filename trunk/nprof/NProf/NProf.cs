@@ -544,7 +544,7 @@ namespace NProf
 		public void FunctionItem(ContainerListViewItemCollection parent,FunctionInfo function)
 		{
 			ContainerListViewItem item=parent.Add(function.Signature);
-			item.SubItems[1].Text = function.Calls.ToString(NProf.timeFormat);
+			item.SubItems[1].Text = function.calls.ToString(NProf.timeFormat);
 			item.Tag = function;
 			foreach (FunctionInfo callee in function.Callees)
 			{
@@ -572,7 +572,7 @@ namespace NProf
 		public void Add(FunctionInfo function)
 		{
 			DotNetLib.Windows.Forms.ContainerListViewItem item = Items.Add(function.Signature);
-			item.SubItems[1].Text = function.Calls.ToString(NProf.timeFormat);
+			item.SubItems[1].Text = function.Time.ToString(NProf.timeFormat);
 			item.Tag = function;
 		}
 	}
@@ -685,7 +685,54 @@ namespace NProf
 							ReadLengthEncodedASCIIString(reader)
 						));
 					}
-					GetFunctions(reader, run.functions);
+					int currentWalk=0;
+					List<FunctionInfo> functions = new List<FunctionInfo>();
+					GetFunctions(reader, functions);
+					StartFix(functions);
+					//foreach (FunctionInfo function in functions)
+					//{
+					//    while (function.Calls > 0)
+					//    {
+					//        currentWalk++;
+					//        List<FunctionInfo> currentMap = run.functions;
+					//        foreach (FunctionInfo f in function.Callees)
+					//        //for(int index=functions.size()-1-i;index>=0;index--)
+					//        {
+					//            FunctionInfo realFunction = GetFunctionInfo(currentMap, f.ID, run.signatures);
+
+					//            if (!(realFunction.lastWalk == currentWalk && f.ID == realFunction.ID))
+					//            {
+					//                realFunction.calls++;
+					//            }
+					//            realFunction.lastWalk = currentWalk;
+					//            currentMap = realFunction.Callees;
+					//            //currentMap = &function->calleeMap;
+					//        }
+					//        function.calls--;
+					//    }
+					//}
+					//foreach(FunctionInfo function in functions)
+					//{
+					//    while (function.Calls > 0)
+					//    {
+					//        currentWalk++;
+					//        List<FunctionInfo> currentMap = run.functions;
+					//        foreach(FunctionInfo f in function.Callees)
+					//        //for(int index=functions.size()-1-i;index>=0;index--)
+					//        {
+					//            FunctionInfo realFunction=GetFunctionInfo(currentMap, f.ID, run.signatures);
+
+					//            if (!(realFunction.lastWalk== currentWalk&& f.ID == realFunction.ID))
+					//            {
+					//                realFunction.calls++;
+					//            }
+					//            realFunction.lastWalk = currentWalk;
+					//            currentMap = realFunction.Callees;
+					//            //currentMap = &function->calleeMap;
+					//        }
+					//        function.calls--;
+					//    }
+					//}
 				}
 			}
 			catch (Exception e)
@@ -693,6 +740,46 @@ namespace NProf
 				if (Error != null)
 					Error(e);
 			}
+		}
+
+		private void StartFix(List<FunctionInfo> functions)
+		{
+			FixFunctions(functions,run.functions);
+			foreach (FunctionInfo f in functions)
+			{
+				StartFix(f.Callees);
+			}
+		}
+		private void FixFunctions(List<FunctionInfo> functions, List<FunctionInfo> targetFunctions)
+		{
+			foreach (FunctionInfo f in functions)
+			{
+				FunctionInfo function = GetFunctionInfo(targetFunctions, f.ID, run.signatures);
+				function.calls = f.calls;
+				FixFunctions(f.Callees, function.Callees);
+			}
+		}
+		//private void FixFunctions(List<FunctionInfo> functions, List<FunctionInfo> targetFunctions)
+		//{
+		//    foreach (FunctionInfo f in functions)
+		//    {
+		//        FunctionInfo function = GetFunctionInfo(targetFunctions, f.ID, run.signatures);
+		//        function.calls = f.calls;
+		//        StartFix(f.Callees);
+		//        FixFunctions(f.Callees,function.Callees);
+		//    }
+		//}
+		private static FunctionInfo GetFunctionInfo(List<FunctionInfo> functions, int id,FunctionSignatureMap signatures)
+		{
+			foreach (FunctionInfo function in functions)
+			{
+				if (function.ID == id)
+				{
+					return function;
+				}
+			}
+			functions.Add(new FunctionInfo(id,signatures,0));
+			return functions[functions.Count-1];
 		}
 		private string ReadLengthEncodedASCIIString(BinaryReader br)
 		{
@@ -939,6 +1026,21 @@ namespace NProf
 	//}
 	public class FunctionInfo
 	{
+		private const double frequency = 10.0;
+		public double Time
+		{
+			get
+			{
+				return 1000.0*(double)Calls / frequency;
+			}
+		}
+		public int Calls
+		{
+			get
+			{
+				return calls;
+			}
+		}
 		public FunctionInfo(int nID, FunctionSignatureMap signatures, int calls)
 		{
 			this.id = nID;
@@ -955,18 +1057,19 @@ namespace NProf
 		{
 			get { return signatures.GetFunctionSignature(id); }
 		}
+		public int lastWalk = 0;
 
 		public List<FunctionInfo> Callees
 		{
 			get { return callees; }
 			set { callees = value; }
 		}
-		public double Calls
-		{
-			get { return calls/1000.0d; }
-		}
+		//public double Calls
+		//{
+		//    get { return calls/1000.0d; }
+		//}
 		private int id;
-		private double calls;
+		public int calls;
 		private List<FunctionInfo> callees=new List<FunctionInfo>();
 		FunctionSignatureMap signatures;
 	}

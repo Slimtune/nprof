@@ -854,7 +854,7 @@ public:
 		{
 			FunctionInfo* function=i->second;
 			ps.SendFunctionID( function->functionId);
-			ps.SendUINT32( function->calls*frequency);
+			ps.SendUINT32( function->calls);
 			DumpCallees(&function->calleeMap,ps,profilerHelper);
 		}
 		ps.SendFunctionID( 0xffffffff );
