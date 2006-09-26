@@ -78,7 +78,7 @@ namespace NProf
 			set
 			{
 				project = value;
-				UpdateRuns();
+				//UpdateRuns();
 			}
 		}
 		private Profiler profiler=new Profiler();
@@ -317,13 +317,7 @@ namespace NProf
 			}
 
 			Run run = Project.CreateRun(profiler);
-			run.profiler.Completed += delegate
-			{
-				this.BeginInvoke(new EventHandler(delegate
-				{
-					 UpdateRuns();
-				}));
-			};
+			run.profiler.Completed += run.Complete;
 			run.Start();
 		}
 		private void About(object sender, System.EventArgs e)
@@ -355,31 +349,34 @@ namespace NProf
 
 		//private int currentPosition = 0;
 
-		private bool isNavigating = false;
+		//private bool isNavigating = false;
 
-		public void UpdateRuns()
+		public void UpdateRuns(Run run)
 		{
-			runs.Nodes.Clear();
-			foreach (Run run in Project.Runs)
-			{
-				TreeNode node = new TreeNode(run.StartTime.ToString());
-				node.Tag = run;
-				runs.Nodes.Add(node);
-				UpdateFilters(run);
-			}
+			//runs.Nodes.Clear();
+			//foreach (Run run in Project.Runs)
+			//{
+			TreeNode node = new TreeNode(run.StartTime.ToString());
+			node.Tag = run;
+			runs.Nodes.Add(node);
+			UpdateFilters(run);
+			//}
 		}
 		private void UpdateFilters(Run run)
 		{
+			methods.SuspendLayout();
+			methods.BeginUpdate();
+
 			methods.Items.Clear();
 			callers.Items.Clear();
 
 			currentRun = run;
-			methods.BeginUpdate();
 			foreach (FunctionInfo method in run.functions)
 			{
 				methods.Add(method);
 			}
 			methods.EndUpdate();
+			methods.ResumeLayout();
 		}
 		private void UpdateCallerList(Run run)
 		{
@@ -544,7 +541,7 @@ namespace NProf
 		public void FunctionItem(ContainerListViewItemCollection parent,FunctionInfo function)
 		{
 			ContainerListViewItem item=parent.Add(function.Signature);
-			item.SubItems[1].Text = function.calls.ToString(NProf.timeFormat);
+			item.SubItems[1].Text = function.Time.ToString(NProf.timeFormat);
 			item.Tag = function;
 			foreach (FunctionInfo callee in function.Callees)
 			{
@@ -1031,16 +1028,16 @@ namespace NProf
 		{
 			get
 			{
-				return 1000.0*(double)Calls / frequency;
+				return ((double)(calls) * 10)/1000.0;///1000.0;
 			}
 		}
-		public int Calls
-		{
-			get
-			{
-				return calls;
-			}
-		}
+		//public int Calls
+		//{
+		//    get
+		//    {
+		//        return calls;
+		//    }
+		//}
 		public FunctionInfo(int nID, FunctionSignatureMap signatures, int calls)
 		{
 			this.id = nID;
@@ -1086,6 +1083,7 @@ namespace NProf
 			this.className = className;
 			this.functionName = functionName;
 			this.parameters = parameters;
+			this.signature=className + "." + functionName + "(" + parameters + ")";
 		}
 
 		public bool IsPInvoke
@@ -1147,11 +1145,13 @@ namespace NProf
 			get { return String.Join(".", Namespace); }
 		}
 
+		private string signature;
 		public string Signature
 		{
 			get
 			{
-				return className + "." + functionName + "(" + parameters + ")";
+				return signature;
+				//return className + "." + functionName + "(" + parameters + ")";
 			}
 		}
 
@@ -1221,8 +1221,8 @@ namespace NProf
 		}
 		public string GetFunctionSignature(int functionID)
 		{
-			lock (signatures.SyncRoot)
-			{
+			//lock (signatures.SyncRoot)
+			//{
 				FunctionSignature signature = (FunctionSignature)signatures[functionID];
 				if (signature == null)
 				{
@@ -1230,8 +1230,21 @@ namespace NProf
 				}
 
 				return signature.Signature;
-			}
+			//}
 		}
+		//public string GetFunctionSignature(int functionID)
+		//{
+		//    lock (signatures.SyncRoot)
+		//    {
+		//        FunctionSignature signature = (FunctionSignature)signatures[functionID];
+		//        if (signature == null)
+		//        {
+		//            return "Unknown!";
+		//        }
+
+		//        return signature.Signature;
+		//    }
+		//}
 
 		private Hashtable signatures;
 	}
@@ -1311,6 +1324,14 @@ namespace NProf
 	}
 	public class Run
 	{
+		public void Complete(object sender,EventArgs e)
+		{
+			NProf.form.BeginInvoke(new EventHandler(delegate
+			{
+				NProf.form.UpdateRuns(this);
+				profiler.Completed -= Complete;
+			}));
+		}
 		public FunctionSignatureMap signatures = new FunctionSignatureMap();
 		public List<FunctionInfo> functions = new List<FunctionInfo>();
 		//public Dictionary<int, FunctionInfo> functions = new Dictionary<int, FunctionInfo>();

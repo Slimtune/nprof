@@ -945,7 +945,7 @@ public:
 					NULL,
 					NULL);
 
-				currentStackWalk++;
+				//currentStackWalk++;
 				//for(int i=0;i<functions.size();i++)
 				//{
 					map<FunctionID,FunctionInfo*>* currentMap=&functionMap;
@@ -955,10 +955,10 @@ public:
 						FunctionID id=functions[index];
 						FunctionInfo* function=GetFunctionInfo(currentMap,id);
 
-						if(!(function->lastStackWalk==currentStackWalk && function->functionId==id))
-						{
+						//if(!(function->lastStackWalk==currentStackWalk && function->functionId==id))
+						//{
 							function->calls++;
-						}
+						//}
 						GetFunctionInfo(&signatures,id);
 						function->lastStackWalk=currentStackWalk;
 						currentMap=&function->calleeMap;
