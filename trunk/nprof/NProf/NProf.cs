@@ -346,7 +346,7 @@ namespace NProf
 			callers.Items.Clear();
 
 			currentRun = run;
-			foreach (FunctionInfo method in run.functions)
+			foreach (FunctionInfo method in run.functions.Values)
 			{
 				methods.Add(method);
 			}
@@ -359,9 +359,9 @@ namespace NProf
 			ListView l;
 
 			FunctionInfo mfi = (FunctionInfo)methods.SelectedItems[0].Tag;
-			foreach (FunctionInfo fi in run.functions)
+			foreach (FunctionInfo fi in run.functions.Values)
 			{
-				foreach (FunctionInfo cfi in fi.Callees)
+				foreach (FunctionInfo cfi in fi.Callees.Values)
 				{
 					if (cfi.ID == mfi.ID)
 					{
@@ -495,15 +495,15 @@ namespace NProf
 
 			HeaderStyle = ColumnHeaderStyle.Clickable;
 			Font = new Font("Tahoma", 8.0f);
-			this.Click += new EventHandler(MethodView_Click);
-			this.KeyDown += new KeyEventHandler(MethodView_KeyDown);
-			this.ControlAdded += new ControlEventHandler(MethodView_ControlAdded);
+			this.Click += delegate
+			{
+				UpdateView();
+			};
+			this.KeyDown += delegate
+			{
+				UpdateView();
+			};
 		}
-
-		void MethodView_ControlAdded(object sender, ControlEventArgs e)
-		{
-		}
-
 		void UpdateView()
 		{
 			SuspendLayout();
@@ -515,7 +515,7 @@ namespace NProf
 				{
 					if (subItem.Items.Count == 0)
 					{
-						foreach (FunctionInfo function in ((FunctionInfo)subItem.Tag).Callees)
+						foreach (FunctionInfo function in ((FunctionInfo)subItem.Tag).Callees.Values)
 						{
 							FunctionItem(subItem.Items, function);
 						}
@@ -526,26 +526,17 @@ namespace NProf
 			EndUpdate();
 			ResumeLayout();
 		}
-		void MethodView_KeyDown(object sender, KeyEventArgs e)
-		{
-			UpdateView();
-		}
-		void MethodView_Click(object sender, EventArgs e)
-		{
-			UpdateView();
-		}
-		public static int counter = 0;
 		public void FunctionItem(ContainerListViewItemCollection parent,FunctionInfo function)
 		{
 			ContainerListViewItem item=parent.Add(function.Signature);
 			item.SubItems[1].Text = function.Time.ToString(NProf.timeFormat);
 			item.Tag = function;
-			foreach (FunctionInfo subCallee in function.Callees)
+			foreach (FunctionInfo subCallee in function.Callees.Values)
 			{
 				ContainerListViewItem subItem = item.Items.Add(subCallee.Signature);
 				subItem.SubItems[1].Text = subCallee.Time.ToString(NProf.timeFormat);
 				subItem.Tag = subCallee;
-				foreach (FunctionInfo callee in subCallee.Callees)
+				foreach (FunctionInfo callee in subCallee.Callees.Values)
 				{
 					ContainerListViewItem i = subItem.Items.Add(callee.Signature);
 					i.SubItems[1].Text = callee.Time.ToString(NProf.timeFormat);
@@ -687,12 +678,9 @@ namespace NProf
 							ReadLengthEncodedASCIIString(reader)
 						));
 					}
-					bool loop = true;
-					int currentWalk = 0;
-					while (loop)
+					while (true)
 					{
-						currentWalk++;
-						List<int> frames = new List<int>();
+						List<int> stackWalk = new List<int>();
 						while (true)
 						{
 							int functionId = reader.ReadInt32();
@@ -702,29 +690,12 @@ namespace NProf
 							}
 							else if (functionId == -2)
 							{
-								loop = false;
-								break;
+								return;
 							}
-							frames.Add(functionId);
+							stackWalk.Add(functionId);
 						}
-						for (int i = 0; i < frames.Count; i++)
-						{
-							List<FunctionInfo> currentMap = run.functions;
-							for (int index = frames.Count - 1-i; index >= 0; index--)
-							{
-								int id = frames[index];
-								FunctionInfo function=GetFunctionInfo(currentMap, id,run.signatures,null);
-
-								if (function.lastWalk != currentWalk)
-								{
-									function.calls++;
-								}
-								function.lastWalk= currentWalk;
-								currentMap = function.Callees;
-							}
-						}
+						run.stackWalks.Add(stackWalk);
 					}
-
 				}
 			}
 			catch (Exception e)
@@ -733,35 +704,15 @@ namespace NProf
 					Error(e);
 			}
 		}
-
-		private void StartFix(List<FunctionInfo> functions, FunctionInfo parent)
+		public static FunctionInfo GetFunctionInfo(Dictionary<int, FunctionInfo> functions, int id, FunctionSignatureMap signatures, FunctionInfo parent)
 		{
-			FixFunctions(functions, run.functions, parent);
-			foreach (FunctionInfo f in functions)
+			FunctionInfo result;
+			if (!functions.TryGetValue(id,out result))
 			{
-				StartFix(f.Callees, f);
+				result =new FunctionInfo(id, signatures, 0);
+				functions[id]=result;
 			}
-		}
-		private void FixFunctions(List<FunctionInfo> functions, List<FunctionInfo> targetFunctions, FunctionInfo parent)
-		{
-			foreach (FunctionInfo f in functions)
-			{
-				FunctionInfo function = GetFunctionInfo(targetFunctions, f.ID, run.signatures, parent);
-				function.calls += f.calls;
-				FixFunctions(f.Callees, function.Callees, function);
-			}
-		}
-		private static FunctionInfo GetFunctionInfo(List<FunctionInfo> functions, int id, FunctionSignatureMap signatures, FunctionInfo parent)
-		{
-			foreach (FunctionInfo function in functions)
-			{
-				if (function.ID == id)
-				{
-					return function;
-				}
-			}
-			functions.Add(new FunctionInfo(id, signatures, 0));
-			return functions[functions.Count - 1];
+			return result;
 		}
 		private string ReadLengthEncodedASCIIString(BinaryReader br)
 		{
@@ -843,14 +794,15 @@ namespace NProf
 		}
 		public int lastWalk = 0;
 
-		public List<FunctionInfo> Callees
+		public Dictionary<int,FunctionInfo> Callees
 		{
 			get { return callees; }
 			set { callees = value; }
 		}
 		private int id;
 		public int calls;
-		private List<FunctionInfo> callees=new List<FunctionInfo>();
+		private Dictionary<int, FunctionInfo> callees = new Dictionary<int, FunctionInfo>();
+		//private List<FunctionInfo> callees = new List<FunctionInfo>();
 		FunctionSignatureMap signatures;
 	}
 	public class FunctionSignature
@@ -1086,16 +1038,44 @@ namespace NProf
 	}
 	public class Run
 	{
+		public List<List<int>> stackWalks = new List<List<int>>();
+
+		private void InterpreteData()
+		{
+			int currentWalk = 0;
+			foreach (List<int> stackWalk in stackWalks)
+			{
+				currentWalk++;
+				for (int i = 0; i < stackWalk.Count; i++)
+				{
+					Dictionary<int, FunctionInfo> currentMap = functions;
+					for (int index = stackWalk.Count - 1 - i; index >= 0; index--)
+					{
+						int id = stackWalk[index];
+						FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(currentMap, id, signatures, null);
+
+						if (function.lastWalk != currentWalk)
+						{
+							function.calls++;
+						}
+						function.lastWalk = currentWalk;
+						currentMap = function.Callees;
+					}
+				}
+			}
+		}
 		public void Complete(object sender,EventArgs e)
 		{
 			NProf.form.BeginInvoke(new EventHandler(delegate
 			{
+				InterpreteData();
 				NProf.form.UpdateRuns(this);
 				profiler.Completed -= Complete;
 			}));
 		}
 		public FunctionSignatureMap signatures = new FunctionSignatureMap();
-		public List<FunctionInfo> functions = new List<FunctionInfo>();
+		public Dictionary<int, FunctionInfo> functions = new Dictionary<int, FunctionInfo>();
+		//public List<FunctionInfo> functions = new List<FunctionInfo>();
 
 		public Run(Profiler p, ProjectInfo pi)
 		{
@@ -1195,22 +1175,22 @@ namespace NProf
 
 		private void OnProcessExited(object oSender, EventArgs ea)
 		{
-			Run r;
-			r = run;
+			//Run r;
+			//r = run;
 
-			// This gets called twice for file projects - FIXME
-			if (run == null)
-				return;
+			//// This gets called twice for file projects - FIXME
+			//if (run == null)
+			//    return;
 
-			run = null;
+			//run = null;
 
 			if (!socketServer.HasStoppedGracefully)
 			{
-				r.Success = false;
+				run.Success = false;
 			}
 			else
 			{
-				r.Success = true;
+				run.Success = true;
 			}
 
 			socketServer.Stop();
