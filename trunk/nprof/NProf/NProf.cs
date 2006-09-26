@@ -682,12 +682,6 @@ namespace NProf
 			foreach (FunctionInfo f in functions)
 			{
 				FunctionInfo function = GetFunctionInfo(targetFunctions, f.ID, run.signatures,parent);
-				FunctionInfo search=f;
-				//while (search.parent != null)
-				//{
-				//    //if(
-				//    search = search.parent;
-				//}
 				function.calls += f.calls;
 				FixFunctions(f.Callees, function.Callees,function);
 			}
@@ -701,7 +695,7 @@ namespace NProf
 					return function;
 				}
 			}
-			functions.Add(new FunctionInfo(id,signatures,0,parent));
+			functions.Add(new FunctionInfo(id,signatures,0));
 			return functions[functions.Count-1];
 		}
 		private string ReadLengthEncodedASCIIString(BinaryReader br)
@@ -745,7 +739,7 @@ namespace NProf
 					break;
 				}
 				int callCount = reader.ReadInt32();
-				FunctionInfo function = new FunctionInfo(functionId, run.signatures, callCount,parent);
+				FunctionInfo function = new FunctionInfo(functionId, run.signatures, callCount);
 				GetFunctions(reader, function.Callees,function);
 				functions.Add(function);
 			}
@@ -781,13 +775,11 @@ namespace NProf
 				return ((double)(calls) * 10)/1000.0;///1000.0;
 			}
 		}
-		public FunctionInfo parent;
-		public FunctionInfo(int nID, FunctionSignatureMap signatures, int calls,FunctionInfo parent)
+		public FunctionInfo(int nID, FunctionSignatureMap signatures, int calls)
 		{
 			this.id = nID;
 			this.calls = calls;
 			this.signatures = signatures;
-			this.parent = parent;
 		}
 
 		public int ID
