@@ -87,6 +87,7 @@ using namespace std;
 
 #define MAX_FUNCTION_LENGTH 2048
 
+int currentStackWalk=0;
 
 
 class ProfilerHelper
@@ -758,8 +759,9 @@ public:
 	{
 
 		this->calls = 0;
-		this->recursiveCount = 0;
+		//this->recursiveCount = 0;
 		this->functionId = functionId;
+		this->lastStackWalk=0;
 	}
 	FunctionInfo* GetCalleeFunctionInfo( FunctionID functionId )
 	{
@@ -774,11 +776,11 @@ public:
 	}
 
 	int calls;
-	int recursiveCount;
+	//int recursiveCount;
 	FunctionID functionId;
+	int lastStackWalk;
 	map< FunctionID, FunctionInfo* > calleeMap;
 };
-
 HRESULT __stdcall __stdcall StackWalker( 
 	FunctionID funcId,
 	UINT_PTR ip,
@@ -849,7 +851,7 @@ public:
 		{
 			FunctionInfo* function=i->second;
 			ps.SendFunctionID( function->functionId);
-			ps.SendUINT32( function->calls);
+			ps.SendUINT32( function->calls*50);
 			DumpCallees(&function->calleeMap,ps,profilerHelper);
 		}
 		ps.SendFunctionID( 0xffffffff );
@@ -868,11 +870,18 @@ public:
 			COR_PRF_MONITOR_ASSEMBLY_LOADS |
 			COR_PRF_MONITOR_CACHE_SEARCHES |
 			COR_PRF_MONITOR_JIT_COMPILATION);
-
+		SetTimer();
+	}
+	void KillTimer()
+	{
+		timeKillEvent(timer);
+	}
+	void SetTimer()
+	{
 		TIMECAPS timeCaps;
 		timeGetDevCaps(&timeCaps, sizeof(TIMECAPS));
 		timer = timeSetEvent(
-			10,
+			30,
 			timeCaps.wPeriodMin, 
 			TimerFunction, 
 			(DWORD_PTR)this,     
@@ -906,6 +915,7 @@ public:
 
 	void WalkStack()
 	{
+		KillTimer();
 		for(map< DWORD, ThreadID >::iterator i=threadMap.begin();i!=threadMap.end();i++)
 		{
 			DWORD threadId=(*i).first;
@@ -932,62 +942,36 @@ public:
 					NULL,
 					NULL);
 
-				map<FunctionID,FunctionInfo*>* currentMap=&functionMap;
-				for(int index=functions.size()-1;index>=0;index--)
+				currentStackWalk++;
+				for(int i=0;i<functions.size();i++)
 				{
-					//timeKillEvent(timer);
-					//DebugBreak();
-					FunctionID id=functions[index];
-					FunctionInfo* function=GetFunctionInfo(currentMap,id);
-					function->calls++;
-					currentMap=&function->calleeMap;
-					//if(index<functions.size()-1)
-					//{
-					//	function->GetCalleeFunctionInfo(functions[index+1])->calls++;
-					//}
-					//for(int y=index+1;;y++)
-					//{
-					//	if(y>functions.size()-1)
-					//	{
-					//		FunctionID id=functions[index];
-					//		FunctionInfo* function=GetFunctionInfo(id);
-					//		function->calls++;
-					//		if(index<functions.size()-1)
-					//		{
-					//			function->GetCalleeFunctionInfo(functions[index+1])->calls++;
-					//		}
-					//		break;
-					//	}
-					//	if(functions[y]==functions[index])
-					//	{
-					//		break;
-					//	}
-					//}
+					map<FunctionID,FunctionInfo*>* currentMap=&functionMap;
+					for(int index=functions.size()-1-i;index>=0;index--)
+					{
+						//timeKillEvent(timer);
+						//DebugBreak();
+						//if(index>0 && functions->at(index-1)==functions[index])
+						//{
+						//	continue;
+						//}
+						FunctionID id=functions[index];
+						FunctionInfo* function=GetFunctionInfo(currentMap,id);
+
+						if(function->lastStackWalk==currentStackWalk && function->functionId==id)
+						{
+						}
+						else
+						{
+							function->calls++;
+						}
+						function->lastStackWalk=currentStackWalk;
+						currentMap=&function->calleeMap;
+					}
 				}
-				//for(int index=0	;index<functions.size();index++)
-				//{
-				//	for(int y=index+1;;y++)
-				//	{
-				//		if(y>functions.size()-1)
-				//		{
-				//			FunctionID id=functions[index];
-				//			FunctionInfo* function=GetFunctionInfo(&functionMap,id);
-				//			function->calls++;
-				//			if(index<functions.size()-1)
-				//			{
-				//				function->GetCalleeFunctionInfo(functions[index+1])->calls++;
-				//			}
-				//			break;
-				//		}
-				//		if(functions[y]==functions[index])
-				//		{
-				//			break;
-				//		}
-				//	}
-				//}
 				ResumeThread(threadHandle);
 			}
 		}
+		SetTimer();
 	}
 };
 

@@ -127,15 +127,15 @@ namespace NProf
 					if (methods.SelectedItems.Count == 0)
 						return;
 					callers.Items.Clear();
-					if (!isNavigating)
-					{
-						forward.Clear();
-						if (currentPosition != 0)
-						{
-							backward.Push(currentPosition);
-						}
-						currentPosition = (methods.SelectedItems[0].Tag as FunctionInfo).ID;
-					}
+					//if (!isNavigating)
+					//{
+					//    forward.Clear();
+					//    if (currentPosition != 0)
+					//    {
+					//        backward.Push(currentPosition);
+					//    }
+					//    currentPosition = (methods.SelectedItems[0].Tag as FunctionInfo).ID;
+					//}
 					UpdateCallerList(currentRun);
 				};
 			});
@@ -175,32 +175,36 @@ namespace NProf
 							callers,
 							With(new FlowLayoutPanel(),delegate(FlowLayoutPanel p)
 							{
-								p.WrapContents = false;
-								p.AutoSize = true;
-								p.Dock = DockStyle.Top;
+							    p.WrapContents = false;
+							    p.AutoSize = true;
+							    p.Dock = DockStyle.Top;
 
 
-								p.Controls.AddRange(new Control[] {
-									With(new Label(),delegate(Label label)
-								{
-									label.Text = "Find:";
-									label.TextAlign = ContentAlignment.MiddleCenter;
-									label.AutoSize = true;
-								}),
-									findText,
-									With(new Button(),delegate(Button button)
-									{
-										button.AutoSize = true;
-										button.Text = "Find next";
-										button.Click += new EventHandler(findNext_Click);
-									}),
-									With(new Button(),delegate(Button button)
-									{
-										button.AutoSize = true;
-										button.Click += new EventHandler(findPrevious_Click);
-										button.Text = "Find previous";
-									})});
-							})
+							    p.Controls.AddRange(new Control[] {
+							        With(new Label(),delegate(Label label)
+							    {
+							        //label.BackColor=Color.Red;
+
+							        label.Text = "Find:";
+									label.Dock=DockStyle.Fill;
+							        label.TextAlign = ContentAlignment.MiddleLeft;
+							        label.AutoSize = true;
+							    }),
+							        findText,
+							        With(new Button(),delegate(Button button)
+							        {
+							            button.AutoSize = true;
+							            button.Text = "Find next";
+							            button.Click += new EventHandler(findNext_Click);
+							        }),
+							        With(new Button(),delegate(Button button)
+							        {
+							            button.AutoSize = true;
+							            button.Click += new EventHandler(findPrevious_Click);
+							            button.Text = "Find previous";
+							        })});
+							}
+							)
 
 						});
 
@@ -237,7 +241,10 @@ namespace NProf
 					panel.Dock = DockStyle.Top;
 					panel.Controls.Add(With(new Label(), delegate(Label label)
 					{
-						label.Text = "Application to run:";
+						label.Text = "Application:";
+						label.Dock=DockStyle.Fill;
+						label.TextAlign = ContentAlignment.MiddleLeft;
+						label.AutoSize=true;
 					}),0,0);
 					panel.Controls.Add(application,1,0);
 
@@ -260,26 +267,28 @@ namespace NProf
 					}),2,0);
 					panel.Controls.Add(With(new Label(),delegate(Label label)
 						{
-							label.Text = "Command line arguments:";
+							label.Text = "Arguments:";
+							label.Dock=DockStyle.Fill;
+							label.TextAlign = ContentAlignment.MiddleLeft;
 							label.AutoSize=true;
 						}),0,1);
 					panel.Controls.Add(arguments,1,1);
 				}),
-				With(new CommandBarManager(), delegate(CommandBarManager manager)
-				{
-					manager.Dock = DockStyle.Top;
-					manager.CommandBars.Add(With(new CommandBar(CommandBarStyle.ToolBar),
-					delegate(CommandBar bar)
-					{
-						bar.Items.AddRange(new CommandBarItem[] {
-							new CommandBarButton(Images.New, "New", New),
-							new CommandBarSeparator(),
-							new CommandBarButton(Images.Back, "Back", Back),
-							new CommandBarButton(Images.Forward, "Forward", Forward),
-							new CommandBarSeparator(),
-							new CommandBarButton(Images.Run, "Run", delegate { StartRun(null, null); })}); ;
-					}));
-				}),
+				//With(new CommandBarManager(), delegate(CommandBarManager manager)
+				//{
+				//    manager.Dock = DockStyle.Top;
+				//    manager.CommandBars.Add(With(new CommandBar(CommandBarStyle.ToolBar),
+				//    delegate(CommandBar bar)
+				//    {
+				//        bar.Items.AddRange(new CommandBarItem[] {
+				//            new CommandBarButton(Images.New, "New", New),
+				//            new CommandBarSeparator(),
+				//            new CommandBarButton(Images.Back, "Back", Back),
+				//            new CommandBarButton(Images.Forward, "Forward", Forward),
+				//            new CommandBarSeparator(),
+				//            new CommandBarButton(Images.Run, "Run", delegate { StartRun(null, null); })}); ;
+				//    }));
+				//}),
 				With(new MenuControl(),delegate(MenuControl mainMenu)
 				{
 					mainMenu.Dock = DockStyle.Top;
@@ -291,9 +300,6 @@ namespace NProf
 							new Menu("E&xit","Exit the application",Shortcut.AltF4,delegate {Close();})),
 						new Menu("Project",
 							new Menu("Start","Run the current project",Shortcut.F5,StartRun),
-							new Menu("-","-",null),
-							new Menu("Back","Navigate Back",Back),
-							new Menu("Forward","Navigate Forward",Forward),
 							new Menu("-","-",null),
 							new Menu("About nprof...","About nprof",About))
 					});
@@ -339,26 +345,6 @@ namespace NProf
 			};
 			run.Start();
 		}
-		private void Back(object sender, System.EventArgs e)
-		{
-			Navigate(backward);
-		}
-		private void Navigate(Stack<int> stack)
-		{
-			if (stack.Count != 0)
-			{
-				stack.Push(currentPosition);
-				currentPosition = stack.Pop();
-
-				isNavigating = true;
-				JumpToID(currentPosition);
-				isNavigating = false;
-			}
-		}
-		private void Forward(object sender, System.EventArgs e)
-		{
-			Navigate(forward);
-		}
 		private void About(object sender, System.EventArgs e)
 		{
 			new AboutForm().ShowDialog(this);
@@ -383,10 +369,10 @@ namespace NProf
 			public static Image Forward { get { return images[18]; } }
 			public static Image Run { get { return images[37]; } }
 		}
-		private Stack<int> backward = new Stack<int>();
-		private Stack<int> forward = new Stack<int>();
+		//private Stack<int> backward = new Stack<int>();
+		//private Stack<int> forward = new Stack<int>();
 
-		private int currentPosition = 0;
+		//private int currentPosition = 0;
 
 		private bool isNavigating = false;
 
@@ -407,10 +393,12 @@ namespace NProf
 			callers.Items.Clear();
 
 			currentRun = run;
+			methods.BeginUpdate();
 			foreach (FunctionInfo method in run.functions)
 			{
 				methods.Add(method);
 			}
+			methods.EndUpdate();
 		}
 		private void UpdateCallerList(Run run)
 		{
@@ -431,7 +419,7 @@ namespace NProf
 			callers.Sort();
 			callers.EndUpdate();
 		}
-		public const string timeFormat = ".00;-.00;.0";
+		public const string timeFormat = "0.00;-0.00;0.0";
 		private void JumpToID(int id)
 		{
 			methods.SelectedItems.Clear();
@@ -992,12 +980,12 @@ namespace NProf
 			get { return callees; }
 			set { callees = value; }
 		}
-		public int Calls
+		public double Calls
 		{
-			get { return calls; }
+			get { return calls/1000.0d; }
 		}
 		private int id;
-		private int calls;
+		private double calls;
 		private List<FunctionInfo> callees=new List<FunctionInfo>();
 		FunctionSignatureMap signatures;
 	}
