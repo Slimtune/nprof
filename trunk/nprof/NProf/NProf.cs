@@ -178,13 +178,9 @@ namespace NProf
 							    p.WrapContents = false;
 							    p.AutoSize = true;
 							    p.Dock = DockStyle.Top;
-
-
 							    p.Controls.AddRange(new Control[] {
 							        With(new Label(),delegate(Label label)
 							    {
-							        //label.BackColor=Color.Red;
-
 							        label.Text = "Find:";
 									label.Dock=DockStyle.Fill;
 							        label.TextAlign = ContentAlignment.MiddleLeft;
@@ -274,21 +270,6 @@ namespace NProf
 						}),0,1);
 					panel.Controls.Add(arguments,1,1);
 				}),
-				//With(new CommandBarManager(), delegate(CommandBarManager manager)
-				//{
-				//    manager.Dock = DockStyle.Top;
-				//    manager.CommandBars.Add(With(new CommandBar(CommandBarStyle.ToolBar),
-				//    delegate(CommandBar bar)
-				//    {
-				//        bar.Items.AddRange(new CommandBarItem[] {
-				//            new CommandBarButton(Images.New, "New", New),
-				//            new CommandBarSeparator(),
-				//            new CommandBarButton(Images.Back, "Back", Back),
-				//            new CommandBarButton(Images.Forward, "Forward", Forward),
-				//            new CommandBarSeparator(),
-				//            new CommandBarButton(Images.Run, "Run", delegate { StartRun(null, null); })}); ;
-				//    }));
-				//}),
 				With(new MenuControl(),delegate(MenuControl mainMenu)
 				{
 					mainMenu.Dock = DockStyle.Top;

@@ -796,6 +796,7 @@ HRESULT __stdcall __stdcall StackWalker(
 	return S_OK;
 }
 
+const int frequency=10;
 
 class Profiler
 {
@@ -813,6 +814,7 @@ public:
 		return found->second;
 	}
 	map< FunctionID, FunctionInfo* > functionMap;
+	map< FunctionID, FunctionInfo* > signatures;
 
 	void EndAll( ProfilerHelper& profilerHelper )
 	{
@@ -827,7 +829,8 @@ public:
 	}
 	void DumpSignatures(ProfilerSocket& socket,ProfilerHelper& helper)
 	{
-		for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
+		for ( map< FunctionID, FunctionInfo* >::iterator i = signatures.begin(); i != signatures.end(); i++ )
+		//for ( map< FunctionID, FunctionInfo* >::iterator i = functionMap.begin(); i != functionMap.end(); i++ )
 		{
 			FunctionInfo* function=i->second;
 			socket.SendFunctionID( function->functionId);
@@ -851,7 +854,7 @@ public:
 		{
 			FunctionInfo* function=i->second;
 			ps.SendFunctionID( function->functionId);
-			ps.SendUINT32( function->calls*50);
+			ps.SendUINT32( function->calls*frequency);
 			DumpCallees(&function->calleeMap,ps,profilerHelper);
 		}
 		ps.SendFunctionID( 0xffffffff );
@@ -881,7 +884,7 @@ public:
 		TIMECAPS timeCaps;
 		timeGetDevCaps(&timeCaps, sizeof(TIMECAPS));
 		timer = timeSetEvent(
-			30,
+			frequency,
 			timeCaps.wPeriodMin, 
 			TimerFunction, 
 			(DWORD_PTR)this,     
@@ -943,31 +946,24 @@ public:
 					NULL);
 
 				currentStackWalk++;
-				for(int i=0;i<functions.size();i++)
-				{
+				//for(int i=0;i<functions.size();i++)
+				//{
 					map<FunctionID,FunctionInfo*>* currentMap=&functionMap;
-					for(int index=functions.size()-1-i;index>=0;index--)
+					for(int index=functions.size()-1;index>=0;index--)
+					//for(int index=functions.size()-1-i;index>=0;index--)
 					{
-						//timeKillEvent(timer);
-						//DebugBreak();
-						//if(index>0 && functions->at(index-1)==functions[index])
-						//{
-						//	continue;
-						//}
 						FunctionID id=functions[index];
 						FunctionInfo* function=GetFunctionInfo(currentMap,id);
 
-						if(function->lastStackWalk==currentStackWalk && function->functionId==id)
-						{
-						}
-						else
+						if(!(function->lastStackWalk==currentStackWalk && function->functionId==id))
 						{
 							function->calls++;
 						}
+						GetFunctionInfo(&signatures,id);
 						function->lastStackWalk=currentStackWalk;
 						currentMap=&function->calleeMap;
 					}
-				}
+				//}
 				ResumeThread(threadHandle);
 			}
 		}
