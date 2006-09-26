@@ -967,28 +967,33 @@ public:
 					functions,
 					NULL,
 					NULL);
+				//DebugBreak();
 
 
 				stackWalks.push_back(functions);
+				for(int index=0;index<functions->size();index++)
+				{
+					GetFunctionInfo(&signatures,functions->at(index));
+				}
 
 				//currentStackWalk++;
 				//for(int i=0;i<functions.size();i++)
 				//{
 				//	map<FunctionID,FunctionInfo*>* currentMap=&functionMap;
-				//	for(int index=functions.size()-1;index>=0;index--)
-				//	//for(int index=functions.size()-1-i;index>=0;index--)
-				//	{
-				//		FunctionID id=functions[index];
-				//		FunctionInfo* function=GetFunctionInfo(currentMap,id);
+					//for(int index=functions.size()-1;index>=0;index--)
+					////for(int index=functions.size()-1-i;index>=0;index--)
+					//{
+					//	FunctionID id=functions[index];
+					//	FunctionInfo* function=GetFunctionInfo(currentMap,id);
 
-				//		//if(!(function->lastStackWalk==currentStackWalk && function->functionId==id))
-				//		//{
-				//			function->calls++;
-				//		//}
-				//		GetFunctionInfo(&signatures,id);
-				//		function->lastStackWalk=currentStackWalk;
-				//		currentMap=&function->calleeMap;
-				//	}
+					//	//if(!(function->lastStackWalk==currentStackWalk && function->functionId==id))
+					//	//{
+					//		function->calls++;
+					//	//}
+					//	GetFunctionInfo(&signatures,id);
+					//	function->lastStackWalk=currentStackWalk;
+					//	currentMap=&function->calleeMap;
+					//}
 				//}
 				ResumeThread(threadHandle);
 			}

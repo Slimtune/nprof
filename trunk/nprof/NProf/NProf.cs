@@ -345,7 +345,7 @@ namespace NProf
 		}
 		public void UpdateRuns(Run run)
 		{
-			TreeNode node = new TreeNode(run.StartTime.ToString(CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern));
+			TreeNode node = new TreeNode(run.StartTime.ToString(CultureInfo.CurrentCulture.DateTimeFormat.LongTimePattern));
 			node.Tag = run;
 			runs.Nodes.Add(node);
 			UpdateFilters(run);
@@ -680,29 +680,19 @@ namespace NProf
 						for (int i = 0; i < frames.Count; i++)
 						{
 							List<FunctionInfo> currentMap = run.functions;
-							//map<FunctionID, FunctionInfo*>* currentMap = &functionMap;
-							for (int index = frames.Count - 1; index >= 0; index--)
-								//for (int index = functions.size() - 1; index >= 0; index--)
-								//for(int index=functions.size()-1-i;index>=0;index--)
+							for (int index = frames.Count - 1-i; index >= 0; index--)
 							{
 								int id = frames[index];
-								//FunctionID id = functions[index];
 								FunctionInfo function=GetFunctionInfo(currentMap, id,run.signatures,null);
-								//FunctionInfo* function = GetFunctionInfo(currentMap, id);
 
 								if (function.lastWalk != currentWalk)
-								//if (!(function->lastStackWalk == currentStackWalk && function->functionId == id))
 								{
 									function.calls++;
 								}
-								//GetFunctionInfo(&signatures, id);
 								function.lastWalk= currentWalk;
-								//function->lastStackWalk = currentStackWalk;
 								currentMap = function.Callees;
-								//currentMap = &function->calleeMap;
 							}
 						}
-						int asdf = 0;
 					}
 
 				}
