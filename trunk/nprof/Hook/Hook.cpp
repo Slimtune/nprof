@@ -813,7 +813,8 @@ public:
 
 		return found->second;
 	}
-	map< FunctionID, FunctionInfo* > functionMap;
+	vector<vector<FunctionID>*> stackWalks;
+	//map< FunctionID, FunctionInfo* > functionMap;
 	map< FunctionID, FunctionInfo* > signatures;
 
 	void EndAll( ProfilerHelper& profilerHelper )
@@ -824,8 +825,10 @@ public:
 		DumpSignatures(socket,profilerHelper);
 
 		socket.SendFunctionID( 0xffffffff );
-		DumpCallees(&functionMap,socket,profilerHelper);
-		socket.SendFunctionID( 0xffffffff );
+		DumpStackWalks(socket,profilerHelper);
+		//DumpCallees(&functionMap,socket,profilerHelper);
+		socket.SendFunctionID( -2 );
+		//socket.SendFunctionID( 0xffffffff );
 	}
 	void DumpSignatures(ProfilerSocket& socket,ProfilerHelper& helper)
 	{
@@ -847,6 +850,26 @@ public:
 			socket.SendString( functionName );
 			socket.SendString( parameters );
 		}
+	}
+	void DumpStackWalks(ProfilerSocket& ps, ProfilerHelper& profilerHelper )
+	{
+		for ( vector<vector<FunctionID>*>::iterator stackWalk = stackWalks.begin(); stackWalk != stackWalks.end(); stackWalk++ )
+		{
+			for(vector<FunctionID>::iterator stackFrame=(*stackWalk)->begin();stackFrame!=(*stackWalk)->end();stackFrame++)
+			{
+				ps.SendFunctionID(*stackFrame);
+			}
+			ps.SendFunctionID( 0xffffffff );
+		}
+		ps.SendFunctionID( 0xffffffff );
+		//for ( map< FunctionID, FunctionInfo* >::iterator i = functions->begin(); i != functions->end(); i++ )
+		//{
+		//	FunctionInfo* function=i->second;
+		//	ps.SendFunctionID( function->functionId);
+		//	ps.SendUINT32( function->calls);
+		//	DumpCallees(&function->calleeMap,ps,profilerHelper);
+		//}
+		//ps.SendFunctionID( 0xffffffff );
 	}
 	void DumpCallees(map<FunctionID,FunctionInfo*>* functions, ProfilerSocket& ps, ProfilerHelper& profilerHelper )
 	{
@@ -898,7 +921,7 @@ public:
 
 	virtual void End()
 	{
-		timeKillEvent(timer);
+		KillTimer();
 		EndAll( profilerHelper );
 	};
 
@@ -934,35 +957,38 @@ public:
 			HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME|THREAD_QUERY_INFORMATION|THREAD_GET_CONTEXT,false,threadId);
 			if(threadHandle!=NULL)
 			{
-				vector<FunctionID> functions;
+				vector<FunctionID>* functions=new vector<FunctionID>();
 				ThreadID id=i->second;
 
 				profilerInfo->DoStackSnapshot(
 					id,
 					StackWalker,
 					COR_PRF_SNAPSHOT_DEFAULT,
-					&functions,
+					functions,
 					NULL,
 					NULL);
+
+
+				stackWalks.push_back(functions);
 
 				//currentStackWalk++;
 				//for(int i=0;i<functions.size();i++)
 				//{
-					map<FunctionID,FunctionInfo*>* currentMap=&functionMap;
-					for(int index=functions.size()-1;index>=0;index--)
-					//for(int index=functions.size()-1-i;index>=0;index--)
-					{
-						FunctionID id=functions[index];
-						FunctionInfo* function=GetFunctionInfo(currentMap,id);
+				//	map<FunctionID,FunctionInfo*>* currentMap=&functionMap;
+				//	for(int index=functions.size()-1;index>=0;index--)
+				//	//for(int index=functions.size()-1-i;index>=0;index--)
+				//	{
+				//		FunctionID id=functions[index];
+				//		FunctionInfo* function=GetFunctionInfo(currentMap,id);
 
-						//if(!(function->lastStackWalk==currentStackWalk && function->functionId==id))
-						//{
-							function->calls++;
-						//}
-						GetFunctionInfo(&signatures,id);
-						function->lastStackWalk=currentStackWalk;
-						currentMap=&function->calleeMap;
-					}
+				//		//if(!(function->lastStackWalk==currentStackWalk && function->functionId==id))
+				//		//{
+				//			function->calls++;
+				//		//}
+				//		GetFunctionInfo(&signatures,id);
+				//		function->lastStackWalk=currentStackWalk;
+				//		currentMap=&function->calleeMap;
+				//	}
 				//}
 				ResumeThread(threadHandle);
 			}

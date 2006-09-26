@@ -657,9 +657,54 @@ namespace NProf
 							ReadLengthEncodedASCIIString(reader)
 						));
 					}
-					List<FunctionInfo> functions = new List<FunctionInfo>();
-					GetFunctions(reader, functions,null);
-					StartFix(functions,null);
+					bool loop = true;
+					int currentWalk = 0;
+					while (loop)
+					{
+						currentWalk++;
+						List<int> frames = new List<int>();
+						while (true)
+						{
+							int functionId = reader.ReadInt32();
+							if (functionId == -1)
+							{
+								break;
+							}
+							else if (functionId == -2)
+							{
+								loop = false;
+								break;
+							}
+							frames.Add(functionId);
+						}
+						for (int i = 0; i < frames.Count; i++)
+						{
+							List<FunctionInfo> currentMap = run.functions;
+							//map<FunctionID, FunctionInfo*>* currentMap = &functionMap;
+							for (int index = frames.Count - 1; index >= 0; index--)
+								//for (int index = functions.size() - 1; index >= 0; index--)
+								//for(int index=functions.size()-1-i;index>=0;index--)
+							{
+								int id = frames[index];
+								//FunctionID id = functions[index];
+								FunctionInfo function=GetFunctionInfo(currentMap, id,run.signatures,null);
+								//FunctionInfo* function = GetFunctionInfo(currentMap, id);
+
+								if (function.lastWalk != currentWalk)
+								//if (!(function->lastStackWalk == currentStackWalk && function->functionId == id))
+								{
+									function.calls++;
+								}
+								//GetFunctionInfo(&signatures, id);
+								function.lastWalk= currentWalk;
+								//function->lastStackWalk = currentStackWalk;
+								currentMap = function.Callees;
+								//currentMap = &function->calleeMap;
+							}
+						}
+						int asdf = 0;
+					}
+
 				}
 			}
 			catch (Exception e)
@@ -669,24 +714,24 @@ namespace NProf
 			}
 		}
 
-		private void StartFix(List<FunctionInfo> functions,FunctionInfo parent)
+		private void StartFix(List<FunctionInfo> functions, FunctionInfo parent)
 		{
-			FixFunctions(functions,run.functions,parent);
+			FixFunctions(functions, run.functions, parent);
 			foreach (FunctionInfo f in functions)
 			{
-				StartFix(f.Callees,f);
+				StartFix(f.Callees, f);
 			}
 		}
-		private void FixFunctions(List<FunctionInfo> functions, List<FunctionInfo> targetFunctions,FunctionInfo parent)
+		private void FixFunctions(List<FunctionInfo> functions, List<FunctionInfo> targetFunctions, FunctionInfo parent)
 		{
 			foreach (FunctionInfo f in functions)
 			{
-				FunctionInfo function = GetFunctionInfo(targetFunctions, f.ID, run.signatures,parent);
+				FunctionInfo function = GetFunctionInfo(targetFunctions, f.ID, run.signatures, parent);
 				function.calls += f.calls;
-				FixFunctions(f.Callees, function.Callees,function);
+				FixFunctions(f.Callees, function.Callees, function);
 			}
 		}
-		private static FunctionInfo GetFunctionInfo(List<FunctionInfo> functions, int id,FunctionSignatureMap signatures,FunctionInfo parent)
+		private static FunctionInfo GetFunctionInfo(List<FunctionInfo> functions, int id, FunctionSignatureMap signatures, FunctionInfo parent)
 		{
 			foreach (FunctionInfo function in functions)
 			{
@@ -695,8 +740,8 @@ namespace NProf
 					return function;
 				}
 			}
-			functions.Add(new FunctionInfo(id,signatures,0));
-			return functions[functions.Count-1];
+			functions.Add(new FunctionInfo(id, signatures, 0));
+			return functions[functions.Count - 1];
 		}
 		private string ReadLengthEncodedASCIIString(BinaryReader br)
 		{
@@ -729,21 +774,21 @@ namespace NProf
 
 			return System.Text.ASCIIEncoding.ASCII.GetString(abString, 0, length);
 		}
-		private void GetFunctions(BinaryReader reader, List<FunctionInfo> functions,FunctionInfo parent)
-		{
-			while (true)
-			{
-				int functionId = reader.ReadInt32();
-				if (functionId == -1)
-				{
-					break;
-				}
-				int callCount = reader.ReadInt32();
-				FunctionInfo function = new FunctionInfo(functionId, run.signatures, callCount);
-				GetFunctions(reader, function.Callees,function);
-				functions.Add(function);
-			}
-		}
+		//private void GetFunctions(BinaryReader reader, List<FunctionInfo> functions, FunctionInfo parent)
+		//{
+		//    while (true)
+		//    {
+		//        int functionId = reader.ReadInt32();
+		//        if (functionId == -1)
+		//        {
+		//            break;
+		//        }
+		//        int callCount = reader.ReadInt32();
+		//        FunctionInfo function = new FunctionInfo(functionId, run.signatures, callCount);
+		//        GetFunctions(reader, function.Callees, function);
+		//        functions.Add(function);
+		//    }
+		//}
 
 		public int Port
 		{
@@ -765,6 +810,204 @@ namespace NProf
 		private Run run;
 		private bool hasStopped;
 	}
+	//public class ProfilerSocketServer
+	//{
+	//    public ProfilerSocketServer(Run run)
+	//    {
+	//        this.run = run;
+	//        this.stopFlag = 0;
+	//        this.hasStopped = false;
+	//    }
+	//    public void Start()
+	//    {
+	//        thread = new Thread(new ThreadStart(ListenThread));
+	//        resetStarted = new ManualResetEvent(false);
+	//        thread.Start();
+	//        resetStarted.WaitOne();
+	//    }
+	//    public void Stop()
+	//    {
+	//        lock (socket)
+	//            Interlocked.Increment(ref stopFlag);
+	//        socket.Close();
+	//    }
+	//    public bool HasStoppedGracefully
+	//    {
+	//        get { return hasStopped; }
+	//    }
+	//    private void ListenThread()
+	//    {
+	//        Thread.CurrentThread.Name = "ProfilerSocketServer Listen Thread";
+	//        try
+	//        {
+	//            resetMessageReceived = new ManualResetEvent(false);
+	//            using (socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+	//            {
+	//                IPEndPoint ep = new IPEndPoint(IPAddress.Loopback, 0);
+	//                socket.Bind(ep);
+	//                port = ((IPEndPoint)socket.LocalEndPoint).Port;
+	//                resetStarted.Set();
+	//                socket.Listen(100);
+
+	//                while (true)
+	//                {
+	//                    resetMessageReceived.Reset();
+	//                    lock (socket)
+	//                        if (stopFlag == 1)
+	//                            break;
+	//                    socket.BeginAccept(new AsyncCallback(AcceptConnection), socket);
+	//                    resetMessageReceived.WaitOne();
+	//                }
+	//            }
+	//        }
+	//        catch (Exception e)
+	//        {
+	//            resetStarted.Set();
+	//        }
+	//    }
+	//    private void AcceptConnection(IAsyncResult ar)
+	//    {
+	//        lock (socket)
+	//        {
+	//            if (stopFlag == 1)
+	//            {
+	//                resetMessageReceived.Set();
+	//                return;
+	//            }
+	//        }
+
+	//        // Note that this fails if you call EndAccept on a closed socket
+	//        Socket s = ((Socket)ar.AsyncState).EndAccept(ar);
+	//        resetMessageReceived.Set();
+
+	//        try
+	//        {
+	//            using (NetworkStream stream = new NetworkStream(s, true))
+	//            {
+	//                BinaryReader reader = new BinaryReader(stream);
+	//                while (true)
+	//                {
+	//                    int functionId = reader.ReadInt32();
+	//                    if (functionId == -1)
+	//                    {
+	//                        break;
+	//                    }
+	//                    run.signatures.MapSignature(functionId, new FunctionSignature(
+	//                        reader.ReadUInt32(),
+	//                        ReadLengthEncodedASCIIString(reader),
+	//                        ReadLengthEncodedASCIIString(reader),
+	//                        ReadLengthEncodedASCIIString(reader),
+	//                        ReadLengthEncodedASCIIString(reader)
+	//                    ));
+	//                }
+	//                List<FunctionInfo> functions = new List<FunctionInfo>();
+	//                GetFunctions(reader, functions,null);
+	//                StartFix(functions,null);
+	//            }
+	//        }
+	//        catch (Exception e)
+	//        {
+	//            if (Error != null)
+	//                Error(e);
+	//        }
+	//    }
+
+	//    private void StartFix(List<FunctionInfo> functions,FunctionInfo parent)
+	//    {
+	//        FixFunctions(functions,run.functions,parent);
+	//        foreach (FunctionInfo f in functions)
+	//        {
+	//            StartFix(f.Callees,f);
+	//        }
+	//    }
+	//    private void FixFunctions(List<FunctionInfo> functions, List<FunctionInfo> targetFunctions,FunctionInfo parent)
+	//    {
+	//        foreach (FunctionInfo f in functions)
+	//        {
+	//            FunctionInfo function = GetFunctionInfo(targetFunctions, f.ID, run.signatures,parent);
+	//            function.calls += f.calls;
+	//            FixFunctions(f.Callees, function.Callees,function);
+	//        }
+	//    }
+	//    private static FunctionInfo GetFunctionInfo(List<FunctionInfo> functions, int id,FunctionSignatureMap signatures,FunctionInfo parent)
+	//    {
+	//        foreach (FunctionInfo function in functions)
+	//        {
+	//            if (function.ID == id)
+	//            {
+	//                return function;
+	//            }
+	//        }
+	//        functions.Add(new FunctionInfo(id,signatures,0));
+	//        return functions[functions.Count-1];
+	//    }
+	//    private string ReadLengthEncodedASCIIString(BinaryReader br)
+	//    {
+	//        int length = br.ReadInt32();
+	//        if (length > 2000 || length < 0)
+	//        {
+	//            byte[] abNextBytes = new byte[8];
+	//            br.Read(abNextBytes, 0, 8);
+	//            string strError = "Length was abnormally large or small (" + length.ToString("x") + ").  Next bytes were ";
+	//            foreach (byte b in abNextBytes)
+	//                strError += b.ToString("x") + " (" + (Char.IsControl((char)b) ? '-' : (char)b) + ") ";
+
+	//            throw new InvalidOperationException(strError);
+	//        }
+
+	//        byte[] abString = new byte[length];
+	//        int nRead = 0;
+
+	//        DateTime dt = DateTime.Now;
+
+	//        while (nRead < length)
+	//        {
+	//            nRead += br.Read(abString, nRead, length - nRead);
+
+	//            // Make this loop finite (30 seconds)
+	//            TimeSpan ts = DateTime.Now - dt;
+	//            if (ts.TotalSeconds > 30)
+	//                throw new InvalidOperationException("Timed out while waiting for length encoded string");
+	//        }
+
+	//        return System.Text.ASCIIEncoding.ASCII.GetString(abString, 0, length);
+	//    }
+	//    private void GetFunctions(BinaryReader reader, List<FunctionInfo> functions,FunctionInfo parent)
+	//    {
+	//        while (true)
+	//        {
+	//            int functionId = reader.ReadInt32();
+	//            if (functionId == -1)
+	//            {
+	//                break;
+	//            }
+	//            int callCount = reader.ReadInt32();
+	//            FunctionInfo function = new FunctionInfo(functionId, run.signatures, callCount);
+	//            GetFunctions(reader, function.Callees,function);
+	//            functions.Add(function);
+	//        }
+	//    }
+
+	//    public int Port
+	//    {
+	//        get { return port; }
+	//    }
+
+	//    public event ErrorHandler Error;
+
+	//    public delegate void ErrorHandler(Exception e);
+	//    public delegate void MessageHandler(string strMessage);
+
+
+	//    private int port;
+	//    private int stopFlag;
+	//    private ManualResetEvent resetStarted;
+	//    private ManualResetEvent resetMessageReceived;
+	//    private Thread thread;
+	//    private Socket socket;
+	//    private Run run;
+	//    private bool hasStopped;
+	//}
 	public class FunctionInfo
 	{
 		private const double frequency = 10.0;
