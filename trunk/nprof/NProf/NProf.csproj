@@ -74,26 +74,9 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CommandBar">
-      <Name>CommandBar</Name>
-      <HintPath>..\Libraries\CommandBar\CommandBar.dll</HintPath>
-    </Reference>
     <Reference Include="DotNetLib.Windows.Forms">
       <Name>DotNetLib.Windows.Forms</Name>
       <HintPath>..\Libraries\DotNetLib\DotNetLib.Windows.Forms.dll</HintPath>
-    </Reference>
-    <Reference Include="genghis">
-      <Name>Genghis</Name>
-      <HintPath>..\Libraries\Genghis\Genghis.dll</HintPath>
-    </Reference>
-    <Reference Include="MagicLibrary">
-      <Name>MagicLibrary</Name>
-      <HintPath>..\Libraries\MagicLibrary\MagicLibrary.DLL</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="SynapticEffect.Forms, Version=0.9.9.27064, Culture=neutral">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ExtendedListViews_lib\SynapticEffect.Forms.dll</HintPath>
     </Reference>
     <Reference Include="System">
       <Name>System</Name>

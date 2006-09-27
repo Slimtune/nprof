@@ -35,9 +35,6 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Data;
 using NProf;
-using Genghis.Windows.Forms;
-using Reflector.UserInterface;
-using Crownwood.Magic.Menus;
 using System.Globalization;
 using DotNetLib.Windows.Forms;
 
@@ -52,30 +49,15 @@ namespace NProf
 		static void Main(string[] args)
 		{
 			Application.EnableVisualStyles();
-
-			Console.WriteLine("NProf version {0} (C) 2003 by Matthew Mastracci", Profiler.Version);
-			Console.WriteLine("http://nprof.sourceforge.net");
-			Console.WriteLine();
-			Console.WriteLine("This is free software, and you are welcome to redistribute it under certain");
-			Console.WriteLine("conditions set out by the GNU General Public License.  A copy of the license");
-			Console.WriteLine("is available in the distribution package and from the NProf web site.");
-			Console.WriteLine();
-
-			NProf form = NProf.form;
-
-			Console.Out.Flush();
-			System.Threading.Thread.CurrentThread.Name = "GUI Thread";
-			form.Show();
 			Application.Run(form);
 		}
 		private Profiler profiler=new Profiler();
-		public TreeView runs;
+		public ListView runs;
 		private MethodView methods;
 		private MethodView callers;
 		private TextBox findText = new TextBox();
-		public Run currentRun;
-		public delegate void OneDelegate<T>(T t);
-		public T With<T>(T t,OneDelegate<T> del)
+		public delegate void SingleArgument<T>(T t);
+		public T With<T>(T t,SingleArgument<T> del)
 		{
 			del(t);
 			return t;
@@ -85,23 +67,21 @@ namespace NProf
 			Size = new Size(800, 600);
 			Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("NProf.Resources.app-icon.ico"));
 			Text = "NProf";
-
-			string directory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-			string dll = Path.Combine(directory, "msvcr70.dll");
-
-			runs = With(new TreeView(), delegate(TreeView tree)
+			runs = With(new ListView(), delegate(ListView tree)
 			{
 				tree.Dock = DockStyle.Left;
 				tree.DoubleClick += delegate
 				{
-					UpdateFilters((Run)runs.SelectedNode.Tag);
+					if (runs.SelectedItems.Count != 0)
+					{
+						UpdateFilters((Run)runs.SelectedItems[0].Tag);
+					}
 				};
 			});
 			callers = With(new MethodView("Callers"), delegate(MethodView method)
 			{
 				method.Size = new Size(100, 100);
 				method.Dock = DockStyle.Bottom;
-
 			});
 			methods = With(new MethodView("Callees"), delegate(MethodView method)
 			{
@@ -123,7 +103,6 @@ namespace NProf
 						}
 					}
 				};
-
 				method.SelectedItemsChanged+=delegate
 				{
 					//if (methods.SelectedItems.Count == 0)
@@ -144,6 +123,20 @@ namespace NProf
 					e.Handled = true;
 				}
 			};
+			Menu = new MainMenu(new MenuItem[]
+				{
+					new MenuItem(
+						"File",
+						new MenuItem[] 
+						{
+							new MenuItem("&New...",New),
+							new MenuItem("-"),
+							new MenuItem("About nprof...",delegate{new AboutForm().ShowDialog(this);}),
+							new MenuItem("-"),
+							new MenuItem("E&xit",delegate {Close();})
+						})
+				});
+
 			Controls.AddRange(new Control[] 
 			{
 				With(new Panel(), delegate(Panel panel)
@@ -207,18 +200,10 @@ namespace NProf
 				{
 					application = With(new TextBox(),delegate(TextBox textBox)
 					{
-						//textBox.TextChanged += delegate
-						//{
-						//    Project.ApplicationName = application.Text;
-						//};
 						textBox.Width=300;
 					});
 					arguments = With(new TextBox(),delegate(TextBox textBox)
 					{
-						//textBox.TextChanged+=delegate
-						//{
-						//    Project.Arguments=textBox.Text;
-						//};
 						textBox.Width=300;
 					});
 					panel.Height=100;
@@ -250,6 +235,14 @@ namespace NProf
 							}
 						};
 					}),2,0);
+					panel.Controls.Add(With(new Button(),delegate(Button button)
+					{
+						button.Text="Start";
+						button.Click+=delegate
+						{
+							StartRun();
+						};
+					}),3,0);
 					panel.Controls.Add(With(new Label(),delegate(Label label)
 						{
 							label.Text = "Arguments:";
@@ -259,21 +252,18 @@ namespace NProf
 						}),0,1);
 					panel.Controls.Add(arguments,1,1);
 				}),
-				With(new MenuControl(),delegate(MenuControl mainMenu)
-				{
-					mainMenu.Dock = DockStyle.Top;
-					mainMenu.MenuCommands.AddRange(new MenuCommand[]
-					{
-						new Menu("File",
-							new Menu("&New...","Create a new profile project",New),
-							new Menu("-","-",null),
-							new Menu("E&xit","Exit the application",Shortcut.AltF4,delegate {Close();})),
-						new Menu("Project",
-							new Menu("Start","Run the current project",Shortcut.F5,StartRun),
-							new Menu("-","-",null),
-							new Menu("About nprof...","About nprof",About))
-					});
-				})});
+				//With(new MenuControl(),delegate(MenuControl mainMenu)
+				//{
+				//    mainMenu.Dock = DockStyle.Top;
+				//    mainMenu.MenuCommands.Add(
+				//        new Menu("File",
+				//            new Menu("&New...","Create a new profile project",New),
+				//            new Menu("-","-",null),
+				//            new Menu("About nprof...","About nprof",delegate{new AboutForm().ShowDialog(this);}),
+				//            new Menu("-","-",null),
+				//            new Menu("E&xit","Exit the application",Shortcut.AltF4,delegate {Close();})));
+				//})
+			});
 		}
 		private delegate void HandleProfileComplete(Run run);
 
@@ -289,13 +279,13 @@ namespace NProf
 		}
 		private void New(object sender, System.EventArgs e)
 		{
-			runs.Nodes.Clear();
+			runs.Items.Clear();
 			NProf.arguments.Text = "";
 			NProf.application.Text = "";
 			methods.Items.Clear();
 			callers.Items.Clear();
 		}
-		private void StartRun(object sender, System.EventArgs e)
+		private void StartRun()
 		{
 			string message;
 			bool success = profiler.CheckSetup(out message);
@@ -310,35 +300,11 @@ namespace NProf
 			run.profiler.Completed += run.Complete;
 			run.Start();
 		}
-		private void About(object sender, System.EventArgs e)
-		{
-			new AboutForm().ShowDialog(this);
-		}
-		private class Images
-		{
-			private static Image[] images = null;
-			static Images()
-			{
-				Bitmap bitmap = (Bitmap)Bitmap.FromStream(typeof(Images).Assembly.GetManifestResourceStream("NProf.Resources.toolbar16.png"));
-				int count = (int)(bitmap.Width / bitmap.Height);
-				images = new Image[count];
-				Rectangle rectangle = new Rectangle(0, 0, bitmap.Height, bitmap.Height);
-				for (int i = 0; i < count; i++)
-				{
-					images[i] = bitmap.Clone(rectangle, bitmap.PixelFormat);
-					rectangle.X += bitmap.Height;
-				}
-			}
-			public static Image New { get { return images[0]; } }
-			public static Image Back { get { return images[17]; } }
-			public static Image Forward { get { return images[18]; } }
-			public static Image Run { get { return images[37]; } }
-		}
 		public void UpdateRuns(Run run)
 		{
-			TreeNode node = new TreeNode(DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.LongTimePattern));
-			node.Tag = run;
-			runs.Nodes.Add(node);
+			ListViewItem item = new ListViewItem(DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.LongTimePattern));
+			item.Tag = run;
+			runs.Items.Add(item);
 			UpdateFilters(run);
 		}
 		private void UpdateFilters(Run run)
@@ -350,7 +316,6 @@ namespace NProf
 			methods.Items.Clear();
 			callers.Items.Clear();
 
-			currentRun = run;
 			foreach (FunctionInfo method in run.functions.Values)
 			{
 				methods.Add(method);
@@ -565,8 +530,8 @@ namespace NProf
 			ContainerListViewItem item=AddItem(parent, function);
 			foreach (FunctionInfo callee in function.Callees.Values)
 			{
-				AddItem(item.Items, callee);
-				//FunctionItem(item.Items, subCallee);
+				//AddItem(item.Items, callee);
+				FunctionItem(item.Items, callee);
 				//ContainerListViewItem subItem=AddItem(item.Items, callee);
 				//foreach (FunctionInfo subCallee in callee.Callees.Values)
 				//{
@@ -597,25 +562,6 @@ namespace NProf
 			DotNetLib.Windows.Forms.ContainerListViewItem item = Items.Add(function.Signature);
 			item.SubItems[1].Text = function.Time.ToString(NProf.timeFormat);
 			item.Tag = function;
-		}
-	}
-	public class Menu : MenuCommand
-	{
-		public Menu(string text, string description, EventHandler click)
-			:
-			this(text, description, Shortcut.None, click)
-		{
-		}
-		public Menu(string text, string description, Shortcut shortcut, EventHandler click)
-			:
-			base(text, shortcut, click)
-		{
-			Description = description;
-		}
-		public Menu(string text, params MenuCommand[] commands)
-			: base(text)
-		{
-			MenuCommands.AddRange(commands);
 		}
 	}
 	public class ProfilerSocketServer
@@ -730,8 +676,7 @@ namespace NProf
 			}
 			catch (Exception e)
 			{
-				if (Error != null)
-					Error(e);
+				MessageBox.Show("An internal exception occurred:\n\n" + e.ToString(), "Error");
 			}
 		}
 		public static FunctionInfo GetFunctionInfo(Dictionary<int, FunctionInfo> functions, int id, FunctionSignatureMap signatures)
@@ -780,13 +725,6 @@ namespace NProf
 		{
 			get { return port; }
 		}
-
-		public event ErrorHandler Error;
-
-		public delegate void ErrorHandler(Exception e);
-		public delegate void MessageHandler(string strMessage);
-
-
 		private int port;
 		private int stopFlag;
 		private ManualResetEvent resetStarted;
@@ -1110,50 +1048,30 @@ namespace NProf
 		public bool Start(Run run)
 		{
 			this.run = run;
-
 			socketServer = new ProfilerSocketServer(run);
 			socketServer.Start();
-			socketServer.Error += new ProfilerSocketServer.ErrorHandler(OnError);
-
+			//socketServer.Error += new ProfilerSocketServer.ErrorHandler(OnError);
 			process = new Process();
 			process.StartInfo = new ProcessStartInfo(NProf.application.Text,NProf.arguments.Text);
 			process.StartInfo.EnvironmentVariables["COR_ENABLE_PROFILING"] = "0x1";
 			process.StartInfo.EnvironmentVariables["COR_PROFILER"] = PROFILER_GUID;
 			process.StartInfo.EnvironmentVariables["NPROF_PROFILING_SOCKET"] = socketServer.Port.ToString();
 			process.StartInfo.UseShellExecute = false;
-			//process.StartInfo.Arguments = pi.Arguments;
-			//process.StartInfo.WorkingDirectory = pi.WorkingDirectory;
 			process.EnableRaisingEvents = true;
 			process.Exited += new EventHandler(OnProcessExited);
-
 			return process.Start();
 		}
 		public void Stop()
 		{
-			Run r;
-
-			r = run;
-
-			// Is there anything to stop?
-			if (run == null)
-				return;
-
-			run = null;
-			socketServer.Stop();
-			r.Success = false;
+			if (run != null)
+			{
+				socketServer.Stop();
+				run.Success = false;
+			}
 		}
 
 		private void OnProcessExited(object oSender, EventArgs ea)
 		{
-			//Run r;
-			//r = run;
-
-			//// This gets called twice for file projects - FIXME
-			//if (run == null)
-			//    return;
-
-			//run = null;
-
 			if (!socketServer.HasStoppedGracefully)
 			{
 				run.Success = false;
@@ -1170,12 +1088,7 @@ namespace NProf
 				Completed(this, new EventArgs());
 			}
 		}
-		private void OnError(Exception e)
-		{
-			MessageBox.Show("An internal exception occurred:\n\n" + e.ToString(), "Error");
-		}
 		private Run run;
-
 		private Process process;
 		private ProfilerSocketServer socketServer;
 	}
