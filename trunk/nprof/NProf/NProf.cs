@@ -65,26 +65,13 @@ namespace NProf
 
 			Console.Out.Flush();
 			System.Threading.Thread.CurrentThread.Name = "GUI Thread";
-			form.Project = new ProjectInfo();
 			form.Show();
 			Application.Run(form);
 		}
-		public ProjectInfo Project
-		{
-			get
-			{
-				return project;
-			}
-			set
-			{
-				project = value;
-			}
-		}
 		private Profiler profiler=new Profiler();
-		private ProjectInfo project;
 		public TreeView runs;
 		private MethodView methods;
-		private CallerView callers;
+		private MethodView callers;
 		private TextBox findText = new TextBox();
 		public Run currentRun;
 		public delegate void OneDelegate<T>(T t);
@@ -110,23 +97,39 @@ namespace NProf
 					UpdateFilters((Run)runs.SelectedNode.Tag);
 				};
 			});
-			callers = With(new CallerView("Callers"), delegate(CallerView method)
+			callers = With(new MethodView("Callers"), delegate(MethodView method)
 			{
 				method.Size = new Size(100, 100);
 				method.Dock = DockStyle.Bottom;
 
 			});
-			methods = With(new MethodView(), delegate(MethodView method)
+			methods = With(new MethodView("Callees"), delegate(MethodView method)
 			{
 				method.Size = new Size(100, 100);
 				method.Dock = DockStyle.Fill;
+				method.DoubleClick += delegate
+				{
+					if (method.SelectedItems.Count != 0)
+					{
+						FunctionInfo function = (FunctionInfo)method.SelectedItems[0].Tag;
+						callers.SelectedItems.Clear();
+						foreach (ContainerListViewItem item in method.Items)
+						{
+							if (((FunctionInfo)item.Tag).ID == function.ID)
+							{
+								callers.SelectedItems.Add(item);
+								break;
+							}
+						}
+					}
+				};
 
 				method.SelectedItemsChanged+=delegate
 				{
-					if (methods.SelectedItems.Count == 0)
-						return;
-					callers.Items.Clear();
-					UpdateCallerList(currentRun);
+					//if (methods.SelectedItems.Count == 0)
+					//    return;
+					//callers.Items.Clear();
+					//UpdateCallerList(currentRun);
 				};
 			});
 			findText.TextChanged += delegate
@@ -204,18 +207,18 @@ namespace NProf
 				{
 					application = With(new TextBox(),delegate(TextBox textBox)
 					{
-						textBox.TextChanged += delegate
-						{
-							Project.ApplicationName = application.Text;
-						};
+						//textBox.TextChanged += delegate
+						//{
+						//    Project.ApplicationName = application.Text;
+						//};
 						textBox.Width=300;
 					});
 					arguments = With(new TextBox(),delegate(TextBox textBox)
 					{
-						textBox.TextChanged+=delegate
-						{
-							Project.Arguments=textBox.Text;
-						};
+						//textBox.TextChanged+=delegate
+						//{
+						//    Project.Arguments=textBox.Text;
+						//};
 						textBox.Width=300;
 					});
 					panel.Height=100;
@@ -302,7 +305,8 @@ namespace NProf
 				return;
 			}
 
-			Run run = Project.CreateRun(profiler);
+			Run run = new Run(profiler);
+			//Project.Runs.Add(run);
 			run.profiler.Completed += run.Complete;
 			run.Start();
 		}
@@ -341,6 +345,7 @@ namespace NProf
 		{
 			methods.SuspendLayout();
 			methods.BeginUpdate();
+			callers.BeginUpdate();
 
 			methods.Items.Clear();
 			callers.Items.Clear();
@@ -350,13 +355,17 @@ namespace NProf
 			{
 				methods.Add(method);
 			}
+			foreach (FunctionInfo method in run.callers.Values)
+			{
+				callers.Add(method);
+			}
+			callers.EndUpdate();
 			methods.EndUpdate();
 			methods.ResumeLayout();
 		}
 		private void UpdateCallerList(Run run)
 		{
 			callers.BeginUpdate();
-			ListView l;
 
 			FunctionInfo mfi = (FunctionInfo)methods.SelectedItems[0].Tag;
 			foreach (FunctionInfo fi in run.functions.Values)
@@ -482,9 +491,9 @@ namespace NProf
 	}
 	public class MethodView : ContainerListView
 	{
-		public MethodView()
+		public MethodView(string name)
 		{
-			Columns.Add("Callees");
+			Columns.Add(name);
 			Columns.Add("Time");
 			Columns[0].Width = 350;
 			Columns[0].SortDataType = SortDataType.String;
@@ -497,11 +506,18 @@ namespace NProf
 			Font = new Font("Tahoma", 8.0f);
 			this.Click += delegate
 			{
+				//ContainerListViewItem item=this.GetItemAt(this.PointToClient(Control.MousePosition).Y);
+				//if (item != null)
+				//{
 				UpdateView();
+				//}
 			};
 			this.KeyDown += delegate
 			{
-				UpdateView();
+				if (SelectedItems.Count != 0)
+				{
+					UpdateView();
+				}
 			};
 		}
 		void UpdateView()
@@ -509,39 +525,53 @@ namespace NProf
 			SuspendLayout();
 			BeginUpdate();
 			ContainerListViewItem item = this.BottomItemPartiallyVisible;
-			while(item!=null)
+			while (item != null)
 			{
-				foreach (ContainerListViewItem subItem in item.Items)
+				//foreach (ContainerListViewItem subItem in item.Items)
+				//{
+				if (item.Items.Count == 0)
 				{
-					if (subItem.Items.Count == 0)
+					foreach (FunctionInfo function in ((FunctionInfo)item.Tag).Callees.Values)
 					{
-						foreach (FunctionInfo function in ((FunctionInfo)subItem.Tag).Callees.Values)
-						{
-							FunctionItem(subItem.Items, function);
-						}
+						FunctionItem(item.Items, function);
+					}
+					if (item.Items.Count == 0 && ((FunctionInfo)item.Tag).Callees.Values.Count != 0)
+					{
 					}
 				}
+
+					//if (subItem.Items.Count == 0)
+					//{
+					//    foreach (FunctionInfo function in ((FunctionInfo)subItem.Tag).Callees.Values)
+					//    {
+					//        FunctionItem(subItem.Items, function);
+					//    }
+					//}
+				//}
 				item = item.PreviousVisibleItem;
 			}
 			EndUpdate();
 			ResumeLayout();
 		}
-		public void FunctionItem(ContainerListViewItemCollection parent,FunctionInfo function)
+		private ContainerListViewItem AddItem(ContainerListViewItemCollection parent, FunctionInfo function)
 		{
-			ContainerListViewItem item=parent.Add(function.Signature);
+			ContainerListViewItem item = parent.Add(function.Signature);
 			item.SubItems[1].Text = function.Time.ToString(NProf.timeFormat);
 			item.Tag = function;
-			foreach (FunctionInfo subCallee in function.Callees.Values)
+			return item;
+		}
+		public void FunctionItem(ContainerListViewItemCollection parent,FunctionInfo function)
+		{
+			ContainerListViewItem item=AddItem(parent, function);
+			foreach (FunctionInfo callee in function.Callees.Values)
 			{
-				ContainerListViewItem subItem = item.Items.Add(subCallee.Signature);
-				subItem.SubItems[1].Text = subCallee.Time.ToString(NProf.timeFormat);
-				subItem.Tag = subCallee;
-				foreach (FunctionInfo callee in subCallee.Callees.Values)
-				{
-					ContainerListViewItem i = subItem.Items.Add(callee.Signature);
-					i.SubItems[1].Text = callee.Time.ToString(NProf.timeFormat);
-					i.Tag = callee;
-				}
+				AddItem(item.Items, callee);
+				//FunctionItem(item.Items, subCallee);
+				//ContainerListViewItem subItem=AddItem(item.Items, callee);
+				//foreach (FunctionInfo subCallee in callee.Callees.Values)
+				//{
+				//    AddItem(subItem.Items, subCallee);
+				//}
 			}
 		}
 		public void Add(FunctionInfo function)
@@ -704,7 +734,7 @@ namespace NProf
 					Error(e);
 			}
 		}
-		public static FunctionInfo GetFunctionInfo(Dictionary<int, FunctionInfo> functions, int id, FunctionSignatureMap signatures, FunctionInfo parent)
+		public static FunctionInfo GetFunctionInfo(Dictionary<int, FunctionInfo> functions, int id, FunctionSignatureMap signatures)
 		{
 			FunctionInfo result;
 			if (!functions.TryGetValue(id,out result))
@@ -962,80 +992,6 @@ namespace NProf
 		}
 		private Hashtable signatures;
 	}
-
-	public class ProjectInfo
-	{
-		public ProjectInfo()
-		{
-			this.name = null;
-			this.runs = new List<Run>();
-		}
-
-		public string Name
-		{
-			get { return name; }
-			set { name = value; Fire_ProjectInfoChanged(); }
-		}
-
-		public string ApplicationName
-		{
-			get { return appName; }
-			set { appName = value; Fire_ProjectInfoChanged(); }
-		}
-
-		public string Arguments
-		{
-			get { return arguments; }
-			set { arguments = value; Fire_ProjectInfoChanged(); }
-		}
-
-		public string WorkingDirectory
-		{
-			get { return workingDirectory; }
-			set { workingDirectory = value; Fire_ProjectInfoChanged(); }
-		}
-
-		public List<Run> Runs
-		{
-			get { return runs; }
-		}
-
-		public Run CreateRun(Profiler p)
-		{
-			Run run = new Run(p, this);
-			runs.Add(run);
-
-			return run;
-		}
-
-		public bool DebugProfiler
-		{
-			get
-			{
-				return debugHook;
-			}
-			set
-			{
-				debugHook = value;
-			}
-		}
-
-		private void Fire_ProjectInfoChanged()
-		{
-			if (ProjectInfoChanged != null)
-				ProjectInfoChanged(this);
-		}
-		public event ProjectEventHandler ProjectInfoChanged;
-
-		public delegate void ProjectEventHandler(ProjectInfo project);
-
-		private string appName;
-		private string arguments;
-		private string workingDirectory;
-		private string name;
-		private bool debugHook;
-		private List<Run> runs;
-	}
 	public class Run
 	{
 		public List<List<int>> stackWalks = new List<List<int>>();
@@ -1051,9 +1007,7 @@ namespace NProf
 					Dictionary<int, FunctionInfo> currentMap = functions;
 					for (int index = stackWalk.Count - 1 - i; index >= 0; index--)
 					{
-						int id = stackWalk[index];
-						FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(currentMap, id, signatures, null);
-
+						FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(currentMap, stackWalk[index], signatures);
 						if (function.lastWalk != currentWalk)
 						{
 							function.calls++;
@@ -1063,6 +1017,25 @@ namespace NProf
 					}
 				}
 			}
+			foreach (List<int> stackWalk in stackWalks)
+			{
+				currentWalk++;
+				for (int i = 0; i < stackWalk.Count; i++)
+				{
+					Dictionary<int, FunctionInfo> currentMap = callers;
+					for (int index = i;index<stackWalk.Count; index++)
+					{
+						FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(currentMap, stackWalk[index], signatures);
+						if (function.lastWalk != currentWalk)
+						{
+							function.calls++;
+						}
+						function.lastWalk = currentWalk;
+						currentMap = function.Callees;
+					}
+				}
+			}
+			int asdf = 0;
 		}
 		public void Complete(object sender,EventArgs e)
 		{
@@ -1075,21 +1048,20 @@ namespace NProf
 		}
 		public FunctionSignatureMap signatures = new FunctionSignatureMap();
 		public Dictionary<int, FunctionInfo> functions = new Dictionary<int, FunctionInfo>();
-		//public List<FunctionInfo> functions = new List<FunctionInfo>();
+		public Dictionary<int, FunctionInfo> callers = new Dictionary<int, FunctionInfo>();
 
-		public Run(Profiler p, ProjectInfo pi)
+		public Run(Profiler p)
 		{
 			this.profiler = p;
 			this.start = DateTime.Now;
 			this.end = DateTime.MaxValue;
-			this.project = pi;
 			this.isSuccess = false;
 		}
 		public bool Start()
 		{
 			start = DateTime.Now;
 
-			return profiler.Start(project, this);
+			return profiler.Start(this);
 		}
 
 		public bool Stop()
@@ -1108,7 +1080,6 @@ namespace NProf
 		private bool isSuccess;
 		private DateTime start;
 		private DateTime end;
-		private ProjectInfo project;
 		public Profiler profiler;
 	}
 	public class Profiler
@@ -1136,9 +1107,8 @@ namespace NProf
 			return true;
 		}
 
-		public bool Start(ProjectInfo pi, Run run)
+		public bool Start(Run run)
 		{
-			this.project = pi;
 			this.run = run;
 
 			socketServer = new ProfilerSocketServer(run);
@@ -1146,13 +1116,13 @@ namespace NProf
 			socketServer.Error += new ProfilerSocketServer.ErrorHandler(OnError);
 
 			process = new Process();
-			process.StartInfo = new ProcessStartInfo(pi.ApplicationName, pi.Arguments);
+			process.StartInfo = new ProcessStartInfo(NProf.application.Text,NProf.arguments.Text);
 			process.StartInfo.EnvironmentVariables["COR_ENABLE_PROFILING"] = "0x1";
 			process.StartInfo.EnvironmentVariables["COR_PROFILER"] = PROFILER_GUID;
 			process.StartInfo.EnvironmentVariables["NPROF_PROFILING_SOCKET"] = socketServer.Port.ToString();
 			process.StartInfo.UseShellExecute = false;
-			process.StartInfo.Arguments = pi.Arguments;
-			process.StartInfo.WorkingDirectory = pi.WorkingDirectory;
+			//process.StartInfo.Arguments = pi.Arguments;
+			//process.StartInfo.WorkingDirectory = pi.WorkingDirectory;
 			process.EnableRaisingEvents = true;
 			process.Exited += new EventHandler(OnProcessExited);
 
@@ -1207,7 +1177,6 @@ namespace NProf
 		private Run run;
 
 		private Process process;
-		private ProjectInfo project;
 		private ProfilerSocketServer socketServer;
 	}
 }
