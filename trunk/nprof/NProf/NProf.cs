@@ -72,14 +72,29 @@ namespace NProf
 			};
 			runs.Dock = DockStyle.Left;
 			runs.Width = 100;
+			runs.DoubleClick+=delegate
+			{
+				if (runs.SelectedItems.Count != 0)
+				{
+					ShowRun((Run)runs.SelectedItems[0].Tag);
+				}
+			};
 
 			callers = new MethodView("Callers");
 			callers.Size = new Size(100, 200);
 			callers.Dock = DockStyle.Bottom;
+			callers.GotFocus += delegate
+			{
+				callees.SelectedItems.Clear();
+			};
 
 			callees = new MethodView("Callees");
 			callees.Size = new Size(100, 100);
 			callees.Dock = DockStyle.Fill;
+			callees.GotFocus += delegate
+			{
+				callers.SelectedItems.Clear();
+			};
 			callees.DoubleClick += delegate {
 				//if (callees.SelectedItems.Count != 0)
 				//{
@@ -279,13 +294,17 @@ namespace NProf
 			run.profiler.completed=new EventHandler(run.Complete);
 			run.Start();
 		}
-		public void UpdateRuns(Run run)
+		public void AddRun(Run run)
 		{
 			ContainerListViewItem item = new ContainerListViewItem(DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.LongTimePattern));
 			item.Tag = run;
 			runs.Items.Add(item);
-			callees.UpdateFilters(run,run.functions);
-			callers.UpdateFilters(run, run.callers);
+			ShowRun(run);
+		}
+		public void ShowRun(Run run)
+		{
+			callees.Update(run, run.functions);
+			callers.Update(run, run.callers);
 		}
 		private void findNext_Click(object sender, EventArgs e)
 		{
@@ -578,10 +597,10 @@ namespace NProf
 				for (int i = 0; i < stackWalk.Count; i++)
 				{
 					FunctionInfo function=ProfilerSocketServer.GetFunctionInfo(functions, stackWalk[stackWalk.Count-i-1]);
-					function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.GetRange(0, stackWalk.Count - i-1)));
 					if (function.lastWalk != currentWalk)
 					{
 						function.Calls++;
+						function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.GetRange(0, stackWalk.Count - i - 1)));
 					}
 					function.lastWalk = currentWalk;
 				}
@@ -594,10 +613,10 @@ namespace NProf
 				for (int i = 0; i < stackWalk.Count; i++)
 				{
 					FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(callers, stackWalk[stackWalk.Count-i-1]);
-					function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.GetRange(0, stackWalk.Count - i-1)));
 					if (function.lastWalk != currentWalk)
 					{
 						function.Calls++;
+						function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.GetRange(0, stackWalk.Count - i - 1)));
 					}
 					function.lastWalk = currentWalk;
 				}
@@ -697,7 +716,7 @@ namespace NProf
 			NProf.form.BeginInvoke(new EventHandler(delegate
 			{
 				InterpreteData();
-				NProf.form.UpdateRuns(this);
+				NProf.form.AddRun(this);
 			}));
 		}
 		public Dictionary<int, FunctionSignature> signatures = new Dictionary<int, FunctionSignature>();
@@ -725,7 +744,7 @@ namespace NProf
 	}
 	public class MethodView : ContainerListView
 	{
-		public void UpdateFilters(Run run,Dictionary<int,FunctionInfo> functions)
+		public void Update(Run run,Dictionary<int,FunctionInfo> functions)
 		{
 			currentRun = run;
 			SuspendLayout();
@@ -735,6 +754,7 @@ namespace NProf
 			{
 				AddItem(Items, method);
 			}
+			Sort(1, SortOrder.Descending, true);
 			UpdateView();
 			EndUpdate();
 			ResumeLayout();
@@ -840,6 +860,7 @@ namespace NProf
 			Columns[0].Width = 350;
 			Columns[0].SortDataType = SortDataType.String;
 			Columns[1].SortDataType = SortDataType.Double;
+			Columns[1].DefaultSortOrder = SortOrder.Descending;
 			this.ShowPlusMinus = true;
 			ShowRootTreeLines = true;
 			ShowTreeLines = true;
