@@ -15,9 +15,6 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef PROFILER_H
-#define PROFILER_H
-
 #include "resource.h"
 
 
@@ -87,8 +84,6 @@ using namespace std;
 
 #define MAX_FUNCTION_LENGTH 2048
 
-int currentStackWalk=0;
-
 
 class ProfilerHelper
 {
@@ -96,10 +91,6 @@ public:
 	void ProfilerHelper::Initialize(  ICorProfilerInfo2* profilerInfo )
 	{
 		this->profilerInfo = profilerInfo;
-	}
-	string ProfilerHelper::GetCurrentThreadName()
-	{
-		return "";
 	}
 	void ProfilerHelper::GetFunctionSignature( 
 		FunctionID functionId,
@@ -615,16 +606,6 @@ private:
 	SOCKET socket;
 };
 
-/*class FunctionInfo
-{
-public:
-	FunctionInfo::FunctionInfo( FunctionID functionId )
-	{
-		this->functionId = functionId;
-	}
-	FunctionID functionId;
-	map< FunctionID, FunctionInfo* > calleeMap;
-};*/
 HRESULT __stdcall __stdcall StackWalker( 
 	FunctionID funcId,
 	UINT_PTR ip,
@@ -645,31 +626,18 @@ const int frequency=10;
 class Profiler
 {
 public: 
-	//FunctionInfo* GetFunctionInfo(map<FunctionID,FunctionInfo*>* data, FunctionID functionId )
-	//{
-		//map< FunctionID, FunctionInfo* >::iterator found = data->find( functionId );
-		//if ( found == data->end() )
-		//{
-		//	FunctionInfo* functionInfo = new FunctionInfo( functionId );
-		//	data->insert( make_pair( functionId, functionInfo ) );
-		//	return functionInfo;
-		//}
-
-	//	return found->second;
-	//}
 	vector<vector<FunctionID>*> stackWalks;
 	map< FunctionID, FunctionID> signatures;
 
 	void EndAll( ProfilerHelper& profilerHelper )
 	{
 		ProfilerSocket socket;
-		DumpSignatures(socket,profilerHelper);
-
+		SendSignatures(socket,profilerHelper);
 		socket.SendFunctionID( -1);
-		DumpStackWalks(socket,profilerHelper);
+		SendStackWalks(socket,profilerHelper);
 		socket.SendFunctionID( -2 );
 	}
-	void DumpSignatures(ProfilerSocket& socket,ProfilerHelper& helper)
+	void SendSignatures(ProfilerSocket& socket,ProfilerHelper& helper)
 	{
 		for ( map< FunctionID, FunctionID >::iterator i = signatures.begin(); i != signatures.end(); i++ )
 		{
@@ -690,27 +658,7 @@ public:
 			socket.SendString( parameters );
 		}
 	}
-	//void DumpSignatures(ProfilerSocket& socket,ProfilerHelper& helper)
-	//{
-	//	for ( map< FunctionID, FunctionInfo* >::iterator i = signatures.begin(); i != signatures.end(); i++ )
-	//	{
-	//		FunctionInfo* function=i->second;
-	//		socket.SendFunctionID( function->functionId);
-	//		string returnType;
-	//		string className;
-	//		string functionName;
-	//		string parameters;
-	//		UINT32 methodAttributes;
-	//		profilerHelper.GetFunctionSignature( function->functionId, methodAttributes, returnType, className, functionName, parameters );
-
-	//		socket.SendUINT32( methodAttributes );
-	//		socket.SendString( returnType );
-	//		socket.SendString( className );
-	//		socket.SendString( functionName );
-	//		socket.SendString( parameters );
-	//	}
-	//}
-	void DumpStackWalks(ProfilerSocket& ps, ProfilerHelper& profilerHelper )
+	void SendStackWalks(ProfilerSocket& ps, ProfilerHelper& profilerHelper )
 	{
 		for ( vector<vector<FunctionID>*>::iterator stackWalk = stackWalks.begin(); stackWalk != stackWalks.end(); stackWalk++ )
 		{
@@ -722,17 +670,6 @@ public:
 		}
 		ps.SendFunctionID( 0xffffffff );
 	}
-	//void DumpCallees(map<FunctionID,FunctionInfo*>* functions, ProfilerSocket& ps, ProfilerHelper& profilerHelper )
-	//{
-	//	for ( map< FunctionID, FunctionInfo* >::iterator i = functions->begin(); i != functions->end(); i++ )
-	//	{
-	//		FunctionInfo* function=i->second;
-	//		ps.SendFunctionID( function->functionId);
-	//		//ps.SendUINT32( function->calls);
-	//		DumpCallees(&function->calleeMap,ps,profilerHelper);
-	//	}
-	//	ps.SendFunctionID( 0xffffffff );
-	//}
 	Profiler::Profiler( ICorProfilerInfo2* profilerInfo )
 	{
 		this->profilerInfo = profilerInfo;
@@ -764,12 +701,10 @@ public:
 			(DWORD_PTR)this,     
 			TIME_PERIODIC);      
 	}
-
 	void ThreadMap( ThreadID threadId, DWORD dwOSThread )
 	{
 		threadMap[ dwOSThread ] = threadId;
 	};
-
 	virtual void End()
 	{
 		KillTimer();
@@ -873,7 +808,6 @@ public:
 
 public:
 	static Profiler* profiler;
-	CRITICAL_SECTION criticalSection;
 public:
 	static Profiler* GetProfiler()
 	{
@@ -882,7 +816,6 @@ public:
 	STDMETHOD(Initialize)(LPUNKNOWN pICorProfilerInfoUnk)
 	{
 		CComQIPtr< ICorProfilerInfo2 > profilerInfo = pICorProfilerInfoUnk;
-		InitializeCriticalSection(&criticalSection);
 		ProfilerSocket::Initialize();
 
 		profiler = new Profiler( profilerInfo );
@@ -891,12 +824,9 @@ public:
 	}
 	STDMETHOD(Shutdown)()
 	{
-		EnterCriticalSection(&criticalSection);
-
 		profiler->End();
 		delete profiler;
 		profiler = NULL;
-		LeaveCriticalSection(&criticalSection);
 		return S_OK;
 	}
 	STDMETHOD(AppDomainCreationStarted)(AppDomainID appDomainId)
@@ -1005,9 +935,7 @@ public:
 	}
 	STDMETHOD(ThreadAssignedToOSThread)(ThreadID managedThreadId, DWORD osThreadId)
 	{
-		EnterCriticalSection(&criticalSection);
 		profiler->ThreadMap( managedThreadId, osThreadId );
-		LeaveCriticalSection(&criticalSection);
 		return S_OK;
 	}
 	STDMETHOD(RemotingClientInvocationStarted)()
@@ -1204,9 +1132,6 @@ public:
 		return E_NOTIMPL;
 	}
 };
-
-
-#endif
 
 [ module(dll, uuid = "{A461E20A-C7DC-4A89-A24E-87B5E975A96B}", 
 		 name = "NProfHook", 

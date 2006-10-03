@@ -20,21 +20,12 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Xml.Serialization;
-using System.Runtime.Serialization;
-using System.ComponentModel;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Diagnostics;
-using System.Reflection;
-using System.ServiceProcess;
-using Microsoft.Win32;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Data;
-using NProf;
+using Microsoft.Win32;
 using System.Globalization;
 using DotNetLib.Windows.Forms;
 
@@ -42,7 +33,7 @@ namespace NProf
 {
 	public class NProf : Form
 	{
-		public ListView runs;
+		public ContainerListView runs;
 		private MethodView callees;
 		private MethodView callers;
 		private Profiler profiler;
@@ -67,18 +58,25 @@ namespace NProf
 			Size = new Size(800, 600);
 			Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("NProf.Resources.app-icon.ico"));
 			Text = "nprof - v" + Profiler.Version;
-			profiler = new Profiler();
-			
+			profiler = new Profiler();			
 
-			runs = new ListView();
-			runs.Dock = DockStyle.Fill;
+			runs = new ContainerListView();
+			ContainerListViewColumnHeader header = new ContainerListViewColumnHeader("Runs", 90);
+			header.SortDataType = SortDataType.String;
+			runs.ColumnSortColor = Color.White;
+			runs.HeaderStyle = ColumnHeaderStyle.Clickable;
+			runs.Columns.Add(header);
+			runs.SizeChanged += delegate
+			{
+				header.Width = runs.Size.Width-5;
+			};
+			runs.Dock = DockStyle.Left;
 			runs.Width = 100;
 			runs.DoubleClick += delegate
 			{
 				if (runs.SelectedItems.Count != 0)
 				{
 					callers.UpdateFilters((Run)runs.SelectedItems[0].Tag);
-					//methods.UpdateFilters((Run)runs.SelectedItems[0].Tag);
 				}
 			};
 
@@ -134,7 +132,17 @@ namespace NProf
 						"File",
 						new MenuItem[] 
 						{
-							new MenuItem("About nprof...",delegate{new AboutForm().ShowDialog(this);}),
+							new MenuItem(
+								"&New...",
+								delegate
+								{
+									runs.Items.Clear();
+									NProf.arguments.Text = "";
+									NProf.application.Text = "";
+									callees.Items.Clear();
+									callers.Items.Clear();
+								},
+								Shortcut.CtrlN),
 							new MenuItem("-"),
 							new MenuItem("E&xit",delegate {Close();})
 						}),
@@ -142,17 +150,10 @@ namespace NProf
 						"Project",
 						new MenuItem[]
 						{
-							new MenuItem("Start",delegate{StartRun();},Shortcut.F5),
-							new MenuItem("-"),
-							new MenuItem("&New...",delegate
-							{
-								runs.Items.Clear();
-								NProf.arguments.Text = "";
-								NProf.application.Text = "";
-								callees.Items.Clear();
-								callers.Items.Clear();
-							},
-							Shortcut.CtrlN),
+							new MenuItem(
+								"Start",
+								delegate{StartRun();},
+								Shortcut.F5),
 							new MenuItem("-"),
 							new MenuItem("Find",delegate{ShowSearch();},Shortcut.CtrlF)
 						})
@@ -164,67 +165,57 @@ namespace NProf
 					panel.Dock = DockStyle.Fill;
 					panel.Controls.AddRange(new Control[] {
 						With(new Panel(),delegate(Panel methodPanel)
-					{
-						methodPanel.Size = new Size(100, 100);
-						methodPanel.Dock = DockStyle.Fill;
+						{
+							methodPanel.Size = new Size(100, 100);
+							methodPanel.Dock = DockStyle.Fill;
 
-						methodPanel.Controls.AddRange(new Control[] {
-							callees,
-							With(new Splitter(),delegate(Splitter splitter)
-							{
-								splitter.Dock=DockStyle.Bottom;
-							}),
-							callers,
-							With(new FlowLayoutPanel(),delegate(FlowLayoutPanel p)
-							{
-								findPanel=p;
-								p.Visible=false;
-							    p.WrapContents = false;
-							    p.AutoSize = true;
-							    p.Dock = DockStyle.Top;
-							    p.Controls.AddRange(new Control[] {
-							        With(new Label(),delegate(Label label)
-							    {
-							        label.Text = "Find:";
-									label.Dock=DockStyle.Fill;
-							        label.TextAlign = ContentAlignment.MiddleLeft;
-							        label.AutoSize = true;
-							    }),
-						        findText,
-						        With(new Button(),delegate(Button button)
-						        {
-						            button.AutoSize = true;
-						            button.Text = "Find next";
-						            button.Click += new EventHandler(findNext_Click);
-						        }),
-						        With(new Button(),delegate(Button button)
-						        {
-						            button.AutoSize = true;
-						            button.Click += new EventHandler(findPrevious_Click);
-						            button.Text = "Find previous";
-						        })});
-							}
-							)
+							methodPanel.Controls.AddRange(new Control[] {
+								callees,
+								With(new Splitter(),delegate(Splitter splitter)
+								{
+									splitter.Dock=DockStyle.Bottom;
+								}),
+								callers,
+								With(new FlowLayoutPanel(),delegate(FlowLayoutPanel p)
+								{
+									findPanel=p;
+									findPanel.BorderStyle=BorderStyle.FixedSingle;
+									p.Visible=false;
+									p.WrapContents = false;
+									p.AutoSize = true;
+									p.Dock = DockStyle.Top;
+									p.Controls.AddRange(new Control[] {
+										With(new Label(),delegate(Label label)
+									{
+										label.Text = "Find:";
+										label.Dock=DockStyle.Fill;
+										label.TextAlign = ContentAlignment.MiddleLeft;
+										label.AutoSize = true;
+									}),
+									findText,
+									With(new Button(),delegate(Button button)
+									{
+										button.AutoSize = true;
+										button.Text = "Find next";
+										button.Click += new EventHandler(findNext_Click);
+									}),
+									With(new Button(),delegate(Button button)
+									{
+										button.AutoSize = true;
+										button.Click += new EventHandler(findPrevious_Click);
+										button.Text = "Find previous";
+									})});
+								}
+								)
 
-						});
+							});
 
-					}),
+						}),
 						With(new Splitter(),delegate(Splitter splitter)
 						{
 							splitter.Dock = DockStyle.Left;
 						}),
-						With(new Panel(),delegate(Panel p)
-						{
-							p.Controls.Add(runs);
-							p.Dock=DockStyle.Left;
-							p.Controls.Add(With(new Label(),delegate(Label l)
-							{
-								l.Text="Completed runs:";
-						        l.TextAlign = ContentAlignment.MiddleLeft;
-						        l.AutoSize = true;
-								l.Dock=DockStyle.Top;
-							}));
-						})
+						runs
 					});
 
 				}),
@@ -296,7 +287,7 @@ namespace NProf
 		}
 		public void UpdateRuns(Run run)
 		{
-			ListViewItem item = new ListViewItem(DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.LongTimePattern));
+			ContainerListViewItem item = new ContainerListViewItem(DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.LongTimePattern));
 			item.Tag = run;
 			runs.Items.Add(item);
 			callees.UpdateFilters(run);
@@ -322,206 +313,6 @@ namespace NProf
 		{
 			del(t);
 			return t;
-		}
-	}
-	public class MethodView : ContainerListView
-	{
-		public void UpdateFilters(Run run)
-		{
-			currentRun = run;
-			SuspendLayout();
-			BeginUpdate();
-			Items.Clear();
-			foreach (FunctionInfo method in run.functions.Values)
-			{
-				Add(method);
-			}
-			EndUpdate();
-			ResumeLayout();
-		}
-		private void Find(string text,bool forward, bool step)
-		{
-			if (text != "")
-			{
-				ContainerListViewItem item;
-				if (SelectedItems.Count == 0)
-				{
-					if (SelectedItems.Count == 0)
-					{
-						item = null;
-					}
-					else
-					{
-						item = Items[0];
-					}
-				}
-				else
-				{
-					if (step)
-					{
-						if (forward)
-						{
-							item = SelectedItems[0];
-						}
-						else
-						{
-							item = SelectedItems[0];
-						}
-					}
-					else
-					{
-						item = SelectedItems[0];
-					}
-				}
-				ContainerListViewItem firstItem = item;
-				while (item != null)
-				{
-					if (item.Text.ToLower().Contains(text.ToLower()))
-					{
-						SelectedItems.Clear();
-						item.Focused = true;
-						item.Selected = true;
-						this.Invalidate();
-						break;
-					}
-					else
-					{
-						if (forward)
-						{
-							item = item.NextItem;
-						}
-						else
-						{
-							item = item.PreviousItem;
-						}
-						if (item == null)
-						{
-							if (forward)
-							{
-								item = Items[0];
-							}
-							else
-							{
-								item = Items[Items.Count - 1];
-							}
-						}
-					}
-					if (item == firstItem)
-					{
-						break;
-					}
-				}
-			}
-		}
-		private void JumpToID(int id)
-		{
-			SelectedItems.Clear();
-			foreach (ContainerListViewItem lvi in Items)
-			{
-				FunctionInfo fi = (FunctionInfo)lvi.Tag;
-
-				if (fi.ID == id)
-				{
-					if (!lvi.Selected)
-					{
-						lvi.Selected = true;
-						lvi.Focused = true;
-					}
-					break;
-				}
-			}
-			this.Focus();
-			//methods.Focus();
-		}
-		public Run currentRun;
-		public MethodView(string name)
-		{
-			Columns.Add(name);
-			Columns.Add("Time");
-			Columns[0].Width = 350;
-			Columns[0].SortDataType = SortDataType.String;
-			Columns[1].SortDataType = SortDataType.Double;
-			this.ShowPlusMinus = true;
-			ShowRootTreeLines = true;
-			ShowTreeLines = true;
-			ColumnSortColor = Color.White;
-
-			HeaderStyle = ColumnHeaderStyle.Clickable;
-			Font = new Font("Tahoma", 8.0f);
-			this.Click += delegate{UpdateView();};
-			this.KeyDown += delegate
-			{
-				if (SelectedItems.Count != 0)
-				{
-					UpdateView();
-				}
-			};
-		}
-		void UpdateView()
-		{
-			SuspendLayout();
-			BeginUpdate();
-			ContainerListViewItem item = this.BottomItemPartiallyVisible;
-			while (item != null)
-			{
-				//foreach (ContainerListViewItem subItem in item.Items)
-				//{
-				//item.Items.Clear();
-				//if (item.Items.Count == 0)
-				//{
-				//    foreach (FunctionInfo function in ((FunctionInfo)item.Tag).Callees.Values)
-				//    {
-				//        FunctionItem(item.Items, function);
-				//    }
-				//    foreach (ContainerListViewItem i in item.Items)
-				//    {
-				//        if (i.Expanded)
-				//        {
-				//            FunctionItem(i.Items, (FunctionInfo)i.Tag);
-				//        }
-				//    }
-				//    //foreach (ContainerListViewItem i in item.Items)
-				//    //{
-				//    //    FunctionItem(i.Items, (FunctionInfo)i.Tag);
-				//    //}
-
-				//    //if (item.Items.Count == 0 && ((FunctionInfo)item.Tag).Callees.Values.Count != 0)
-				//    //{
-				//    //}
-				//}
-
-					//if (subItem.Items.Count == 0)
-					//{
-					//    foreach (FunctionInfo function in ((FunctionInfo)subItem.Tag).Callees.Values)
-					//    {
-					//        FunctionItem(subItem.Items, function);
-					//    }
-					//}
-				//}
-				item = item.PreviousVisibleItem;
-			}
-			EndUpdate();
-			ResumeLayout();
-		}
-		private ContainerListViewItem AddItem(ContainerListViewItemCollection parent, FunctionInfo function)
-		{
-			ContainerListViewItem item = parent.Add(currentRun.signatures[function.ID].Signature);
-			//ContainerListViewItem item = parent.Add(currentRun.signatures.GetFunctionSignature(function.ID));
-			item.SubItems[1].Text = ((((double)function.Calls) / (double)currentRun.maxCalls) * 100.0).ToString("0.00;-0.00;0.0");
-			item.Tag = function;
-			return item;
-		}
-		public void FunctionItem(ContainerListViewItemCollection parent,FunctionInfo function)
-		{
-			ContainerListViewItem item=AddItem(parent, function);
-			foreach (FunctionInfo callee in function.Callees.Values)
-			{
-				AddItem(item.Items, callee);
-			}	
-		}
-		public void Add(FunctionInfo function)
-		{
-			FunctionItem(Items, function);
 		}
 	}
 	public class ProfilerSocketServer
@@ -611,14 +402,6 @@ namespace NProf
 							ReadLengthEncodedASCIIString(reader),
 							ReadLengthEncodedASCIIString(reader)
 						);
-
-						//run.signatures.MapSignature(functionId, new FunctionSignature(
-						//    reader.ReadUInt32(),
-						//    ReadLengthEncodedASCIIString(reader),
-						//    ReadLengthEncodedASCIIString(reader),
-						//    ReadLengthEncodedASCIIString(reader),
-						//    ReadLengthEncodedASCIIString(reader)
-						//));
 					}
 					while (true)
 					{
@@ -750,15 +533,14 @@ namespace NProf
 					}
 				}
 			}
-			int max=0;
+			maxCalls = 0;
 			foreach (FunctionInfo function in functions.Values)
 			{
-				if (function.Calls > max)
+				if (function.Calls > maxCalls)
 				{
-					max = function.Calls;
+					maxCalls= function.Calls;
 				}
 			}
-			maxCalls = max;
 		}
 		public void Complete(object sender,EventArgs e)
 		{
@@ -769,7 +551,6 @@ namespace NProf
 			}));
 		}
 		public Dictionary<int, FunctionSignature> signatures = new Dictionary<int, FunctionSignature>();
-		//public FunctionSignatureMap signatures = new FunctionSignatureMap();
 		public Dictionary<int, FunctionInfo> functions = new Dictionary<int, FunctionInfo>();
 		public Dictionary<int, FunctionInfo> callers = new Dictionary<int, FunctionInfo>();
 		public Run(Profiler p)
@@ -792,12 +573,213 @@ namespace NProf
 		private DateTime end;
 		public Profiler profiler;
 	}
+	public class MethodView : ContainerListView
+	{
+		public void UpdateFilters(Run run)
+		{
+			currentRun = run;
+			SuspendLayout();
+			BeginUpdate();
+			Items.Clear();
+			foreach (FunctionInfo method in run.functions.Values)
+			{
+				Add(method);
+			}
+			EndUpdate();
+			ResumeLayout();
+		}
+		private void Find(string text, bool forward, bool step)
+		{
+			if (text != "")
+			{
+				ContainerListViewItem item;
+				if (SelectedItems.Count == 0)
+				{
+					if (SelectedItems.Count == 0)
+					{
+						item = null;
+					}
+					else
+					{
+						item = Items[0];
+					}
+				}
+				else
+				{
+					if (step)
+					{
+						if (forward)
+						{
+							item = SelectedItems[0];
+						}
+						else
+						{
+							item = SelectedItems[0];
+						}
+					}
+					else
+					{
+						item = SelectedItems[0];
+					}
+				}
+				ContainerListViewItem firstItem = item;
+				while (item != null)
+				{
+					if (item.Text.ToLower().Contains(text.ToLower()))
+					{
+						SelectedItems.Clear();
+						item.Focused = true;
+						item.Selected = true;
+						this.Invalidate();
+						break;
+					}
+					else
+					{
+						if (forward)
+						{
+							item = item.NextItem;
+						}
+						else
+						{
+							item = item.PreviousItem;
+						}
+						if (item == null)
+						{
+							if (forward)
+							{
+								item = Items[0];
+							}
+							else
+							{
+								item = Items[Items.Count - 1];
+							}
+						}
+					}
+					if (item == firstItem)
+					{
+						break;
+					}
+				}
+			}
+		}
+		private void JumpToID(int id)
+		{
+			SelectedItems.Clear();
+			foreach (ContainerListViewItem lvi in Items)
+			{
+				FunctionInfo fi = (FunctionInfo)lvi.Tag;
+
+				if (fi.ID == id)
+				{
+					if (!lvi.Selected)
+					{
+						lvi.Selected = true;
+						lvi.Focused = true;
+					}
+					break;
+				}
+			}
+			this.Focus();
+		}
+		public Run currentRun;
+		public MethodView(string name)
+		{
+			Columns.Add(name);
+			Columns.Add("Time");
+			Columns[0].Width = 350;
+			Columns[0].SortDataType = SortDataType.String;
+			Columns[1].SortDataType = SortDataType.Double;
+			this.ShowPlusMinus = true;
+			ShowRootTreeLines = true;
+			ShowTreeLines = true;
+			ColumnSortColor = Color.White;
+
+			HeaderStyle = ColumnHeaderStyle.Clickable;
+			Font = new Font("Tahoma", 8.0f);
+			this.Click += delegate
+			{
+				UpdateView();
+			};
+			this.KeyDown += delegate
+			{
+				if (SelectedItems.Count != 0)
+				{
+					UpdateView();
+				}
+			};
+		}
+		void UpdateView()
+		{
+			SuspendLayout();
+			BeginUpdate();
+			ContainerListViewItem item = this.BottomItemPartiallyVisible;
+			while (item != null)
+			{
+				//foreach (ContainerListViewItem subItem in item.Items)
+				//{
+				//item.Items.Clear();
+				//if (item.Items.Count == 0)
+				//{
+				//    foreach (FunctionInfo function in ((FunctionInfo)item.Tag).Callees.Values)
+				//    {
+				//        FunctionItem(item.Items, function);
+				//    }
+				//    foreach (ContainerListViewItem i in item.Items)
+				//    {
+				//        if (i.Expanded)
+				//        {
+				//            FunctionItem(i.Items, (FunctionInfo)i.Tag);
+				//        }
+				//    }
+				//    //foreach (ContainerListViewItem i in item.Items)
+				//    //{
+				//    //    FunctionItem(i.Items, (FunctionInfo)i.Tag);
+				//    //}
+
+				//    //if (item.Items.Count == 0 && ((FunctionInfo)item.Tag).Callees.Values.Count != 0)
+				//    //{
+				//    //}
+				//}
+
+				//if (subItem.Items.Count == 0)
+				//{
+				//    foreach (FunctionInfo function in ((FunctionInfo)subItem.Tag).Callees.Values)
+				//    {
+				//        FunctionItem(subItem.Items, function);
+				//    }
+				//}
+				//}
+				item = item.PreviousVisibleItem;
+			}
+			EndUpdate();
+			ResumeLayout();
+		}
+		private ContainerListViewItem AddItem(ContainerListViewItemCollection parent, FunctionInfo function)
+		{
+			ContainerListViewItem item = parent.Add(currentRun.signatures[function.ID].Signature);
+			item.SubItems[1].Text = ((((double)function.Calls) / (double)currentRun.maxCalls) * 100.0).ToString("0.00;-0.00;0.0");
+			item.Tag = function;
+			return item;
+		}
+		public void FunctionItem(ContainerListViewItemCollection parent, FunctionInfo function)
+		{
+			ContainerListViewItem item = AddItem(parent, function);
+			foreach (FunctionInfo callee in function.Callees.Values)
+			{
+				AddItem(item.Items, callee);
+			}
+		}
+		public void Add(FunctionInfo function)
+		{
+			FunctionItem(Items, function);
+		}
+	}
 	public class Profiler
 	{
 		private const string PROFILER_GUID = "{791DA9FE-05A0-495E-94BF-9AD875C4DF0F}";
 		public static string Version
 		{
-			get { return "0.10.0"; }
+			get { return "0.10"; }
 		}
 		public EventHandler completed;
 		public bool CheckSetup(out string message)
