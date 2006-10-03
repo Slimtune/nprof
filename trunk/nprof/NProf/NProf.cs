@@ -62,9 +62,6 @@ namespace NProf
 
 			runs = new ContainerListView();
 			ContainerListViewColumnHeader header = new ContainerListViewColumnHeader("Runs", 90);
-			header.SortDataType = SortDataType.String;
-			runs.ColumnSortColor = Color.White;
-			runs.HeaderStyle = ColumnHeaderStyle.Clickable;
 			runs.Columns.Add(header);
 			runs.SizeChanged += delegate
 			{
@@ -509,7 +506,7 @@ namespace NProf
 			this.ID = ID;
 		}
 		public readonly int ID;
-		public int Calls;
+		public int Samples;
 		public int lastWalk;
 		private Dictionary<int, FunctionInfo> callees;
 		public List<StackWalk> stackWalks=new List<StackWalk>();
@@ -527,7 +524,7 @@ namespace NProf
 							FunctionInfo callee = ProfilerSocketServer.GetFunctionInfo(callees, walk.frames[walk.frames.Count-1]);
 							if (callee.lastWalk != walk.id)
 							{
-								callee.Calls++;
+								callee.Samples++;
 							}
 							callee.stackWalks.Add(new StackWalk(walk.id, walk.frames.GetRange(0, walk.frames.Count - 1)));
 						}
@@ -586,7 +583,7 @@ namespace NProf
 	}
 	public class Run
 	{
-		public int maxCalls;
+		public int maxSamples;
 		public List<List<int>> stackWalks = new List<List<int>>();
 		private void InterpreteData()
 		{
@@ -599,7 +596,7 @@ namespace NProf
 					FunctionInfo function=ProfilerSocketServer.GetFunctionInfo(functions, stackWalk[stackWalk.Count-i-1]);
 					if (function.lastWalk != currentWalk)
 					{
-						function.Calls++;
+						function.Samples++;
 						function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.GetRange(0, stackWalk.Count - i - 1)));
 					}
 					function.lastWalk = currentWalk;
@@ -615,102 +612,21 @@ namespace NProf
 					FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(callers, stackWalk[stackWalk.Count-i-1]);
 					if (function.lastWalk != currentWalk)
 					{
-						function.Calls++;
+						function.Samples++;
 						function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.GetRange(0, stackWalk.Count - i - 1)));
 					}
 					function.lastWalk = currentWalk;
 				}
 			}
-			//foreach (List<int> stackWalk in stackWalks)
-			//{
-			//    currentWalk++;
-			//    for (int i = stackWalk.Count-1; i >=0; i--)
-			//    {
-			//        Dictionary<int, FunctionInfo> currentMap = functions;
-			//        FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(functions, stackWalk[i]);
-			//        function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.GetRange(1, stackWalk.Count - i)));
-			//        if (function.lastWalk != currentWalk)
-			//        {
-			//            function.Calls++;
-			//        }
-			//        function.lastWalk = currentWalk;
-			//    }
-			//}
-			//foreach (List<int> stackWalk in stackWalks)
-			//{
-			//    currentWalk++;
-			//    for (int i = 0; i < stackWalk.Count; i++)
-			//    {
-			//        Dictionary<int, FunctionInfo> currentMap = callers;
-			//        for (int index = i;index<stackWalk.Count; index++)
-			//        {
-			//            FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(currentMap, stackWalk[index]);
-			//            if (function.lastWalk != currentWalk)
-			//            {
-			//                function.Calls++;
-			//            }
-			//            function.lastWalk = currentWalk;
-			//            currentMap = function.Callees;
-			//        }
-			//    }
-			//}
-			maxCalls = 0;
+			maxSamples = 0;
 			foreach (FunctionInfo function in functions.Values)
 			{
-				if (function.Calls > maxCalls)
+				if (function.Samples > maxSamples)
 				{
-					maxCalls = function.Calls;
+					maxSamples = function.Samples;
 				}
 			}
 		}
-		//private void InterpreteData()
-		//{
-		//    int currentWalk = 0;
-		//    foreach (List<int> stackWalk in stackWalks)
-		//    {
-		//        currentWalk++;
-		//        for (int i = 0; i < stackWalk.Count; i++)
-		//        {
-		//            Dictionary<int, FunctionInfo> currentMap = functions;
-		//            for (int index = stackWalk.Count - 1 - i; index >= 0; index--)
-		//            {
-		//                FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(currentMap, stackWalk[index]);
-		//                if (function.lastWalk != currentWalk)
-		//                {
-		//                    function.Calls++;
-		//                }
-		//                function.lastWalk = currentWalk;
-		//                currentMap = function.Callees;
-		//            }
-		//        }
-		//    }
-		//    //foreach (List<int> stackWalk in stackWalks)
-		//    //{
-		//    //    currentWalk++;
-		//    //    for (int i = 0; i < stackWalk.Count; i++)
-		//    //    {
-		//    //        Dictionary<int, FunctionInfo> currentMap = callers;
-		//    //        for (int index = i;index<stackWalk.Count; index++)
-		//    //        {
-		//    //            FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(currentMap, stackWalk[index]);
-		//    //            if (function.lastWalk != currentWalk)
-		//    //            {
-		//    //                function.Calls++;
-		//    //            }
-		//    //            function.lastWalk = currentWalk;
-		//    //            currentMap = function.Callees;
-		//    //        }
-		//    //    }
-		//    //}
-		//    maxCalls = 0;
-		//    foreach (FunctionInfo function in functions.Values)
-		//    {
-		//        if (function.Calls > maxCalls)
-		//        {
-		//            maxCalls= function.Calls;
-		//        }
-		//    }
-		//}
 		public void Complete(object sender,EventArgs e)
 		{
 			NProf.form.BeginInvoke(new EventHandler(delegate
@@ -750,11 +666,11 @@ namespace NProf
 			SuspendLayout();
 			BeginUpdate();
 			Items.Clear();
-			foreach (FunctionInfo method in functions.Values)
+			foreach (FunctionInfo method in SortFunctions(functions.Values))
 			{
 				AddItem(Items, method);
 			}
-			Sort(1, SortOrder.Descending, true);
+			//Sort(1, SortOrder.Descending, true);
 			UpdateView();
 			EndUpdate();
 			ResumeLayout();
@@ -858,15 +774,15 @@ namespace NProf
 			Columns.Add(name);
 			Columns.Add("Time");
 			Columns[0].Width = 350;
-			Columns[0].SortDataType = SortDataType.String;
-			Columns[1].SortDataType = SortDataType.Double;
-			Columns[1].DefaultSortOrder = SortOrder.Descending;
+			//Columns[0].SortDataType = SortDataType.String;
+			//Columns[1].SortDataType = SortDataType.Double;
+			//Columns[1].DefaultSortOrder = SortOrder.Descending;
 			this.ShowPlusMinus = true;
 			ShowRootTreeLines = true;
 			ShowTreeLines = true;
 			ColumnSortColor = Color.White;
 
-			HeaderStyle = ColumnHeaderStyle.Clickable;
+			//HeaderStyle = ColumnHeaderStyle.Clickable;
 			Font = new Font("Tahoma", 8.0f);
 			this.Click += delegate
 			{
@@ -885,11 +801,21 @@ namespace NProf
 		{
 			MakeSureComputed(item, false);
 		}
+		public List<FunctionInfo> SortFunctions(IEnumerable<FunctionInfo> f)
+		{
+			List<FunctionInfo> functions = new List<FunctionInfo>(f);
+			functions.Sort(delegate(FunctionInfo a,FunctionInfo b)
+			{
+				return b.Samples.CompareTo(a.Samples);
+			});
+			return functions;
+		}
 		void MakeSureComputed(ContainerListViewItem item,bool parentExpanded)
 		{
 			if (item.Items.Count == 0)
 			{
-				foreach (FunctionInfo function in ((FunctionInfo)item.Tag).Callees.Values)
+				foreach (FunctionInfo function in SortFunctions(((FunctionInfo)item.Tag).Callees.Values))
+				//foreach (FunctionInfo function in ((FunctionInfo)item.Tag).Callees.Values)
 				{
 					AddFunctionItem(item.Items, function);
 				}
@@ -910,13 +836,14 @@ namespace NProf
 			{
 				MakeSureComputed(item,true);
 			}
+			//Sort(1, false, true);
 			EndUpdate();
 			ResumeLayout();
 		}
 		private ContainerListViewItem AddItem(ContainerListViewItemCollection parent, FunctionInfo function)
 		{
 			ContainerListViewItem item = parent.Add(currentRun.signatures[function.ID].Signature);
-			item.SubItems[1].Text = ((((double)function.Calls) / (double)currentRun.maxCalls) * 100.0).ToString("0.00;-0.00;0.0");
+			item.SubItems[1].Text = ((((double)function.Samples) / (double)currentRun.maxSamples) * 100.0).ToString("0.00;-0.00;0.0");
 			item.Tag = function;
 			return item;
 		}
