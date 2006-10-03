@@ -72,13 +72,6 @@ namespace NProf
 			};
 			runs.Dock = DockStyle.Left;
 			runs.Width = 100;
-			runs.DoubleClick += delegate
-			{
-				if (runs.SelectedItems.Count != 0)
-				{
-					callers.UpdateFilters((Run)runs.SelectedItems[0].Tag);
-				}
-			};
 
 			callers = new MethodView("Callers");
 			callers.Size = new Size(100, 200);
@@ -88,19 +81,20 @@ namespace NProf
 			callees.Size = new Size(100, 100);
 			callees.Dock = DockStyle.Fill;
 			callees.DoubleClick += delegate {
-				if (callees.SelectedItems.Count != 0)
-				{
-					FunctionInfo function = (FunctionInfo)callees.SelectedItems[0].Tag;
-					callers.SelectedItems.Clear();
-					foreach (ContainerListViewItem item in callees.Items)
-					{
-						if (((FunctionInfo)item.Tag).ID == function.ID)
-						{
-							callers.SelectedItems.Add(item);
-							break;
-						}
-					}
-				}};
+				//if (callees.SelectedItems.Count != 0)
+				//{
+				//    FunctionInfo function = (FunctionInfo)callees.SelectedItems[0].Tag;
+				//    callers.SelectedItems.Clear();
+				//    foreach (ContainerListViewItem item in callees.Items)
+				//    {
+				//        if (((FunctionInfo)item.Tag).ID == function.ID)
+				//        {
+				//            callers.SelectedItems.Add(item);
+				//            break;
+				//        }
+				//    }
+				//}
+			};
 			callees.SelectedItemsChanged+=delegate {
 				if (callees.SelectedItems.Count != 0)
 				{
@@ -109,7 +103,7 @@ namespace NProf
 					{
 						foreach (FunctionInfo f in ((FunctionInfo)item.Tag).Callees.Values)
 						{
-							callees.FunctionItem(item.Items, f);
+							callees.AddFunctionItem(item.Items, f);
 						}
 					}
 				}};
@@ -290,8 +284,8 @@ namespace NProf
 			ContainerListViewItem item = new ContainerListViewItem(DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.LongTimePattern));
 			item.Tag = run;
 			runs.Items.Add(item);
-			callees.UpdateFilters(run);
-			callers.UpdateFilters(run);
+			callees.UpdateFilters(run,run.functions);
+			callers.UpdateFilters(run, run.callers);
 		}
 		private void findNext_Click(object sender, EventArgs e)
 		{
@@ -478,6 +472,16 @@ namespace NProf
 		private Run run;
 		private bool hasStopped;
 	}
+	public class StackWalk
+	{
+		public StackWalk(int id,List<int> frames)
+		{
+			this.id=id;
+			this.frames=frames;
+		}
+		public readonly int id;
+		public readonly List<int> frames;
+	}
 	public class FunctionInfo
 	{
 		public const double frequency = 10.0;
@@ -488,7 +492,78 @@ namespace NProf
 		public readonly int ID;
 		public int Calls;
 		public int lastWalk;
-		public readonly Dictionary<int, FunctionInfo> Callees = new Dictionary<int, FunctionInfo>();
+		private Dictionary<int, FunctionInfo> callees;
+		public List<StackWalk> stackWalks=new List<StackWalk>();
+		public Dictionary<int, FunctionInfo> Callees
+		{
+			get
+			{
+				if (callees == null)
+				{
+					callees = new Dictionary<int, FunctionInfo>();
+					foreach (StackWalk walk in stackWalks)
+					{
+						if (walk.frames.Count != 0)
+						{
+							FunctionInfo callee = ProfilerSocketServer.GetFunctionInfo(callees, walk.frames[walk.frames.Count-1]);
+							if (callee.lastWalk != walk.id)
+							{
+								callee.Calls++;
+							}
+							callee.stackWalks.Add(new StackWalk(walk.id, walk.frames.GetRange(0, walk.frames.Count - 1)));
+						}
+					}
+				}
+				return callees;
+			}
+		}
+		private Dictionary<int, FunctionInfo> callers;
+		//public Dictionary<int, FunctionInfo> Callers
+		//{
+		//    get
+		//    {
+		//        if (callers == null)
+		//        {
+		//            callers = new Dictionary<int, FunctionInfo>();
+		//            foreach (StackWalk walk in stackWalks)
+		//            {
+		//                if (walk.frames.Count != 0)
+		//                {
+		//                    FunctionInfo caller = ProfilerSocketServer.GetFunctionInfo(callers, walk.frames[0]);
+		//                    if (caller.lastWalk != walk.id)
+		//                    {
+		//                        caller.Calls++;
+		//                    }
+		//                    caller.stackWalks.Add(new StackWalk(walk.id, walk.frames.GetRange(1, walk.frames.Count - 1)));
+		//                }
+		//            }
+		//        }
+		//        return callers;
+		//    }
+		//}
+		//public  Dictionary<int, FunctionInfo> Callees
+		//{
+		//    get
+		//    {
+		//        if(callees==null)
+		//        {
+		//            callees=new Dictionary<int, FunctionInfo>();
+		//            foreach (StackWalk walk in stackWalks)
+		//            {
+		//                if (walk.frames.Count != 0)
+		//                {
+		//                    FunctionInfo callee = ProfilerSocketServer.GetFunctionInfo(callees, walk.frames[0]);
+		//                    if (callee.lastWalk != walk.id)
+		//                    {
+		//                        callee.Calls++;
+		//                    }
+		//                    callee.stackWalks.Add(new StackWalk(walk.id, walk.frames.GetRange(1, walk.frames.Count - 1)));
+		//                }
+		//            }
+		//        }
+		//        return callees;
+		//    }
+		//}
 	}
 	public class Run
 	{
@@ -502,46 +577,121 @@ namespace NProf
 				currentWalk++;
 				for (int i = 0; i < stackWalk.Count; i++)
 				{
-					Dictionary<int, FunctionInfo> currentMap = functions;
-					for (int index = stackWalk.Count - 1 - i; index >= 0; index--)
+					FunctionInfo function=ProfilerSocketServer.GetFunctionInfo(functions, stackWalk[stackWalk.Count-i-1]);
+					function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.GetRange(0, stackWalk.Count - i-1)));
+					if (function.lastWalk != currentWalk)
 					{
-						FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(currentMap, stackWalk[index]);
-						if (function.lastWalk != currentWalk)
-						{
-							function.Calls++;
-						}
-						function.lastWalk = currentWalk;
-						currentMap = function.Callees;
+						function.Calls++;
 					}
+					function.lastWalk = currentWalk;
 				}
 			}
-			foreach (List<int> stackWalk in stackWalks)
+			foreach (List<int> reversedWalk in stackWalks)
 			{
+				List<int> stackWalk = new List<int>(reversedWalk);
+				stackWalk.Reverse();
 				currentWalk++;
 				for (int i = 0; i < stackWalk.Count; i++)
 				{
-					Dictionary<int, FunctionInfo> currentMap = callers;
-					for (int index = i;index<stackWalk.Count; index++)
+					FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(callers, stackWalk[stackWalk.Count-i-1]);
+					function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.GetRange(0, stackWalk.Count - i-1)));
+					if (function.lastWalk != currentWalk)
 					{
-						FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(currentMap, stackWalk[index]);
-						if (function.lastWalk != currentWalk)
-						{
-							function.Calls++;
-						}
-						function.lastWalk = currentWalk;
-						currentMap = function.Callees;
+						function.Calls++;
 					}
+					function.lastWalk = currentWalk;
 				}
 			}
+			//foreach (List<int> stackWalk in stackWalks)
+			//{
+			//    currentWalk++;
+			//    for (int i = stackWalk.Count-1; i >=0; i--)
+			//    {
+			//        Dictionary<int, FunctionInfo> currentMap = functions;
+			//        FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(functions, stackWalk[i]);
+			//        function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.GetRange(1, stackWalk.Count - i)));
+			//        if (function.lastWalk != currentWalk)
+			//        {
+			//            function.Calls++;
+			//        }
+			//        function.lastWalk = currentWalk;
+			//    }
+			//}
+			//foreach (List<int> stackWalk in stackWalks)
+			//{
+			//    currentWalk++;
+			//    for (int i = 0; i < stackWalk.Count; i++)
+			//    {
+			//        Dictionary<int, FunctionInfo> currentMap = callers;
+			//        for (int index = i;index<stackWalk.Count; index++)
+			//        {
+			//            FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(currentMap, stackWalk[index]);
+			//            if (function.lastWalk != currentWalk)
+			//            {
+			//                function.Calls++;
+			//            }
+			//            function.lastWalk = currentWalk;
+			//            currentMap = function.Callees;
+			//        }
+			//    }
+			//}
 			maxCalls = 0;
 			foreach (FunctionInfo function in functions.Values)
 			{
 				if (function.Calls > maxCalls)
 				{
-					maxCalls= function.Calls;
+					maxCalls = function.Calls;
 				}
 			}
 		}
+		//private void InterpreteData()
+		//{
+		//    int currentWalk = 0;
+		//    foreach (List<int> stackWalk in stackWalks)
+		//    {
+		//        currentWalk++;
+		//        for (int i = 0; i < stackWalk.Count; i++)
+		//        {
+		//            Dictionary<int, FunctionInfo> currentMap = functions;
+		//            for (int index = stackWalk.Count - 1 - i; index >= 0; index--)
+		//            {
+		//                FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(currentMap, stackWalk[index]);
+		//                if (function.lastWalk != currentWalk)
+		//                {
+		//                    function.Calls++;
+		//                }
+		//                function.lastWalk = currentWalk;
+		//                currentMap = function.Callees;
+		//            }
+		//        }
+		//    }
+		//    //foreach (List<int> stackWalk in stackWalks)
+		//    //{
+		//    //    currentWalk++;
+		//    //    for (int i = 0; i < stackWalk.Count; i++)
+		//    //    {
+		//    //        Dictionary<int, FunctionInfo> currentMap = callers;
+		//    //        for (int index = i;index<stackWalk.Count; index++)
+		//    //        {
+		//    //            FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(currentMap, stackWalk[index]);
+		//    //            if (function.lastWalk != currentWalk)
+		//    //            {
+		//    //                function.Calls++;
+		//    //            }
+		//    //            function.lastWalk = currentWalk;
+		//    //            currentMap = function.Callees;
+		//    //        }
+		//    //    }
+		//    //}
+		//    maxCalls = 0;
+		//    foreach (FunctionInfo function in functions.Values)
+		//    {
+		//        if (function.Calls > maxCalls)
+		//        {
+		//            maxCalls= function.Calls;
+		//        }
+		//    }
+		//}
 		public void Complete(object sender,EventArgs e)
 		{
 			NProf.form.BeginInvoke(new EventHandler(delegate
@@ -575,16 +725,17 @@ namespace NProf
 	}
 	public class MethodView : ContainerListView
 	{
-		public void UpdateFilters(Run run)
+		public void UpdateFilters(Run run,Dictionary<int,FunctionInfo> functions)
 		{
 			currentRun = run;
 			SuspendLayout();
 			BeginUpdate();
 			Items.Clear();
-			foreach (FunctionInfo method in run.functions.Values)
+			foreach (FunctionInfo method in functions.Values)
 			{
-				Add(method);
+				AddItem(Items, method);
 			}
+			UpdateView();
 			EndUpdate();
 			ResumeLayout();
 		}
@@ -702,54 +853,41 @@ namespace NProf
 			};
 			this.KeyDown += delegate
 			{
-				if (SelectedItems.Count != 0)
-				{
-					UpdateView();
-				}
+				UpdateView();
 			};
+			this.SelectedItemsChanged += delegate
+			{
+				UpdateView();
+			};
+		}
+		void MakeSureComputed(ContainerListViewItem item)
+		{
+			MakeSureComputed(item, false);
+		}
+		void MakeSureComputed(ContainerListViewItem item,bool parentExpanded)
+		{
+			if (item.Items.Count == 0)
+			{
+				foreach (FunctionInfo function in ((FunctionInfo)item.Tag).Callees.Values)
+				{
+					AddFunctionItem(item.Items, function);
+				}
+			}
+			if (item.Expanded || parentExpanded)
+			{
+				foreach (ContainerListViewItem subItem in item.Items)
+				{
+					MakeSureComputed(subItem,item.Expanded);
+				}
+			}
 		}
 		void UpdateView()
 		{
 			SuspendLayout();
 			BeginUpdate();
-			ContainerListViewItem item = this.BottomItemPartiallyVisible;
-			while (item != null)
+			foreach (ContainerListViewItem item in Items)
 			{
-				//foreach (ContainerListViewItem subItem in item.Items)
-				//{
-				//item.Items.Clear();
-				//if (item.Items.Count == 0)
-				//{
-				//    foreach (FunctionInfo function in ((FunctionInfo)item.Tag).Callees.Values)
-				//    {
-				//        FunctionItem(item.Items, function);
-				//    }
-				//    foreach (ContainerListViewItem i in item.Items)
-				//    {
-				//        if (i.Expanded)
-				//        {
-				//            FunctionItem(i.Items, (FunctionInfo)i.Tag);
-				//        }
-				//    }
-				//    //foreach (ContainerListViewItem i in item.Items)
-				//    //{
-				//    //    FunctionItem(i.Items, (FunctionInfo)i.Tag);
-				//    //}
-
-				//    //if (item.Items.Count == 0 && ((FunctionInfo)item.Tag).Callees.Values.Count != 0)
-				//    //{
-				//    //}
-				//}
-
-				//if (subItem.Items.Count == 0)
-				//{
-				//    foreach (FunctionInfo function in ((FunctionInfo)subItem.Tag).Callees.Values)
-				//    {
-				//        FunctionItem(subItem.Items, function);
-				//    }
-				//}
-				//}
-				item = item.PreviousVisibleItem;
+				MakeSureComputed(item,true);
 			}
 			EndUpdate();
 			ResumeLayout();
@@ -761,7 +899,7 @@ namespace NProf
 			item.Tag = function;
 			return item;
 		}
-		public void FunctionItem(ContainerListViewItemCollection parent, FunctionInfo function)
+		public void AddFunctionItem(ContainerListViewItemCollection parent, FunctionInfo function)
 		{
 			ContainerListViewItem item = AddItem(parent, function);
 			foreach (FunctionInfo callee in function.Callees.Values)
@@ -771,7 +909,7 @@ namespace NProf
 		}
 		public void Add(FunctionInfo function)
 		{
-			FunctionItem(Items, function);
+			AddFunctionItem(Items, function);
 		}
 	}
 	public class Profiler
