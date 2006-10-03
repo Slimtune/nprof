@@ -57,10 +57,16 @@ namespace NProf
 		private MethodView callers;
 		private TextBox findText = new TextBox();
 		public delegate void SingleArgument<T>(T t);
+		private FlowLayoutPanel findPanel;
 		public T With<T>(T t,SingleArgument<T> del)
 		{
 			del(t);
 			return t;
+		}
+		public void ShowSearch()
+		{
+			findPanel.Visible = !findPanel.Visible;
+			findText.Focus();
 		}
 		private NProf()
 		{
@@ -69,7 +75,7 @@ namespace NProf
 			Text = "NProf";
 			runs = With(new ListView(), delegate(ListView tree)
 			{
-				tree.Dock = DockStyle.Left;
+				tree.Dock = DockStyle.Fill;
 				tree.DoubleClick += delegate
 				{
 					if (runs.SelectedItems.Count != 0)
@@ -80,7 +86,7 @@ namespace NProf
 			});
 			callers = With(new MethodView("Callers"), delegate(MethodView method)
 			{
-				method.Size = new Size(100, 100);
+				method.Size = new Size(100, 200);
 				method.Dock = DockStyle.Bottom;
 			});
 			methods = With(new MethodView("Callees"), delegate(MethodView method)
@@ -105,6 +111,17 @@ namespace NProf
 				};
 				method.SelectedItemsChanged+=delegate
 				{
+					if (method.SelectedItems.Count != 0)
+					{
+						ContainerListViewItem item=method.SelectedItems[0];
+						if (item.Items.Count == 0)
+						{
+							foreach (FunctionInfo f in ((FunctionInfo)item.Tag).Callees.Values)
+							{
+								method.FunctionItem(item.Items, f);
+							}
+						}
+					}
 					//if (methods.SelectedItems.Count == 0)
 					//    return;
 					//callers.Items.Clear();
@@ -129,18 +146,28 @@ namespace NProf
 						"File",
 						new MenuItem[] 
 						{
-							new MenuItem("&New...",New),
-							new MenuItem("-"),
 							new MenuItem("About nprof...",delegate{new AboutForm().ShowDialog(this);}),
 							new MenuItem("-"),
 							new MenuItem("E&xit",delegate {Close();})
-						})
+						}),
+					new MenuItem(
+						"Project",
+						new MenuItem[]
+						{
+							new MenuItem("Start",delegate{StartRun();},Shortcut.F5),
+							new MenuItem("-"),
+							new MenuItem("&New...",New,Shortcut.CtrlN),
+							new MenuItem("-"),
+							new MenuItem("Find",delegate{ShowSearch();},Shortcut.CtrlF)
+						})					
 				});
 
 			Controls.AddRange(new Control[] 
 			{
 				With(new Panel(), delegate(Panel panel)
 				{
+					//panel.BorderStyle=BorderStyle.Fixed3D;
+
 					panel.Dock = DockStyle.Fill;
 					panel.Controls.AddRange(new Control[] {
 						With(new Panel(),delegate(Panel methodPanel)
@@ -157,6 +184,8 @@ namespace NProf
 							callers,
 							With(new FlowLayoutPanel(),delegate(FlowLayoutPanel p)
 							{
+								findPanel=p;
+								p.Visible=false;
 							    p.WrapContents = false;
 							    p.AutoSize = true;
 							    p.Dock = DockStyle.Top;
@@ -192,9 +221,24 @@ namespace NProf
 						{
 							splitter.Dock = DockStyle.Left;
 						}),
-						runs
+						With(new Panel(),delegate(Panel p)
+						{
+							p.Controls.Add(runs);
+							p.Dock=DockStyle.Left;
+							p.Controls.Add(With(new Label(),delegate(Label l)
+							{
+								l.Text="Completed runs:";
+						        l.TextAlign = ContentAlignment.MiddleLeft;
+						        l.AutoSize = true;
+								l.Dock=DockStyle.Top;
+							}));
+						})
 					});
 
+				}),
+				With(new Splitter(),delegate(Splitter splitter)
+				{
+					splitter.Dock = DockStyle.Top;
 				}),
 				With(new TableLayoutPanel(),delegate(TableLayoutPanel panel)
 				{
@@ -206,6 +250,7 @@ namespace NProf
 					{
 						textBox.Width=300;
 					});
+					//panel.BorderStyle=BorderStyle.Fixed3D;
 					panel.Height=100;
 					panel.AutoSize=true;
 					panel.Dock = DockStyle.Top;
@@ -235,14 +280,14 @@ namespace NProf
 							}
 						};
 					}),2,0);
-					panel.Controls.Add(With(new Button(),delegate(Button button)
-					{
-						button.Text="Start";
-						button.Click+=delegate
-						{
-							StartRun();
-						};
-					}),3,0);
+					//panel.Controls.Add(With(new Button(),delegate(Button button)
+					//{
+					//    button.Text="Start";
+					//    button.Click+=delegate
+					//    {
+					//        StartRun();
+					//    };
+					//}),3,0);
 					panel.Controls.Add(With(new Label(),delegate(Label label)
 						{
 							label.Text = "Arguments:";
@@ -252,17 +297,6 @@ namespace NProf
 						}),0,1);
 					panel.Controls.Add(arguments,1,1);
 				}),
-				//With(new MenuControl(),delegate(MenuControl mainMenu)
-				//{
-				//    mainMenu.Dock = DockStyle.Top;
-				//    mainMenu.MenuCommands.Add(
-				//        new Menu("File",
-				//            new Menu("&New...","Create a new profile project",New),
-				//            new Menu("-","-",null),
-				//            new Menu("About nprof...","About nprof",delegate{new AboutForm().ShowDialog(this);}),
-				//            new Menu("-","-",null),
-				//            new Menu("E&xit","Exit the application",Shortcut.AltF4,delegate {Close();})));
-				//})
 			});
 		}
 		private delegate void HandleProfileComplete(Run run);
@@ -296,7 +330,6 @@ namespace NProf
 			}
 
 			Run run = new Run(profiler);
-			//Project.Runs.Add(run);
 			run.profiler.Completed += run.Complete;
 			run.Start();
 		}
@@ -466,6 +499,7 @@ namespace NProf
 			this.ShowPlusMinus = true;
 			ShowRootTreeLines = true;
 			ShowTreeLines = true;
+			ColumnSortColor = Color.White;
 
 			HeaderStyle = ColumnHeaderStyle.Clickable;
 			Font = new Font("Tahoma", 8.0f);
@@ -477,7 +511,7 @@ namespace NProf
 				UpdateView();
 				//}
 			};
-			this.KeyDown += delegate
+			this.KeyDown += delegate(object sender,KeyEventArgs e)
 			{
 				if (SelectedItems.Count != 0)
 				{
@@ -494,16 +528,29 @@ namespace NProf
 			{
 				//foreach (ContainerListViewItem subItem in item.Items)
 				//{
-				if (item.Items.Count == 0)
-				{
-					foreach (FunctionInfo function in ((FunctionInfo)item.Tag).Callees.Values)
-					{
-						FunctionItem(item.Items, function);
-					}
-					if (item.Items.Count == 0 && ((FunctionInfo)item.Tag).Callees.Values.Count != 0)
-					{
-					}
-				}
+				//item.Items.Clear();
+				//if (item.Items.Count == 0)
+				//{
+				//    foreach (FunctionInfo function in ((FunctionInfo)item.Tag).Callees.Values)
+				//    {
+				//        FunctionItem(item.Items, function);
+				//    }
+				//    foreach (ContainerListViewItem i in item.Items)
+				//    {
+				//        if (i.Expanded)
+				//        {
+				//            FunctionItem(i.Items, (FunctionInfo)i.Tag);
+				//        }
+				//    }
+				//    //foreach (ContainerListViewItem i in item.Items)
+				//    //{
+				//    //    FunctionItem(i.Items, (FunctionInfo)i.Tag);
+				//    //}
+
+				//    //if (item.Items.Count == 0 && ((FunctionInfo)item.Tag).Callees.Values.Count != 0)
+				//    //{
+				//    //}
+				//}
 
 					//if (subItem.Items.Count == 0)
 					//{
@@ -530,13 +577,15 @@ namespace NProf
 			ContainerListViewItem item=AddItem(parent, function);
 			foreach (FunctionInfo callee in function.Callees.Values)
 			{
-				//AddItem(item.Items, callee);
-				FunctionItem(item.Items, callee);
-				//ContainerListViewItem subItem=AddItem(item.Items, callee);
-				//foreach (FunctionInfo subCallee in callee.Callees.Values)
-				//{
-				//    AddItem(subItem.Items, subCallee);
-				//}
+				AddItem(item.Items, callee);
+
+				////FunctionItem(item.Items, callee);
+
+				////ContainerListViewItem subItem = AddItem(item.Items, callee);
+				////foreach (FunctionInfo subCallee in callee.Callees.Values)
+				////{
+				////    AddItem(subItem.Items, subCallee);
+				////}
 			}
 		}
 		public void Add(FunctionInfo function)

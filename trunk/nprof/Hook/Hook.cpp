@@ -931,18 +931,10 @@ public:
 		for(map< DWORD, ThreadID >::iterator i=threadMap.begin();i!=threadMap.end();i++)
 		{
 			DWORD threadId=(*i).first;
-			HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME,false,threadId);
-			if(threadHandle!=NULL)
-			{
-				int suspended=SuspendThread(threadHandle);
-			}
-		}
-		for(map< DWORD, ThreadID >::iterator i=threadMap.begin();i!=threadMap.end();i++)
-		{
-			DWORD threadId=(*i).first;
 			HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME|THREAD_QUERY_INFORMATION|THREAD_GET_CONTEXT,false,threadId);
 			if(threadHandle!=NULL)
 			{
+				int suspended=SuspendThread(threadHandle);
 				vector<FunctionID>* functions=new vector<FunctionID>();
 				ThreadID id=i->second;
 
