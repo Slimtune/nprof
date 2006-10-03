@@ -640,6 +640,33 @@ public:
 	void EndAll( ProfilerHelper& profilerHelper )
 	{
 		file=new ofstream("c:\\test.nprof", ios::binary);
+		for ( map< FunctionID, FunctionID >::iterator i = signatures.begin(); i != signatures.end(); i++ )
+		{
+			FunctionID id=i->second;
+			WriteFunctionID(id);
+			//socket.SendFunctionID(id);
+
+			string returnType;
+			string className;
+			string functionName;
+			string parameters;
+			UINT32 methodAttributes;
+			profilerHelper.GetFunctionSignature( id, methodAttributes, returnType, className, functionName, parameters );
+
+			WriteFunctionID(methodAttributes);
+			//socket.SendUINT32( methodAttributes );
+			WriteString( returnType );
+			WriteString( className );
+			WriteString( functionName );
+			WriteString( parameters );
+
+			//socket.SendString( returnType );
+			//socket.SendString( className );
+			//socket.SendString( functionName );
+			//socket.SendString( parameters );
+		}
+		WriteFunctionID(0xffffffff);
+		//WriteFunctionID(-2);
 
 		for(vector<vector<FunctionID>*>::iterator stackWalk = stackWalks.begin(); stackWalk != stackWalks.end(); stackWalk++ )
 		{
@@ -653,27 +680,33 @@ public:
 		WriteFunctionID(-2);
 		file->close();
 		delete file;
-		ProfilerSocket socket;
-		for ( map< FunctionID, FunctionID >::iterator i = signatures.begin(); i != signatures.end(); i++ )
-		{
-			FunctionID id=i->second;
-			socket.SendFunctionID(id);
+		//ProfilerSocket socket;
+		//for ( map< FunctionID, FunctionID >::iterator i = signatures.begin(); i != signatures.end(); i++ )
+		//{
+		//	FunctionID id=i->second;
+		//	socket.SendFunctionID(id);
 
-			string returnType;
-			string className;
-			string functionName;
-			string parameters;
-			UINT32 methodAttributes;
-			profilerHelper.GetFunctionSignature( id, methodAttributes, returnType, className, functionName, parameters );
+		//	string returnType;
+		//	string className;
+		//	string functionName;
+		//	string parameters;
+		//	UINT32 methodAttributes;
+		//	profilerHelper.GetFunctionSignature( id, methodAttributes, returnType, className, functionName, parameters );
 
-			socket.SendUINT32( methodAttributes );
-			socket.SendString( returnType );
-			socket.SendString( className );
-			socket.SendString( functionName );
-			socket.SendString( parameters );
-		}
-		socket.SendFunctionID(0xffffffff);
-		socket.SendFunctionID(-2);
+		//	socket.SendUINT32( methodAttributes );
+		//	socket.SendString( returnType );
+		//	socket.SendString( className );
+		//	socket.SendString( functionName );
+		//	socket.SendString( parameters );
+		//}
+		//socket.SendFunctionID(0xffffffff);
+		//socket.SendFunctionID(-2);
+	}
+	void WriteString(const string& signature)
+	{
+		WriteFunctionID(( UINT32 )signature.length());
+		file->write(signature.c_str(),(int)signature.length());
+		//SAFE_SEND_RAW( socket, signature.c_str(), ( int )signature.length() );
 	}
 	void WriteFunctionID(FunctionID id)
 	{

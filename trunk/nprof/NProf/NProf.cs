@@ -432,25 +432,6 @@ namespace NProf
 			{
 				MessageBox.Show("An internal exception occurred:\n\n" + e.ToString(), "Error");
 			}
-			BinaryReader r = new BinaryReader(File.Open("C:\\test.nprof", FileMode.Open));
-			while (true)
-			{
-				List<int> stackWalk = new List<int>();
-				while (true)
-				{
-					int functionId = r.ReadInt32();
-					if (functionId == -1)
-					{
-						break;
-					}
-					else if (functionId == -2)
-					{
-						return;
-					}
-					stackWalk.Add(functionId);
-				}
-				run.stackWalks.Add(stackWalk);
-			}
 		}
 		public static FunctionInfo GetFunctionInfo(Dictionary<int, FunctionInfo> functions, int id)
 		{
@@ -594,8 +575,75 @@ namespace NProf
 				}
 			}
 		}
+		private string ReadLengthEncodedASCIIString(BinaryReader br)
+		{
+			int length = br.ReadInt32();
+			if (length > 2000 || length < 0)
+			{
+				byte[] abNextBytes = new byte[8];
+				br.Read(abNextBytes, 0, 8);
+				string strError = "Length was abnormally large or small (" + length.ToString("x") + ").  Next bytes were ";
+				foreach (byte b in abNextBytes)
+					strError += b.ToString("x") + " (" + (Char.IsControl((char)b) ? '-' : (char)b) + ") ";
+
+				throw new InvalidOperationException(strError);
+			}
+			byte[] abString = new byte[length];
+			int nRead = 0;
+			DateTime dt = DateTime.Now;
+			while (nRead < length)
+			{
+				nRead += br.Read(abString, nRead, length - nRead);
+
+				// Make this loop finite (30 seconds)
+				TimeSpan ts = DateTime.Now - dt;
+				if (ts.TotalSeconds > 30)
+					throw new InvalidOperationException("Timed out while waiting for length encoded string");
+			}
+			return System.Text.ASCIIEncoding.ASCII.GetString(abString, 0, length);
+		}
+		private void ReadStackWalks()
+		{
+			using (BinaryReader r = new BinaryReader(File.Open("C:\\test.nprof", FileMode.Open)))
+			{
+				while (true)
+				{
+					int functionId = r.ReadInt32();
+					if (functionId == -1)
+					{
+						break;
+					}
+					signatures[functionId] = new FunctionSignature(
+						r.ReadUInt32(),
+						ReadLengthEncodedASCIIString(r),
+						ReadLengthEncodedASCIIString(r),
+						ReadLengthEncodedASCIIString(r),
+						ReadLengthEncodedASCIIString(r)
+					);
+				}
+				while (true)
+				{
+					List<int> stackWalk = new List<int>();
+					while (true)
+					{
+						int functionId = r.ReadInt32();
+						if (functionId == -1)
+						{
+							break;
+						}
+						else if (functionId == -2)
+						{
+							return;
+						}
+						stackWalk.Add(functionId);
+					}
+					stackWalks.Add(stackWalk);
+				}
+			}
+		}
 		public void Complete(object sender,EventArgs e)
 		{
+			ReadStackWalks();
 			NProf.form.BeginInvoke(new EventHandler(delegate
 			{
 				InterpreteData();
@@ -637,7 +685,6 @@ namespace NProf
 			{
 				AddItem(Items, method);
 			}
-			//Sort(1, SortOrder.Descending, true);
 			UpdateView();
 			EndUpdate();
 			ResumeLayout();
