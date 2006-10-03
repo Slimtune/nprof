@@ -934,7 +934,7 @@ public:
 			HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME|THREAD_QUERY_INFORMATION|THREAD_GET_CONTEXT,false,threadId);
 			if(threadHandle!=NULL)
 			{
-				int suspended=SuspendThread(threadHandle);
+				int suspendCount=SuspendThread(threadHandle);
 				vector<FunctionID>* functions=new vector<FunctionID>();
 				ThreadID id=i->second;
 

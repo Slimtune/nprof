@@ -76,6 +76,7 @@ namespace NProf
 			runs = With(new ListView(), delegate(ListView tree)
 			{
 				tree.Dock = DockStyle.Fill;
+				tree.Width = 100;
 				tree.DoubleClick += delegate
 				{
 					if (runs.SelectedItems.Count != 0)
@@ -345,6 +346,9 @@ namespace NProf
 			methods.SuspendLayout();
 			methods.BeginUpdate();
 			callers.BeginUpdate();
+			methods.currentRun = run;
+			callers.currentRun = run;
+
 
 			methods.Items.Clear();
 			callers.Items.Clear();
@@ -489,6 +493,7 @@ namespace NProf
 	}
 	public class MethodView : ContainerListView
 	{
+		public Run currentRun;
 		public MethodView(string name)
 		{
 			Columns.Add(name);
@@ -567,8 +572,8 @@ namespace NProf
 		}
 		private ContainerListViewItem AddItem(ContainerListViewItemCollection parent, FunctionInfo function)
 		{
-			ContainerListViewItem item = parent.Add(function.Signature);
-			item.SubItems[1].Text = function.Time.ToString(NProf.timeFormat);
+			ContainerListViewItem item = parent.Add(currentRun.signatures.GetFunctionSignature(function.ID));
+			item.SubItems[1].Text = ((((double)function.Calls)/(double)currentRun.maxCalls)*100.0).ToString(NProf.timeFormat);
 			item.Tag = function;
 			return item;
 		}
@@ -578,39 +583,17 @@ namespace NProf
 			foreach (FunctionInfo callee in function.Callees.Values)
 			{
 				AddItem(item.Items, callee);
-
 				////FunctionItem(item.Items, callee);
-
 				////ContainerListViewItem subItem = AddItem(item.Items, callee);
 				////foreach (FunctionInfo subCallee in callee.Callees.Values)
 				////{
 				////    AddItem(subItem.Items, subCallee);
 				////}
-			}
+			}	
 		}
 		public void Add(FunctionInfo function)
 		{
 			FunctionItem(Items, function);
-		}
-	}
-	public class CallerView : DotNetLib.Windows.Forms.ContainerListView
-	{
-		public CallerView(string name)
-		{
-			Columns.Add(name);
-			Columns.Add("Time");
-
-			HeaderStyle = ColumnHeaderStyle.Clickable;
-			Columns[0].Width = 350;
-	
-			ColumnSortColor = Color.White;
-			Font = new Font("Tahoma", 8.0f);
-		}
-		public void Add(FunctionInfo function)
-		{
-			DotNetLib.Windows.Forms.ContainerListViewItem item = Items.Add(function.Signature);
-			item.SubItems[1].Text = function.Time.ToString(NProf.timeFormat);
-			item.Tag = function;
 		}
 	}
 	public class ProfilerSocketServer
@@ -733,7 +716,7 @@ namespace NProf
 			FunctionInfo result;
 			if (!functions.TryGetValue(id,out result))
 			{
-				result =new FunctionInfo(id, signatures, 0);
+				result =new FunctionInfo(id);
 				functions[id]=result;
 			}
 			return result;
@@ -785,41 +768,15 @@ namespace NProf
 	}
 	public class FunctionInfo
 	{
-		private const double frequency = 10.0;
-		public double Time
+		public const double frequency = 10.0;
+		public FunctionInfo(int ID)//, int calls)
 		{
-			get
-			{
-				return ((double)(calls) * 10)/1000.0;///1000.0;
-			}
+			this.ID = ID;
 		}
-		public FunctionInfo(int nID, FunctionSignatureMap signatures, int calls)
-		{
-			this.id = nID;
-			this.calls = calls;
-			this.signatures = signatures;
-		}
-
-		public int ID
-		{
-			get { return id; }
-			set { id = value; }
-		}
-		public string Signature
-		{
-			get { return signatures.GetFunctionSignature(id); }
-		}
-		public int lastWalk = 0;
-
-		public Dictionary<int,FunctionInfo> Callees
-		{
-			get { return callees; }
-			set { callees = value; }
-		}
-		private int id;
-		public int calls;
-		private Dictionary<int, FunctionInfo> callees = new Dictionary<int, FunctionInfo>();
-		//private List<FunctionInfo> callees = new List<FunctionInfo>();
+		public readonly int ID;
+		public int Calls;
+		public int lastWalk;
+		public readonly Dictionary<int, FunctionInfo> Callees = new Dictionary<int, FunctionInfo>();
 		FunctionSignatureMap signatures;
 	}
 	public class FunctionSignature
@@ -981,6 +938,7 @@ namespace NProf
 	}
 	public class Run
 	{
+		public int maxCalls;
 		public List<List<int>> stackWalks = new List<List<int>>();
 
 		private void InterpreteData()
@@ -997,7 +955,7 @@ namespace NProf
 						FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(currentMap, stackWalk[index], signatures);
 						if (function.lastWalk != currentWalk)
 						{
-							function.calls++;
+							function.Calls++;
 						}
 						function.lastWalk = currentWalk;
 						currentMap = function.Callees;
@@ -1015,14 +973,22 @@ namespace NProf
 						FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(currentMap, stackWalk[index], signatures);
 						if (function.lastWalk != currentWalk)
 						{
-							function.calls++;
+							function.Calls++;
 						}
 						function.lastWalk = currentWalk;
 						currentMap = function.Callees;
 					}
 				}
 			}
-			int asdf = 0;
+			int max=0;
+			foreach (FunctionInfo function in functions.Values)
+			{
+				if (function.Calls > max)
+				{
+					max = function.Calls;
+				}
+			}
+			maxCalls = max;
 		}
 		public void Complete(object sender,EventArgs e)
 		{
