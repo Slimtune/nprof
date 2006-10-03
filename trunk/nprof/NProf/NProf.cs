@@ -48,6 +48,16 @@ namespace NProf
 		}
 		public void Find(bool forward, bool step)
 		{
+
+			if (callers.SelectedItems.Count != 0)
+			{
+				callers.Find(findText.Text, forward, step);
+			}
+			//if (callees.SelectedItems.Count != 0)
+			else
+			{
+				callees.Find(findText.Text, forward, step);
+			}
 		}
 		private NProf()
 		{
@@ -92,28 +102,13 @@ namespace NProf
 			{
 				callers.SelectedItems.Clear();
 			};
-			callees.DoubleClick += delegate {
-				//if (callees.SelectedItems.Count != 0)
-				//{
-				//    FunctionInfo function = (FunctionInfo)callees.SelectedItems[0].Tag;
-				//    callers.SelectedItems.Clear();
-				//    foreach (ContainerListViewItem item in callees.Items)
-				//    {
-				//        if (((FunctionInfo)item.Tag).ID == function.ID)
-				//        {
-				//            callers.SelectedItems.Add(item);
-				//            break;
-				//        }
-				//    }
-				//}
-			};
 			callees.SelectedItemsChanged+=delegate {
 				if (callees.SelectedItems.Count != 0)
 				{
 					ContainerListViewItem item=callees.SelectedItems[0];
 					if (item.Items.Count == 0)
 					{
-						foreach (FunctionInfo f in ((FunctionInfo)item.Tag).Callees.Values)
+						foreach (FunctionInfo f in ((FunctionInfo)item.Tag).Children.Values)
 						{
 							callees.AddFunctionItem(item.Items, f);
 						}
@@ -413,29 +408,48 @@ namespace NProf
 							ReadLengthEncodedASCIIString(reader)
 						);
 					}
-					while (true)
-					{
-						List<int> stackWalk = new List<int>();
-						while (true)
-						{
-							int functionId = reader.ReadInt32();
-							if (functionId == -1)
-							{
-								break;
-							}
-							else if (functionId == -2)
-							{
-								return;
-							}
-							stackWalk.Add(functionId);
-						}
-						run.stackWalks.Add(stackWalk);
-					}
+					//while (true)
+					//{
+					//    List<int> stackWalk = new List<int>();
+					//    while (true)
+					//    {
+					//        int functionId = reader.ReadInt32();
+					//        if (functionId == -1)
+					//        {
+					//            break;
+					//        }
+					//        else if (functionId == -2)
+					//        {
+					//            return;
+					//        }
+					//        stackWalk.Add(functionId);
+					//    }
+					//    run.stackWalks.Add(stackWalk);
+					//}
 				}
 			}
 			catch (Exception e)
 			{
 				MessageBox.Show("An internal exception occurred:\n\n" + e.ToString(), "Error");
+			}
+			BinaryReader r = new BinaryReader(File.Open("C:\\test.nprof", FileMode.Open));
+			while (true)
+			{
+				List<int> stackWalk = new List<int>();
+				while (true)
+				{
+					int functionId = r.ReadInt32();
+					if (functionId == -1)
+					{
+						break;
+					}
+					else if (functionId == -2)
+					{
+						return;
+					}
+					stackWalk.Add(functionId);
+				}
+				run.stackWalks.Add(stackWalk);
 			}
 		}
 		public static FunctionInfo GetFunctionInfo(Dictionary<int, FunctionInfo> functions, int id)
@@ -508,20 +522,20 @@ namespace NProf
 		public readonly int ID;
 		public int Samples;
 		public int lastWalk;
-		private Dictionary<int, FunctionInfo> callees;
+		private Dictionary<int, FunctionInfo> children;
 		public List<StackWalk> stackWalks=new List<StackWalk>();
-		public Dictionary<int, FunctionInfo> Callees
+		public Dictionary<int, FunctionInfo> Children
 		{
 			get
 			{
-				if (callees == null)
+				if (children == null)
 				{
-					callees = new Dictionary<int, FunctionInfo>();
+					children = new Dictionary<int, FunctionInfo>();
 					foreach (StackWalk walk in stackWalks)
 					{
 						if (walk.frames.Count != 0)
 						{
-							FunctionInfo callee = ProfilerSocketServer.GetFunctionInfo(callees, walk.frames[walk.frames.Count-1]);
+							FunctionInfo callee = ProfilerSocketServer.GetFunctionInfo(children, walk.frames[walk.frames.Count-1]);
 							if (callee.lastWalk != walk.id)
 							{
 								callee.Samples++;
@@ -530,56 +544,9 @@ namespace NProf
 						}
 					}
 				}
-				return callees;
+				return children;
 			}
 		}
-		private Dictionary<int, FunctionInfo> callers;
-		//public Dictionary<int, FunctionInfo> Callers
-		//{
-		//    get
-		//    {
-		//        if (callers == null)
-		//        {
-		//            callers = new Dictionary<int, FunctionInfo>();
-		//            foreach (StackWalk walk in stackWalks)
-		//            {
-		//                if (walk.frames.Count != 0)
-		//                {
-		//                    FunctionInfo caller = ProfilerSocketServer.GetFunctionInfo(callers, walk.frames[0]);
-		//                    if (caller.lastWalk != walk.id)
-		//                    {
-		//                        caller.Calls++;
-		//                    }
-		//                    caller.stackWalks.Add(new StackWalk(walk.id, walk.frames.GetRange(1, walk.frames.Count - 1)));
-		//                }
-		//            }
-		//        }
-		//        return callers;
-		//    }
-		//}
-		//public  Dictionary<int, FunctionInfo> Callees
-		//{
-		//    get
-		//    {
-		//        if(callees==null)
-		//        {
-		//            callees=new Dictionary<int, FunctionInfo>();
-		//            foreach (StackWalk walk in stackWalks)
-		//            {
-		//                if (walk.frames.Count != 0)
-		//                {
-		//                    FunctionInfo callee = ProfilerSocketServer.GetFunctionInfo(callees, walk.frames[0]);
-		//                    if (callee.lastWalk != walk.id)
-		//                    {
-		//                        callee.Calls++;
-		//                    }
-		//                    callee.stackWalks.Add(new StackWalk(walk.id, walk.frames.GetRange(1, walk.frames.Count - 1)));
-		//                }
-		//            }
-		//        }
-		//        return callees;
-		//    }
-		//}
 	}
 	public class Run
 	{
@@ -675,14 +642,14 @@ namespace NProf
 			EndUpdate();
 			ResumeLayout();
 		}
-		private void Find(string text, bool forward, bool step)
+		public void Find(string text, bool forward, bool step)
 		{
 			if (text != "")
 			{
 				ContainerListViewItem item;
 				if (SelectedItems.Count == 0)
 				{
-					if (SelectedItems.Count == 0)
+					if (Items.Count == 0)
 					{
 						item = null;
 					}
@@ -697,11 +664,11 @@ namespace NProf
 					{
 						if (forward)
 						{
-							item = SelectedItems[0];
+							item = SelectedItems[0].NextVisibleItem;
 						}
 						else
 						{
-							item = SelectedItems[0];
+							item = SelectedItems[0].PreviousVisibleItem;
 						}
 					}
 					else
@@ -724,11 +691,11 @@ namespace NProf
 					{
 						if (forward)
 						{
-							item = item.NextItem;
+							item = item.NextVisibleItem;
 						}
 						else
 						{
-							item = item.PreviousItem;
+							item = item.PreviousVisibleItem;
 						}
 						if (item == null)
 						{
@@ -747,8 +714,86 @@ namespace NProf
 						break;
 					}
 				}
+				if (item != null)
+				{
+					EnsureVisible(item);
+				}
 			}
 		}
+		//public void Find(string text, bool forward, bool step)
+		//{
+		//    if (text != "")
+		//    {
+		//        ContainerListViewItem item;
+		//        if (SelectedItems.Count == 0)
+		//        {
+		//            if (SelectedItems.Count == 0)
+		//            {
+		//                item = null;
+		//            }
+		//            else
+		//            {
+		//                item = Items[0];
+		//            }
+		//        }
+		//        else
+		//        {
+		//            if (step)
+		//            {
+		//                if (forward)
+		//                {
+		//                    item = SelectedItems[0];
+		//                }
+		//                else
+		//                {
+		//                    item = SelectedItems[0];
+		//                }
+		//            }
+		//            else
+		//            {
+		//                item = SelectedItems[0];
+		//            }
+		//        }
+		//        ContainerListViewItem firstItem = item;
+		//        while (item != null)
+		//        {
+		//            if (item.Text.ToLower().Contains(text.ToLower()))
+		//            {
+		//                SelectedItems.Clear();
+		//                item.Focused = true;
+		//                item.Selected = true;
+		//                this.Invalidate();
+		//                break;
+		//            }
+		//            else
+		//            {
+		//                if (forward)
+		//                {
+		//                    item = item.NextItem;
+		//                }
+		//                else
+		//                {
+		//                    item = item.PreviousItem;
+		//                }
+		//                if (item == null)
+		//                {
+		//                    if (forward)
+		//                    {
+		//                        item = Items[0];
+		//                    }
+		//                    else
+		//                    {
+		//                        item = Items[Items.Count - 1];
+		//                    }
+		//                }
+		//            }
+		//            if (item == firstItem)
+		//            {
+		//                break;
+		//            }
+		//        }
+		//    }
+		//}
 		private void JumpToID(int id)
 		{
 			SelectedItems.Clear();
@@ -774,15 +819,10 @@ namespace NProf
 			Columns.Add(name);
 			Columns.Add("Time");
 			Columns[0].Width = 350;
-			//Columns[0].SortDataType = SortDataType.String;
-			//Columns[1].SortDataType = SortDataType.Double;
-			//Columns[1].DefaultSortOrder = SortOrder.Descending;
 			this.ShowPlusMinus = true;
 			ShowRootTreeLines = true;
 			ShowTreeLines = true;
 			ColumnSortColor = Color.White;
-
-			//HeaderStyle = ColumnHeaderStyle.Clickable;
 			Font = new Font("Tahoma", 8.0f);
 			this.Click += delegate
 			{
@@ -814,8 +854,7 @@ namespace NProf
 		{
 			if (item.Items.Count == 0)
 			{
-				foreach (FunctionInfo function in SortFunctions(((FunctionInfo)item.Tag).Callees.Values))
-				//foreach (FunctionInfo function in ((FunctionInfo)item.Tag).Callees.Values)
+				foreach (FunctionInfo function in SortFunctions(((FunctionInfo)item.Tag).Children.Values))
 				{
 					AddFunctionItem(item.Items, function);
 				}
@@ -836,7 +875,6 @@ namespace NProf
 			{
 				MakeSureComputed(item,true);
 			}
-			//Sort(1, false, true);
 			EndUpdate();
 			ResumeLayout();
 		}
@@ -850,7 +888,7 @@ namespace NProf
 		public void AddFunctionItem(ContainerListViewItemCollection parent, FunctionInfo function)
 		{
 			ContainerListViewItem item = AddItem(parent, function);
-			foreach (FunctionInfo callee in function.Callees.Values)
+			foreach (FunctionInfo callee in function.Children.Values)
 			{
 				AddItem(item.Items, callee);
 			}

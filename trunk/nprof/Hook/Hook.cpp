@@ -572,35 +572,43 @@ public:
 		closesocket( socket );
 	}
 public:
-	void ProfilerSocket::SendBool( bool boolean )
-	{
-		SAFE_SEND( socket, boolean );
-	}
+	//void ProfilerSocket::SendBool( bool boolean )
+	//{
+	//	SAFE_SEND( socket, boolean );
+	//}
 	void ProfilerSocket::SendUINT32( UINT32 integer )
 	{
 		SAFE_SEND( socket, integer );
 	}
-	void ProfilerSocket::SendUINT64( UINT64 integer)
-	{
-		SAFE_SEND( socket, integer);
-	}
-
+	//void ProfilerSocket::SendUINT64( UINT64 integer)
+	//{
+	//	SAFE_SEND( socket, integer);
+	//}
 	void ProfilerSocket::SendString( const string& signature )
 	{
 		SendUINT32( ( UINT32 )signature.length() );
 		SAFE_SEND_RAW( socket, signature.c_str(), ( int )signature.length() );
 	}
-	void ProfilerSocket::SendAppDomainID( AppDomainID appDomainId )
-	{
-		SAFE_SEND( socket, appDomainId );
-	}
-	void ProfilerSocket::SendThreadID( ThreadID threadId )
-	{
-		SAFE_SEND( socket, threadId );
-	}
+	//void ProfilerSocket::SendAppDomainID( AppDomainID appDomainId )
+	//{
+	//	SAFE_SEND( socket, appDomainId );
+	//}
+	//void ProfilerSocket::SendThreadID( ThreadID threadId )
+	//{
+	//	SAFE_SEND( socket, threadId );
+	//}
 	void ProfilerSocket::SendFunctionID( FunctionID functionId )
 	{
 		SAFE_SEND( socket, functionId );
+	 // #include <fstream.h>
+		//int main()
+		//{
+			//fstream file_op("c:\\CoderSource_file.txt",ios::out);
+
+			//file_op<<"Test Write to file";
+			//file_op.close();
+			//return 0;
+		//}
 	}
 private:
 	SOCKET socket;
@@ -628,17 +636,24 @@ class Profiler
 public: 
 	vector<vector<FunctionID>*> stackWalks;
 	map< FunctionID, FunctionID> signatures;
-
+	ofstream* file;
 	void EndAll( ProfilerHelper& profilerHelper )
 	{
+		file=new ofstream("c:\\test.nprof", ios::binary);
+
+		for(vector<vector<FunctionID>*>::iterator stackWalk = stackWalks.begin(); stackWalk != stackWalks.end(); stackWalk++ )
+		{
+			for(vector<FunctionID>::iterator stackFrame=(*stackWalk)->begin();stackFrame!=(*stackWalk)->end();stackFrame++)
+			{
+				WriteFunctionID(*stackFrame);
+			}
+			WriteFunctionID(0xffffffff);
+		}
+		WriteFunctionID(0xffffffff);
+		WriteFunctionID(-2);
+		file->close();
+		delete file;
 		ProfilerSocket socket;
-		SendSignatures(socket,profilerHelper);
-		socket.SendFunctionID( -1);
-		SendStackWalks(socket,profilerHelper);
-		socket.SendFunctionID( -2 );
-	}
-	void SendSignatures(ProfilerSocket& socket,ProfilerHelper& helper)
-	{
 		for ( map< FunctionID, FunctionID >::iterator i = signatures.begin(); i != signatures.end(); i++ )
 		{
 			FunctionID id=i->second;
@@ -657,18 +672,12 @@ public:
 			socket.SendString( functionName );
 			socket.SendString( parameters );
 		}
+		socket.SendFunctionID(0xffffffff);
+		socket.SendFunctionID(-2);
 	}
-	void SendStackWalks(ProfilerSocket& ps, ProfilerHelper& profilerHelper )
+	void WriteFunctionID(FunctionID id)
 	{
-		for ( vector<vector<FunctionID>*>::iterator stackWalk = stackWalks.begin(); stackWalk != stackWalks.end(); stackWalk++ )
-		{
-			for(vector<FunctionID>::iterator stackFrame=(*stackWalk)->begin();stackFrame!=(*stackWalk)->end();stackFrame++)
-			{
-				ps.SendFunctionID(*stackFrame);
-			}
-			ps.SendFunctionID( 0xffffffff );
-		}
-		ps.SendFunctionID( 0xffffffff );
+		file->write((char*)&id,sizeof(FunctionID));
 	}
 	Profiler::Profiler( ICorProfilerInfo2* profilerInfo )
 	{
