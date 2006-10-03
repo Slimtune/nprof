@@ -42,14 +42,14 @@ namespace NProf
 {
 	public class NProf : Form
 	{
+		public ListView runs;
+		private MethodView callees;
+		private MethodView callers;
+		private Profiler profiler;
+		private TextBox findText;
+		private FlowLayoutPanel findPanel;
 		public static TextBox application;
 		public static TextBox arguments;		
-		private Profiler profiler=new Profiler();
-		public ListView runs;
-		private MethodView methods;
-		private MethodView callers;
-		private TextBox findText = new TextBox();
-		private FlowLayoutPanel findPanel;
 		public void ShowSearch()
 		{
 			findPanel.Visible = !findPanel.Visible;
@@ -60,62 +60,62 @@ namespace NProf
 		}
 		private NProf()
 		{
+			this.FormClosing += delegate
+			{
+				profiler.Stop();
+			};
 			Size = new Size(800, 600);
-			Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream(
-				"NProf.Resources.app-icon.ico"));
-			Text = "nprof Profiling Application - v" + Profiler.Version;
-			runs = With(new ListView(), delegate(ListView listView)
+			Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("NProf.Resources.app-icon.ico"));
+			Text = "nprof - v" + Profiler.Version;
+			profiler = new Profiler();
+			
+
+			runs = new ListView();
+			runs.Dock = DockStyle.Fill;
+			runs.Width = 100;
+			runs.DoubleClick += delegate
 			{
-				listView.Dock = DockStyle.Fill;
-				listView.Width = 100;
-				listView.DoubleClick += delegate
+				if (runs.SelectedItems.Count != 0)
 				{
-					if (runs.SelectedItems.Count != 0)
-					{
-						UpdateFilters((Run)runs.SelectedItems[0].Tag);
-					}
-				};
-			});
-			callers = With(new MethodView("Callers"), delegate(MethodView methodView)
-			{
-				methodView.Size = new Size(100, 200);
-				methodView.Dock = DockStyle.Bottom;
-			});
-			methods = With(new MethodView("Callees"), delegate(MethodView methodView)
-			{
-				methodView.Size = new Size(100, 100);
-				methodView.Dock = DockStyle.Fill;
-				methodView.DoubleClick += delegate
+					callers.UpdateFilters((Run)runs.SelectedItems[0].Tag);
+					//methods.UpdateFilters((Run)runs.SelectedItems[0].Tag);
+				}
+			};
+
+			callers = new MethodView("Callers");
+			callers.Size = new Size(100, 200);
+			callers.Dock = DockStyle.Bottom;
+
+			callees = new MethodView("Callees");
+			callees.Size = new Size(100, 100);
+			callees.Dock = DockStyle.Fill;
+			callees.DoubleClick += delegate {
+				if (callees.SelectedItems.Count != 0)
 				{
-					if (methodView.SelectedItems.Count != 0)
+					FunctionInfo function = (FunctionInfo)callees.SelectedItems[0].Tag;
+					callers.SelectedItems.Clear();
+					foreach (ContainerListViewItem item in callees.Items)
 					{
-						FunctionInfo function = (FunctionInfo)methodView.SelectedItems[0].Tag;
-						callers.SelectedItems.Clear();
-						foreach (ContainerListViewItem item in methodView.Items)
+						if (((FunctionInfo)item.Tag).ID == function.ID)
 						{
-							if (((FunctionInfo)item.Tag).ID == function.ID)
-							{
-								callers.SelectedItems.Add(item);
-								break;
-							}
+							callers.SelectedItems.Add(item);
+							break;
 						}
 					}
-				};
-				methodView.SelectedItemsChanged+=delegate
+				}};
+			callees.SelectedItemsChanged+=delegate {
+				if (callees.SelectedItems.Count != 0)
 				{
-					if (methodView.SelectedItems.Count != 0)
+					ContainerListViewItem item=callees.SelectedItems[0];
+					if (item.Items.Count == 0)
 					{
-						ContainerListViewItem item=methodView.SelectedItems[0];
-						if (item.Items.Count == 0)
+						foreach (FunctionInfo f in ((FunctionInfo)item.Tag).Callees.Values)
 						{
-							foreach (FunctionInfo f in ((FunctionInfo)item.Tag).Callees.Values)
-							{
-								methodView.FunctionItem(item.Items, f);
-							}
+							callees.FunctionItem(item.Items, f);
 						}
 					}
-				};
-			});
+				}};
+			findText = new TextBox();
 			findText.TextChanged += delegate
 			{
 				Find(true, false);
@@ -149,13 +149,13 @@ namespace NProf
 								runs.Items.Clear();
 								NProf.arguments.Text = "";
 								NProf.application.Text = "";
-								methods.Items.Clear();
+								callees.Items.Clear();
 								callers.Items.Clear();
 							},
 							Shortcut.CtrlN),
 							new MenuItem("-"),
 							new MenuItem("Find",delegate{ShowSearch();},Shortcut.CtrlF)
-						})					
+						})
 				});
 			Controls.AddRange(new Control[] 
 			{
@@ -169,7 +169,7 @@ namespace NProf
 						methodPanel.Dock = DockStyle.Fill;
 
 						methodPanel.Controls.AddRange(new Control[] {
-							methods,
+							callees,
 							With(new Splitter(),delegate(Splitter splitter)
 							{
 								splitter.Dock=DockStyle.Bottom;
@@ -281,11 +281,6 @@ namespace NProf
 				}),
 			});
 		}
-
-		private void ProfilerForm_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-		{
-			profiler.Stop();
-		}
 		private void StartRun()
 		{
 			string message;
@@ -304,30 +299,8 @@ namespace NProf
 			ListViewItem item = new ListViewItem(DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.LongTimePattern));
 			item.Tag = run;
 			runs.Items.Add(item);
-			UpdateFilters(run);
-		}
-		private void UpdateFilters(Run run)
-		{
-			methods.SuspendLayout();
-			methods.BeginUpdate();
-			callers.BeginUpdate();
-			methods.currentRun = run;
-			callers.currentRun = run;
-
-			methods.Items.Clear();
-			callers.Items.Clear();
-
-			foreach (FunctionInfo method in run.functions.Values)
-			{
-				methods.Add(method);
-			}
-			foreach (FunctionInfo method in run.callers.Values)
-			{
-				callers.Add(method);
-			}
-			callers.EndUpdate();
-			methods.EndUpdate();
-			methods.ResumeLayout();
+			callees.UpdateFilters(run);
+			callers.UpdateFilters(run);
 		}
 		private void findNext_Click(object sender, EventArgs e)
 		{
@@ -353,6 +326,19 @@ namespace NProf
 	}
 	public class MethodView : ContainerListView
 	{
+		public void UpdateFilters(Run run)
+		{
+			currentRun = run;
+			SuspendLayout();
+			BeginUpdate();
+			Items.Clear();
+			foreach (FunctionInfo method in run.functions.Values)
+			{
+				Add(method);
+			}
+			EndUpdate();
+			ResumeLayout();
+		}
 		private void Find(string text,bool forward, bool step)
 		{
 			if (text != "")
@@ -519,7 +505,8 @@ namespace NProf
 		}
 		private ContainerListViewItem AddItem(ContainerListViewItemCollection parent, FunctionInfo function)
 		{
-			ContainerListViewItem item = parent.Add(currentRun.signatures.GetFunctionSignature(function.ID));
+			ContainerListViewItem item = parent.Add(currentRun.signatures[function.ID].Signature);
+			//ContainerListViewItem item = parent.Add(currentRun.signatures.GetFunctionSignature(function.ID));
 			item.SubItems[1].Text = ((((double)function.Calls) / (double)currentRun.maxCalls) * 100.0).ToString("0.00;-0.00;0.0");
 			item.Tag = function;
 			return item;
@@ -617,13 +604,21 @@ namespace NProf
 						{
 							break;
 						}
-						run.signatures.MapSignature(functionId, new FunctionSignature(
+						run.signatures[functionId]=new FunctionSignature(
 							reader.ReadUInt32(),
 							ReadLengthEncodedASCIIString(reader),
 							ReadLengthEncodedASCIIString(reader),
 							ReadLengthEncodedASCIIString(reader),
 							ReadLengthEncodedASCIIString(reader)
-						));
+						);
+
+						//run.signatures.MapSignature(functionId, new FunctionSignature(
+						//    reader.ReadUInt32(),
+						//    ReadLengthEncodedASCIIString(reader),
+						//    ReadLengthEncodedASCIIString(reader),
+						//    ReadLengthEncodedASCIIString(reader),
+						//    ReadLengthEncodedASCIIString(reader)
+						//));
 					}
 					while (true)
 					{
@@ -650,13 +645,13 @@ namespace NProf
 				MessageBox.Show("An internal exception occurred:\n\n" + e.ToString(), "Error");
 			}
 		}
-		public static FunctionInfo GetFunctionInfo(Dictionary<int, FunctionInfo> functions, int id, FunctionSignatureMap signatures)
+		public static FunctionInfo GetFunctionInfo(Dictionary<int, FunctionInfo> functions, int id)
 		{
 			FunctionInfo result;
-			if (!functions.TryGetValue(id,out result))
+			if (!functions.TryGetValue(id, out result))
 			{
-				result =new FunctionInfo(id);
-				functions[id]=result;
+				result = new FunctionInfo(id);
+				functions[id] = result;
 			}
 			return result;
 		}
@@ -712,33 +707,10 @@ namespace NProf
 		public int lastWalk;
 		public readonly Dictionary<int, FunctionInfo> Callees = new Dictionary<int, FunctionInfo>();
 	}
-	public class FunctionSignatureMap
-	{
-		public FunctionSignatureMap()
-		{
-			signatures = new Hashtable();
-		}
-
-		public void MapSignature(int functionID, FunctionSignature signature)
-		{
-			signatures[functionID] = signature;
-		}
-		public string GetFunctionSignature(int functionID)
-		{
-			FunctionSignature signature = (FunctionSignature)signatures[functionID];
-			if (signature == null)
-			{
-				return "Unknown!";
-			}
-			return signature.Signature;
-		}
-		private Hashtable signatures;
-	}
 	public class Run
 	{
 		public int maxCalls;
 		public List<List<int>> stackWalks = new List<List<int>>();
-
 		private void InterpreteData()
 		{
 			int currentWalk = 0;
@@ -750,7 +722,7 @@ namespace NProf
 					Dictionary<int, FunctionInfo> currentMap = functions;
 					for (int index = stackWalk.Count - 1 - i; index >= 0; index--)
 					{
-						FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(currentMap, stackWalk[index], signatures);
+						FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(currentMap, stackWalk[index]);
 						if (function.lastWalk != currentWalk)
 						{
 							function.Calls++;
@@ -768,7 +740,7 @@ namespace NProf
 					Dictionary<int, FunctionInfo> currentMap = callers;
 					for (int index = i;index<stackWalk.Count; index++)
 					{
-						FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(currentMap, stackWalk[index], signatures);
+						FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(currentMap, stackWalk[index]);
 						if (function.lastWalk != currentWalk)
 						{
 							function.Calls++;
@@ -796,29 +768,26 @@ namespace NProf
 				NProf.form.UpdateRuns(this);
 			}));
 		}
-		public FunctionSignatureMap signatures = new FunctionSignatureMap();
+		public Dictionary<int, FunctionSignature> signatures = new Dictionary<int, FunctionSignature>();
+		//public FunctionSignatureMap signatures = new FunctionSignatureMap();
 		public Dictionary<int, FunctionInfo> functions = new Dictionary<int, FunctionInfo>();
 		public Dictionary<int, FunctionInfo> callers = new Dictionary<int, FunctionInfo>();
-
 		public Run(Profiler p)
 		{
 			this.profiler = p;
 			this.start = DateTime.Now;
 			this.end = DateTime.MaxValue;
-			this.IsSuccess = false;
 		}
 		public bool Start()
 		{
 			start = DateTime.Now;
 			return profiler.Start(this);
 		}
-
 		public bool Stop()
 		{
 			profiler.Stop();
 			return true;
 		}
-		public bool IsSuccess;
 		private DateTime start;
 		private DateTime end;
 		public Profiler profiler;
@@ -826,14 +795,11 @@ namespace NProf
 	public class Profiler
 	{
 		private const string PROFILER_GUID = "{791DA9FE-05A0-495E-94BF-9AD875C4DF0F}";
-
 		public static string Version
 		{
 			get { return "0.10.0"; }
 		}
 		public EventHandler completed;
-		//public event EventHandler Completed;
-
 		public bool CheckSetup(out string message)
 		{
 			message = String.Empty;
@@ -854,7 +820,6 @@ namespace NProf
 			this.run = run;
 			socketServer = new ProfilerSocketServer(run);
 			socketServer.Start();
-			//socketServer.Error += new ProfilerSocketServer.ErrorHandler(OnError);
 			process = new Process();
 			process.StartInfo = new ProcessStartInfo(NProf.application.Text,NProf.arguments.Text);
 			process.StartInfo.EnvironmentVariables["COR_ENABLE_PROFILING"] = "0x1";
@@ -870,19 +835,10 @@ namespace NProf
 			if (run != null)
 			{
 				socketServer.Stop();
-				run.IsSuccess = false;
 			}
 		}
 		private void OnProcessExited(object oSender, EventArgs ea)
 		{
-			if (!socketServer.HasStoppedGracefully)
-			{
-				run.IsSuccess = false;
-			}
-			else
-			{
-				run.IsSuccess = true;
-			}
 			completed(null, null);
 			socketServer.Stop();
 		}

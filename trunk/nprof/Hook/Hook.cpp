@@ -132,7 +132,6 @@ private:
 						   WCHAR *funName )
 	{
 		HRESULT hr = E_FAIL; // assume success
-	
 
 		// init return values
 		*argCount = 0;
@@ -141,8 +140,6 @@ private:
 		funName[0] = NULL;
 		className[0] = NULL;
 
-
-
 		if ( functionID != NULL )
 		{
 			mdToken	token;
@@ -150,8 +147,6 @@ private:
 			ModuleID moduleID;
 			IMetaDataImport *metaDataImport = NULL;	
 			mdToken moduleToken;
-				    
-				    
 		    
 			//
 			// Get the classID 
@@ -168,7 +163,6 @@ private:
 			{
 				hr = E_FAIL;
 			}
-
 			if ( FAILED( hr ) )
 			{
 				hr = S_OK;
@@ -214,7 +208,6 @@ private:
 																 NULL, 
 																 NULL ); 
 							}
-
 							DWORD methodAttr = 0;
 							PCCOR_SIGNATURE sigBlob = NULL;
 
@@ -233,18 +226,14 @@ private:
 							{
 								ULONG callConv;
 
-
 								//
 								// Is the method static ?
 								//
-				  *methodAttributes = methodAttr;
-
+								*methodAttributes = methodAttr;
 				     			//
 								// Make sure we have a method signature.
 								//
 								char buffer[2 * MAX_FUNCTION_LENGTH];
-							    
-							    
 								sigBlob += CorSigUncompressData( sigBlob, &callConv );
 								if ( callConv != IMAGE_CEE_CS_CALLCONV_FIELD )
 								{
@@ -329,8 +318,6 @@ private:
 			hr = S_OK;
 			swprintf( funName, L"UNMANAGED FRAME" );	
 		}
-
-
 		return hr;
 	} // BASEHELPER::GetFunctionProperties
 
@@ -343,92 +330,57 @@ private:
 			case ELEMENT_TYPE_VOID:
 				strcat( buffer, "void" );	
 				break;					
-			
-		    
 			case ELEMENT_TYPE_BOOLEAN:	
 				strcat( buffer, "bool" );	
 				break;	
-			
-		    
 			case ELEMENT_TYPE_CHAR:
 				strcat( buffer, "wchar" );	
 				break;		
-						
-		    
 			case ELEMENT_TYPE_I1:
 				strcat( buffer, "int8" );	
 				break;		
-			
-		    
 			case ELEMENT_TYPE_U1:
 				strcat( buffer, "unsigned int8" );	
 				break;		
-			
-		    
 			case ELEMENT_TYPE_I2:
 				strcat( buffer, "int16" );	
 				break;		
-			
-		    
 			case ELEMENT_TYPE_U2:
 				strcat( buffer, "unsigned int16" );	
 				break;			
-			
-		    
 			case ELEMENT_TYPE_I4:
 				strcat( buffer, "int32" );	
 				break;
-		        
-		    
 			case ELEMENT_TYPE_U4:
 				strcat( buffer, "unsigned int32" );	
 				break;		
-			
-		    
 			case ELEMENT_TYPE_I8:
 				strcat( buffer, "int64" );	
 				break;		
-			
-		    
 			case ELEMENT_TYPE_U8:
 				strcat( buffer, "unsigned int64" );	
 				break;		
-			
-		    
 			case ELEMENT_TYPE_R4:
 				strcat( buffer, "float32" );	
 				break;			
-			
-		    
 			case ELEMENT_TYPE_R8:
 				strcat( buffer, "float64" );	
 				break;		
-			
-		    
 			case ELEMENT_TYPE_U:
 				strcat( buffer, "unsigned int" );	
 				break;		 
-			
-		    
 			case ELEMENT_TYPE_I:
 				strcat( buffer, "int" );	
 				break;			  
-			
-		    
 			case ELEMENT_TYPE_OBJECT:
 				strcat( buffer, "Object" );	
 				break;		 
-			
-		    
 			case ELEMENT_TYPE_STRING:
 				strcat( buffer, "String" );	
 				break;		 
-			
-		    
 			case ELEMENT_TYPE_TYPEDBYREF:
 				strcat( buffer, "refany" );	
 				break;				       
-
 			case ELEMENT_TYPE_CLASS:	
 			case ELEMENT_TYPE_VALUETYPE:
 			case ELEMENT_TYPE_CMOD_REQD:
@@ -437,14 +389,12 @@ private:
 					mdToken	token;	
 					char classname[MAX_FUNCTION_LENGTH];
 
-
 					classname[0] = '\0';
 	   				signature += CorSigUncompressToken( signature, &token ); 
 					if ( TypeFromToken( token ) != mdtTypeRef )
 					{
         				HRESULT	hr;
 						WCHAR zName[MAX_FUNCTION_LENGTH];
-						
 						
 						hr = metaDataImport->GetTypeDefProps( token, 
 														 zName,
@@ -455,23 +405,16 @@ private:
 						if ( SUCCEEDED( hr ) )
 							wcstombs( classname, zName, MAX_FUNCTION_LENGTH );
 					}
-		                
 					strcat( buffer, classname );		
 				}
 				break;	
-			
-		    
 			case ELEMENT_TYPE_SZARRAY:	 
 				signature = ParseElementType( metaDataImport, signature, buffer ); 
 				strcat( buffer, "[]" );
 				break;		
-			
-		    
 			case ELEMENT_TYPE_ARRAY:	
 				{	
 					ULONG rank;
-		            
-
 					signature = ParseElementType( metaDataImport, signature, buffer );                 
 					rank = CorSigUncompressData( signature );													
 					if ( rank == 0 ) 
@@ -483,7 +426,6 @@ private:
 						ULONG *sizes; 	
 						ULONG numsizes; 
 						ULONG arraysize = (sizeof ( ULONG ) * 2 * rank);
-		                
 		                                     
 						lower = (ULONG *)_alloca( arraysize );                                                        
 						memset( lower, 0, arraysize ); 
@@ -494,17 +436,14 @@ private:
 						{
             				ULONG numlower;
 		                    
-		                    
 							for ( ULONG i = 0; i < numsizes; i++ )	
 								sizes[i] = CorSigUncompressData( signature );	
-							
 		                    
 							numlower = CorSigUncompressData( signature );	
 							if ( numlower <= rank )
 							{
 								for (ULONG i = 0; i < numlower; i++)	
 									lower[i] = CorSigUncompressData( signature ); 
-								
 		                        
 								strcat( buffer, "[" );	
 								for (ULONG i = 0; i < rank; i++ )	
@@ -534,48 +473,28 @@ private:
 					}
 				} 
 				break;	
-
-			
 			case ELEMENT_TYPE_PINNED:
 				signature = ParseElementType( metaDataImport, signature, buffer ); 
 				strcat( buffer, "pinned" );	
 				break;	
-		     
-		    
 			case ELEMENT_TYPE_PTR:   
 				signature = ParseElementType( metaDataImport, signature, buffer ); 
 				strcat( buffer, "*" );	
 				break;   
-		    
-		    
 			case ELEMENT_TYPE_BYREF:   
 				signature = ParseElementType( metaDataImport, signature, buffer ); 
 				strcat( buffer, "&" );	
 				break;  		    
-
-
 			default:	
 			case ELEMENT_TYPE_END:	
 			case ELEMENT_TYPE_SENTINEL:	
 				strcat( buffer, "<UNKNOWN>" );	
 				break;				                      				            
-		                    	
 		} // switch	
-
-
 		return signature;
-
 	} // BASEHELPER::ParseElementType
 	CComPtr< ICorProfilerInfo2 > profilerInfo;
 };
-
-//enum NetworkMessage
-//{
-//	FUNCTION_DATA
-//};
-
-const int NETWORK_PROTOCOL_VERSION = 3;
-
 
 #define SAFE_SEND( socket, data ) \
 	{ \
@@ -640,81 +559,36 @@ public:
 				{
 					return;
 				}
-
 				Sleep( 200 );
 				n++;
 			}
 		}
 		this->socket = INVALID_SOCKET;
 	}
-
 	static void ProfilerSocket::Initialize()
 	{
 		WSADATA wsaData;
 		WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
-		//ProfilerSocket ps;
 	}
-
-	//void ProfilerSocket::SendFunctionData( ProfilerHelper& ph, FunctionID fid )
-	//{
-	//	SendFunctionID( fid );
-	//	string returnType, className, functionName, parameters;
-	//	UINT32 methodAttributes;
-	//	ph.GetFunctionSignature( fid, methodAttributes, returnType, className, functionName, parameters );
-
-	//	SendUINT32( methodAttributes );
-	//	SendString( returnType );
-	//	SendString( className );
-	//	SendString( functionName );
-	//	SendString( parameters );
-	//}
-	//void ProfilerSocket::SendFunctionTimingData( int calls)
-	//{
-	//	SendUINT32( calls );
-	//}
-	//void ProfilerSocket::SendCalleeFunctionData( FunctionID fid, int calls, UINT64 cycleCount, UINT64 recursiveCycleCount )
-	//{
-	//	SendFunctionID( fid );
-	//	SendUINT32( calls );
-	//}
-
-	//void ProfilerSocket::SendEndFunctionData()
-	//{
-	//	SendFunctionID( 0xffffffff );
-	//}
-
-	//void ProfilerSocket::SendEndCalleeFunctionData()
-	//{
-	//	SendFunctionID( 0xffffffff );
-	//}
-
-
 	void ProfilerSocket::HandleError( const char* caller, int error )
 	{
 	}
-
 	void ProfilerSocket::HandleWrongSentLength( const char* caller, int expected, int sent )
 	{
 	}
-
 	ProfilerSocket::~ProfilerSocket(void)
 	{
 		closesocket( socket );
 	}
-
-
 public:
-
 	void ProfilerSocket::SendBool( bool boolean )
 	{
 		SAFE_SEND( socket, boolean );
 	}
-
 	void ProfilerSocket::SendUINT32( UINT32 integer )
 	{
 		SAFE_SEND( socket, integer );
 	}
-
 	void ProfilerSocket::SendUINT64( UINT64 integer)
 	{
 		SAFE_SEND( socket, integer);
@@ -725,62 +599,32 @@ public:
 		SendUINT32( ( UINT32 )signature.length() );
 		SAFE_SEND_RAW( socket, signature.c_str(), ( int )signature.length() );
 	}
-
-	//void ProfilerSocket::SendNetworkMessage( NetworkMessage networkMessage )
-	//{
-	//	UINT16 mess = networkMessage;
-	//	SAFE_SEND( socket, mess );
-	//}
-
 	void ProfilerSocket::SendAppDomainID( AppDomainID appDomainId )
 	{
 		SAFE_SEND( socket, appDomainId );
 	}
-
 	void ProfilerSocket::SendThreadID( ThreadID threadId )
 	{
 		SAFE_SEND( socket, threadId );
 	}
-
-	public:
 	void ProfilerSocket::SendFunctionID( FunctionID functionId )
 	{
 		SAFE_SEND( socket, functionId );
 	}
-	private:
+private:
 	SOCKET socket;
 };
 
-class FunctionInfo
+/*class FunctionInfo
 {
-public: 
-
+public:
 	FunctionInfo::FunctionInfo( FunctionID functionId )
 	{
-
-		this->calls = 0;
-		//this->recursiveCount = 0;
 		this->functionId = functionId;
-		this->lastStackWalk=0;
 	}
-	FunctionInfo* GetCalleeFunctionInfo( FunctionID functionId )
-	{
-		map< FunctionID, FunctionInfo* >::iterator found = calleeMap.find( functionId );
-		if ( found == calleeMap.end() )
-		{
-			FunctionInfo* functionInfo = new FunctionInfo(functionId);
-			calleeMap.insert( make_pair( functionId, functionInfo ) );
-			return functionInfo;
-		}
-		return found->second;
-	}
-
-	int calls;
-	//int recursiveCount;
 	FunctionID functionId;
-	int lastStackWalk;
 	map< FunctionID, FunctionInfo* > calleeMap;
-};
+};*/
 HRESULT __stdcall __stdcall StackWalker( 
 	FunctionID funcId,
 	UINT_PTR ip,
@@ -801,20 +645,20 @@ const int frequency=10;
 class Profiler
 {
 public: 
-	FunctionInfo* GetFunctionInfo(map<FunctionID,FunctionInfo*>* data, FunctionID functionId )
-	{
-		map< FunctionID, FunctionInfo* >::iterator found = data->find( functionId );
-		if ( found == data->end() )
-		{
-			FunctionInfo* functionInfo = new FunctionInfo( functionId );
-			data->insert( make_pair( functionId, functionInfo ) );
-			return functionInfo;
-		}
+	//FunctionInfo* GetFunctionInfo(map<FunctionID,FunctionInfo*>* data, FunctionID functionId )
+	//{
+		//map< FunctionID, FunctionInfo* >::iterator found = data->find( functionId );
+		//if ( found == data->end() )
+		//{
+		//	FunctionInfo* functionInfo = new FunctionInfo( functionId );
+		//	data->insert( make_pair( functionId, functionInfo ) );
+		//	return functionInfo;
+		//}
 
-		return found->second;
-	}
+	//	return found->second;
+	//}
 	vector<vector<FunctionID>*> stackWalks;
-	map< FunctionID, FunctionInfo* > signatures;
+	map< FunctionID, FunctionID> signatures;
 
 	void EndAll( ProfilerHelper& profilerHelper )
 	{
@@ -827,16 +671,17 @@ public:
 	}
 	void DumpSignatures(ProfilerSocket& socket,ProfilerHelper& helper)
 	{
-		for ( map< FunctionID, FunctionInfo* >::iterator i = signatures.begin(); i != signatures.end(); i++ )
+		for ( map< FunctionID, FunctionID >::iterator i = signatures.begin(); i != signatures.end(); i++ )
 		{
-			FunctionInfo* function=i->second;
-			socket.SendFunctionID( function->functionId);
+			FunctionID id=i->second;
+			socket.SendFunctionID(id);
+
 			string returnType;
 			string className;
 			string functionName;
 			string parameters;
 			UINT32 methodAttributes;
-			profilerHelper.GetFunctionSignature( function->functionId, methodAttributes, returnType, className, functionName, parameters );
+			profilerHelper.GetFunctionSignature( id, methodAttributes, returnType, className, functionName, parameters );
 
 			socket.SendUINT32( methodAttributes );
 			socket.SendString( returnType );
@@ -845,6 +690,26 @@ public:
 			socket.SendString( parameters );
 		}
 	}
+	//void DumpSignatures(ProfilerSocket& socket,ProfilerHelper& helper)
+	//{
+	//	for ( map< FunctionID, FunctionInfo* >::iterator i = signatures.begin(); i != signatures.end(); i++ )
+	//	{
+	//		FunctionInfo* function=i->second;
+	//		socket.SendFunctionID( function->functionId);
+	//		string returnType;
+	//		string className;
+	//		string functionName;
+	//		string parameters;
+	//		UINT32 methodAttributes;
+	//		profilerHelper.GetFunctionSignature( function->functionId, methodAttributes, returnType, className, functionName, parameters );
+
+	//		socket.SendUINT32( methodAttributes );
+	//		socket.SendString( returnType );
+	//		socket.SendString( className );
+	//		socket.SendString( functionName );
+	//		socket.SendString( parameters );
+	//	}
+	//}
 	void DumpStackWalks(ProfilerSocket& ps, ProfilerHelper& profilerHelper )
 	{
 		for ( vector<vector<FunctionID>*>::iterator stackWalk = stackWalks.begin(); stackWalk != stackWalks.end(); stackWalk++ )
@@ -857,17 +722,17 @@ public:
 		}
 		ps.SendFunctionID( 0xffffffff );
 	}
-	void DumpCallees(map<FunctionID,FunctionInfo*>* functions, ProfilerSocket& ps, ProfilerHelper& profilerHelper )
-	{
-		for ( map< FunctionID, FunctionInfo* >::iterator i = functions->begin(); i != functions->end(); i++ )
-		{
-			FunctionInfo* function=i->second;
-			ps.SendFunctionID( function->functionId);
-			ps.SendUINT32( function->calls);
-			DumpCallees(&function->calleeMap,ps,profilerHelper);
-		}
-		ps.SendFunctionID( 0xffffffff );
-	}
+	//void DumpCallees(map<FunctionID,FunctionInfo*>* functions, ProfilerSocket& ps, ProfilerHelper& profilerHelper )
+	//{
+	//	for ( map< FunctionID, FunctionInfo* >::iterator i = functions->begin(); i != functions->end(); i++ )
+	//	{
+	//		FunctionInfo* function=i->second;
+	//		ps.SendFunctionID( function->functionId);
+	//		//ps.SendUINT32( function->calls);
+	//		DumpCallees(&function->calleeMap,ps,profilerHelper);
+	//	}
+	//	ps.SendFunctionID( 0xffffffff );
+	//}
 	Profiler::Profiler( ICorProfilerInfo2* profilerInfo )
 	{
 		this->profilerInfo = profilerInfo;
@@ -948,7 +813,12 @@ public:
 				stackWalks.push_back(functions);
 				for(int index=0;index<functions->size();index++)
 				{
-					GetFunctionInfo(&signatures,functions->at(index));
+					FunctionID id=functions->at(index);
+					map<FunctionID,FunctionID>::iterator found = signatures.find(id);
+					if ( found == signatures.end() )
+					{
+						signatures.insert(make_pair(id,id));
+					}
 				}
 				ResumeThread(threadHandle);
 			}

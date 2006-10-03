@@ -105,7 +105,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="NProf.cs">
-      <SubType>Component</SubType>
+      <SubType>Form</SubType>
     </Compile>
     <EmbeddedResource Include="AboutForm.resx">
       <DependentUpon>AboutForm.cs</DependentUpon>
