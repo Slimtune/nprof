@@ -487,133 +487,6 @@ private:
 	CComPtr< ICorProfilerInfo2 > profilerInfo;
 };
 
-#define SAFE_SEND( socket, data ) \
-	{ \
-		int sent = send( socket, ( const char * )&data, sizeof( data ), 0 ); \
-		if ( sent != sizeof( data ) ) \
-		{ \
-			HandleError( "SAFE_SEND", WSAGetLastError() ); \
-			HandleWrongSentLength( "SAFE_SEND", sizeof( data ), sent ); \
-		} \
-	}
-
-#define SAFE_SEND_RAW( socket, data, length ) \
-	{ \
-		int sent = send( socket, data, length, 0 ); \
-		if ( sent != length ) \
-		{ \
-			HandleError( "SAFE_SEND_RAW", WSAGetLastError() ); \
-			HandleWrongSentLength( "SAFE_SEND_RAW", sizeof( data ), sent ); \
-		} \
-	}
-
-#define SAFE_READ( socket, data, result ) \
-	{ \
-		int nRecv = recv( socket, ( char * )&data, sizeof( data ), 0 ); \
-		if ( nRecv != sizeof( data ) ) \
-		{ \
-			HandleError( "SAFE_READ", WSAGetLastError() ); \
-			HandleWrongRecvLength( "SAFE_READ", sizeof( data ), nRecv ); \
-			result = 1; \
-		} \
-		else \
-		{ \
-			result = 0; \
-		} \
-	}
-class ProfilerSocket
-{
-public:
-	ProfilerSocket::ProfilerSocket()
-	{
-		sockaddr_in sa;
-		sa.sin_family = AF_INET;
-		sa.sin_port = htons( atoi( getenv( "NPROF_PROFILING_SOCKET" ) ) );
-		sa.sin_addr.S_un.S_addr = inet_addr( "127.0.0.1" );
-
-		socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, 0, 0, 0);
-		if ( socket == INVALID_SOCKET )
-		{
-			HandleError( "WSASocket", WSAGetLastError() );
-		}
-		else
-		{
-			int n = 0;
-			while ( n < 10 )
-			{
-				int nResult = connect( socket, ( const sockaddr * )&sa, sizeof( sa ) );
-				if ( nResult == SOCKET_ERROR )
-				{
-					HandleError( "connect", WSAGetLastError() );
-				}
-				else
-				{
-					return;
-				}
-				Sleep( 200 );
-				n++;
-			}
-		}
-		this->socket = INVALID_SOCKET;
-	}
-	static void ProfilerSocket::Initialize()
-	{
-		WSADATA wsaData;
-		WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
-	}
-	void ProfilerSocket::HandleError( const char* caller, int error )
-	{
-	}
-	void ProfilerSocket::HandleWrongSentLength( const char* caller, int expected, int sent )
-	{
-	}
-	ProfilerSocket::~ProfilerSocket(void)
-	{
-		closesocket( socket );
-	}
-public:
-	//void ProfilerSocket::SendBool( bool boolean )
-	//{
-	//	SAFE_SEND( socket, boolean );
-	//}
-	void ProfilerSocket::SendUINT32( UINT32 integer )
-	{
-		SAFE_SEND( socket, integer );
-	}
-	//void ProfilerSocket::SendUINT64( UINT64 integer)
-	//{
-	//	SAFE_SEND( socket, integer);
-	//}
-	void ProfilerSocket::SendString( const string& signature )
-	{
-		SendUINT32( ( UINT32 )signature.length() );
-		SAFE_SEND_RAW( socket, signature.c_str(), ( int )signature.length() );
-	}
-	//void ProfilerSocket::SendAppDomainID( AppDomainID appDomainId )
-	//{
-	//	SAFE_SEND( socket, appDomainId );
-	//}
-	//void ProfilerSocket::SendThreadID( ThreadID threadId )
-	//{
-	//	SAFE_SEND( socket, threadId );
-	//}
-	void ProfilerSocket::SendFunctionID( FunctionID functionId )
-	{
-		SAFE_SEND( socket, functionId );
-	 // #include <fstream.h>
-		//int main()
-		//{
-			//fstream file_op("c:\\CoderSource_file.txt",ios::out);
-
-			//file_op<<"Test Write to file";
-			//file_op.close();
-			//return 0;
-		//}
-	}
-private:
-	SOCKET socket;
-};
-
 HRESULT __stdcall __stdcall StackWalker( 
 	FunctionID funcId,
 	UINT_PTR ip,
@@ -643,8 +516,7 @@ public:
 		for ( map< FunctionID, FunctionID >::iterator i = signatures.begin(); i != signatures.end(); i++ )
 		{
 			FunctionID id=i->second;
-			WriteFunctionID(id);
-			//socket.SendFunctionID(id);
+			WriteUINT32(id);
 
 			string returnType;
 			string className;
@@ -653,62 +525,33 @@ public:
 			UINT32 methodAttributes;
 			profilerHelper.GetFunctionSignature( id, methodAttributes, returnType, className, functionName, parameters );
 
-			WriteFunctionID(methodAttributes);
-			//socket.SendUINT32( methodAttributes );
+			WriteUINT32(methodAttributes);
 			WriteString( returnType );
 			WriteString( className );
 			WriteString( functionName );
 			WriteString( parameters );
-
-			//socket.SendString( returnType );
-			//socket.SendString( className );
-			//socket.SendString( functionName );
-			//socket.SendString( parameters );
 		}
-		WriteFunctionID(0xffffffff);
-		//WriteFunctionID(-2);
+		WriteUINT32(-1);
 
 		for(vector<vector<FunctionID>*>::iterator stackWalk = stackWalks.begin(); stackWalk != stackWalks.end(); stackWalk++ )
 		{
 			for(vector<FunctionID>::iterator stackFrame=(*stackWalk)->begin();stackFrame!=(*stackWalk)->end();stackFrame++)
 			{
-				WriteFunctionID(*stackFrame);
+				WriteUINT32(*stackFrame);
 			}
-			WriteFunctionID(0xffffffff);
+			WriteUINT32(-1);
 		}
-		WriteFunctionID(0xffffffff);
-		WriteFunctionID(-2);
+		WriteUINT32(-1);
+		WriteUINT32(-2);
 		file->close();
 		delete file;
-		//ProfilerSocket socket;
-		//for ( map< FunctionID, FunctionID >::iterator i = signatures.begin(); i != signatures.end(); i++ )
-		//{
-		//	FunctionID id=i->second;
-		//	socket.SendFunctionID(id);
-
-		//	string returnType;
-		//	string className;
-		//	string functionName;
-		//	string parameters;
-		//	UINT32 methodAttributes;
-		//	profilerHelper.GetFunctionSignature( id, methodAttributes, returnType, className, functionName, parameters );
-
-		//	socket.SendUINT32( methodAttributes );
-		//	socket.SendString( returnType );
-		//	socket.SendString( className );
-		//	socket.SendString( functionName );
-		//	socket.SendString( parameters );
-		//}
-		//socket.SendFunctionID(0xffffffff);
-		//socket.SendFunctionID(-2);
 	}
 	void WriteString(const string& signature)
 	{
-		WriteFunctionID(( UINT32 )signature.length());
+		WriteUINT32(( UINT32 )signature.length());
 		file->write(signature.c_str(),(int)signature.length());
-		//SAFE_SEND_RAW( socket, signature.c_str(), ( int )signature.length() );
 	}
-	void WriteFunctionID(FunctionID id)
+	void WriteUINT32(FunctionID id)
 	{
 		file->write((char*)&id,sizeof(FunctionID));
 	}
@@ -738,7 +581,7 @@ public:
 		timeGetDevCaps(&timeCaps, sizeof(TIMECAPS));
 		timer = timeSetEvent(
 			frequency,
-			timeCaps.wPeriodMin, 
+			timeCaps.wPeriodMin,
 			TimerFunction, 
 			(DWORD_PTR)this,     
 			TIME_PERIODIC);      
@@ -780,13 +623,23 @@ public:
 				vector<FunctionID>* functions=new vector<FunctionID>();
 				ThreadID id=i->second;
 
-				profilerInfo->DoStackSnapshot(
+				CONTEXT context;
+				 context.ContextFlags=CONTEXT_FULL;
+				 GetThreadContext(threadHandle,&context);
+				 FunctionID newID;
+				 HRESULT result=profilerInfo->GetFunctionFromIP((BYTE*)context.Eip,&newID);
+				 if(result==S_OK)
+				 {
+
+				cout<<
+					profilerInfo->DoStackSnapshot(
 					id,
 					StackWalker,
 					COR_PRF_SNAPSHOT_DEFAULT,
 					functions,
 					NULL,
-					NULL);
+					NULL)
+					<<"\n";
 				stackWalks.push_back(functions);
 				for(int index=0;index<functions->size();index++)
 				{
@@ -796,6 +649,8 @@ public:
 					{
 						signatures.insert(make_pair(id,id));
 					}
+				}
+				Sleep(100);
 				}
 				ResumeThread(threadHandle);
 			}
@@ -858,7 +713,6 @@ public:
 	STDMETHOD(Initialize)(LPUNKNOWN pICorProfilerInfoUnk)
 	{
 		CComQIPtr< ICorProfilerInfo2 > profilerInfo = pICorProfilerInfoUnk;
-		ProfilerSocket::Initialize();
 
 		profiler = new Profiler( profilerInfo );
 

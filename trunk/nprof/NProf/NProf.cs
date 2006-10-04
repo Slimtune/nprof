@@ -53,7 +53,6 @@ namespace NProf
 			{
 				callers.Find(findText.Text, forward, step);
 			}
-			//if (callees.SelectedItems.Count != 0)
 			else
 			{
 				callees.Find(findText.Text, forward, step);
@@ -61,10 +60,6 @@ namespace NProf
 		}
 		private NProf()
 		{
-			this.FormClosing += delegate
-			{
-				profiler.Stop();
-			};
 			Size = new Size(800, 600);
 			Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("NProf.Resources.app-icon.ico"));
 			Text = "nprof - v" + Profiler.Version;
@@ -94,6 +89,13 @@ namespace NProf
 			{
 				callees.SelectedItems.Clear();
 			};
+			callers.DoubleClick += delegate
+			{
+				if (callers.SelectedItems.Count != 0)
+				{
+					callees.MoveTo(((FunctionInfo)callers.SelectedItems[0].Tag).ID);
+				}
+			};
 
 			callees = new MethodView("Callees");
 			callees.Size = new Size(100, 100);
@@ -101,6 +103,13 @@ namespace NProf
 			callees.GotFocus += delegate
 			{
 				callers.SelectedItems.Clear();
+			};
+			callees.DoubleClick += delegate
+			{
+				if (callees.SelectedItems.Count != 0)
+				{
+					callers.MoveTo(((FunctionInfo)callees.SelectedItems[0].Tag).ID);
+				}
 			};
 			callees.SelectedItemsChanged+=delegate {
 				if (callees.SelectedItems.Count != 0)
@@ -185,6 +194,14 @@ namespace NProf
 									p.WrapContents = false;
 									p.AutoSize = true;
 									p.Dock = DockStyle.Top;
+									Button close=new Button();
+									close.AutoSize=true;
+									close.Text="X";
+									close.Click+=delegate
+									{
+										findPanel.Visible=false;
+									};
+									p.Controls.Add(close);
 									p.Controls.AddRange(new Control[] {
 										With(new Label(),delegate(Label label)
 									{
@@ -291,6 +308,8 @@ namespace NProf
 			ContainerListViewItem item = new ContainerListViewItem(DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.LongTimePattern));
 			item.Tag = run;
 			runs.Items.Add(item);
+			runs.SelectedItems.Clear();
+			runs.SelectedItems.Add(item);
 			ShowRun(run);
 		}
 		public void ShowRun(Run run)
@@ -320,176 +339,15 @@ namespace NProf
 			return t;
 		}
 	}
-	public class ProfilerSocketServer
-	{
-		public ProfilerSocketServer(Run run)
-		{
-			this.run = run;
-			this.stopFlag = 0;
-			this.hasStopped = false;
-		}
-		public void Start()
-		{
-			thread = new Thread(new ThreadStart(ListenThread));
-			resetStarted = new ManualResetEvent(false);
-			thread.Start();
-			resetStarted.WaitOne();
-		}
-		public void Stop()
-		{
-			lock (socket)
-				Interlocked.Increment(ref stopFlag);
-			socket.Close();
-		}
-		public bool HasStoppedGracefully
-		{
-			get { return hasStopped; }
-		}
-		private void ListenThread()
-		{
-			Thread.CurrentThread.Name = "ProfilerSocketServer Listen Thread";
-			try
-			{
-				resetMessageReceived = new ManualResetEvent(false);
-				using (socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
-				{
-					IPEndPoint ep = new IPEndPoint(IPAddress.Loopback, 0);
-					socket.Bind(ep);
-					port = ((IPEndPoint)socket.LocalEndPoint).Port;
-					resetStarted.Set();
-					socket.Listen(100);
-
-					while (true)
-					{
-						resetMessageReceived.Reset();
-						lock (socket)
-							if (stopFlag == 1)
-								break;
-						socket.BeginAccept(new AsyncCallback(AcceptConnection), socket);
-						resetMessageReceived.WaitOne();
-					}
-				}
-			}
-			catch (Exception e)
-			{
-				resetStarted.Set();
-			}
-		}
-		private void AcceptConnection(IAsyncResult ar)
-		{
-			lock (socket)
-			{
-				if (stopFlag == 1)
-				{
-					resetMessageReceived.Set();
-					return;
-				}
-			}
-			// Note that this fails if you call EndAccept on a closed socket
-			Socket s = ((Socket)ar.AsyncState).EndAccept(ar);
-			resetMessageReceived.Set();
-			try
-			{
-				using (NetworkStream stream = new NetworkStream(s, true))
-				{
-					BinaryReader reader = new BinaryReader(stream);
-					while (true)
-					{
-						int functionId = reader.ReadInt32();
-						if (functionId == -1)
-						{
-							break;
-						}
-						run.signatures[functionId]=new FunctionSignature(
-							reader.ReadUInt32(),
-							ReadLengthEncodedASCIIString(reader),
-							ReadLengthEncodedASCIIString(reader),
-							ReadLengthEncodedASCIIString(reader),
-							ReadLengthEncodedASCIIString(reader)
-						);
-					}
-					//while (true)
-					//{
-					//    List<int> stackWalk = new List<int>();
-					//    while (true)
-					//    {
-					//        int functionId = reader.ReadInt32();
-					//        if (functionId == -1)
-					//        {
-					//            break;
-					//        }
-					//        else if (functionId == -2)
-					//        {
-					//            return;
-					//        }
-					//        stackWalk.Add(functionId);
-					//    }
-					//    run.stackWalks.Add(stackWalk);
-					//}
-				}
-			}
-			catch (Exception e)
-			{
-				MessageBox.Show("An internal exception occurred:\n\n" + e.ToString(), "Error");
-			}
-		}
-		public static FunctionInfo GetFunctionInfo(Dictionary<int, FunctionInfo> functions, int id)
-		{
-			FunctionInfo result;
-			if (!functions.TryGetValue(id, out result))
-			{
-				result = new FunctionInfo(id);
-				functions[id] = result;
-			}
-			return result;
-		}
-		private string ReadLengthEncodedASCIIString(BinaryReader br)
-		{
-			int length = br.ReadInt32();
-			if (length > 2000 || length < 0)
-			{
-				byte[] abNextBytes = new byte[8];
-				br.Read(abNextBytes, 0, 8);
-				string strError = "Length was abnormally large or small (" + length.ToString("x") + ").  Next bytes were ";
-				foreach (byte b in abNextBytes)
-					strError += b.ToString("x") + " (" + (Char.IsControl((char)b) ? '-' : (char)b) + ") ";
-
-				throw new InvalidOperationException(strError);
-			}
-			byte[] abString = new byte[length];
-			int nRead = 0;
-			DateTime dt = DateTime.Now;
-			while (nRead < length)
-			{
-				nRead += br.Read(abString, nRead, length - nRead);
-
-				// Make this loop finite (30 seconds)
-				TimeSpan ts = DateTime.Now - dt;
-				if (ts.TotalSeconds > 30)
-					throw new InvalidOperationException("Timed out while waiting for length encoded string");
-			}
-			return System.Text.ASCIIEncoding.ASCII.GetString(abString, 0, length);
-		}
-		public int Port
-		{
-			get { return port; }
-		}
-		private int port;
-		private int stopFlag;
-		private ManualResetEvent resetStarted;
-		private ManualResetEvent resetMessageReceived;
-		private Thread thread;
-		private Socket socket;
-		private Run run;
-		private bool hasStopped;
-	}
 	public class StackWalk
 	{
-		public StackWalk(int id,List<int> frames)
+		public StackWalk(int id,int index, List<int> frames)
 		{
-			this.id=id;
-			this.frames=frames;
+			this.id = id;
+			this.frames = frames;
+			this.length = index;
 		}
+		public readonly int length;
 		public readonly int id;
 		public readonly List<int> frames;
 	}
@@ -514,14 +372,14 @@ namespace NProf
 					children = new Dictionary<int, FunctionInfo>();
 					foreach (StackWalk walk in stackWalks)
 					{
-						if (walk.frames.Count != 0)
+						if (walk.length != 0)
 						{
-							FunctionInfo callee = ProfilerSocketServer.GetFunctionInfo(children, walk.frames[walk.frames.Count-1]);
+							FunctionInfo callee = Run.GetFunctionInfo(children, walk.frames[walk.length-1]);
 							if (callee.lastWalk != walk.id)
 							{
 								callee.Samples++;
 							}
-							callee.stackWalks.Add(new StackWalk(walk.id, walk.frames.GetRange(0, walk.frames.Count - 1)));
+							callee.stackWalks.Add(new StackWalk(walk.id,walk.length - 1, walk.frames));//.GetRange(0, walk.frames.Count - 1)));
 						}
 					}
 				}
@@ -531,6 +389,16 @@ namespace NProf
 	}
 	public class Run
 	{
+		public static FunctionInfo GetFunctionInfo(Dictionary<int, FunctionInfo> functions, int id)
+		{
+			FunctionInfo result;
+			if (!functions.TryGetValue(id, out result))
+			{
+				result = new FunctionInfo(id);
+				functions[id] = result;
+			}
+			return result;
+		}
 		public int maxSamples;
 		public List<List<int>> stackWalks = new List<List<int>>();
 		private void InterpreteData()
@@ -541,15 +409,16 @@ namespace NProf
 				currentWalk++;
 				for (int i = 0; i < stackWalk.Count; i++)
 				{
-					FunctionInfo function=ProfilerSocketServer.GetFunctionInfo(functions, stackWalk[stackWalk.Count-i-1]);
+					FunctionInfo function=Run.GetFunctionInfo(functions, stackWalk[stackWalk.Count-i-1]);
 					if (function.lastWalk != currentWalk)
 					{
 						function.Samples++;
-						function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.GetRange(0, stackWalk.Count - i - 1)));
+						function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.Count - i - 1,stackWalk));//.GetRange(0, ));
 					}
 					function.lastWalk = currentWalk;
 				}
 			}
+			// combine
 			foreach (List<int> reversedWalk in stackWalks)
 			{
 				List<int> stackWalk = new List<int>(reversedWalk);
@@ -557,11 +426,11 @@ namespace NProf
 				currentWalk++;
 				for (int i = 0; i < stackWalk.Count; i++)
 				{
-					FunctionInfo function = ProfilerSocketServer.GetFunctionInfo(callers, stackWalk[stackWalk.Count-i-1]);
+					FunctionInfo function = Run.GetFunctionInfo(callers, stackWalk[stackWalk.Count-i-1]);
 					if (function.lastWalk != currentWalk)
 					{
 						function.Samples++;
-						function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.GetRange(0, stackWalk.Count - i - 1)));
+						function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.Count - i - 1,stackWalk));
 					}
 					function.lastWalk = currentWalk;
 				}
@@ -664,17 +533,26 @@ namespace NProf
 			start = DateTime.Now;
 			return profiler.Start(this);
 		}
-		public bool Stop()
-		{
-			profiler.Stop();
-			return true;
-		}
 		private DateTime start;
 		private DateTime end;
 		public Profiler profiler;
 	}
 	public class MethodView : ContainerListView
 	{
+		public void MoveTo(int id)
+		{
+			SelectedItems.Clear();
+			foreach (ContainerListViewItem item in Items)
+			{
+				if (((FunctionInfo)item.Tag).ID == id)
+				{
+					SelectedItems.Add(item);
+					EnsureVisible(item);
+					Focus();
+					break;
+				}
+			}
+		}
 		public void Update(Run run,Dictionary<int,FunctionInfo> functions)
 		{
 			currentRun = run;
@@ -766,99 +644,6 @@ namespace NProf
 					EnsureVisible(item);
 				}
 			}
-		}
-		//public void Find(string text, bool forward, bool step)
-		//{
-		//    if (text != "")
-		//    {
-		//        ContainerListViewItem item;
-		//        if (SelectedItems.Count == 0)
-		//        {
-		//            if (SelectedItems.Count == 0)
-		//            {
-		//                item = null;
-		//            }
-		//            else
-		//            {
-		//                item = Items[0];
-		//            }
-		//        }
-		//        else
-		//        {
-		//            if (step)
-		//            {
-		//                if (forward)
-		//                {
-		//                    item = SelectedItems[0];
-		//                }
-		//                else
-		//                {
-		//                    item = SelectedItems[0];
-		//                }
-		//            }
-		//            else
-		//            {
-		//                item = SelectedItems[0];
-		//            }
-		//        }
-		//        ContainerListViewItem firstItem = item;
-		//        while (item != null)
-		//        {
-		//            if (item.Text.ToLower().Contains(text.ToLower()))
-		//            {
-		//                SelectedItems.Clear();
-		//                item.Focused = true;
-		//                item.Selected = true;
-		//                this.Invalidate();
-		//                break;
-		//            }
-		//            else
-		//            {
-		//                if (forward)
-		//                {
-		//                    item = item.NextItem;
-		//                }
-		//                else
-		//                {
-		//                    item = item.PreviousItem;
-		//                }
-		//                if (item == null)
-		//                {
-		//                    if (forward)
-		//                    {
-		//                        item = Items[0];
-		//                    }
-		//                    else
-		//                    {
-		//                        item = Items[Items.Count - 1];
-		//                    }
-		//                }
-		//            }
-		//            if (item == firstItem)
-		//            {
-		//                break;
-		//            }
-		//        }
-		//    }
-		//}
-		private void JumpToID(int id)
-		{
-			SelectedItems.Clear();
-			foreach (ContainerListViewItem lvi in Items)
-			{
-				FunctionInfo fi = (FunctionInfo)lvi.Tag;
-
-				if (fi.ID == id)
-				{
-					if (!lvi.Selected)
-					{
-						lvi.Selected = true;
-						lvi.Focused = true;
-					}
-					break;
-				}
-			}
-			this.Focus();
 		}
 		public Run currentRun;
 		public MethodView(string name)
@@ -971,33 +756,21 @@ namespace NProf
 		public bool Start(Run run)
 		{
 			this.run = run;
-			socketServer = new ProfilerSocketServer(run);
-			socketServer.Start();
 			process = new Process();
 			process.StartInfo = new ProcessStartInfo(NProf.application.Text,NProf.arguments.Text);
 			process.StartInfo.EnvironmentVariables["COR_ENABLE_PROFILING"] = "0x1";
 			process.StartInfo.EnvironmentVariables["COR_PROFILER"] = PROFILER_GUID;
-			process.StartInfo.EnvironmentVariables["NPROF_PROFILING_SOCKET"] = socketServer.Port.ToString();
 			process.StartInfo.UseShellExecute = false;
 			process.EnableRaisingEvents = true;
 			process.Exited += new EventHandler(OnProcessExited);
 			return process.Start();
 		}
-		public void Stop()
-		{
-			if (run != null)
-			{
-				socketServer.Stop();
-			}
-		}
 		private void OnProcessExited(object oSender, EventArgs ea)
 		{
 			completed(null, null);
-			socketServer.Stop();
 		}
 		private Run run;
 		private Process process;
-		private ProfilerSocketServer socketServer;
 	}
 	public class FunctionSignature
 	{
