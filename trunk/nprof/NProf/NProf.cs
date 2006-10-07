@@ -197,6 +197,7 @@ namespace NProf
 									Button close=new Button();
 									close.AutoSize=true;
 									close.Text="X";
+									close.AutoSize=true;
 									close.Click+=delegate
 									{
 										findPanel.Visible=false;
@@ -443,6 +444,8 @@ namespace NProf
 					maxSamples = function.Samples;
 				}
 			}
+			MessageBox.Show(maxSamples.ToString());
+			MessageBox.Show(stackWalks.Count.ToString());
 		}
 		private string ReadLengthEncodedASCIIString(BinaryReader br)
 		{
@@ -471,9 +474,16 @@ namespace NProf
 			}
 			return System.Text.ASCIIEncoding.ASCII.GetString(abString, 0, length);
 		}
+		private string FileName
+		{
+			get
+			{
+				return "C:\\test.nprof";
+			}
+		}
 		private void ReadStackWalks()
 		{
-			using (BinaryReader r = new BinaryReader(File.Open("C:\\test.nprof", FileMode.Open)))
+			using (BinaryReader r = new BinaryReader(File.Open(FileName, FileMode.Open)))
 			{
 				while (true)
 				{
@@ -512,7 +522,11 @@ namespace NProf
 		}
 		public void Complete(object sender,EventArgs e)
 		{
-			ReadStackWalks();
+			if (File.Exists(FileName))
+			{
+				ReadStackWalks();
+				File.Delete(FileName);
+			}
 			NProf.form.BeginInvoke(new EventHandler(delegate
 			{
 				InterpreteData();

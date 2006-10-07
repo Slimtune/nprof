@@ -82,6 +82,8 @@ using namespace std;
 #include "corpub.h"
 #include "corprof.h"
 
+#include "Dbghelp.h"
+
 #define MAX_FUNCTION_LENGTH 2048
 
 
@@ -579,6 +581,7 @@ public:
 	{
 		TIMECAPS timeCaps;
 		timeGetDevCaps(&timeCaps, sizeof(TIMECAPS));
+		//cout<<"time caps: " <<timeCaps.wPeriodMin<<"\n";
 		timer = timeSetEvent(
 			frequency,
 			timeCaps.wPeriodMin,
@@ -609,7 +612,6 @@ public:
 		profiler->WalkStack();
 	}
 	static UINT timer;
-
 	void WalkStack()
 	{
 		KillTimer();
@@ -624,43 +626,85 @@ public:
 				ThreadID id=i->second;
 
 				CONTEXT context;
-				 context.ContextFlags=CONTEXT_FULL;
-				 GetThreadContext(threadHandle,&context);
-				 FunctionID newID;
-				 HRESULT result=profilerInfo->GetFunctionFromIP((BYTE*)context.Eip,&newID);
-				 if(result==S_OK)
-				 {
+				context.ContextFlags=CONTEXT_FULL;
+				GetThreadContext(threadHandle,&context);
+				FunctionID newID;
+				HRESULT result=profilerInfo->GetFunctionFromIP((BYTE*)context.Eip,&newID);
 
-				cout<<
-					profilerInfo->DoStackSnapshot(
-					id,
-					StackWalker,
-					COR_PRF_SNAPSHOT_DEFAULT,
-					functions,
-					NULL,
-					NULL)
-					<<"\n";
-				stackWalks.push_back(functions);
-				for(int index=0;index<functions->size();index++)
+				bool found=false;
+				if(result!=S_OK || newID!=0)
 				{
-					FunctionID id=functions->at(index);
-					map<FunctionID,FunctionID>::iterator found = signatures.find(id);
-					if ( found == signatures.end() )
+					STACKFRAME64 stackFrame;
+					memset(&stackFrame, 0, sizeof(stackFrame));
+					stackFrame.AddrPC.Offset = context.Eip;
+					stackFrame.AddrPC.Mode = AddrModeFlat;
+					stackFrame.AddrFrame.Offset = context.Ebp;
+					stackFrame.AddrFrame.Mode = AddrModeFlat;
+					stackFrame.AddrStack.Offset = context.Esp;
+					stackFrame.AddrStack.Mode = AddrModeFlat;
+					while(true)
 					{
-						signatures.insert(make_pair(id,id));
+
+						if(!StackWalk64(
+							 IMAGE_FILE_MACHINE_I386,
+							 GetCurrentProcess(),
+							 threadHandle,
+							 &stackFrame,
+							 NULL,
+							 NULL,
+							 SymFunctionTableAccess64,
+							 SymGetModuleBase64,
+							 NULL))
+						{
+							break;
+						}
+						if (stackFrame.AddrPC.Offset == stackFrame.AddrReturn.Offset)
+						{
+							break;
+						}
+
+						FunctionID id;
+						HRESULT result=profilerInfo->GetFunctionFromIP(
+							(BYTE*)stackFrame.AddrPC.Offset,&id);
+						if(result==S_OK && id!=0)
+						{
+							memset(&context,0,sizeof(context));
+							context.Eip=stackFrame.AddrPC.Offset;
+							context.Ebp=stackFrame.AddrFrame.Offset;
+							context.Esp=stackFrame.AddrStack.Offset;
+							found=true;
+							break;
+						}
 					}
 				}
-				Sleep(100);
+				if(found)
+				{
+					profilerInfo->DoStackSnapshot(
+						id,
+						StackWalker,
+						COR_PRF_SNAPSHOT_DEFAULT,
+						functions,
+						(BYTE*)&context,
+						sizeof(context));
+
+					for(int index=0;index<functions->size();index++)
+					{
+						FunctionID id=functions->at(index);
+						map<FunctionID,FunctionID>::iterator found = signatures.find(id);
+						if ( found == signatures.end() )
+						{
+							signatures.insert(make_pair(id,id));
+						}
+					}
 				}
+				stackWalks.push_back(functions);
 				ResumeThread(threadHandle);
 			}
 		}
 		SetTimer();
 	}
 };
-
 UINT Profiler::timer;
-
 [
 	object,
 	uuid("5B94DF43-780B-42FD-AC4C-ABAB35D4A274"),
@@ -670,7 +714,6 @@ UINT Profiler::timer;
 __interface INProfCORHook : IDispatch
 {
 };
-
 [
   coclass,
   threading("apartment"),
@@ -689,22 +732,19 @@ public:
   {
     this->profiler = NULL;
   }
-
   DECLARE_PROTECT_FINAL_CONSTRUCT()
-
   HRESULT FinalConstruct()
   {
     return S_OK;
   }
-
   void FinalRelease() 
   {
     if ( profiler )
       delete profiler;
   }
-
 public:
 	static Profiler* profiler;
+	CRITICAL_SECTION criticalSection;
 public:
 	static Profiler* GetProfiler()
 	{
@@ -713,16 +753,17 @@ public:
 	STDMETHOD(Initialize)(LPUNKNOWN pICorProfilerInfoUnk)
 	{
 		CComQIPtr< ICorProfilerInfo2 > profilerInfo = pICorProfilerInfoUnk;
-
+		InitializeCriticalSection(&criticalSection);
 		profiler = new Profiler( profilerInfo );
-
 		return S_OK;
 	}
 	STDMETHOD(Shutdown)()
 	{
+		EnterCriticalSection(&criticalSection);
 		profiler->End();
 		delete profiler;
 		profiler = NULL;
+		LeaveCriticalSection(&criticalSection);
 		return S_OK;
 	}
 	STDMETHOD(AppDomainCreationStarted)(AppDomainID appDomainId)
@@ -831,7 +872,9 @@ public:
 	}
 	STDMETHOD(ThreadAssignedToOSThread)(ThreadID managedThreadId, DWORD osThreadId)
 	{
+		EnterCriticalSection(&criticalSection);
 		profiler->ThreadMap( managedThreadId, osThreadId );
+		LeaveCriticalSection(&criticalSection);
 		return S_OK;
 	}
 	STDMETHOD(RemotingClientInvocationStarted)()
@@ -1028,7 +1071,6 @@ public:
 		return E_NOTIMPL;
 	}
 };
-
 [ module(dll, uuid = "{A461E20A-C7DC-4A89-A24E-87B5E975A96B}", 
 		 name = "NProfHook", 
 		 helpstring = "NProf.Hook 1.0 Type Library",
