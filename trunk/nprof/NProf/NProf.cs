@@ -61,7 +61,7 @@ namespace NProf
 		private NProf()
 		{
 			Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("NProf.Resources.app-icon.ico"));
-			Text = "nprof - v" + Profiler.Version;
+			Text = "NProf - v" + Profiler.Version;
 			profiler = new Profiler();			
 
 			runs = new ContainerListView();
@@ -142,7 +142,7 @@ namespace NProf
 						new MenuItem[] 
 						{
 							new MenuItem(
-								"&New...",
+								"&New",
 								delegate
 								{
 									runs.Items.Clear();
@@ -348,6 +348,19 @@ namespace NProf
 		{
 			del(t);
 			return t;
+		}
+
+		private void InitializeComponent() {
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(NProf));
+			this.SuspendLayout();
+			// 
+			// NProf
+			// 
+			this.ClientSize = new System.Drawing.Size(292, 273);
+			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+			this.Name = "NProf";
+			this.ResumeLayout(false);
+
 		}
 	}
 	public class StackWalk

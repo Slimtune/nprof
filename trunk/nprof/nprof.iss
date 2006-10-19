@@ -13,7 +13,7 @@ DefaultDirName={pf}/NProf-0.10
 DefaultGroupName=NProf-0.10
 DisableProgramGroupPage=yes
 OutputDir=Releases
-OutputBaseFilename=nprof-0.10-setup
+OutputBaseFilename=NProf-0.10-setup
 SetupIconFile=NProf\App.ico
 Compression=lzma
 SolidCompression=yes
@@ -27,6 +27,7 @@ Source: NProf\bin\Release\DotNetLib.Windows.Forms.dll; DestDir: {app}; Flags: ig
 Source: NProf\bin\Release\DotNetLib.Windows.Forms.Themes.dll; DestDir: {app}; Flags: ignoreversion
 Source: RegisterProfilerHook.bat; DestDir: {app}; Flags: ignoreversion
 Source: Hook\Release\NProf.Hook.dll; DestDir: {app}; Flags: ignoreversion
+Source: Libraries\DotNetLib\msvcr70.dll; DestDir: {app}; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
