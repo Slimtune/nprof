@@ -2,19 +2,19 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 [Setup]
-AppName=NProf
+AppName=NProf-0.10
 ChangesAssociations=yes
-AppVerName=NProf 0.9.1
+AppVerName=NProf 0.10
 AppPublisher=NProf Community
 AppPublisherURL=http://nprof.sourceforge.net
 AppSupportURL=http://nprof.sourceforge.net
 AppUpdatesURL=http://nprof.sourceforge.net
-DefaultDirName={pf}/NProf0.9.1
-DefaultGroupName=NProf
+DefaultDirName={pf}/NProf-0.10
+DefaultGroupName=NProf-0.10
 DisableProgramGroupPage=yes
-OutputDir=C:\nprof\Releases
-OutputBaseFilename=nprof-0.9.1-setup
-SetupIconFile=C:\nprof\branches\0_9_1\nprof\NProf.Application\App.ico
+OutputDir=Releases
+OutputBaseFilename=nprof-0.10-setup
+SetupIconFile=NProf\App.ico
 Compression=lzma
 SolidCompression=yes
 
@@ -22,30 +22,16 @@ SolidCompression=yes
 Name: english; MessagesFile: compiler:Default.isl
 
 [Files]
-Source: C:\nprof\branches\0_9_1\nprof\NProf.Application\bin\Release\NProf.Application.exe; DestDir: {app}; Flags: ignoreversion
-Source: C:\nprof\branches\0_9_1\nprof\NProf.Application\bin\Release\NProf.Utilities.dll; DestDir: {app}; Flags: ignoreversion
-Source: C:\nprof\branches\0_9_1\nprof\NProf.Application\bin\Release\CommandBar.dll; DestDir: {app}; Flags: ignoreversion
-Source: C:\nprof\branches\0_9_1\nprof\NProf.Application\bin\Release\DotNetLib.Windows.Forms.dll; DestDir: {app}; Flags: ignoreversion
-Source: C:\nprof\branches\0_9_1\nprof\NProf.Application\bin\Release\DotNetLib.Windows.Forms.Themes.dll; DestDir: {app}; Flags: ignoreversion
-Source: C:\nprof\branches\0_9_1\nprof\NProf.Application\bin\Release\genghis.dll; DestDir: {app}; Flags: ignoreversion
-Source: C:\nprof\branches\0_9_1\nprof\NProf.Application\bin\Release\ICSharpCode.SharpZipLib.dll; DestDir: {app}; Flags: ignoreversion
-Source: C:\nprof\branches\0_9_1\nprof\NProf.Application\bin\Release\MagicLibrary.dll; DestDir: {app}; Flags: ignoreversion
-Source: C:\nprof\branches\0_9_1\nprof\NProf.Application\bin\Release\NProf.Glue.dll; DestDir: {app}; Flags: ignoreversion
-Source: C:\nprof\branches\0_9_1\nprof\NProf.Application\bin\Release\NProf.GUI.dll; DestDir: {app}; Flags: ignoreversion
-Source: C:\nprof\branches\0_9_1\nprof\Build\SupportFiles\RegisterProfilerHook.bat; DestDir: {app}; Flags: ignoreversion
-Source: C:\nprof\branches\0_9_1\nprof\Build\SupportFiles\nprof.exe.config; DestDir: {app}; Flags: ignoreversion
-Source: C:\nprof\branches\0_9_1\nprof\Libraries\DotNetLib\msvcr70.dll; DestDir: {app}; Flags: ignoreversion
-Source: C:\nprof\branches\0_9_1\nprof\NProf.Hook\Release\NProf.Hook.dll; DestDir: {app}; Flags: ignoreversion
+Source: NProf\bin\Release\NProf.exe; DestDir: {app}; Flags: ignoreversion
+Source: NProf\bin\Release\DotNetLib.Windows.Forms.dll; DestDir: {app}; Flags: ignoreversion
+Source: NProf\bin\Release\DotNetLib.Windows.Forms.Themes.dll; DestDir: {app}; Flags: ignoreversion
+Source: RegisterProfilerHook.bat; DestDir: {app}; Flags: ignoreversion
+Source: Hook\Release\NProf.Hook.dll; DestDir: {app}; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: {group}\NProf; Filename: {app}\NProf.Application.exe
+Name: {group}\NProf; Filename: {app}\NProf.exe
 
 [Run]
-Filename: {app}\RegisterProfilerHook.bat; Description: View the README file; Flags: runhidden
-Filename: {app}\NProf.Application.exe; Description: {cm:LaunchProgram,NProf}; Flags: nowait postinstall skipifsilent
-[Registry]
-Root: HKCR; Subkey: .nprof; ValueType: string; ValueData: NProfProject; Flags: uninsdeletekey
-Root: HKCR; Subkey: NProfProject; ValueType: string; ValueData: NProf Project File; Flags: uninsdeletekey
-Root: HKCR; Subkey: NProfProject\DefaultIcon; ValueType: string; ValueData: {app}\nprof.exe,0
-Root: HKCR; Subkey: NProfProject\shell\open\command; ValueType: string; ValueData: """""{app}\nprof.exe"""" """"%1"""""
+Filename: {app}\RegisterProfilerHook.bat;  Flags: runhidden waituntilidle
+Filename: {app}\NProf.exe; Description: {cm:LaunchProgram,NProf}; Flags: nowait postinstall skipifsilent

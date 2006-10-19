@@ -83,6 +83,7 @@ using namespace std;
 #include "corprof.h"
 
 #include "Dbghelp.h"
+#include "Shfolder.h"
 
 #define MAX_FUNCTION_LENGTH 2048
 
@@ -503,8 +504,9 @@ HRESULT __stdcall __stdcall StackWalker(
 	}
 	return S_OK;
 }
+#define guid "029C3A01-70C1-46D2-92B7-24B157DF55CE"
 
-const int frequency=10;
+const int interval=5;
 
 class Profiler
 {
@@ -512,9 +514,17 @@ public:
 	vector<vector<FunctionID>*> stackWalks;
 	map< FunctionID, FunctionID> signatures;
 	ofstream* file;
+	string GetTemporaryFileName()
+	{
+		char path[MAX_PATH];
+		memset(path,0,sizeof(path));
+		GetTempPath(MAX_PATH-1,path);
+		string temp(path);
+		return temp+guid+".nprof";
+	}
 	void EndAll( ProfilerHelper& profilerHelper )
 	{
-		file=new ofstream("c:\\test.nprof", ios::binary);
+		file=new ofstream(GetTemporaryFileName().c_str(), ios::binary);
 		for ( map< FunctionID, FunctionID >::iterator i = signatures.begin(); i != signatures.end(); i++ )
 		{
 			FunctionID id=i->second;
@@ -581,9 +591,8 @@ public:
 	{
 		TIMECAPS timeCaps;
 		timeGetDevCaps(&timeCaps, sizeof(TIMECAPS));
-		//cout<<"time caps: " <<timeCaps.wPeriodMin<<"\n";
 		timer = timeSetEvent(
-			frequency,
+			interval,
 			timeCaps.wPeriodMin,
 			TimerFunction, 
 			(DWORD_PTR)this,     
@@ -677,6 +686,10 @@ public:
 						}
 					}
 				}
+				else 
+				{
+					found=true;
+				}
 				if(found)
 				{
 					profilerInfo->DoStackSnapshot(
@@ -707,7 +720,7 @@ public:
 UINT Profiler::timer;
 [
 	object,
-	uuid("5B94DF43-780B-42FD-AC4C-ABAB35D4A274"),
+	uuid("FDEDE932-9F80-4CE5-891E-3B24768CFBCB"),
 	dual,	helpstring("INProfCORHook Interface"),
 	pointer_default(unique)
 ]
@@ -720,7 +733,7 @@ __interface INProfCORHook : IDispatch
   vi_progid("NProf.NProfCORHook"),
   progid("NProf.NProfCORHook.1"),
   version(1.0),
-  uuid("791DA9FE-05A0-495E-94BF-9AD875C4DF0F"),
+  uuid(guid),
   helpstring("nprof COR Profiling Hook Class")
 ]
 class ATL_NO_VTABLE CNProfCORHook : 

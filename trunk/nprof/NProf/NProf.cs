@@ -60,7 +60,6 @@ namespace NProf
 		}
 		private NProf()
 		{
-			Size = new Size(800, 600);
 			Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("NProf.Resources.app-icon.ico"));
 			Text = "nprof - v" + Profiler.Version;
 			profiler = new Profiler();			
@@ -195,9 +194,10 @@ namespace NProf
 									p.AutoSize = true;
 									p.Dock = DockStyle.Top;
 									Button close=new Button();
-									close.AutoSize=true;
-									close.Text="X";
-									close.AutoSize=true;
+									close.Text="x";
+									close.Width=17;
+									close.Height=20;
+									close.TextAlign=ContentAlignment.BottomLeft;
 									close.Click+=delegate
 									{
 										findPanel.Visible=false;
@@ -221,6 +221,7 @@ namespace NProf
 									With(new Button(),delegate(Button button)
 									{
 										button.AutoSize = true;
+										button.FlatAppearance.BorderSize=0;
 										button.Click += new EventHandler(findPrevious_Click);
 										button.Text = "Find previous";
 									})});
@@ -266,6 +267,7 @@ namespace NProf
 					panel.Controls.Add(With(new Button(),delegate(Button button)
 					{
 						button.Text = "Browse...";
+						button.TabIndex= 0;
 						button.Focus();
 						button.Click += delegate
 						{
@@ -290,6 +292,13 @@ namespace NProf
 					panel.Controls.Add(arguments,1,1);
 				}),
 			});
+			//Size = new Size(800, 600);
+			//this.Validating+=delegate {
+			//    Size = new Size(800, 600);
+			//};
+			this.Load+=delegate {
+				Size = new Size(800, 600);
+			};
 		}
 		private void StartRun()
 		{
@@ -329,6 +338,7 @@ namespace NProf
 		[STAThread]
 		static void Main(string[] args)
 		{
+			string s=Guid.NewGuid().ToString();
 			Application.EnableVisualStyles();
 			Application.Run(form);
 		}
@@ -354,7 +364,6 @@ namespace NProf
 	}
 	public class FunctionInfo
 	{
-		public const double frequency = 10.0;
 		public FunctionInfo(int ID)
 		{
 			this.ID = ID;
@@ -419,7 +428,7 @@ namespace NProf
 					function.lastWalk = currentWalk;
 				}
 			}
-			// combine
+			// combine with above
 			foreach (List<int> reversedWalk in stackWalks)
 			{
 				List<int> stackWalk = new List<int>(reversedWalk);
@@ -444,8 +453,6 @@ namespace NProf
 					maxSamples = function.Samples;
 				}
 			}
-			MessageBox.Show(maxSamples.ToString());
-			MessageBox.Show(stackWalks.Count.ToString());
 		}
 		private string ReadLengthEncodedASCIIString(BinaryReader br)
 		{
@@ -478,7 +485,8 @@ namespace NProf
 		{
 			get
 			{
-				return "C:\\test.nprof";
+				return Path.Combine(Path.GetDirectoryName(Path.GetTempFileName()),Profiler.PROFILER_GUID+".nprof");
+				//return "C:\\test.nprof";
 			}
 		}
 		private void ReadStackWalks()
@@ -668,6 +676,8 @@ namespace NProf
 			this.ShowPlusMinus = true;
 			ShowRootTreeLines = true;
 			ShowTreeLines = true;
+			FullItemSelect=true;
+			Columns[1].ContentAlign=ContentAlignment.MiddleRight;
 			ColumnSortColor = Color.White;
 			Font = new Font("Tahoma", 8.0f);
 			this.Click += delegate
@@ -746,7 +756,7 @@ namespace NProf
 	}
 	public class Profiler
 	{
-		private const string PROFILER_GUID = "{791DA9FE-05A0-495E-94BF-9AD875C4DF0F}";
+		public const string PROFILER_GUID = "029C3A01-70C1-46D2-92B7-24B157DF55CE";
 		public static string Version
 		{
 			get { return "0.10"; }
@@ -755,7 +765,7 @@ namespace NProf
 		public bool CheckSetup(out string message)
 		{
 			message = String.Empty;
-			using (RegistryKey rk = Registry.ClassesRoot.OpenSubKey("CLSID\\" + PROFILER_GUID))
+			using (RegistryKey rk = Registry.ClassesRoot.OpenSubKey("CLSID\\" + "{"+PROFILER_GUID+"}"))
 			{
 				if (rk == null)
 				{
@@ -773,7 +783,7 @@ namespace NProf
 			process = new Process();
 			process.StartInfo = new ProcessStartInfo(NProf.application.Text,NProf.arguments.Text);
 			process.StartInfo.EnvironmentVariables["COR_ENABLE_PROFILING"] = "0x1";
-			process.StartInfo.EnvironmentVariables["COR_PROFILER"] = PROFILER_GUID;
+			process.StartInfo.EnvironmentVariables["COR_PROFILER"] = "{"+PROFILER_GUID+"}";
 			process.StartInfo.UseShellExecute = false;
 			process.EnableRaisingEvents = true;
 			process.Exited += new EventHandler(OnProcessExited);
