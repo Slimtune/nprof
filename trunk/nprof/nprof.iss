@@ -2,18 +2,18 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 [Setup]
-AppName=NProf-0.10
+AppName=NProf-0.10.1
 ChangesAssociations=yes
-AppVerName=NProf 0.10
+AppVerName=NProf 0.10.1
 AppPublisher=NProf Community
 AppPublisherURL=http://nprof.sourceforge.net
 AppSupportURL=http://nprof.sourceforge.net
 AppUpdatesURL=http://nprof.sourceforge.net
-DefaultDirName={pf}/NProf-0.10
-DefaultGroupName=NProf-0.10
+DefaultDirName={pf}/NProf-0.10.1
+DefaultGroupName=NProf-0.10.1
 DisableProgramGroupPage=yes
 OutputDir=Releases
-OutputBaseFilename=NProf-0.10-setup
+OutputBaseFilename=NProf-0.10.1-setup
 SetupIconFile=NProf\App.ico
 Compression=lzma
 SolidCompression=yes
@@ -31,7 +31,7 @@ Source: Libraries\DotNetLib\msvcr70.dll; DestDir: {app}; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: {group}\NProf; Filename: {app}\NProf.exe
+Name: {group}\..\NProf 0.10.1; Filename: {app}\NProf.exe
 
 [Run]
 Filename: {app}\RegisterProfilerHook.bat;  Flags: runhidden waituntilidle

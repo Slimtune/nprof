@@ -58,14 +58,19 @@ namespace NProf
 				callees.Find(findText.Text, forward, step);
 			}
 		}
+		public string Title {
+			get {
+				return "NProf " + Profiler.Version;
+			}
+		}
 		private NProf()
 		{
 			Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("NProf.Resources.app-icon.ico"));
-			Text = "NProf - v" + Profiler.Version;
+			Text = Title;
 			profiler = new Profiler();			
 
 			runs = new ContainerListView();
-			ContainerListViewColumnHeader header = new ContainerListViewColumnHeader("Runs", 90);
+			ContainerListViewColumnHeader header = new ContainerListViewColumnHeader("Profiling runs", 90);
 			runs.Columns.Add(header);
 			runs.SizeChanged += delegate
 			{
@@ -81,7 +86,7 @@ namespace NProf
 				}
 			};
 
-			callers = new MethodView("Callers");
+			callers = new MethodView("Caller methods");
 			callers.Size = new Size(100, 200);
 			callers.Dock = DockStyle.Bottom;
 			callers.GotFocus += delegate
@@ -96,7 +101,7 @@ namespace NProf
 				}
 			};
 
-			callees = new MethodView("Callees");
+			callees = new MethodView("Callee methods");
 			callees.Size = new Size(100, 100);
 			callees.Dock = DockStyle.Fill;
 			callees.GotFocus += delegate
@@ -292,10 +297,9 @@ namespace NProf
 					panel.Controls.Add(arguments,1,1);
 				}),
 			});
-			//Size = new Size(800, 600);
-			//this.Validating+=delegate {
-			//    Size = new Size(800, 600);
-			//};
+			application.TextChanged += delegate {
+				Text = Path.GetFileNameWithoutExtension(application.Text) + " - " + Title;
+			};
 			this.Load+=delegate {
 				Size = new Size(800, 600);
 			};
@@ -315,7 +319,7 @@ namespace NProf
 		}
 		public void AddRun(Run run)
 		{
-			ContainerListViewItem item = new ContainerListViewItem(DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.LongTimePattern));
+			ContainerListViewItem item = new ContainerListViewItem(Path.GetFileNameWithoutExtension(application.Text)+" "+DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.LongTimePattern));
 			item.Tag = run;
 			runs.Items.Add(item);
 			runs.SelectedItems.Clear();
@@ -684,7 +688,7 @@ namespace NProf
 		public MethodView(string name)
 		{
 			Columns.Add(name);
-			Columns.Add("Time");
+			Columns.Add("Time in percent");
 			Columns[0].Width = 350;
 			this.ShowPlusMinus = true;
 			ShowRootTreeLines = true;
@@ -772,7 +776,7 @@ namespace NProf
 		public const string PROFILER_GUID = "029C3A01-70C1-46D2-92B7-24B157DF55CE";
 		public static string Version
 		{
-			get { return "0.10"; }
+			get { return "0.10.1"; }
 		}
 		public EventHandler completed;
 		public bool CheckSetup(out string message)
