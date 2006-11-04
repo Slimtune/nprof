@@ -87,7 +87,22 @@ using namespace std;
 
 #define MAX_FUNCTION_LENGTH 2048
 
+class Signature {
 
+public:
+	Signature() {
+	}
+	Signature(string returnType,string parameters,string className,string functionName) {
+		this->returnType=returnType;
+		this->parameters=parameters;
+		this->className=className;
+		this->functionName=functionName;
+	}
+	string returnType;
+	string parameters;
+	string className;
+	string functionName;
+};
 class ProfilerHelper
 {
 public:
@@ -98,10 +113,12 @@ public:
 	void ProfilerHelper::GetFunctionSignature( 
 		FunctionID functionId,
 		UINT32& methodAttributes,
-		string& returnType, 
-		string& className,
-		string& functionName,
-		string& parameters )
+		Signature& signature
+		//string& returnType, 
+		//string& className,
+		//string& functionName,
+		//string& parameters 
+	)
 	{
 		ULONG args;
 		WCHAR returnTypeString[ MAX_FUNCTION_LENGTH ];
@@ -109,12 +126,34 @@ public:
 		WCHAR functionNameString[ MAX_FUNCTION_LENGTH ];
 		WCHAR classNameString[ MAX_FUNCTION_LENGTH ];
 		GetFunctionProperties( functionId, &methodAttributes, &args, returnTypeString, parametersString, classNameString, functionNameString );
+		//signature
 
-		returnType = CW2A( returnTypeString );
-		parameters = CW2A( parametersString );
-		className = CW2A( classNameString );
-		functionName = CW2A( functionNameString );
+		signature.returnType = CW2A( returnTypeString );
+		signature.parameters = CW2A( parametersString );
+		signature.className = CW2A( classNameString );
+		signature.functionName = CW2A( functionNameString );
 	}
+
+	//void ProfilerHelper::GetFunctionSignature( 
+	//	FunctionID functionId,
+	//	UINT32& methodAttributes,
+	//	string& returnType, 
+	//	string& className,
+	//	string& functionName,
+	//	string& parameters )
+	//{
+	//	ULONG args;
+	//	WCHAR returnTypeString[ MAX_FUNCTION_LENGTH ];
+	//	WCHAR parametersString[ MAX_FUNCTION_LENGTH ];
+	//	WCHAR functionNameString[ MAX_FUNCTION_LENGTH ];
+	//	WCHAR classNameString[ MAX_FUNCTION_LENGTH ];
+	//	GetFunctionProperties( functionId, &methodAttributes, &args, returnTypeString, parametersString, classNameString, functionNameString );
+
+	//	returnType = CW2A( returnTypeString );
+	//	parameters = CW2A( parametersString );
+	//	className = CW2A( classNameString );
+	//	functionName = CW2A( functionNameString );
+	//}
 private:
 	HRESULT ProfilerHelper::GetFunctionProperties( 
 					   FunctionID functionID,
@@ -315,6 +354,87 @@ private:
 		return hr;
 	} // BASEHELPER::GetFunctionProperties
 
+
+
+	//bool ParseTypeDefOrRefEncoded(sig_index_type *pIndexTypeOut, sig_index *pIndexOut)
+	//{
+	//	// parse an encoded typedef or typeref
+
+	//	sig_count encoded  = 0;
+
+	//	if (!ParseNumber(&encoded))
+	//		return false;
+
+	//	*pIndexTypeOut = (sig_index_type) (encoded & 0x3);
+	//	*pIndexOut = (encoded >> 2);
+	//	return true;
+	//}
+	//bool ParseByte(sig_byte *pbOut)
+	//{
+	//	if (pbCur < pbEnd)
+	//	{
+	//		*pbOut = *pbCur;
+	//		pbCur++;
+	//		return true;
+	//	}
+	//    
+	//	return false;
+	//}
+	//bool ParseNumber(sig_count *pOut)
+	//{
+	//	// parse the variable length number format (0-4 bytes)
+
+	//	sig_byte b1 = 0, b2 = 0, b3 = 0, b4 = 0;
+
+	//	// at least one byte in the encoding, read that
+	//        
+	//	if (!ParseByte(&b1))
+	//		return false;
+
+	//	if (b1 == 0xff)
+	//	{
+	//		// special encoding of 'NULL'
+	//		// not sure what this means as a number, don't expect to see it except for string lengths
+	//		// which we don't encounter anyway so calling it an error
+	//		return false;
+	//	}
+
+	//	// early out on 1 byte encoding
+	//	if ( (b1 & 0x80) == 0)
+	//	{
+	//		*pOut = (int)b1;
+	//		return true;
+	//	}
+
+	//	// now at least 2 bytes in the encoding, read 2nd byte
+	//	if (!ParseByte(&b2))
+	//		return false;
+
+	//	// early out on 2 byte encoding
+	//	if ( (b1 & 0x40) == 0)
+	//	{
+	//		*pOut = (((b1 & 0x3f) << 8) | b2);
+	//		return true;
+	//	}
+
+	//	// must be a 4 byte encoding
+
+	//	if ( (b1 & 0x20) != 0)        
+	//	{
+	//		// 4 byte encoding has this bit clear -- error if not
+	//		return false;
+	//	} 
+
+	//	if (!ParseByte(&b3))
+	//		return false;
+	//    
+	//	if (!ParseByte(&b4))
+	//		return false;
+
+	//	*pOut = ((b1 & 0x1f)<<24) | (b2<<16) | (b3<<8) | b4;
+	//	return true;
+	//}
+
 	PCCOR_SIGNATURE ProfilerHelper::ParseElementType( IMetaDataImport *metaDataImport,
 											  PCCOR_SIGNATURE signature, 
 											  char *buffer )
@@ -331,46 +451,46 @@ private:
 				strcat( buffer, "wchar" );	
 				break;		
 			case ELEMENT_TYPE_I1:
-				strcat( buffer, "int8" );	
+				strcat( buffer, "byte" );	
 				break;		
 			case ELEMENT_TYPE_U1:
-				strcat( buffer, "unsigned int8" );	
+				strcat( buffer, "ubyte" );	
 				break;		
 			case ELEMENT_TYPE_I2:
-				strcat( buffer, "int16" );	
+				strcat( buffer, "short" );	
 				break;		
 			case ELEMENT_TYPE_U2:
-				strcat( buffer, "unsigned int16" );	
+				strcat( buffer, "ushort" );	
 				break;			
 			case ELEMENT_TYPE_I4:
-				strcat( buffer, "int32" );	
+				strcat( buffer, "int" );	
 				break;
 			case ELEMENT_TYPE_U4:
-				strcat( buffer, "unsigned int32" );	
+				strcat( buffer, "uint" );	
 				break;		
 			case ELEMENT_TYPE_I8:
-				strcat( buffer, "int64" );	
+				strcat( buffer, "long" );	
 				break;		
 			case ELEMENT_TYPE_U8:
-				strcat( buffer, "unsigned int64" );	
+				strcat( buffer, "ulong" );	
 				break;		
 			case ELEMENT_TYPE_R4:
-				strcat( buffer, "float32" );	
+				strcat( buffer, "float" );	
 				break;			
 			case ELEMENT_TYPE_R8:
-				strcat( buffer, "float64" );	
+				strcat( buffer, "double" );	
 				break;		
 			case ELEMENT_TYPE_U:
-				strcat( buffer, "unsigned int" );	
+				strcat( buffer, "uint" );	
 				break;		 
 			case ELEMENT_TYPE_I:
 				strcat( buffer, "int" );	
 				break;			  
 			case ELEMENT_TYPE_OBJECT:
-				strcat( buffer, "Object" );	
+				strcat( buffer, "object" );	
 				break;		 
 			case ELEMENT_TYPE_STRING:
-				strcat( buffer, "String" );	
+				strcat( buffer, "string" );	
 				break;		 
 			case ELEMENT_TYPE_TYPEDBYREF:
 				strcat( buffer, "refany" );	
@@ -399,7 +519,13 @@ private:
 						if ( SUCCEEDED( hr ) )
 							wcstombs( classname, zName, MAX_FUNCTION_LENGTH );
 					}
-					strcat( buffer, classname );		
+					char* classOnly=classname+strlen(classname);
+					while(classOnly!=classname && (*(classOnly-1))!='.') 
+					{
+						classOnly--;
+					}
+					strcat( buffer, classOnly );		
+					//strcat( buffer, classname );		
 				}
 				break;	
 			case ELEMENT_TYPE_SZARRAY:	 
@@ -476,17 +602,17 @@ private:
 				strcat( buffer, "*" );	
 				break;   
 			case ELEMENT_TYPE_BYREF:   
+				strcat( buffer, "ref " );
 				signature = ParseElementType( metaDataImport, signature, buffer ); 
-				strcat( buffer, "&" );	
-				break;  		    
+				break;
 			default:	
 			case ELEMENT_TYPE_END:	
 			case ELEMENT_TYPE_SENTINEL:	
 				strcat( buffer, "<UNKNOWN>" );	
-				break;				                      				            
-		} // switch	
+				break;		                      				            
+		}
 		return signature;
-	} // BASEHELPER::ParseElementType
+	}
 	CComPtr< ICorProfilerInfo2 > profilerInfo;
 };
 
@@ -496,10 +622,8 @@ HRESULT __stdcall __stdcall StackWalker(
 	COR_PRF_FRAME_INFO frameInfo,
 	ULONG32 contextSize,
 	BYTE context[  ],
-	void *clientData)
-{
-	if(funcId!=0)
-	{
+	void *clientData) {
+	if(funcId!=0) {
 		((vector<FunctionID>*)clientData)->push_back(funcId);
 	}
 	return S_OK;
@@ -514,19 +638,16 @@ public:
 	vector<vector<FunctionID>*> stackWalks;
 	map< FunctionID, FunctionID> signatures;
 	ofstream* file;
-	string GetTemporaryFileName()
-	{
+	string GetTemporaryFileName() {
 		char path[MAX_PATH];
 		memset(path,0,sizeof(path));
 		GetTempPath(MAX_PATH-1,path);
 		string temp(path);
 		return temp+guid+".nprof";
 	}
-	void EndAll( ProfilerHelper& profilerHelper )
-	{
+	void EndAll(ProfilerHelper& profilerHelper) {
 		file=new ofstream(GetTemporaryFileName().c_str(), ios::binary);
-		for ( map< FunctionID, FunctionID >::iterator i = signatures.begin(); i != signatures.end(); i++ )
-		{
+		for(map< FunctionID, FunctionID >::iterator i = signatures.begin(); i != signatures.end(); i++ ) {
 			FunctionID id=i->second;
 			WriteUINT32(id);
 
@@ -535,13 +656,14 @@ public:
 			string functionName;
 			string parameters;
 			UINT32 methodAttributes;
-			profilerHelper.GetFunctionSignature( id, methodAttributes, returnType, className, functionName, parameters );
+			Signature signature;
+			profilerHelper.GetFunctionSignature( id, methodAttributes, signature);
 
 			WriteUINT32(methodAttributes);
-			WriteString( returnType );
-			WriteString( className );
-			WriteString( functionName );
-			WriteString( parameters );
+			WriteString(signature.returnType);
+			WriteString(signature.className);
+			WriteString(signature.functionName);
+			WriteString(signature.parameters);
 		}
 		WriteUINT32(-1);
 

@@ -28,7 +28,6 @@ Source: NProf\bin\Release\DotNetLib.Windows.Forms.Themes.dll; DestDir: {app}; Fl
 Source: RegisterProfilerHook.bat; DestDir: {app}; Flags: ignoreversion
 Source: Hook\Release\NProf.Hook.dll; DestDir: {app}; Flags: ignoreversion
 Source: Libraries\DotNetLib\msvcr70.dll; DestDir: {app}; Flags: ignoreversion
-; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
 Name: {group}\..\NProf 0.10.1; Filename: {app}\NProf.exe
