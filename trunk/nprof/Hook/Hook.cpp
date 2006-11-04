@@ -114,10 +114,6 @@ public:
 		FunctionID functionId,
 		UINT32& methodAttributes,
 		Signature& signature
-		//string& returnType, 
-		//string& className,
-		//string& functionName,
-		//string& parameters 
 	)
 	{
 		ULONG args;
@@ -125,50 +121,28 @@ public:
 		WCHAR parametersString[ MAX_FUNCTION_LENGTH ];
 		WCHAR functionNameString[ MAX_FUNCTION_LENGTH ];
 		WCHAR classNameString[ MAX_FUNCTION_LENGTH ];
-		GetFunctionProperties( functionId, &methodAttributes, &args, returnTypeString, parametersString, classNameString, functionNameString );
-		//signature
+		//parametersString
+		GetFunctionProperties( functionId, &methodAttributes, &args, signature.returnType, signature.parameters, classNameString, functionNameString );
 
-		signature.returnType = CW2A( returnTypeString );
-		signature.parameters = CW2A( parametersString );
+		//signature.parameters = CW2A(  );
 		signature.className = CW2A( classNameString );
 		signature.functionName = CW2A( functionNameString );
 	}
-
-	//void ProfilerHelper::GetFunctionSignature( 
-	//	FunctionID functionId,
-	//	UINT32& methodAttributes,
-	//	string& returnType, 
-	//	string& className,
-	//	string& functionName,
-	//	string& parameters )
-	//{
-	//	ULONG args;
-	//	WCHAR returnTypeString[ MAX_FUNCTION_LENGTH ];
-	//	WCHAR parametersString[ MAX_FUNCTION_LENGTH ];
-	//	WCHAR functionNameString[ MAX_FUNCTION_LENGTH ];
-	//	WCHAR classNameString[ MAX_FUNCTION_LENGTH ];
-	//	GetFunctionProperties( functionId, &methodAttributes, &args, returnTypeString, parametersString, classNameString, functionNameString );
-
-	//	returnType = CW2A( returnTypeString );
-	//	parameters = CW2A( parametersString );
-	//	className = CW2A( classNameString );
-	//	functionName = CW2A( functionNameString );
-	//}
 private:
 	HRESULT ProfilerHelper::GetFunctionProperties( 
 					   FunctionID functionID,
 										   UINT32* methodAttributes,
 										   ULONG *argCount,
-										   WCHAR *returnType, 
-										   WCHAR *parameters,
+										   string& returnType, 
+										   string& parameters,
+										   //WCHAR *parameters,
 										   WCHAR *className,
 						   WCHAR *funName )
 	{
-		HRESULT hr = E_FAIL; // assume success
+		HRESULT hr = E_FAIL;
 
-		// init return values
 		*argCount = 0;
-		returnType[0] = NULL; 
+		//returnType[0] = NULL; 
 		parameters[0] = NULL;
 		funName[0] = NULL;
 		className[0] = NULL;
@@ -301,11 +275,8 @@ private:
 									if ( buffer[0] == '\0' )
 										sprintf( buffer, "void" );
 
-									swprintf( returnType, L"%S",buffer );
-									
-									//
-									// Get the parameters
-									//								
+									returnType=returnType+buffer;
+		
 									for ( ULONG i = 0; 
 										  (SUCCEEDED( hr ) && (sigBlob != NULL) && (i < (*argCount))); 
 										  i++ )
@@ -313,14 +284,15 @@ private:
 										buffer[0] = '\0';
 
 										sigBlob = ParseElementType( metaDataImport, sigBlob, buffer );									
-										if ( i == 0 )
-											swprintf( parameters, L"%S", buffer );
-
-										else if ( sigBlob != NULL )
-											swprintf( parameters, L"%s, %S", parameters, buffer );
-										
-										else
+										if ( i == 0 ) {
+											parameters=parameters+buffer;
+										}
+										else if ( sigBlob != NULL ) {
+											parameters=parameters+", "+buffer;
+										}										
+										else {
 											hr = E_FAIL;
+										}
 									}								    								
 								}
 								else
@@ -330,7 +302,11 @@ private:
 									//
 									buffer[0] = '\0';
 									sigBlob = ParseElementType( metaDataImport, sigBlob, buffer );
-									swprintf( returnType, L"%s %S",returnType, buffer );
+									returnType=returnType+buffer;
+									//swprintf( returnType, L"%s %S",returnType, buffer );
+									//swprintf( returnType, L"%s %S",returnType, buffer );
+									//swprintf( returnType, L"%s %S",returnType, buffer );
+									//swprintf( returnType, L"%s %S",returnType, buffer );
 								}
 							} 
 						} 
