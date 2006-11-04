@@ -114,38 +114,23 @@ public:
 		FunctionID functionId,
 		UINT32& methodAttributes,
 		Signature& signature
-	)
-	{
+	) {
 		ULONG args;
-		WCHAR returnTypeString[ MAX_FUNCTION_LENGTH ];
-		WCHAR parametersString[ MAX_FUNCTION_LENGTH ];
-		WCHAR functionNameString[ MAX_FUNCTION_LENGTH ];
-		WCHAR classNameString[ MAX_FUNCTION_LENGTH ];
-		//parametersString
-		GetFunctionProperties( functionId, &methodAttributes, &args, signature.returnType, signature.parameters, classNameString, functionNameString );
-
-		//signature.parameters = CW2A(  );
-		signature.className = CW2A( classNameString );
-		signature.functionName = CW2A( functionNameString );
+		GetFunctionProperties( functionId, &methodAttributes, &args, signature.returnType, signature.parameters, signature.className, signature.functionName);
 	}
 private:
 	HRESULT ProfilerHelper::GetFunctionProperties( 
-					   FunctionID functionID,
-										   UINT32* methodAttributes,
-										   ULONG *argCount,
-										   string& returnType, 
-										   string& parameters,
-										   //WCHAR *parameters,
-										   WCHAR *className,
-						   WCHAR *funName )
+		FunctionID functionID,
+		UINT32* methodAttributes,
+		ULONG *argCount,
+		string& returnType, 
+		string& parameters,
+		string &className,
+		string &funName )
 	{
 		HRESULT hr = E_FAIL;
 
 		*argCount = 0;
-		//returnType[0] = NULL; 
-		parameters[0] = NULL;
-		funName[0] = NULL;
-		className[0] = NULL;
 
 		if ( functionID != NULL )
 		{
@@ -173,7 +158,8 @@ private:
 			if ( FAILED( hr ) )
 			{
 				hr = S_OK;
-				swprintf( funName, L"FAILED" );	
+				funName="FAILED";
+				//swprintf( funName, L"FAILED" );	
 			}
 			else
 			{
@@ -186,9 +172,10 @@ private:
 																&token );
 				if ( SUCCEEDED( hr ) )
 				{
+					WCHAR functionNameString[ MAX_FUNCTION_LENGTH ];
 					hr = metaDataImport->GetMethodProps( token,
 													NULL,
-													funName,
+													functionNameString,
 													MAX_FUNCTION_LENGTH,
 													0,
 													0,
@@ -198,6 +185,7 @@ private:
 													NULL );
 					if ( SUCCEEDED( hr ) )
 					{
+						funName=CW2A(functionNameString);
 						mdTypeDef classToken = NULL;
 
 						hr = profilerInfo->GetClassIDInfo( classID, 
@@ -208,12 +196,14 @@ private:
 						{
 			      			if ( classToken != mdTypeDefNil )
 							{
+								WCHAR classNameString[ MAX_FUNCTION_LENGTH ];
 			          			hr = metaDataImport->GetTypeDefProps( classToken, 
-																 className, 
+																 classNameString, 
 																 MAX_FUNCTION_LENGTH,
 																 NULL, 
 																 NULL, 
 																 NULL ); 
+								className=CW2A(classNameString);
 							}
 							DWORD methodAttr = 0;
 							PCCOR_SIGNATURE sigBlob = NULL;
@@ -240,7 +230,8 @@ private:
 				     			//
 								// Make sure we have a method signature.
 								//
-								char buffer[2 * MAX_FUNCTION_LENGTH];
+								string buffer;//[2 * MAX_FUNCTION_LENGTH];
+								//char buffer[2 * MAX_FUNCTION_LENGTH];
 								sigBlob += CorSigUncompressData( sigBlob, &callConv );
 								if ( callConv != IMAGE_CEE_CS_CALLCONV_FIELD )
 								{
@@ -256,8 +247,10 @@ private:
 										L"<error> "	 
 									};	
 									buffer[0] = '\0';
-									if ( (callConv & 7) != 0 )
-										sprintf( buffer, "%s ", callConvNames[callConv & 7]);	
+									if ( (callConv & 7) != 0 ) {
+										buffer+=CW2A(callConvNames[callConv & 7]);
+										buffer+=" ";
+									}
 									
 									//
 									// Grab the argument count
@@ -267,13 +260,12 @@ private:
 									//
 									// Get the return type
 									//
-									sigBlob = ParseElementType( metaDataImport, sigBlob, buffer );
-
-									//
-									// if the return typ returned back empty, write void
-									//
-									if ( buffer[0] == '\0' )
-										sprintf( buffer, "void" );
+									//string text;
+									sigBlob = ParseElementType( metaDataImport, sigBlob, buffer);
+									
+									if ( buffer.length() == 0 ) {
+										buffer+="void";
+									}
 
 									returnType=returnType+buffer;
 		
@@ -285,7 +277,7 @@ private:
 
 										sigBlob = ParseElementType( metaDataImport, sigBlob, buffer );									
 										if ( i == 0 ) {
-											parameters=parameters+buffer;
+											parameters=buffer;
 										}
 										else if ( sigBlob != NULL ) {
 											parameters=parameters+", "+buffer;
@@ -303,10 +295,6 @@ private:
 									buffer[0] = '\0';
 									sigBlob = ParseElementType( metaDataImport, sigBlob, buffer );
 									returnType=returnType+buffer;
-									//swprintf( returnType, L"%s %S",returnType, buffer );
-									//swprintf( returnType, L"%s %S",returnType, buffer );
-									//swprintf( returnType, L"%s %S",returnType, buffer );
-									//swprintf( returnType, L"%s %S",returnType, buffer );
 								}
 							} 
 						} 
@@ -316,160 +304,76 @@ private:
 				} 		
 			}
 		}
-		//
-		// This corresponds to an unmanaged frame
-		//
-		else
-		{
-			//
-			// Set up return parameters
-			//
+		else {
 			hr = S_OK;
-			swprintf( funName, L"UNMANAGED FRAME" );	
+			funName="UNMANAGED FRAME";
 		}
 		return hr;
-	} // BASEHELPER::GetFunctionProperties
-
-
-
-	//bool ParseTypeDefOrRefEncoded(sig_index_type *pIndexTypeOut, sig_index *pIndexOut)
-	//{
-	//	// parse an encoded typedef or typeref
-
-	//	sig_count encoded  = 0;
-
-	//	if (!ParseNumber(&encoded))
-	//		return false;
-
-	//	*pIndexTypeOut = (sig_index_type) (encoded & 0x3);
-	//	*pIndexOut = (encoded >> 2);
-	//	return true;
-	//}
-	//bool ParseByte(sig_byte *pbOut)
-	//{
-	//	if (pbCur < pbEnd)
-	//	{
-	//		*pbOut = *pbCur;
-	//		pbCur++;
-	//		return true;
-	//	}
-	//    
-	//	return false;
-	//}
-	//bool ParseNumber(sig_count *pOut)
-	//{
-	//	// parse the variable length number format (0-4 bytes)
-
-	//	sig_byte b1 = 0, b2 = 0, b3 = 0, b4 = 0;
-
-	//	// at least one byte in the encoding, read that
-	//        
-	//	if (!ParseByte(&b1))
-	//		return false;
-
-	//	if (b1 == 0xff)
-	//	{
-	//		// special encoding of 'NULL'
-	//		// not sure what this means as a number, don't expect to see it except for string lengths
-	//		// which we don't encounter anyway so calling it an error
-	//		return false;
-	//	}
-
-	//	// early out on 1 byte encoding
-	//	if ( (b1 & 0x80) == 0)
-	//	{
-	//		*pOut = (int)b1;
-	//		return true;
-	//	}
-
-	//	// now at least 2 bytes in the encoding, read 2nd byte
-	//	if (!ParseByte(&b2))
-	//		return false;
-
-	//	// early out on 2 byte encoding
-	//	if ( (b1 & 0x40) == 0)
-	//	{
-	//		*pOut = (((b1 & 0x3f) << 8) | b2);
-	//		return true;
-	//	}
-
-	//	// must be a 4 byte encoding
-
-	//	if ( (b1 & 0x20) != 0)        
-	//	{
-	//		// 4 byte encoding has this bit clear -- error if not
-	//		return false;
-	//	} 
-
-	//	if (!ParseByte(&b3))
-	//		return false;
-	//    
-	//	if (!ParseByte(&b4))
-	//		return false;
-
-	//	*pOut = ((b1 & 0x1f)<<24) | (b2<<16) | (b3<<8) | b4;
-	//	return true;
-	//}
-
+	}
+	string IntegerToString(ULONG i) {
+		string s;
+		stringstream stream;
+		stream<<i;
+		stream>>s;
+		return s;
+	}
 	PCCOR_SIGNATURE ProfilerHelper::ParseElementType( IMetaDataImport *metaDataImport,
-											  PCCOR_SIGNATURE signature, 
-											  char *buffer )
-	{
+		PCCOR_SIGNATURE signature, string& buffer ) {
 		switch ( *signature++ ) 
 		{	
 			case ELEMENT_TYPE_VOID:
-				strcat( buffer, "void" );	
+				buffer+="void";	
 				break;					
-			case ELEMENT_TYPE_BOOLEAN:	
-				strcat( buffer, "bool" );	
+			case ELEMENT_TYPE_BOOLEAN:
+				buffer+="bool";	
 				break;	
 			case ELEMENT_TYPE_CHAR:
-				strcat( buffer, "wchar" );	
+				buffer+="wchar";
 				break;		
 			case ELEMENT_TYPE_I1:
-				strcat( buffer, "byte" );	
+				buffer+="byte";
 				break;		
 			case ELEMENT_TYPE_U1:
-				strcat( buffer, "ubyte" );	
+				buffer+="ubyte";
 				break;		
 			case ELEMENT_TYPE_I2:
-				strcat( buffer, "short" );	
+				buffer+="short";
 				break;		
 			case ELEMENT_TYPE_U2:
-				strcat( buffer, "ushort" );	
+				buffer+="ushort";
 				break;			
 			case ELEMENT_TYPE_I4:
-				strcat( buffer, "int" );	
+				buffer+="int";
 				break;
 			case ELEMENT_TYPE_U4:
-				strcat( buffer, "uint" );	
+				buffer+="uint";	
 				break;		
 			case ELEMENT_TYPE_I8:
-				strcat( buffer, "long" );	
+				buffer+="long";	
 				break;		
 			case ELEMENT_TYPE_U8:
-				strcat( buffer, "ulong" );	
+				buffer+="ulong";	
 				break;		
 			case ELEMENT_TYPE_R4:
-				strcat( buffer, "float" );	
+				buffer+="float";	
 				break;			
 			case ELEMENT_TYPE_R8:
-				strcat( buffer, "double" );	
+				buffer+="double";	
 				break;		
 			case ELEMENT_TYPE_U:
-				strcat( buffer, "uint" );	
+				buffer+="uint";	
 				break;		 
 			case ELEMENT_TYPE_I:
-				strcat( buffer, "int" );	
+				buffer+="int";	
 				break;			  
 			case ELEMENT_TYPE_OBJECT:
-				strcat( buffer, "object" );	
+				buffer+="object";	
 				break;		 
 			case ELEMENT_TYPE_STRING:
-				strcat( buffer, "string" );	
+				buffer+="string";	
 				break;		 
 			case ELEMENT_TYPE_TYPEDBYREF:
-				strcat( buffer, "refany" );	
+				buffer+="refany";	
 				break;				       
 			case ELEMENT_TYPE_CLASS:	
 			case ELEMENT_TYPE_VALUETYPE:
@@ -500,21 +404,25 @@ private:
 					{
 						classOnly--;
 					}
-					strcat( buffer, classOnly );		
+					buffer+=classOnly;
+					//strcat( buffer, classOnly );		
 					//strcat( buffer, classname );		
 				}
 				break;	
 			case ELEMENT_TYPE_SZARRAY:	 
 				signature = ParseElementType( metaDataImport, signature, buffer ); 
-				strcat( buffer, "[]" );
+				buffer+="[]";
+				//strcat( buffer, "[]" );
 				break;		
 			case ELEMENT_TYPE_ARRAY:	
 				{	
 					ULONG rank;
 					signature = ParseElementType( metaDataImport, signature, buffer );                 
 					rank = CorSigUncompressData( signature );													
-					if ( rank == 0 ) 
-						strcat( buffer, "[?]" );
+					if ( rank == 0 ) {
+						buffer+="[?]";
+						//strcat( buffer, "[?]" );
+					}
 
 					else 
 					{
@@ -541,29 +449,46 @@ private:
 								for (ULONG i = 0; i < numlower; i++)	
 									lower[i] = CorSigUncompressData( signature ); 
 		                        
-								strcat( buffer, "[" );	
+								buffer+="[";
+								//strcat( buffer, "[" );	
 								for (ULONG i = 0; i < rank; i++ )	
 								{	
 									if ( (sizes[i] != 0) && (lower[i] != 0) )	
 									{	
-										if ( lower[i] == 0 )	
-											sprintf ( buffer, "%d", sizes[i] );	
+										if ( lower[i] == 0 ) {
+											stringstream s;
+											s<<sizes[i];
+											string size;
+											s>> size;
+											buffer+=size;
+											//buffer+=""<<sizes[i];
+											//buffer+=""<<sizes[i];
+											//buffer+="%d", sizes[i] );	
+											//sprintf ( buffer, "%d", sizes[i] );	
+										}
 
 										else	
 										{	
-											sprintf( buffer, "%d", lower[i] );	
-											strcat( buffer, "..." );	
+											buffer+=IntegerToString(lower[i]);	
+											//sprintf( buffer, "%d", lower[i] );	
+											buffer+="...";
+											//strcat( buffer, "..." );	
 											
-											if ( sizes[i] != 0 )	
-												sprintf( buffer, "%d", (lower[i] + sizes[i] + 1) );	
+											if ( sizes[i] != 0 ) {
+												buffer+=IntegerToString((lower[i] + sizes[i] + 1) );	
+												//sprintf( buffer, "%d", (lower[i] + sizes[i] + 1) );	
+											}
 										}	
 									}
 		                            	
-									if ( i < (rank - 1) ) 
-										strcat( buffer, "," );	
+									if ( i < (rank - 1) ) {
+										buffer+=",";
+										//strcat( buffer, "," );	
+									}
 								}	
 		                        
-								strcat( buffer, "]" );  
+								buffer+="]";
+								//strcat( buffer, "]" );  
 							}						
 						}
 					}
@@ -571,20 +496,20 @@ private:
 				break;	
 			case ELEMENT_TYPE_PINNED:
 				signature = ParseElementType( metaDataImport, signature, buffer ); 
-				strcat( buffer, "pinned" );	
+				buffer+="pinned";
 				break;	
 			case ELEMENT_TYPE_PTR:   
 				signature = ParseElementType( metaDataImport, signature, buffer ); 
-				strcat( buffer, "*" );	
+				buffer+="*";
 				break;   
 			case ELEMENT_TYPE_BYREF:   
-				strcat( buffer, "ref " );
+				buffer+="ref ";
 				signature = ParseElementType( metaDataImport, signature, buffer ); 
 				break;
 			default:	
 			case ELEMENT_TYPE_END:	
 			case ELEMENT_TYPE_SENTINEL:	
-				strcat( buffer, "<UNKNOWN>" );	
+				buffer+="<UNKNOWN>";
 				break;		                      				            
 		}
 		return signature;
