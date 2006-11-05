@@ -405,7 +405,6 @@ namespace NProf {
 			while (nRead < length) {
 				nRead += br.Read(abString, nRead, length - nRead);
 
-				// Make this loop finite (30 seconds)
 				TimeSpan ts = DateTime.Now - dt;
 				if (ts.TotalSeconds > 30)
 					throw new InvalidOperationException("Timed out while waiting for length encoded string");
@@ -415,7 +414,6 @@ namespace NProf {
 		private string FileName {
 			get {
 				return Path.Combine(Path.GetDirectoryName(Path.GetTempFileName()), Profiler.PROFILER_GUID + ".nprof");
-				//return "C:\\test.nprof";
 			}
 		}
 		private void ReadStackWalks() {
@@ -429,13 +427,6 @@ namespace NProf {
 						r.ReadUInt32(),
 						ReadString(r)
 					);
-					//signatures[functionId] = new FunctionSignature(
-					//    r.ReadUInt32(),
-					//    ReadString(r),
-					//    ReadString(r),
-					//    ReadString(r),
-					//    ReadString(r)
-					//);
 				}
 				while (true) {
 					List<int> stackWalk = new List<int>();
@@ -669,24 +660,9 @@ namespace NProf {
 	}
 	public class FunctionSignature {
 		public FunctionSignature(UInt32 methodAttributes, string signature) {
-			//int index = Math.Max(0, className.LastIndexOf('.') + 1);
-			//string classOnly = className.Substring(index);
-			//NameSpace = className.Substring(0, Math.Max(0, index - 1));
 			this.Signature = signature;//classOnly + "." + functionName + "(" + parameters + ")";
 		}
 		public string NameSpace;
 		public string Signature;
 	}
-	//public class FunctionSignature {
-	//    public FunctionSignature(UInt32 methodAttributes, string returnType, string className, string functionName, string parameters) {
-	//        int index = Math.Max(0, className.LastIndexOf('.') + 1);
-	//        string classOnly = className.Substring(index);
-	//        NameSpace = className.Substring(0, Math.Max(0,index-1));
-	//        this.Signature = classOnly+ "." + functionName + "(" + parameters + ")";
-	//        //this.Signature = className + "." + functionName + "(" + parameters + ")";
-	//        //this.Signature = className + "." + functionName + "(" + parameters + ")";
-	//    }
-	//    public string NameSpace;
-	//    public string Signature;
-	//}
 }
