@@ -32,6 +32,7 @@ using namespace ATL;
 using namespace std;
 
 #define MAX_FUNCTION_LENGTH 2048
+#define guid "029C3A01-70C1-46D2-92B7-24B157DF55CE"
 
 class Signature {
 public:
@@ -51,26 +52,20 @@ public:
 class ProfilerHelper
 {
 public:
-	void ProfilerHelper::Initialize( ICorProfilerInfo2* profilerInfo) {
+	void ProfilerHelper::Initialize(ICorProfilerInfo2* profilerInfo) {
 		this->profilerInfo = profilerInfo;
 	}
-	void ProfilerHelper::GetFunctionSignature( 
-		FunctionID functionId,
-		UINT32& methodAttributes,
-		string& signature
-	) {
-		ULONG argCount;
+	void ProfilerHelper::GetFunctionSignature(FunctionID functionId,UINT32& methodAttributes,string& signature) {
+		ULONG argCount=0;
 		HRESULT hr = E_FAIL;
-		argCount = 0;
-		if ( functionId != NULL ) {
-			mdToken	token;
-			ClassID classID;
-			ModuleID moduleID;
-			IMetaDataImport *metaDataImport = NULL;	
-			mdToken moduleToken;		    
 
-			hr = profilerInfo->GetFunctionInfo(functionId,&classID,&moduleID,&moduleToken );
+		mdToken	token;
+		ClassID classID;
+		ModuleID moduleID;
+		IMetaDataImport *metaDataImport = NULL;	
+		mdToken moduleToken;		    
 
+		if(SUCCEEDED(profilerInfo->GetFunctionInfo(functionId,&classID,&moduleID,&moduleToken))) {
 			if(SUCCEEDED(profilerInfo->GetTokenAndMetaDataFromFunction( 
 				functionId, IID_IMetaDataImport, (IUnknown **)&metaDataImport,&token ))) {
 				WCHAR functionNameString[ MAX_FUNCTION_LENGTH ];
@@ -78,12 +73,11 @@ public:
 					token, NULL, functionNameString, MAX_FUNCTION_LENGTH,0,0,NULL,NULL,NULL,NULL
 				))) {
 					mdTypeDef classToken = NULL;
-					hr = profilerInfo->GetClassIDInfo(classID, NULL, &classToken);
-					if(SUCCEEDED(hr)) {
-		      			if(classToken != mdTypeDefNil) {
+					//hr = ;
+					if(SUCCEEDED(profilerInfo->GetClassIDInfo(classID, NULL, &classToken))) {
+	      				if(classToken != mdTypeDefNil) {
 							WCHAR classNameString[ MAX_FUNCTION_LENGTH ];
-		          			hr = metaDataImport->GetTypeDefProps( 
-								classToken, classNameString, MAX_FUNCTION_LENGTH,NULL, NULL, NULL );
+	          				hr = metaDataImport->GetTypeDefProps(classToken, classNameString, MAX_FUNCTION_LENGTH,NULL, NULL, NULL);
 							signature+=CW2A(classNameString);
 							signature+=".";
 							signature+=CW2A(functionNameString);
@@ -123,9 +117,6 @@ public:
 				}
 				metaDataImport->Release();
 			}
-		}
-		else {
-			signature+="UNMANAGED FRAME";
 		}
 	}
 	template<class T> string ToString(T i) {
@@ -270,19 +261,14 @@ public:
 	};
 	CComPtr< ICorProfilerInfo2 > profilerInfo;
 };
-HRESULT __stdcall __stdcall StackWalker( 
-	FunctionID funcId,
-	UINT_PTR ip,
-	COR_PRF_FRAME_INFO frameInfo,
-	ULONG32 contextSize,
-	BYTE context[  ],
-	void *clientData) {
+HRESULT __stdcall __stdcall StackWalker(FunctionID funcId,UINT_PTR ip,COR_PRF_FRAME_INFO frameInfo,
+	ULONG32 contextSize,BYTE context[  ],void *clientData
+) {
 	if(funcId!=0) {
 		((vector<FunctionID>*)clientData)->push_back(funcId);
 	}
 	return S_OK;
 }
-#define guid "029C3A01-70C1-46D2-92B7-24B157DF55CE"
 const int interval=5;
 class Profiler {
 public: 
@@ -291,48 +277,54 @@ public:
 	ofstream* file;
 	string GetTemporaryFileName() {
 		char path[MAX_PATH];
-		memset(path,0,sizeof(path));
+		path[0]=0;
 		GetTempPath(MAX_PATH-1,path);
-		string temp(path);
-		return temp+guid+".nprof";
+		return (string)path+guid+".nprof";
 	}
 	void EndAll(ProfilerHelper& profilerHelper) {
 		file=new ofstream(GetTemporaryFileName().c_str(), ios::binary);
 		for(map< FunctionID, FunctionID >::iterator i = signatures.begin(); i != signatures.end(); i++ ) {
 			FunctionID id=i->second;
-			WriteUINT32(id);
+			WriteInteger(id);
 			UINT32 methodAttributes;
 			string signature;
 			profilerHelper.GetFunctionSignature(id, methodAttributes, signature);
-			WriteUINT32(methodAttributes);
+			WriteInteger(methodAttributes);
 			WriteString(signature);
 		}
-		WriteUINT32(-1);
+		WriteInteger(-1);
 		for(vector<vector<FunctionID>*>::iterator stackWalk = stackWalks.begin(); stackWalk != stackWalks.end(); stackWalk++ ) {
 			for(vector<FunctionID>::iterator stackFrame=(*stackWalk)->begin();stackFrame!=(*stackWalk)->end();stackFrame++) {
-				WriteUINT32(*stackFrame);
+				WriteInteger(*stackFrame);
 			}
-			WriteUINT32(-1);
+			WriteInteger(-1);
 		}
-		WriteUINT32(-1);
-		WriteUINT32(-2);
+		WriteInteger(-1);
+		WriteInteger(-2);
 		file->close();
 		delete file;
 	}
 	void WriteString(const string& signature) {
-		WriteUINT32(( UINT32 )signature.length());
+		WriteInteger(( UINT32 )signature.length());
 		file->write(signature.c_str(),(int)signature.length());
 	}
-	void WriteUINT32(FunctionID id) {
+	void WriteInteger(FunctionID id) {
 		file->write((char*)&id,sizeof(FunctionID));
 	}
 	Profiler::Profiler( ICorProfilerInfo2* profilerInfo ) {
 		this->profilerInfo = profilerInfo;
 		this->profilerHelper.Initialize( profilerInfo );
-		profilerInfo->SetEventMask(COR_PRF_ENABLE_STACK_SNAPSHOT|COR_PRF_MONITOR_THREADS|
-			COR_PRF_DISABLE_INLINING|COR_PRF_MONITOR_SUSPENDS|COR_PRF_MONITOR_EXCEPTIONS|
-			COR_PRF_MONITOR_APPDOMAIN_LOADS|COR_PRF_MONITOR_ASSEMBLY_LOADS|
-			COR_PRF_MONITOR_CACHE_SEARCHES|COR_PRF_MONITOR_JIT_COMPILATION);
+		profilerInfo->SetEventMask(
+			COR_PRF_ENABLE_STACK_SNAPSHOT//|
+			|COR_PRF_MONITOR_THREADS
+			|COR_PRF_DISABLE_INLINING
+			//|COR_PRF_MONITOR_SUSPENDS
+			//|COR_PRF_MONITOR_EXCEPTIONS
+			//|COR_PRF_MONITOR_APPDOMAIN_LOADS
+			//|COR_PRF_MONITOR_ASSEMBLY_LOADS
+			//|COR_PRF_MONITOR_CACHE_SEARCHES
+			//|COR_PRF_MONITOR_JIT_COMPILATION
+		);
 		SetTimer();
 	}
 	void KillTimer() {
@@ -343,12 +335,12 @@ public:
 		timeGetDevCaps(&timeCaps, sizeof(TIMECAPS));
 		timer = timeSetEvent(interval,timeCaps.wPeriodMin,TimerFunction,(DWORD_PTR)this,TIME_PERIODIC);
 	}
-	void ThreadMap( ThreadID threadId, DWORD dwOSThread ) {
-		threadMap[ dwOSThread ] = threadId;
+	void ThreadMap(ThreadID threadId, DWORD dwOSThread) {
+		threadMap[dwOSThread] = threadId;
 	}
 	virtual void End() {
 		KillTimer();
-		EndAll( profilerHelper );
+		EndAll(profilerHelper);
 	}
 	static void CALLBACK TimerFunction(UINT wTimerID, UINT msg, DWORD dwUser, DWORD dw1, DWORD dw2) {
 		Profiler* profiler=(Profiler*)dwUser;
@@ -357,7 +349,7 @@ public:
 	static UINT timer;
 	void WalkStack() {
 		KillTimer();
-		for(map< DWORD, ThreadID >::iterator i=threadMap.begin();i!=threadMap.end();i++) {
+		for(map<DWORD,ThreadID>::iterator i=threadMap.begin();i!=threadMap.end();i++) {
 			DWORD threadId=(*i).first;
 			HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME|THREAD_QUERY_INFORMATION|THREAD_GET_CONTEXT,false,threadId);
 			if(threadHandle!=NULL) {
@@ -389,7 +381,6 @@ public:
 						if (stackFrame.AddrPC.Offset == stackFrame.AddrReturn.Offset) {
 							break;
 						}
-
 						FunctionID id;
 						HRESULT result=profilerInfo->GetFunctionFromIP((BYTE*)stackFrame.AddrPC.Offset,&id);
 						if(result==S_OK && id!=0) {
@@ -408,7 +399,6 @@ public:
 				if(found) {
 					profilerInfo->DoStackSnapshot(id,StackWalker,COR_PRF_SNAPSHOT_DEFAULT,functions,
 						(BYTE*)&context,sizeof(context));
-
 					for(int index=0;index<functions->size();index++) {
 						FunctionID id=functions->at(index);
 						map<FunctionID,FunctionID>::iterator found = signatures.find(id);
@@ -433,7 +423,7 @@ UINT Profiler::timer;
 [
 	object,
 	uuid("FDEDE932-9F80-4CE5-891E-3B24768CFBCB"),
-	dual,	helpstring("INProfCORHook Interface"),
+	dual,helpstring("INProfCORHook Interface"),
 	pointer_default(unique)
 ]
 __interface INProfCORHook : IDispatch
@@ -450,18 +440,18 @@ __interface INProfCORHook : IDispatch
 ]
 class ATL_NO_VTABLE CNProfCORHook : public INProfCORHook,public ICorProfilerCallback2{
 public:
-  CNProfCORHook() {
-    this->profiler = NULL;
-  }
-  DECLARE_PROTECT_FINAL_CONSTRUCT()
-  HRESULT FinalConstruct() {
-    return S_OK;
-  }
-  void FinalRelease() {
-	  if ( profiler ) {
-		delete profiler;
-	  }
-  }
+	CNProfCORHook() {
+		this->profiler = NULL;
+	}
+	DECLARE_PROTECT_FINAL_CONSTRUCT()
+	HRESULT FinalConstruct() {
+		return S_OK;
+	}
+	void FinalRelease() {
+		if ( profiler ) {
+			delete profiler;
+		}
+	}
 public:
 	static Profiler* profiler;
 	CRITICAL_SECTION criticalSection;

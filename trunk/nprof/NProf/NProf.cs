@@ -268,7 +268,14 @@ namespace NProf {
 			run.Start();
 		}
 		public void AddRun(Run run) {
-			ContainerListViewItem item = new ContainerListViewItem(Path.GetFileNameWithoutExtension(application.Text) + " " + DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.LongTimePattern));
+			int count=1;
+			string text = Path.GetFileNameWithoutExtension(application.Text);
+			foreach (ContainerListViewItem i in runs.Items) {
+				if (i.Text.StartsWith(text)) {
+					count++;
+				}
+			}
+			ContainerListViewItem item = new ContainerListViewItem(Path.GetFileNameWithoutExtension(application.Text) + " Run " + count);
 			item.Tag = run;
 			runs.Items.Add(item);
 			runs.SelectedItems.Clear();
@@ -335,7 +342,7 @@ namespace NProf {
 							if (callee.lastWalk != walk.id) {
 								callee.Samples++;
 							}
-							callee.stackWalks.Add(new StackWalk(walk.id, walk.length - 1, walk.frames));//.GetRange(0, walk.frames.Count - 1)));
+							callee.stackWalks.Add(new StackWalk(walk.id, walk.length - 1, walk.frames));
 						}
 					}
 				}
@@ -362,7 +369,7 @@ namespace NProf {
 					FunctionInfo function = Run.GetFunctionInfo(functions, stackWalk[stackWalk.Count - i - 1]);
 					if (function.lastWalk != currentWalk) {
 						function.Samples++;
-						function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.Count - i - 1, stackWalk));//.GetRange(0, ));
+						function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.Count - i - 1, stackWalk));
 					}
 					function.lastWalk = currentWalk;
 				}
@@ -390,25 +397,8 @@ namespace NProf {
 		}
 		private string ReadString(BinaryReader br) {
 			int length = br.ReadInt32();
-			if (length > 2000 || length < 0) {
-				byte[] abNextBytes = new byte[8];
-				br.Read(abNextBytes, 0, 8);
-				string strError = "Length was abnormally large or small (" + length.ToString("x") + ").  Next bytes were ";
-				foreach (byte b in abNextBytes)
-					strError += b.ToString("x") + " (" + (Char.IsControl((char)b) ? '-' : (char)b) + ") ";
-
-				throw new InvalidOperationException(strError);
-			}
 			byte[] abString = new byte[length];
-			int nRead = 0;
-			DateTime dt = DateTime.Now;
-			while (nRead < length) {
-				nRead += br.Read(abString, nRead, length - nRead);
-
-				TimeSpan ts = DateTime.Now - dt;
-				if (ts.TotalSeconds > 30)
-					throw new InvalidOperationException("Timed out while waiting for length encoded string");
-			}
+			br.Read(abString, 0, length);
 			return System.Text.ASCIIEncoding.ASCII.GetString(abString, 0, length);
 		}
 		private string FileName {
@@ -563,6 +553,8 @@ namespace NProf {
 			Columns[0].Width = 350;
 			Columns[1].SortDataType = SortDataType.Double;
 			Columns[2].SortDataType = SortDataType.Double;
+			Columns[1].ToolTip = "Percentage of time spent in method and its children";
+			Columns[2].ToolTip = "Percentage of time spent in method";
 			this.ShowPlusMinus = true;
 			ShowRootTreeLines = true;
 			ShowTreeLines = true;
@@ -660,7 +652,7 @@ namespace NProf {
 	}
 	public class FunctionSignature {
 		public FunctionSignature(UInt32 methodAttributes, string signature) {
-			this.Signature = signature;//classOnly + "." + functionName + "(" + parameters + ")";
+			this.Signature = signature;
 		}
 		public string NameSpace;
 		public string Signature;
