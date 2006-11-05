@@ -2,7 +2,7 @@
                           profiler.cpp  -  description
                              -------------------
     begin                : Sat Jan 18 2003
-    copyright            : (C) 2003,2004,2005,2006 by Matthew Mastracci, Christian Staudenmeyer
+    copyright            : (C) 2003, 2004, 2005, 2006 by Matthew Mastracci, Christian Staudenmeyer
     email                : mmastrac@canada.com
  ***************************************************************************/
 
@@ -15,80 +15,25 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "resource.h"
-
-
-#pragma once
-
-// Modify the following defines if you have to target a platform prior to the ones specified below.
-// Refer to MSDN for the latest info on corresponding values for different platforms.
-#ifndef WINVER				// Allow use of features specific to Windows 95 and Windows NT 4 or later.
-#define WINVER 0x0400		// Change this to the appropriate value to target Windows 98 and Windows 2000 or later.
-#endif
-
-#ifndef _WIN32_WINNT		// Allow use of features specific to Windows NT 4 or later.
-#define _WIN32_WINNT 0x0400	// Change this to the appropriate value to target Windows 2000 or later.
-#endif						
-
-#ifndef _WIN32_WINDOWS		// Allow use of features specific to Windows 98 or later.
-#define _WIN32_WINDOWS 0x0410 // Change this to the appropriate value to target Windows Me or later.
-#endif
-
-#ifndef _WIN32_IE			// Allow use of features specific to IE 4.0 or later.
-#define _WIN32_IE 0x0400	// Change this to the appropriate value to target IE 5.0 or later.
-#endif
-
-#define _ATL_APARTMENT_THREADED
-#define _ATL_NO_AUTOMATIC_NAMESPACE
-
-#define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// some CString constructors will be explicit
-
-// turns off ATL's hiding of some common and often safely ignored warning messages
-#define _ATL_ALL_WARNINGS
-
-// ATL includes
+#pragma warning ( disable : 4530 )
 #include <atlbase.h>
 #include <atlcom.h>
-#include <atlwin.h>
-#include <atltypes.h>
-#include <atlctl.h>
-#include <atlhost.h>
-
-using namespace ATL;
-
-// STL includes
-#pragma warning ( disable : 4530 )
-
-#include <iostream>
 #include <map>
 #include <string>
-#include <stack>
-#include <utility>
-#include <memory>
 #include <sstream>
 #include <fstream>
 #include <vector>
-
-#include "windows.h"
-#include "winnt.h"
-using namespace std;
-
-// COR includes
 #include "cor.h"
-#include "corhdr.h"
-#include "corhlpr.h"
-#include "corerror.h"
-
-#include "corpub.h"
 #include "corprof.h"
-
 #include "Dbghelp.h"
-#include "Shfolder.h"
+#include "resource.h"
+
+using namespace ATL;
+using namespace std;
 
 #define MAX_FUNCTION_LENGTH 2048
 
 class Signature {
-
 public:
 	Signature() {
 	}
@@ -106,137 +51,67 @@ public:
 class ProfilerHelper
 {
 public:
-	void ProfilerHelper::Initialize(  ICorProfilerInfo2* profilerInfo )
-	{
+	void ProfilerHelper::Initialize( ICorProfilerInfo2* profilerInfo) {
 		this->profilerInfo = profilerInfo;
 	}
 	void ProfilerHelper::GetFunctionSignature( 
 		FunctionID functionId,
 		UINT32& methodAttributes,
-		Signature& signature
+		string& signature
 	) {
-		ULONG args;
-		GetFunctionProperties( functionId, &methodAttributes, &args, signature.returnType, signature.parameters, signature.className, signature.functionName);
-	}
-private:
-	HRESULT ProfilerHelper::GetFunctionProperties( 
-		FunctionID functionID,
-		UINT32* methodAttributes,
-		ULONG *argCount,
-		string& returnType, 
-		string& parameters,
-		string &className,
-		string &funName )
-	{
+		ULONG argCount;
 		HRESULT hr = E_FAIL;
-
-		*argCount = 0;
-
-		if ( functionID != NULL )
-		{
+		argCount = 0;
+		if ( functionId != NULL ) {
 			mdToken	token;
 			ClassID classID;
 			ModuleID moduleID;
 			IMetaDataImport *metaDataImport = NULL;	
-			mdToken moduleToken;
-		    
-			//
-			// Get the classID 
-			//
-			try
-			{
-				hr = profilerInfo->GetFunctionInfo(
-							functionID,
-							&classID,
-							&moduleID,
-							&moduleToken );
+			mdToken moduleToken;		    
+			try {
+				hr = profilerInfo->GetFunctionInfo(functionId,&classID,&moduleID,&moduleToken );
 			}
-			catch ( ... )
-			{
+			catch ( ... ) {
 				hr = E_FAIL;
 			}
-			if ( FAILED( hr ) )
-			{
+			if (FAILED(hr)) {
 				hr = S_OK;
-				funName="FAILED";
-				//swprintf( funName, L"FAILED" );	
+				signature+="FAILED";
 			}
-			else
-			{
-				//
-				// Get the MetadataImport interface and the metadata token 
-				//
-				hr = profilerInfo->GetTokenAndMetaDataFromFunction( functionID, 
-		           								 				IID_IMetaDataImport, 
-																(IUnknown **)&metaDataImport,
-																&token );
-				if ( SUCCEEDED( hr ) )
-				{
+			else {
+				hr = profilerInfo->GetTokenAndMetaDataFromFunction( 
+					functionId, IID_IMetaDataImport, (IUnknown **)&metaDataImport,&token );
+				if(SUCCEEDED(hr)) {
 					WCHAR functionNameString[ MAX_FUNCTION_LENGTH ];
-					hr = metaDataImport->GetMethodProps( token,
-													NULL,
-													functionNameString,
-													MAX_FUNCTION_LENGTH,
-													0,
-													0,
-													NULL,
-													NULL,
-													NULL, 
-													NULL );
-					if ( SUCCEEDED( hr ) )
-					{
-						funName=CW2A(functionNameString);
+					hr = metaDataImport->GetMethodProps( token, NULL, functionNameString, MAX_FUNCTION_LENGTH,
+						0,0,NULL,NULL,NULL,NULL);
+					if(SUCCEEDED(hr)) {
+						signature+=CW2A(functionNameString);
+						//signature.functionName=CW2A(functionNameString);
 						mdTypeDef classToken = NULL;
-
-						hr = profilerInfo->GetClassIDInfo( classID, 
-					        						   NULL,  
-													   &classToken );
-						
-						if SUCCEEDED( hr )
-						{
-			      			if ( classToken != mdTypeDefNil )
-							{
+						hr = profilerInfo->GetClassIDInfo(classID, NULL, &classToken);
+						if(SUCCEEDED(hr)) {
+			      			if(classToken != mdTypeDefNil) {
 								WCHAR classNameString[ MAX_FUNCTION_LENGTH ];
-			          			hr = metaDataImport->GetTypeDefProps( classToken, 
-																 classNameString, 
-																 MAX_FUNCTION_LENGTH,
-																 NULL, 
-																 NULL, 
-																 NULL ); 
-								className=CW2A(classNameString);
+			          			hr = metaDataImport->GetTypeDefProps( 
+									classToken, classNameString, MAX_FUNCTION_LENGTH,NULL, NULL, NULL );
+								signature+=CW2A(classNameString);
+								//signature.className=CW2A(classNameString);
 							}
 							DWORD methodAttr = 0;
 							PCCOR_SIGNATURE sigBlob = NULL;
 
-
-							hr = metaDataImport->GetMethodProps( (mdMethodDef) token,
-															NULL,
-															NULL,
-															0,
-															NULL,
-															&methodAttr,
-															&sigBlob,
-															NULL,
-															NULL,
-															NULL );
-							if ( SUCCEEDED( hr ) )
-							{
+							hr = metaDataImport->GetMethodProps( 
+								(mdMethodDef) token,NULL,NULL,0,NULL,&methodAttr,&sigBlob,NULL,NULL,NULL );
+							if(SUCCEEDED(hr)) {
 								ULONG callConv;
-
-								//
-								// Is the method static ?
-								//
-								*methodAttributes = methodAttr;
-				     			//
-								// Make sure we have a method signature.
-								//
-								string buffer;//[2 * MAX_FUNCTION_LENGTH];
-								//char buffer[2 * MAX_FUNCTION_LENGTH];
+								methodAttributes = methodAttr;
+								//*methodAttributes = methodAttr;
+								string buffer;
 								sigBlob += CorSigUncompressData( sigBlob, &callConv );
 								if ( callConv != IMAGE_CEE_CS_CALLCONV_FIELD )
 								{
-									static WCHAR* callConvNames[8] = 
-									{	
+									static WCHAR* callConvNames[8] = {	
 										L"", 
 										L"unmanaged cdecl ", 
 										L"unmanaged stdcall ",	
@@ -246,71 +121,50 @@ private:
 										L"<error> "	 
 										L"<error> "	 
 									};	
-									buffer[0] = '\0';
 									if ( (callConv & 7) != 0 ) {
 										buffer+=CW2A(callConvNames[callConv & 7]);
 										buffer+=" ";
-									}
-									
-									//
-									// Grab the argument count
-									//
-									sigBlob += CorSigUncompressData( sigBlob, argCount );
-
-									//
-									// Get the return type
-									//
-									//string text;
-									sigBlob = ParseElementType( metaDataImport, sigBlob, buffer);
-									
-									if ( buffer.length() == 0 ) {
-										buffer+="void";
-									}
-
-									returnType=returnType+buffer;
-		
-									for ( ULONG i = 0; 
-										  (SUCCEEDED( hr ) && (sigBlob != NULL) && (i < (*argCount))); 
-										  i++ )
-									{
-										buffer[0] = '\0';
-
+									}									
+									sigBlob += CorSigUncompressData( sigBlob, &argCount );
+									sigBlob = ParseElementType( metaDataImport, sigBlob, buffer);									
+									//if ( buffer.length() == 0 ) {
+									//	buffer+="void";
+									//}
+									//signature==signature+buffer;		
+									//signature.returnType=signature.returnType+buffer;		
+									signature+="(";
+									for ( ULONG i = 0; (SUCCEEDED( hr ) && (sigBlob != NULL) && (i < (argCount))); i++ ) {
 										sigBlob = ParseElementType( metaDataImport, sigBlob, buffer );									
 										if ( i == 0 ) {
-											parameters=buffer;
+											signature+=buffer;
+											//signature.parameters=buffer;
 										}
 										else if ( sigBlob != NULL ) {
-											parameters=parameters+", "+buffer;
+											signature+=", "+buffer;
+											//signature.parameters+=(", "+buffer);
 										}										
 										else {
 											hr = E_FAIL;
 										}
-									}								    								
+									}
+									signature+=")";
 								}
-								else
-								{
-									//
-									// Get the return type
-									//
-									buffer[0] = '\0';
+								else {
 									sigBlob = ParseElementType( metaDataImport, sigBlob, buffer );
-									returnType=returnType+buffer;
+									signature+="("+buffer+")";
 								}
 							} 
 						} 
-					} 
-
+					}
 					metaDataImport->Release();
 				} 		
 			}
 		}
 		else {
-			hr = S_OK;
-			funName="UNMANAGED FRAME";
+			signature+="UNMANAGED FRAME";
 		}
-		return hr;
 	}
-	string IntegerToString(ULONG i) {
+	template<class T> string ToString(T i) {
 		string s;
 		stringstream stream;
 		stream<<i;
@@ -319,201 +173,457 @@ private:
 	}
 	PCCOR_SIGNATURE ProfilerHelper::ParseElementType( IMetaDataImport *metaDataImport,
 		PCCOR_SIGNATURE signature, string& buffer ) {
-		switch ( *signature++ ) 
-		{	
-			case ELEMENT_TYPE_VOID:
-				buffer+="void";	
-				break;					
-			case ELEMENT_TYPE_BOOLEAN:
-				buffer+="bool";	
-				break;	
-			case ELEMENT_TYPE_CHAR:
-				buffer+="wchar";
-				break;		
-			case ELEMENT_TYPE_I1:
-				buffer+="byte";
-				break;		
-			case ELEMENT_TYPE_U1:
-				buffer+="ubyte";
-				break;		
-			case ELEMENT_TYPE_I2:
-				buffer+="short";
-				break;		
-			case ELEMENT_TYPE_U2:
-				buffer+="ushort";
-				break;			
-			case ELEMENT_TYPE_I4:
-				buffer+="int";
-				break;
-			case ELEMENT_TYPE_U4:
-				buffer+="uint";	
-				break;		
-			case ELEMENT_TYPE_I8:
-				buffer+="long";	
-				break;		
-			case ELEMENT_TYPE_U8:
-				buffer+="ulong";	
-				break;		
-			case ELEMENT_TYPE_R4:
-				buffer+="float";	
-				break;			
-			case ELEMENT_TYPE_R8:
-				buffer+="double";	
-				break;		
-			case ELEMENT_TYPE_U:
-				buffer+="uint";	
-				break;		 
-			case ELEMENT_TYPE_I:
-				buffer+="int";	
-				break;			  
-			case ELEMENT_TYPE_OBJECT:
-				buffer+="object";	
-				break;		 
-			case ELEMENT_TYPE_STRING:
-				buffer+="string";	
-				break;		 
-			case ELEMENT_TYPE_TYPEDBYREF:
-				buffer+="refany";	
-				break;				       
-			case ELEMENT_TYPE_CLASS:	
-			case ELEMENT_TYPE_VALUETYPE:
-			case ELEMENT_TYPE_CMOD_REQD:
-			case ELEMENT_TYPE_CMOD_OPT:
-				{	
+		map<CorElementType,string> types;
+	
+		types[ELEMENT_TYPE_VOID]="void";
+		types[ELEMENT_TYPE_BOOLEAN]="bool";	
+		types[ELEMENT_TYPE_CHAR]="wchar";
+		types[ELEMENT_TYPE_I1]="byte";
+		types[ELEMENT_TYPE_U1]="ubyte";
+		types[ELEMENT_TYPE_I2]="short";
+		types[ELEMENT_TYPE_U2]="ushort";
+		types[ELEMENT_TYPE_I4]="int";
+		types[ELEMENT_TYPE_U4]="uint";	
+		types[ELEMENT_TYPE_I8]="long";	
+		types[ELEMENT_TYPE_U8]="ulong";	
+		types[ELEMENT_TYPE_R4]="float";	
+		types[ELEMENT_TYPE_R8]="double";	
+		types[ELEMENT_TYPE_U]="uint";	
+		types[ELEMENT_TYPE_I]="int";	
+		types[ELEMENT_TYPE_OBJECT]="object";	
+		types[ELEMENT_TYPE_STRING]="string";	
+		types[ELEMENT_TYPE_TYPEDBYREF]="refany";
+		CorElementType element=(CorElementType)*signature++;
+		if(types.find(element)!=types.end()) {
+			buffer+=types[element];
+		}
+		else {
+			switch(element) {
+				case ELEMENT_TYPE_CLASS:	
+				case ELEMENT_TYPE_VALUETYPE:
+				case ELEMENT_TYPE_CMOD_REQD:
+				case ELEMENT_TYPE_CMOD_OPT: {	
 					mdToken	token;	
 					char classname[MAX_FUNCTION_LENGTH];
-
-					classname[0] = '\0';
-	   				signature += CorSigUncompressToken( signature, &token ); 
-					if ( TypeFromToken( token ) != mdtTypeRef )
-					{
-        				HRESULT	hr;
+					signature += CorSigUncompressToken( signature, &token ); 
+					if ( TypeFromToken( token ) != mdtTypeRef ) {
+						HRESULT	hr;
 						WCHAR zName[MAX_FUNCTION_LENGTH];
-						
-						hr = metaDataImport->GetTypeDefProps( token, 
-														 zName,
-														 MAX_FUNCTION_LENGTH,
-														 NULL,
-														 NULL,
-														 NULL );
-						if ( SUCCEEDED( hr ) )
+						hr = metaDataImport->GetTypeDefProps( token, zName, MAX_FUNCTION_LENGTH, NULL, NULL, NULL );
+						if ( SUCCEEDED( hr ) ) {
 							wcstombs( classname, zName, MAX_FUNCTION_LENGTH );
+						}
 					}
 					char* classOnly=classname+strlen(classname);
-					while(classOnly!=classname && (*(classOnly-1))!='.') 
-					{
+					while(classOnly!=classname && (*(classOnly-1))!='.') {
 						classOnly--;
 					}
 					buffer+=classOnly;
-					//strcat( buffer, classOnly );		
-					//strcat( buffer, classname );		
+					break;	
 				}
-				break;	
-			case ELEMENT_TYPE_SZARRAY:	 
-				signature = ParseElementType( metaDataImport, signature, buffer ); 
-				buffer+="[]";
-				//strcat( buffer, "[]" );
-				break;		
-			case ELEMENT_TYPE_ARRAY:	
-				{	
-					ULONG rank;
-					signature = ParseElementType( metaDataImport, signature, buffer );                 
-					rank = CorSigUncompressData( signature );													
-					if ( rank == 0 ) {
-						buffer+="[?]";
-						//strcat( buffer, "[?]" );
-					}
-
-					else 
-					{
-						ULONG *lower;	
-						ULONG *sizes; 	
-						ULONG numsizes; 
-						ULONG arraysize = (sizeof ( ULONG ) * 2 * rank);
-		                                     
-						lower = (ULONG *)_alloca( arraysize );                                                        
-						memset( lower, 0, arraysize ); 
-						sizes = &lower[rank];
-
-						numsizes = CorSigUncompressData( signature );	
-						if ( numsizes <= rank )
-						{
-            				ULONG numlower;
-		                    
-							for ( ULONG i = 0; i < numsizes; i++ )	
-								sizes[i] = CorSigUncompressData( signature );	
-		                    
-							numlower = CorSigUncompressData( signature );	
-							if ( numlower <= rank )
-							{
-								for (ULONG i = 0; i < numlower; i++)	
-									lower[i] = CorSigUncompressData( signature ); 
-		                        
-								buffer+="[";
-								//strcat( buffer, "[" );	
-								for (ULONG i = 0; i < rank; i++ )	
-								{	
-									if ( (sizes[i] != 0) && (lower[i] != 0) )	
-									{	
-										if ( lower[i] == 0 ) {
-											stringstream s;
-											s<<sizes[i];
-											string size;
-											s>> size;
-											buffer+=size;
-											//buffer+=""<<sizes[i];
-											//buffer+=""<<sizes[i];
-											//buffer+="%d", sizes[i] );	
-											//sprintf ( buffer, "%d", sizes[i] );	
-										}
-
-										else	
-										{	
-											buffer+=IntegerToString(lower[i]);	
-											//sprintf( buffer, "%d", lower[i] );	
-											buffer+="...";
-											//strcat( buffer, "..." );	
-											
-											if ( sizes[i] != 0 ) {
-												buffer+=IntegerToString((lower[i] + sizes[i] + 1) );	
-												//sprintf( buffer, "%d", (lower[i] + sizes[i] + 1) );	
-											}
-										}	
-									}
-		                            	
-									if ( i < (rank - 1) ) {
-										buffer+=",";
-										//strcat( buffer, "," );	
-									}
-								}	
-		                        
-								buffer+="]";
-								//strcat( buffer, "]" );  
-							}						
+				case ELEMENT_TYPE_SZARRAY:
+					signature = ParseElementType( metaDataImport, signature, buffer ); 
+					buffer+="[]";
+					break;		
+				case ELEMENT_TYPE_ARRAY:	
+					{	
+						ULONG rank;
+						signature = ParseElementType( metaDataImport, signature, buffer );                 
+						rank = CorSigUncompressData( signature );													
+						if ( rank == 0 ) {
+							buffer+="[?]";
 						}
-					}
-				} 
-				break;	
-			case ELEMENT_TYPE_PINNED:
-				signature = ParseElementType( metaDataImport, signature, buffer ); 
-				buffer+="pinned";
-				break;	
-			case ELEMENT_TYPE_PTR:   
-				signature = ParseElementType( metaDataImport, signature, buffer ); 
-				buffer+="*";
-				break;   
-			case ELEMENT_TYPE_BYREF:   
-				buffer+="ref ";
-				signature = ParseElementType( metaDataImport, signature, buffer ); 
-				break;
-			default:	
-			case ELEMENT_TYPE_END:	
-			case ELEMENT_TYPE_SENTINEL:	
-				buffer+="<UNKNOWN>";
-				break;		                      				            
+						else {
+							ULONG *lower;
+							ULONG *sizes;
+							ULONG numsizes;
+							ULONG arraysize = (sizeof ( ULONG ) * 2 * rank);
+			                                     
+							lower = (ULONG *)_alloca( arraysize );
+							memset( lower, 0, arraysize );
+							sizes = &lower[rank];
+
+							numsizes = CorSigUncompressData( signature );
+							if ( numsizes <= rank ) {
+        						ULONG numlower;
+			                    
+								for ( ULONG i = 0; i < numsizes; i++ ) {
+									sizes[i] = CorSigUncompressData( signature );
+								}
+			                    
+								numlower = CorSigUncompressData( signature );	
+								if ( numlower <= rank ) {
+									for (ULONG i = 0; i < numlower; i++) {
+										lower[i] = CorSigUncompressData( signature ); 
+									}
+									buffer+="[";
+									for (ULONG i = 0; i < rank; i++ ) {	
+										if ( (sizes[i] != 0) && (lower[i] != 0) ) {	
+											if ( lower[i] == 0 ) {
+												buffer+=ToString(sizes[i]);
+											}
+
+											else	
+											{	
+												buffer+=ToString(lower[i]);	
+												buffer+="...";
+												if ( sizes[i] != 0 ) {
+													buffer+=ToString((lower[i] + sizes[i] + 1) );	
+												}
+											}	
+										}
+			                            	
+										if ( i < (rank - 1) ) {
+											buffer+=",";
+										}
+									}		                        
+									buffer+="]";
+								}
+							}
+						}
+					} 
+					break;	
+				case ELEMENT_TYPE_PINNED:
+					signature = ParseElementType( metaDataImport, signature, buffer ); 
+					buffer+="pinned";
+					break;
+				case ELEMENT_TYPE_PTR:   
+					signature = ParseElementType( metaDataImport, signature, buffer ); 
+					buffer+="*";
+					break;
+				case ELEMENT_TYPE_BYREF:   
+					buffer+="ref ";
+					signature = ParseElementType( metaDataImport, signature, buffer ); 
+					break;
+				default:
+				case ELEMENT_TYPE_END:
+				case ELEMENT_TYPE_SENTINEL:
+					buffer+="<UNKNOWN>";
+					break;           	
+			}
 		}
 		return signature;
-	}
+
+		//switch ( *signature++ ) {	
+		//	case ELEMENT_TYPE_VOID:
+		//		buffer+="void";	
+		//		break;					
+		//	case ELEMENT_TYPE_BOOLEAN:
+		//		buffer+="bool";	
+		//		break;	
+		//	case ELEMENT_TYPE_CHAR:
+		//		buffer+="wchar";
+		//		break;		
+		//	case ELEMENT_TYPE_I1:
+		//		buffer+="byte";
+		//		break;		
+		//	case ELEMENT_TYPE_U1:
+		//		buffer+="ubyte";
+		//		break;		
+		//	case ELEMENT_TYPE_I2:
+		//		buffer+="short";
+		//		break;		
+		//	case ELEMENT_TYPE_U2:
+		//		buffer+="ushort";
+		//		break;			
+		//	case ELEMENT_TYPE_I4:
+		//		buffer+="int";
+		//		break;
+		//	case ELEMENT_TYPE_U4:
+		//		buffer+="uint";	
+		//		break;		
+		//	case ELEMENT_TYPE_I8:
+		//		buffer+="long";	
+		//		break;		
+		//	case ELEMENT_TYPE_U8:
+		//		buffer+="ulong";	
+		//		break;		
+		//	case ELEMENT_TYPE_R4:
+		//		buffer+="float";	
+		//		break;			
+		//	case ELEMENT_TYPE_R8:
+		//		buffer+="double";	
+		//		break;		
+		//	case ELEMENT_TYPE_U:
+		//		buffer+="uint";	
+		//		break;		 
+		//	case ELEMENT_TYPE_I:
+		//		buffer+="int";	
+		//		break;			  
+		//	case ELEMENT_TYPE_OBJECT:
+		//		buffer+="object";	
+		//		break;		 
+		//	case ELEMENT_TYPE_STRING:
+		//		buffer+="string";	
+		//		break;		 
+		//	case ELEMENT_TYPE_TYPEDBYREF:
+		//		buffer+="refany";	
+		//		break;				       
+		//	case ELEMENT_TYPE_CLASS:	
+		//	case ELEMENT_TYPE_VALUETYPE:
+		//	case ELEMENT_TYPE_CMOD_REQD:
+		//	case ELEMENT_TYPE_CMOD_OPT: {	
+		//		mdToken	token;	
+		//		char classname[MAX_FUNCTION_LENGTH];
+  // 				signature += CorSigUncompressToken( signature, &token ); 
+		//		if ( TypeFromToken( token ) != mdtTypeRef ) {
+  //  				HRESULT	hr;
+		//			WCHAR zName[MAX_FUNCTION_LENGTH];
+		//			hr = metaDataImport->GetTypeDefProps( token, zName, MAX_FUNCTION_LENGTH, NULL, NULL, NULL );
+		//			if ( SUCCEEDED( hr ) ) {
+		//				wcstombs( classname, zName, MAX_FUNCTION_LENGTH );
+		//			}
+		//		}
+		//		char* classOnly=classname+strlen(classname);
+		//		while(classOnly!=classname && (*(classOnly-1))!='.') {
+		//			classOnly--;
+		//		}
+		//		buffer+=classOnly;
+		//		break;	
+		//	}
+		//	case ELEMENT_TYPE_SZARRAY:
+		//		signature = ParseElementType( metaDataImport, signature, buffer ); 
+		//		buffer+="[]";
+		//		break;		
+		//	case ELEMENT_TYPE_ARRAY:	
+		//		{	
+		//			ULONG rank;
+		//			signature = ParseElementType( metaDataImport, signature, buffer );                 
+		//			rank = CorSigUncompressData( signature );													
+		//			if ( rank == 0 ) {
+		//				buffer+="[?]";
+		//			}
+		//			else {
+		//				ULONG *lower;
+		//				ULONG *sizes;
+		//				ULONG numsizes;
+		//				ULONG arraysize = (sizeof ( ULONG ) * 2 * rank);
+		//                                     
+		//				lower = (ULONG *)_alloca( arraysize );
+		//				memset( lower, 0, arraysize );
+		//				sizes = &lower[rank];
+
+		//				numsizes = CorSigUncompressData( signature );
+		//				if ( numsizes <= rank ) {
+  //          				ULONG numlower;
+		//                    
+		//					for ( ULONG i = 0; i < numsizes; i++ ) {
+		//						sizes[i] = CorSigUncompressData( signature );
+		//					}
+		//                    
+		//					numlower = CorSigUncompressData( signature );	
+		//					if ( numlower <= rank ) {
+		//						for (ULONG i = 0; i < numlower; i++) {
+		//							lower[i] = CorSigUncompressData( signature ); 
+		//						}
+		//						buffer+="[";
+		//						for (ULONG i = 0; i < rank; i++ ) {	
+		//							if ( (sizes[i] != 0) && (lower[i] != 0) ) {	
+		//								if ( lower[i] == 0 ) {
+		//									buffer+=ToString(sizes[i]);
+		//								}
+
+		//								else	
+		//								{	
+		//									buffer+=ToString(lower[i]);	
+		//									buffer+="...";
+		//									if ( sizes[i] != 0 ) {
+		//										buffer+=ToString((lower[i] + sizes[i] + 1) );	
+		//									}
+		//								}	
+		//							}
+		//                            	
+		//							if ( i < (rank - 1) ) {
+		//								buffer+=",";
+		//							}
+		//						}		                        
+		//						buffer+="]";
+		//					}
+		//				}
+		//			}
+		//		} 
+		//		break;	
+		//	case ELEMENT_TYPE_PINNED:
+		//		signature = ParseElementType( metaDataImport, signature, buffer ); 
+		//		buffer+="pinned";
+		//		break;
+		//	case ELEMENT_TYPE_PTR:   
+		//		signature = ParseElementType( metaDataImport, signature, buffer ); 
+		//		buffer+="*";
+		//		break;
+		//	case ELEMENT_TYPE_BYREF:   
+		//		buffer+="ref ";
+		//		signature = ParseElementType( metaDataImport, signature, buffer ); 
+		//		break;
+		//	default:
+		//	case ELEMENT_TYPE_END:
+		//	case ELEMENT_TYPE_SENTINEL:
+		//		buffer+="<UNKNOWN>";
+		//		break;           				            
+		//}
+		//return signature;
+	};
+	//PCCOR_SIGNATURE ProfilerHelper::ParseElementType( IMetaDataImport *metaDataImport,
+	//	PCCOR_SIGNATURE signature, string& buffer ) {
+	//	switch ( *signature++ ) {	
+	//		case ELEMENT_TYPE_VOID:
+	//			buffer+="void";	
+	//			break;					
+	//		case ELEMENT_TYPE_BOOLEAN:
+	//			buffer+="bool";	
+	//			break;	
+	//		case ELEMENT_TYPE_CHAR:
+	//			buffer+="wchar";
+	//			break;		
+	//		case ELEMENT_TYPE_I1:
+	//			buffer+="byte";
+	//			break;		
+	//		case ELEMENT_TYPE_U1:
+	//			buffer+="ubyte";
+	//			break;		
+	//		case ELEMENT_TYPE_I2:
+	//			buffer+="short";
+	//			break;		
+	//		case ELEMENT_TYPE_U2:
+	//			buffer+="ushort";
+	//			break;			
+	//		case ELEMENT_TYPE_I4:
+	//			buffer+="int";
+	//			break;
+	//		case ELEMENT_TYPE_U4:
+	//			buffer+="uint";	
+	//			break;		
+	//		case ELEMENT_TYPE_I8:
+	//			buffer+="long";	
+	//			break;		
+	//		case ELEMENT_TYPE_U8:
+	//			buffer+="ulong";	
+	//			break;		
+	//		case ELEMENT_TYPE_R4:
+	//			buffer+="float";	
+	//			break;			
+	//		case ELEMENT_TYPE_R8:
+	//			buffer+="double";	
+	//			break;		
+	//		case ELEMENT_TYPE_U:
+	//			buffer+="uint";	
+	//			break;		 
+	//		case ELEMENT_TYPE_I:
+	//			buffer+="int";	
+	//			break;			  
+	//		case ELEMENT_TYPE_OBJECT:
+	//			buffer+="object";	
+	//			break;		 
+	//		case ELEMENT_TYPE_STRING:
+	//			buffer+="string";	
+	//			break;		 
+	//		case ELEMENT_TYPE_TYPEDBYREF:
+	//			buffer+="refany";	
+	//			break;				       
+	//		case ELEMENT_TYPE_CLASS:	
+	//		case ELEMENT_TYPE_VALUETYPE:
+	//		case ELEMENT_TYPE_CMOD_REQD:
+	//		case ELEMENT_TYPE_CMOD_OPT: {	
+	//			mdToken	token;	
+	//			char classname[MAX_FUNCTION_LENGTH];
+ //  				signature += CorSigUncompressToken( signature, &token ); 
+	//			if ( TypeFromToken( token ) != mdtTypeRef ) {
+ //   				HRESULT	hr;
+	//				WCHAR zName[MAX_FUNCTION_LENGTH];
+	//				hr = metaDataImport->GetTypeDefProps( token, zName, MAX_FUNCTION_LENGTH, NULL, NULL, NULL );
+	//				if ( SUCCEEDED( hr ) ) {
+	//					wcstombs( classname, zName, MAX_FUNCTION_LENGTH );
+	//				}
+	//			}
+	//			char* classOnly=classname+strlen(classname);
+	//			while(classOnly!=classname && (*(classOnly-1))!='.') {
+	//				classOnly--;
+	//			}
+	//			buffer+=classOnly;
+	//			break;	
+	//		}
+	//		case ELEMENT_TYPE_SZARRAY:
+	//			signature = ParseElementType( metaDataImport, signature, buffer ); 
+	//			buffer+="[]";
+	//			break;		
+	//		case ELEMENT_TYPE_ARRAY:	
+	//			{	
+	//				ULONG rank;
+	//				signature = ParseElementType( metaDataImport, signature, buffer );                 
+	//				rank = CorSigUncompressData( signature );													
+	//				if ( rank == 0 ) {
+	//					buffer+="[?]";
+	//				}
+	//				else {
+	//					ULONG *lower;
+	//					ULONG *sizes;
+	//					ULONG numsizes;
+	//					ULONG arraysize = (sizeof ( ULONG ) * 2 * rank);
+	//	                                     
+	//					lower = (ULONG *)_alloca( arraysize );
+	//					memset( lower, 0, arraysize );
+	//					sizes = &lower[rank];
+
+	//					numsizes = CorSigUncompressData( signature );
+	//					if ( numsizes <= rank ) {
+ //           				ULONG numlower;
+	//	                    
+	//						for ( ULONG i = 0; i < numsizes; i++ ) {
+	//							sizes[i] = CorSigUncompressData( signature );
+	//						}
+	//	                    
+	//						numlower = CorSigUncompressData( signature );	
+	//						if ( numlower <= rank ) {
+	//							for (ULONG i = 0; i < numlower; i++) {
+	//								lower[i] = CorSigUncompressData( signature ); 
+	//							}
+	//							buffer+="[";
+	//							for (ULONG i = 0; i < rank; i++ ) {	
+	//								if ( (sizes[i] != 0) && (lower[i] != 0) ) {	
+	//									if ( lower[i] == 0 ) {
+	//										buffer+=ToString(sizes[i]);
+	//									}
+
+	//									else	
+	//									{	
+	//										buffer+=ToString(lower[i]);	
+	//										buffer+="...";
+	//										if ( sizes[i] != 0 ) {
+	//											buffer+=ToString((lower[i] + sizes[i] + 1) );	
+	//										}
+	//									}	
+	//								}
+	//	                            	
+	//								if ( i < (rank - 1) ) {
+	//									buffer+=",";
+	//								}
+	//							}		                        
+	//							buffer+="]";
+	//						}
+	//					}
+	//				}
+	//			} 
+	//			break;	
+	//		case ELEMENT_TYPE_PINNED:
+	//			signature = ParseElementType( metaDataImport, signature, buffer ); 
+	//			buffer+="pinned";
+	//			break;
+	//		case ELEMENT_TYPE_PTR:   
+	//			signature = ParseElementType( metaDataImport, signature, buffer ); 
+	//			buffer+="*";
+	//			break;
+	//		case ELEMENT_TYPE_BYREF:   
+	//			buffer+="ref ";
+	//			signature = ParseElementType( metaDataImport, signature, buffer ); 
+	//			break;
+	//		default:
+	//		case ELEMENT_TYPE_END:
+	//		case ELEMENT_TYPE_SENTINEL:
+	//			buffer+="<UNKNOWN>";
+	//			break;           				            
+	//	}
+	//	return signature;
+	//}
 	CComPtr< ICorProfilerInfo2 > profilerInfo;
 };
 
@@ -552,26 +662,16 @@ public:
 			FunctionID id=i->second;
 			WriteUINT32(id);
 
-			string returnType;
-			string className;
-			string functionName;
-			string parameters;
 			UINT32 methodAttributes;
-			Signature signature;
-			profilerHelper.GetFunctionSignature( id, methodAttributes, signature);
-
+			string signature;
+			profilerHelper.GetFunctionSignature(id, methodAttributes, signature);
 			WriteUINT32(methodAttributes);
-			WriteString(signature.returnType);
-			WriteString(signature.className);
-			WriteString(signature.functionName);
-			WriteString(signature.parameters);
+			WriteString(signature);
 		}
 		WriteUINT32(-1);
 
-		for(vector<vector<FunctionID>*>::iterator stackWalk = stackWalks.begin(); stackWalk != stackWalks.end(); stackWalk++ )
-		{
-			for(vector<FunctionID>::iterator stackFrame=(*stackWalk)->begin();stackFrame!=(*stackWalk)->end();stackFrame++)
-			{
+		for(vector<vector<FunctionID>*>::iterator stackWalk = stackWalks.begin(); stackWalk != stackWalks.end(); stackWalk++ ) {
+			for(vector<FunctionID>::iterator stackFrame=(*stackWalk)->begin();stackFrame!=(*stackWalk)->end();stackFrame++) {
 				WriteUINT32(*stackFrame);
 			}
 			WriteUINT32(-1);
@@ -581,78 +681,54 @@ public:
 		file->close();
 		delete file;
 	}
-	void WriteString(const string& signature)
-	{
+	void WriteString(const string& signature) {
 		WriteUINT32(( UINT32 )signature.length());
 		file->write(signature.c_str(),(int)signature.length());
 	}
-	void WriteUINT32(FunctionID id)
-	{
+	void WriteUINT32(FunctionID id) {
 		file->write((char*)&id,sizeof(FunctionID));
 	}
-	Profiler::Profiler( ICorProfilerInfo2* profilerInfo )
-	{
+	Profiler::Profiler( ICorProfilerInfo2* profilerInfo ) {
 		this->profilerInfo = profilerInfo;
 		this->profilerHelper.Initialize( profilerInfo );
-		profilerInfo->SetEventMask( 
-			COR_PRF_ENABLE_STACK_SNAPSHOT|
-			COR_PRF_MONITOR_THREADS	|
-			COR_PRF_DISABLE_INLINING |
-			COR_PRF_MONITOR_SUSPENDS |    
-			COR_PRF_MONITOR_EXCEPTIONS |  
-			COR_PRF_MONITOR_APPDOMAIN_LOADS |
-			COR_PRF_MONITOR_ASSEMBLY_LOADS |
-			COR_PRF_MONITOR_CACHE_SEARCHES |
-			COR_PRF_MONITOR_JIT_COMPILATION);
+		profilerInfo->SetEventMask(COR_PRF_ENABLE_STACK_SNAPSHOT|COR_PRF_MONITOR_THREADS|
+			COR_PRF_DISABLE_INLINING|COR_PRF_MONITOR_SUSPENDS|COR_PRF_MONITOR_EXCEPTIONS|
+			COR_PRF_MONITOR_APPDOMAIN_LOADS|COR_PRF_MONITOR_ASSEMBLY_LOADS|
+			COR_PRF_MONITOR_CACHE_SEARCHES|COR_PRF_MONITOR_JIT_COMPILATION);
 		SetTimer();
 	}
-	void KillTimer()
-	{
+	void KillTimer() {
 		timeKillEvent(timer);
 	}
-	void SetTimer()
-	{
+	void SetTimer() {
 		TIMECAPS timeCaps;
 		timeGetDevCaps(&timeCaps, sizeof(TIMECAPS));
-		timer = timeSetEvent(
-			interval,
-			timeCaps.wPeriodMin,
-			TimerFunction, 
-			(DWORD_PTR)this,     
-			TIME_PERIODIC);      
+		timer = timeSetEvent(interval,timeCaps.wPeriodMin,TimerFunction,(DWORD_PTR)this,TIME_PERIODIC);
 	}
-	void ThreadMap( ThreadID threadId, DWORD dwOSThread )
-	{
+	void ThreadMap( ThreadID threadId, DWORD dwOSThread ) {
 		threadMap[ dwOSThread ] = threadId;
-	};
-	virtual void End()
-	{
+	}
+	virtual void End() {
 		KillTimer();
 		EndAll( profilerHelper );
-	};
-
+	}
 protected:
 	CComPtr< ICorProfilerInfo2 > profilerInfo;
 	ProfilerHelper profilerHelper;
 	map< DWORD, ThreadID > threadMap;
 	bool statistical;
 public:
-	static void CALLBACK TimerFunction(UINT wTimerID, UINT msg, 
-		DWORD dwUser, DWORD dw1, DWORD dw2) 
-	{
+	static void CALLBACK TimerFunction(UINT wTimerID, UINT msg, DWORD dwUser, DWORD dw1, DWORD dw2) {
 		Profiler* profiler=(Profiler*)dwUser;
 		profiler->WalkStack();
 	}
 	static UINT timer;
-	void WalkStack()
-	{
+	void WalkStack() {
 		KillTimer();
-		for(map< DWORD, ThreadID >::iterator i=threadMap.begin();i!=threadMap.end();i++)
-		{
+		for(map< DWORD, ThreadID >::iterator i=threadMap.begin();i!=threadMap.end();i++) {
 			DWORD threadId=(*i).first;
 			HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME|THREAD_QUERY_INFORMATION|THREAD_GET_CONTEXT,false,threadId);
-			if(threadHandle!=NULL)
-			{
+			if(threadHandle!=NULL) {
 				int suspendCount=SuspendThread(threadHandle);
 				vector<FunctionID>* functions=new vector<FunctionID>();
 				ThreadID id=i->second;
@@ -664,8 +740,7 @@ public:
 				HRESULT result=profilerInfo->GetFunctionFromIP((BYTE*)context.Eip,&newID);
 
 				bool found=false;
-				if(result!=S_OK || newID!=0)
-				{
+				if(result!=S_OK || newID!=0) {
 					STACKFRAME64 stackFrame;
 					memset(&stackFrame, 0, sizeof(stackFrame));
 					stackFrame.AddrPC.Offset = context.Eip;
@@ -674,32 +749,18 @@ public:
 					stackFrame.AddrFrame.Mode = AddrModeFlat;
 					stackFrame.AddrStack.Offset = context.Esp;
 					stackFrame.AddrStack.Mode = AddrModeFlat;
-					while(true)
-					{
-
-						if(!StackWalk64(
-							 IMAGE_FILE_MACHINE_I386,
-							 GetCurrentProcess(),
-							 threadHandle,
-							 &stackFrame,
-							 NULL,
-							 NULL,
-							 SymFunctionTableAccess64,
-							 SymGetModuleBase64,
-							 NULL))
-						{
+					while(true) {
+						if(!StackWalk64(IMAGE_FILE_MACHINE_I386,GetCurrentProcess(),threadHandle,
+							 &stackFrame,NULL,NULL,SymFunctionTableAccess64,SymGetModuleBase64,NULL)) {
 							break;
 						}
-						if (stackFrame.AddrPC.Offset == stackFrame.AddrReturn.Offset)
-						{
+						if (stackFrame.AddrPC.Offset == stackFrame.AddrReturn.Offset) {
 							break;
 						}
 
 						FunctionID id;
-						HRESULT result=profilerInfo->GetFunctionFromIP(
-							(BYTE*)stackFrame.AddrPC.Offset,&id);
-						if(result==S_OK && id!=0)
-						{
+						HRESULT result=profilerInfo->GetFunctionFromIP((BYTE*)stackFrame.AddrPC.Offset,&id);
+						if(result==S_OK && id!=0) {
 							memset(&context,0,sizeof(context));
 							context.Eip=stackFrame.AddrPC.Offset;
 							context.Ebp=stackFrame.AddrFrame.Offset;
@@ -709,26 +770,17 @@ public:
 						}
 					}
 				}
-				else 
-				{
+				else {
 					found=true;
 				}
-				if(found)
-				{
-					profilerInfo->DoStackSnapshot(
-						id,
-						StackWalker,
-						COR_PRF_SNAPSHOT_DEFAULT,
-						functions,
-						(BYTE*)&context,
-						sizeof(context));
+				if(found) {
+					profilerInfo->DoStackSnapshot(id,StackWalker,COR_PRF_SNAPSHOT_DEFAULT,functions,
+						(BYTE*)&context,sizeof(context));
 
-					for(int index=0;index<functions->size();index++)
-					{
+					for(int index=0;index<functions->size();index++) {
 						FunctionID id=functions->at(index);
 						map<FunctionID,FunctionID>::iterator found = signatures.find(id);
-						if ( found == signatures.end() )
-						{
+						if(found == signatures.end()){
 							signatures.insert(make_pair(id,id));
 						}
 					}
@@ -759,42 +811,34 @@ __interface INProfCORHook : IDispatch
   uuid(guid),
   helpstring("nprof COR Profiling Hook Class")
 ]
-class ATL_NO_VTABLE CNProfCORHook : 
-  public INProfCORHook,
-  public ICorProfilerCallback2
-{
+class ATL_NO_VTABLE CNProfCORHook : public INProfCORHook,public ICorProfilerCallback2{
 public:
-  CNProfCORHook()
-  {
+  CNProfCORHook() {
     this->profiler = NULL;
   }
   DECLARE_PROTECT_FINAL_CONSTRUCT()
-  HRESULT FinalConstruct()
-  {
+  HRESULT FinalConstruct() {
     return S_OK;
   }
-  void FinalRelease() 
-  {
-    if ( profiler )
-      delete profiler;
+  void FinalRelease() {
+	  if ( profiler ) {
+		delete profiler;
+	  }
   }
 public:
 	static Profiler* profiler;
 	CRITICAL_SECTION criticalSection;
 public:
-	static Profiler* GetProfiler()
-	{
+	static Profiler* GetProfiler() {
 		return profiler;
 	}
-	STDMETHOD(Initialize)(LPUNKNOWN pICorProfilerInfoUnk)
-	{
+	STDMETHOD(Initialize)(LPUNKNOWN pICorProfilerInfoUnk) {
 		CComQIPtr< ICorProfilerInfo2 > profilerInfo = pICorProfilerInfoUnk;
 		InitializeCriticalSection(&criticalSection);
 		profiler = new Profiler( profilerInfo );
 		return S_OK;
 	}
-	STDMETHOD(Shutdown)()
-	{
+	STDMETHOD(Shutdown)() {
 		EnterCriticalSection(&criticalSection);
 		profiler->End();
 		delete profiler;
@@ -802,314 +846,240 @@ public:
 		LeaveCriticalSection(&criticalSection);
 		return S_OK;
 	}
-	STDMETHOD(AppDomainCreationStarted)(AppDomainID appDomainId)
-	{
+	STDMETHOD(AppDomainCreationStarted)(AppDomainID appDomainId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(AppDomainCreationFinished)(AppDomainID appDomainId, HRESULT hrStatus)
-	{
+	STDMETHOD(AppDomainCreationFinished)(AppDomainID appDomainId, HRESULT hrStatus) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(AppDomainShutdownStarted)(AppDomainID appDomainId)
-	{
+	STDMETHOD(AppDomainShutdownStarted)(AppDomainID appDomainId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(AppDomainShutdownFinished)(AppDomainID appDomainId, HRESULT hrStatus)
-	{
+	STDMETHOD(AppDomainShutdownFinished)(AppDomainID appDomainId, HRESULT hrStatus) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(AssemblyLoadStarted)(AssemblyID assemblyId)
-	{
+	STDMETHOD(AssemblyLoadStarted)(AssemblyID assemblyId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(AssemblyLoadFinished)(AssemblyID assemblyId, HRESULT hrStatus)
-	{
+	STDMETHOD(AssemblyLoadFinished)(AssemblyID assemblyId, HRESULT hrStatus) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(AssemblyUnloadStarted)(AssemblyID assemblyId)
-	{
+	STDMETHOD(AssemblyUnloadStarted)(AssemblyID assemblyId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(AssemblyUnloadFinished)(AssemblyID assemblyId, HRESULT hrStatus)
-	{
+	STDMETHOD(AssemblyUnloadFinished)(AssemblyID assemblyId, HRESULT hrStatus) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ModuleLoadStarted)(ModuleID moduleId)
-	{
+	STDMETHOD(ModuleLoadStarted)(ModuleID moduleId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ModuleLoadFinished)(ModuleID moduleId, HRESULT hrStatus)
-	{
+	STDMETHOD(ModuleLoadFinished)(ModuleID moduleId, HRESULT hrStatus) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ModuleUnloadStarted)(ModuleID moduleId)
-	{
+	STDMETHOD(ModuleUnloadStarted)(ModuleID moduleId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ModuleUnloadFinished)(ModuleID moduleId, HRESULT hrStatus)
-	{
+	STDMETHOD(ModuleUnloadFinished)(ModuleID moduleId, HRESULT hrStatus) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ModuleAttachedToAssembly)(ModuleID moduleId, AssemblyID assemblyId)
-	{
+	STDMETHOD(ModuleAttachedToAssembly)(ModuleID moduleId, AssemblyID assemblyId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ClassLoadStarted)(ClassID classId)
-	{
+	STDMETHOD(ClassLoadStarted)(ClassID classId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ClassLoadFinished)(ClassID classId, HRESULT hrStatus)
-	{
+	STDMETHOD(ClassLoadFinished)(ClassID classId, HRESULT hrStatus) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ClassUnloadStarted)(ClassID classId)
-	{
+	STDMETHOD(ClassUnloadStarted)(ClassID classId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ClassUnloadFinished)(ClassID classId, HRESULT hrStatus)
-	{
+	STDMETHOD(ClassUnloadFinished)(ClassID classId, HRESULT hrStatus) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(FunctionUnloadStarted)(FunctionID functionId)
-	{
+	STDMETHOD(FunctionUnloadStarted)(FunctionID functionId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(JITCompilationStarted)(FunctionID functionId, BOOL fIsSafeToBlock)
-	{
+	STDMETHOD(JITCompilationStarted)(FunctionID functionId, BOOL fIsSafeToBlock) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(JITCompilationFinished)(FunctionID functionId, HRESULT hrStatus, BOOL fIsSafeToBlock)
-	{
+	STDMETHOD(JITCompilationFinished)(FunctionID functionId, HRESULT hrStatus, BOOL fIsSafeToBlock) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(JITCachedFunctionSearchStarted)(FunctionID functionId, BOOL* pbUseCachedFunction)
-	{
+	STDMETHOD(JITCachedFunctionSearchStarted)(FunctionID functionId, BOOL* pbUseCachedFunction) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(JITCachedFunctionSearchFinished)(FunctionID functionId, COR_PRF_JIT_CACHE result)
-	{
+	STDMETHOD(JITCachedFunctionSearchFinished)(FunctionID functionId, COR_PRF_JIT_CACHE result) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(JITFunctionPitched)(FunctionID functionId)
-	{
+	STDMETHOD(JITFunctionPitched)(FunctionID functionId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(JITInlining)(FunctionID callerId, FunctionID calleeId, BOOL* pfShouldInline)
-	{
+	STDMETHOD(JITInlining)(FunctionID callerId, FunctionID calleeId, BOOL* pfShouldInline) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ThreadCreated)(ThreadID threadId)
-	{
+	STDMETHOD(ThreadCreated)(ThreadID threadId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ThreadDestroyed)(ThreadID threadId)
-	{
+	STDMETHOD(ThreadDestroyed)(ThreadID threadId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ThreadAssignedToOSThread)(ThreadID managedThreadId, DWORD osThreadId)
-	{
+	STDMETHOD(ThreadAssignedToOSThread)(ThreadID managedThreadId, DWORD osThreadId) {
 		EnterCriticalSection(&criticalSection);
 		profiler->ThreadMap( managedThreadId, osThreadId );
 		LeaveCriticalSection(&criticalSection);
 		return S_OK;
 	}
-	STDMETHOD(RemotingClientInvocationStarted)()
-	{
+	STDMETHOD(RemotingClientInvocationStarted)() {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(RemotingClientSendingMessage)(GUID * pCookie, BOOL fIsAsync)
-	{
+	STDMETHOD(RemotingClientSendingMessage)(GUID * pCookie, BOOL fIsAsync) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(RemotingClientReceivingReply)(GUID * pCookie, BOOL fIsAsync)
-	{
+	STDMETHOD(RemotingClientReceivingReply)(GUID * pCookie, BOOL fIsAsync) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(RemotingClientInvocationFinished)()
-	{
+	STDMETHOD(RemotingClientInvocationFinished)() {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(RemotingServerReceivingMessage)(GUID * pCookie, BOOL fIsAsync)
-	{
+	STDMETHOD(RemotingServerReceivingMessage)(GUID * pCookie, BOOL fIsAsync) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(RemotingServerInvocationStarted)()
-	{
+	STDMETHOD(RemotingServerInvocationStarted)() {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(RemotingServerInvocationReturned)()
-	{
+	STDMETHOD(RemotingServerInvocationReturned)() {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(RemotingServerSendingReply)(GUID * pCookie, BOOL fIsAsync)
-	{
+	STDMETHOD(RemotingServerSendingReply)(GUID * pCookie, BOOL fIsAsync) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(UnmanagedToManagedTransition)(FunctionID functionId, COR_PRF_TRANSITION_REASON reason)
-	{
+	STDMETHOD(UnmanagedToManagedTransition)(FunctionID functionId, COR_PRF_TRANSITION_REASON reason) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ManagedToUnmanagedTransition)(FunctionID functionId, COR_PRF_TRANSITION_REASON reason)
-	{
+	STDMETHOD(ManagedToUnmanagedTransition)(FunctionID functionId, COR_PRF_TRANSITION_REASON reason) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(RuntimeSuspendStarted)(COR_PRF_SUSPEND_REASON suspendReason)
-	{
+	STDMETHOD(RuntimeSuspendStarted)(COR_PRF_SUSPEND_REASON suspendReason) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(RuntimeSuspendFinished)()
-	{
+	STDMETHOD(RuntimeSuspendFinished)() {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(RuntimeSuspendAborted)()
-	{
+	STDMETHOD(RuntimeSuspendAborted)() {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(RuntimeResumeStarted)()
-	{
+	STDMETHOD(RuntimeResumeStarted)() {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(RuntimeResumeFinished)()
-	{
+	STDMETHOD(RuntimeResumeFinished)() {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(RuntimeThreadSuspended)(ThreadID threadId)
-	{
+	STDMETHOD(RuntimeThreadSuspended)(ThreadID threadId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(RuntimeThreadResumed)(ThreadID threadId)
-	{
+	STDMETHOD(RuntimeThreadResumed)(ThreadID threadId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(MovedReferences)(unsigned long cMovedObjectIDRanges, ObjectID* oldObjectIDRangeStart, ObjectID* newObjectIDRangeStart, unsigned long * cObjectIDRangeLength)
-	{
+	STDMETHOD(MovedReferences)(unsigned long cMovedObjectIDRanges, ObjectID* oldObjectIDRangeStart, ObjectID* newObjectIDRangeStart, unsigned long * cObjectIDRangeLength) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ObjectAllocated)(ObjectID objectId, ClassID classId)
-	{
+	STDMETHOD(ObjectAllocated)(ObjectID objectId, ClassID classId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ObjectsAllocatedByClass)(unsigned long cClassCount, ClassID* classIds, unsigned long* cObjects)
-	{
+	STDMETHOD(ObjectsAllocatedByClass)(unsigned long cClassCount, ClassID* classIds, unsigned long* cObjects) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ObjectReferences)(ObjectID objectId, ClassID classId, unsigned long cObjectRefs, ObjectID* objectRefIds)
-	{
+	STDMETHOD(ObjectReferences)(ObjectID objectId, ClassID classId, unsigned long cObjectRefs, ObjectID* objectRefIds) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(RootReferences)(unsigned long cRootRefs, ObjectID* rootRefIds)
-	{
+	STDMETHOD(RootReferences)(unsigned long cRootRefs, ObjectID* rootRefIds) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ExceptionThrown)(ThreadID thrownObjectId)
-	{
+	STDMETHOD(ExceptionThrown)(ThreadID thrownObjectId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ExceptionSearchFunctionEnter)(FunctionID functionId)
-	{
+	STDMETHOD(ExceptionSearchFunctionEnter)(FunctionID functionId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ExceptionSearchFunctionLeave)()
-	{
+	STDMETHOD(ExceptionSearchFunctionLeave)() {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ExceptionSearchFilterEnter)(FunctionID functionId)
-	{
+	STDMETHOD(ExceptionSearchFilterEnter)(FunctionID functionId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ExceptionSearchFilterLeave)()
-	{
+	STDMETHOD(ExceptionSearchFilterLeave)() {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ExceptionSearchCatcherFound)(FunctionID functionId)
-	{
+	STDMETHOD(ExceptionSearchCatcherFound)(FunctionID functionId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ExceptionOSHandlerEnter)(UINT_PTR __unused)
-	{
+	STDMETHOD(ExceptionOSHandlerEnter)(UINT_PTR __unused) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ExceptionOSHandlerLeave)(UINT_PTR __unused)
-	{
+	STDMETHOD(ExceptionOSHandlerLeave)(UINT_PTR __unused) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ExceptionUnwindFunctionEnter)(FunctionID functionId)
-	{
+	STDMETHOD(ExceptionUnwindFunctionEnter)(FunctionID functionId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ExceptionUnwindFunctionLeave)()
-	{
+	STDMETHOD(ExceptionUnwindFunctionLeave)() {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ExceptionUnwindFinallyEnter)(FunctionID functionId)
-	{
+	STDMETHOD(ExceptionUnwindFinallyEnter)(FunctionID functionId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ExceptionUnwindFinallyLeave)()
-	{
+	STDMETHOD(ExceptionUnwindFinallyLeave)() {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ExceptionCatcherEnter)(FunctionID functionId, ObjectID objectId)
-	{
+	STDMETHOD(ExceptionCatcherEnter)(FunctionID functionId, ObjectID objectId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ExceptionCatcherLeave)()
-	{
+	STDMETHOD(ExceptionCatcherLeave)() {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(COMClassicVTableCreated)(ClassID wrappedClassId, const GUID& implementedIID, void * pVTable, unsigned long cSlots)
-	{
+	STDMETHOD(COMClassicVTableCreated)(ClassID wrappedClassId, const GUID& implementedIID, void * pVTable, unsigned long cSlots) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(COMClassicVTableDestroyed)(ClassID wrappedClassId, const GUID& implementedIID, void * pVTable)
-	{
+	STDMETHOD(COMClassicVTableDestroyed)(ClassID wrappedClassId, const GUID& implementedIID, void * pVTable) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ExceptionCLRCatcherFound)()
-	{
+	STDMETHOD(ExceptionCLRCatcherFound)() {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ExceptionCLRCatcherExecute)()
-	{
+	STDMETHOD(ExceptionCLRCatcherExecute)() {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(ThreadNameChanged)(ThreadID threadId, ULONG cchName, WCHAR name[])
-	{
+	STDMETHOD(ThreadNameChanged)(ThreadID threadId, ULONG cchName, WCHAR name[]) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(GarbageCollectionStarted)(int cGenerations, BOOL generationCollected[], COR_PRF_GC_REASON reason)
-	{
+	STDMETHOD(GarbageCollectionStarted)(int cGenerations, BOOL generationCollected[], COR_PRF_GC_REASON reason) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(SurvivingReferences) (ULONG cSurvivingObjectIDRanges,ObjectID objectIDRangeStart[],ULONG cObjectIDRangeLength[])
-	{
+	STDMETHOD(SurvivingReferences) (ULONG cSurvivingObjectIDRanges,ObjectID objectIDRangeStart[],ULONG cObjectIDRangeLength[]) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(GarbageCollectionFinished)()
-	{
+	STDMETHOD(GarbageCollectionFinished)() {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(FinalizeableObjectQueued)(DWORD finalizerFlags,ObjectID objectID)
-	{
+	STDMETHOD(FinalizeableObjectQueued)(DWORD finalizerFlags,ObjectID objectID) {
 		return E_NOTIMPL;
 	}
 	STDMETHOD(RootReferences2)(ULONG cRootRefs, ObjectID rootRefIds[], COR_PRF_GC_ROOT_KIND rootKinds[],
-			  COR_PRF_GC_ROOT_FLAGS rootFlags[], UINT_PTR rootIds[])
-	{
+			  COR_PRF_GC_ROOT_FLAGS rootFlags[], UINT_PTR rootIds[]) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(HandleCreated)(GCHandleID handleId,ObjectID initialObjectId)
-	{
+	STDMETHOD(HandleCreated)(GCHandleID handleId,ObjectID initialObjectId) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(HandleDestroyed)(GCHandleID handleId)
-	{
+	STDMETHOD(HandleDestroyed)(GCHandleID handleId) {
 		return E_NOTIMPL;
 	}
 };
-[ module(dll, uuid = "{A461E20A-C7DC-4A89-A24E-87B5E975A96B}", 
-		 name = "NProfHook", 
-		 helpstring = "NProf.Hook 1.0 Type Library",
-		 resource_name = "IDR_NPROFHOOK") ];
-
+[ 
+	module(dll, uuid = "{A461E20A-C7DC-4A89-A24E-87B5E975A96B}", 
+	name = "NProfHook", 
+	helpstring = "NProf.Hook 1.0 Type Library",
+	resource_name = "IDR_NPROFHOOK")
+];
 Profiler* CNProfCORHook::profiler;

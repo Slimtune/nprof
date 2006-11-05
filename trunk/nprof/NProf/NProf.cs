@@ -388,7 +388,7 @@ namespace NProf {
 				}
 			}
 		}
-		private string ReadLengthEncodedASCIIString(BinaryReader br) {
+		private string ReadString(BinaryReader br) {
 			int length = br.ReadInt32();
 			if (length > 2000 || length < 0) {
 				byte[] abNextBytes = new byte[8];
@@ -427,11 +427,15 @@ namespace NProf {
 					}
 					signatures[functionId] = new FunctionSignature(
 						r.ReadUInt32(),
-						ReadLengthEncodedASCIIString(r),
-						ReadLengthEncodedASCIIString(r),
-						ReadLengthEncodedASCIIString(r),
-						ReadLengthEncodedASCIIString(r)
+						ReadString(r)
 					);
+					//signatures[functionId] = new FunctionSignature(
+					//    r.ReadUInt32(),
+					//    ReadString(r),
+					//    ReadString(r),
+					//    ReadString(r),
+					//    ReadString(r)
+					//);
 				}
 				while (true) {
 					List<int> stackWalk = new List<int>();
@@ -565,11 +569,9 @@ namespace NProf {
 			Columns.Add(name);
 			Columns.Add("Inclusive time");
 			Columns.Add("Exclusive time");
-			Columns.Add("Namespace");
 			Columns[0].Width = 350;
 			Columns[1].SortDataType = SortDataType.Double;
 			Columns[2].SortDataType = SortDataType.Double;
-			Columns[3].SortDataType = SortDataType.String;
 			this.ShowPlusMinus = true;
 			ShowRootTreeLines = true;
 			ShowTreeLines = true;
@@ -619,7 +621,6 @@ namespace NProf {
 				childSamples += f.Samples;
 			}
 			item.SubItems[2].Text = ((((double)function.Samples-childSamples) / (double)currentRun.maxSamples) * 100.0).ToString("0.00;-0.00;0.00");
-			item.SubItems[3].Text = currentRun.signatures[function.ID].NameSpace;
 			item.Tag = function;
 			return item;
 		}
@@ -667,15 +668,25 @@ namespace NProf {
 		private Process process;
 	}
 	public class FunctionSignature {
-		public FunctionSignature(UInt32 methodAttributes, string returnType, string className, string functionName, string parameters) {
-			int index = Math.Max(0, className.LastIndexOf('.') + 1);
-			string classOnly = className.Substring(index);
-			NameSpace = className.Substring(0, Math.Max(0,index-1));
-			this.Signature = classOnly+ "." + functionName + "(" + parameters + ")";
-			//this.Signature = className + "." + functionName + "(" + parameters + ")";
-			//this.Signature = className + "." + functionName + "(" + parameters + ")";
+		public FunctionSignature(UInt32 methodAttributes, string signature) {
+			//int index = Math.Max(0, className.LastIndexOf('.') + 1);
+			//string classOnly = className.Substring(index);
+			//NameSpace = className.Substring(0, Math.Max(0, index - 1));
+			this.Signature = signature;//classOnly + "." + functionName + "(" + parameters + ")";
 		}
 		public string NameSpace;
 		public string Signature;
 	}
+	//public class FunctionSignature {
+	//    public FunctionSignature(UInt32 methodAttributes, string returnType, string className, string functionName, string parameters) {
+	//        int index = Math.Max(0, className.LastIndexOf('.') + 1);
+	//        string classOnly = className.Substring(index);
+	//        NameSpace = className.Substring(0, Math.Max(0,index-1));
+	//        this.Signature = classOnly+ "." + functionName + "(" + parameters + ")";
+	//        //this.Signature = className + "." + functionName + "(" + parameters + ")";
+	//        //this.Signature = className + "." + functionName + "(" + parameters + ")";
+	//    }
+	//    public string NameSpace;
+	//    public string Signature;
+	//}
 }
