@@ -264,7 +264,7 @@ namespace NProf {
 					count++;
 				}
 			}
-			ContainerListViewItem item = new ContainerListViewItem(Path.GetFileNameWithoutExtension(application.Text) + " Run " + count);
+			ContainerListViewItem item = new ContainerListViewItem(Path.GetFileNameWithoutExtension(application.Text) + " " + count);
 			item.Tag = run;
 			runs.Items.Add(item);
 			runs.SelectedItems.Clear();
