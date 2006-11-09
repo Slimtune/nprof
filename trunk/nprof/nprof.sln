@@ -1,5 +1,5 @@
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
+﻿Microsoft Visual Studio Solution File, Format Version 9.00
+# SharpDevelop 2.1.0.1825
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProfilee", "TestProfilee\TestProfilee.csproj", "{88F360B7-D917-4A8D-A3FB-BB12A3D5124A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NProf", "NProf\NProf.csproj", "{46B2E25E-CFE3-4FA6-9E7F-8EDFA440E0B5}"
@@ -70,12 +70,21 @@ Global
 		{E6E2418F-5751-4751-90C2-81FD6BD41DDE}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{E6E2418F-5751-4751-90C2-81FD6BD41DDE}.Release|Win32.ActiveCfg = Release|Win32
 		{E6E2418F-5751-4751-90C2-81FD6BD41DDE}.Release|Win32.Build.0 = Release|Win32
+		{E6E2418F-5751-4751-90C2-81FD6BD41DDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6E2418F-5751-4751-90C2-81FD6BD41DDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBD77471-F50D-4CFB-8C9C-0F84B31C62F2}.Debug|Win32.Build.0 = Debug|Win32
+		{BBD77471-F50D-4CFB-8C9C-0F84B31C62F2}.Release|Win32.Build.0 = Release|Win32
+		{1EF831D4-C2DA-4DEA-AD58-16A0C4EBBA93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1EF831D4-C2DA-4DEA-AD58-16A0C4EBBA93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46B2E25E-CFE3-4FA6-9E7F-8EDFA440E0B5}.Debug|Win32.Build.0 = Debug|Win32
+		{46B2E25E-CFE3-4FA6-9E7F-8EDFA440E0B5}.Release|Win32.Build.0 = Release|Win32
+		{88F360B7-D917-4A8D-A3FB-BB12A3D5124A}.Debug|Win32.Build.0 = Debug|Win32
+		{88F360B7-D917-4A8D-A3FB-BB12A3D5124A}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		XCSharpSolutionEnabled = False
-		XCSharpProjectsDisabled = 
 	EndGlobalSection
 EndGlobal
