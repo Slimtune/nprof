@@ -207,7 +207,7 @@ namespace NProf {
 			mainPanel.Dock = DockStyle.Top;
 
 			Label applicationLabel = new Label();
-			applicationLabel.Text = "Application:";
+			applicationLabel.Text = "Executable:";
 			applicationLabel.Dock = DockStyle.Fill;
 			applicationLabel.TextAlign = ContentAlignment.MiddleLeft;
 			applicationLabel.AutoSize = true;
