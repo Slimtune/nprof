@@ -40,8 +40,7 @@ public:
 	void Initialize(ICorProfilerInfo2* profilerInfo) {
 		this->profilerInfo = profilerInfo;
 	}
-	void ProfilerHelper::GetFunctionSignature(FunctionID functionId,UINT32& methodAttributes,string& signature) {
-		//DebugBreak();
+	void ProfilerHelper::GetFunctionSignature(FunctionID functionId,UINT32& methodAttributes,string& text) {
 		ClassID classID;
 		ModuleID moduleID;
 		mdToken moduleToken;
@@ -49,48 +48,47 @@ public:
 			IMetaDataImport *metaDataImport = 0;	
 			mdToken	token;
 			if(SUCCEEDED(profilerInfo->GetTokenAndMetaDataFromFunction(functionId, IID_IMetaDataImport, (IUnknown **)&metaDataImport,&token))) {
-				WCHAR functionNameString[ MAX_FUNCTION_LENGTH ];
+				WCHAR functionNameString[MAX_FUNCTION_LENGTH];
 				if(SUCCEEDED(metaDataImport->GetMethodProps(token, 0, functionNameString, MAX_FUNCTION_LENGTH,0,0,0,0,0,0))) {
 					mdTypeDef classToken = 0;
 					if(SUCCEEDED(profilerInfo->GetClassIDInfo(classID, 0, &classToken))) {
 	      				if(classToken != mdTypeDefNil) {
 							WCHAR classNameString[ MAX_FUNCTION_LENGTH ];
 	          				metaDataImport->GetTypeDefProps(classToken, classNameString, MAX_FUNCTION_LENGTH,0, 0, 0);
-							signature+=CW2A(classNameString);
-							signature+=".";
-							signature+=CW2A(functionNameString);
+							text+=CW2A(classNameString);
+							text+=".";
+							text+=CW2A(functionNameString);
 						}
 						DWORD methodAttr = 0;
 						COR_SIGNATURE* sigBlob = 0;
-						//PCCOR_SIGNATURE sigBlob = 0;
 						if(SUCCEEDED(metaDataImport->GetMethodProps((mdMethodDef)token,0,0,0,0,&methodAttr,(PCCOR_SIGNATURE*)&sigBlob,0,0,0))) {
 							ULONG callConv;
 							methodAttributes = methodAttr;
 							sigBlob += CorSigUncompressData(sigBlob, &callConv);
-							signature+="(";
+							text+="(";
 							if(callConv != IMAGE_CEE_CS_CALLCONV_FIELD) {
 								ULONG argCount=0;
 								sigBlob += CorSigUncompressData(sigBlob, &argCount);
 								string returnType;
 								ParseElementType(metaDataImport, &sigBlob, returnType);
-								//sigBlob = ParseElementType(metaDataImport, sigBlob, returnType);
 								for(ULONG i = 0; (sigBlob != 0) && (i < (argCount)); i++) {
 									string buffer;
 									ParseElementType(metaDataImport,&sigBlob,buffer);									
-									//sigBlob = ParseElementType(metaDataImport,&sigBlob,buffer);									
-									//sigBlob = ParseElementType( metaDataImport, sigBlob, buffer );									
 									if(i!=0){
-										signature+=", ";
+										text+=", ";
 									}
-									signature+=buffer;
+									text+=buffer;
 								}
 							}
-							signature+=")";
+							text+=")";
 						}
 					}
 				}
 				metaDataImport->Release();
 			}
+		}
+		else {
+			DebugBreak();
 		}
 	}
 	template<class T> string ToString(T i) {

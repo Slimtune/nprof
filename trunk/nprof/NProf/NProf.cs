@@ -67,6 +67,7 @@ namespace NProf {
 			runs.SizeChanged += delegate {
 				header.Width = runs.Size.Width - 5;
 			};
+			runs.AllowMultiSelect = true;
 			runs.Dock = DockStyle.Left;
 			runs.Width = 100;
 			runs.DoubleClick += delegate {
