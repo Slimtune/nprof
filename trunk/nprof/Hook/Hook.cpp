@@ -31,89 +31,64 @@
 using namespace ATL;
 using namespace std;
 
-#define MAX_FUNCTION_LENGTH 2048
+const int MAX_FUNCTION_LENGTH=2048;
 #define guid "029C3A01-70C1-46D2-92B7-24B157DF55CE"
 
-class Signature {
-public:
-	Signature() {
-	}
-	Signature(string returnType,string parameters,string className,string functionName) {
-		this->returnType=returnType;
-		this->parameters=parameters;
-		this->className=className;
-		this->functionName=functionName;
-	}
-	string returnType;
-	string parameters;
-	string className;
-	string functionName;
-};
 class ProfilerHelper
 {
 public:
-	void ProfilerHelper::Initialize(ICorProfilerInfo2* profilerInfo) {
+	void Initialize(ICorProfilerInfo2* profilerInfo) {
 		this->profilerInfo = profilerInfo;
 	}
 	void ProfilerHelper::GetFunctionSignature(FunctionID functionId,UINT32& methodAttributes,string& signature) {
 		ULONG argCount=0;
-		HRESULT hr = E_FAIL;
+		//HRESULT hr = E_FAIL;
 
 		mdToken	token;
 		ClassID classID;
 		ModuleID moduleID;
-		IMetaDataImport *metaDataImport = NULL;	
-		mdToken moduleToken;		    
+		IMetaDataImport *metaDataImport = 0;	
+		mdToken moduleToken;
 
 		if(SUCCEEDED(profilerInfo->GetFunctionInfo(functionId,&classID,&moduleID,&moduleToken))) {
-			if(SUCCEEDED(profilerInfo->GetTokenAndMetaDataFromFunction( 
-				functionId, IID_IMetaDataImport, (IUnknown **)&metaDataImport,&token ))) {
+			if(SUCCEEDED(profilerInfo->GetTokenAndMetaDataFromFunction(functionId, IID_IMetaDataImport, (IUnknown **)&metaDataImport,&token))) {
 				WCHAR functionNameString[ MAX_FUNCTION_LENGTH ];
-				if(SUCCEEDED(metaDataImport->GetMethodProps(
-					token, NULL, functionNameString, MAX_FUNCTION_LENGTH,0,0,NULL,NULL,NULL,NULL
-				))) {
-					mdTypeDef classToken = NULL;
-					//hr = ;
-					if(SUCCEEDED(profilerInfo->GetClassIDInfo(classID, NULL, &classToken))) {
+				if(SUCCEEDED(metaDataImport->GetMethodProps(token, 0, functionNameString, MAX_FUNCTION_LENGTH,0,0,0,0,0,0))) {
+					mdTypeDef classToken = 0;
+					if(SUCCEEDED(profilerInfo->GetClassIDInfo(classID, 0, &classToken))) {
 	      				if(classToken != mdTypeDefNil) {
 							WCHAR classNameString[ MAX_FUNCTION_LENGTH ];
-	          				hr = metaDataImport->GetTypeDefProps(classToken, classNameString, MAX_FUNCTION_LENGTH,NULL, NULL, NULL);
+	          				metaDataImport->GetTypeDefProps(classToken, classNameString, MAX_FUNCTION_LENGTH,0, 0, 0);
 							signature+=CW2A(classNameString);
 							signature+=".";
 							signature+=CW2A(functionNameString);
 						}
 						DWORD methodAttr = 0;
-						PCCOR_SIGNATURE sigBlob = NULL;
+						PCCOR_SIGNATURE sigBlob = 0;
 
-						if(SUCCEEDED(metaDataImport->GetMethodProps( 
-							(mdMethodDef) token,NULL,NULL,0,NULL,&methodAttr,&sigBlob,NULL,NULL,NULL ))) {
+						if(SUCCEEDED(metaDataImport->GetMethodProps((mdMethodDef)token,0,0,0,0,&methodAttr,&sigBlob,0,0,0))) {
 							ULONG callConv;
 							methodAttributes = methodAttr;
 							string buffer;
-							sigBlob += CorSigUncompressData( sigBlob, &callConv );
+							sigBlob += CorSigUncompressData(sigBlob, &callConv);
 							signature+="(";
 							if(callConv != IMAGE_CEE_CS_CALLCONV_FIELD) {
 								sigBlob += CorSigUncompressData(sigBlob, &argCount);
 								sigBlob = ParseElementType(metaDataImport, sigBlob, buffer);									
-								for(ULONG i = 0; (SUCCEEDED(hr) && (sigBlob != NULL) && (i < (argCount))); i++) {
+								for(ULONG i = 0; (sigBlob != 0) && (i < (argCount)); i++) {
 									buffer="";
 									sigBlob = ParseElementType( metaDataImport, sigBlob, buffer );									
 									if ( i == 0 ) {
-									}
-									else if(i==1) {
 										signature+=buffer;
 									}
-									else if ( sigBlob != NULL ) {
-										signature+=", "+buffer;
-									}										
 									else {
-										hr = E_FAIL;
+										signature+=", "+buffer;
 									}
 								}
 							}
 							signature+=")";
-						} 
-					} 
+						}
+					}
 				}
 				metaDataImport->Release();
 			}
@@ -126,10 +101,8 @@ public:
 		stream>>s;
 		return s;
 	}
-	PCCOR_SIGNATURE ProfilerHelper::ParseElementType( IMetaDataImport *metaDataImport,
-		PCCOR_SIGNATURE signature, string& buffer ) {
-		map<CorElementType,string> types;
-	
+	PCCOR_SIGNATURE ParseElementType( IMetaDataImport *metaDataImport,PCCOR_SIGNATURE signature, string& buffer ) {
+		map<CorElementType,string> types;	
 		types[ELEMENT_TYPE_VOID]="void";
 		types[ELEMENT_TYPE_BOOLEAN]="bool";	
 		types[ELEMENT_TYPE_CHAR]="wchar";
@@ -164,7 +137,7 @@ public:
 					if ( TypeFromToken( token ) != mdtTypeRef ) {
 						HRESULT	hr;
 						WCHAR zName[MAX_FUNCTION_LENGTH];
-						hr = metaDataImport->GetTypeDefProps( token, zName, MAX_FUNCTION_LENGTH, NULL, NULL, NULL );
+						hr = metaDataImport->GetTypeDefProps( token, zName, MAX_FUNCTION_LENGTH, 0, 0, 0);
 						if ( SUCCEEDED( hr ) ) {
 							wcstombs( classname, zName, MAX_FUNCTION_LENGTH );
 						}
@@ -193,19 +166,17 @@ public:
 							ULONG *sizes;
 							ULONG numsizes;
 							ULONG arraysize = (sizeof ( ULONG ) * 2 * rank);
-			                                     
+			                
 							lower = (ULONG *)_alloca( arraysize );
 							memset( lower, 0, arraysize );
 							sizes = &lower[rank];
 
 							numsizes = CorSigUncompressData( signature );
 							if ( numsizes <= rank ) {
-        						ULONG numlower;
-			                    
+        						ULONG numlower;			                    
 								for ( ULONG i = 0; i < numsizes; i++ ) {
 									sizes[i] = CorSigUncompressData( signature );
-								}
-			                    
+								}			                    
 								numlower = CorSigUncompressData( signature );	
 								if ( numlower <= rank ) {
 									for (ULONG i = 0; i < numlower; i++) {
@@ -217,17 +188,14 @@ public:
 											if ( lower[i] == 0 ) {
 												buffer+=ToString(sizes[i]);
 											}
-
-											else	
-											{	
+											else {
 												buffer+=ToString(lower[i]);	
 												buffer+="...";
 												if ( sizes[i] != 0 ) {
 													buffer+=ToString((lower[i] + sizes[i] + 1) );	
 												}
 											}	
-										}
-			                            	
+										}			                            	
 										if ( i < (rank - 1) ) {
 											buffer+=",";
 										}
@@ -258,7 +226,7 @@ public:
 			}
 		}
 		return signature;
-	};
+	}
 	CComPtr< ICorProfilerInfo2 > profilerInfo;
 };
 HRESULT __stdcall __stdcall StackWalker(FunctionID funcId,UINT_PTR ip,COR_PRF_FRAME_INFO frameInfo,
@@ -352,7 +320,7 @@ public:
 		for(map<DWORD,ThreadID>::iterator i=threadMap.begin();i!=threadMap.end();i++) {
 			DWORD threadId=(*i).first;
 			HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME|THREAD_QUERY_INFORMATION|THREAD_GET_CONTEXT,false,threadId);
-			if(threadHandle!=NULL) {
+			if(threadHandle!=0) {
 				int suspendCount=SuspendThread(threadHandle);
 				vector<FunctionID>* functions=new vector<FunctionID>();
 				ThreadID id=i->second;
@@ -375,7 +343,7 @@ public:
 					stackFrame.AddrStack.Mode = AddrModeFlat;
 					while(true) {
 						if(!StackWalk64(IMAGE_FILE_MACHINE_I386,GetCurrentProcess(),threadHandle,
-							 &stackFrame,NULL,NULL,SymFunctionTableAccess64,SymGetModuleBase64,NULL)) {
+							 &stackFrame,0,0,SymFunctionTableAccess64,SymGetModuleBase64,0)) {
 							break;
 						}
 						if (stackFrame.AddrPC.Offset == stackFrame.AddrReturn.Offset) {
@@ -441,7 +409,7 @@ __interface INProfCORHook : IDispatch
 class ATL_NO_VTABLE CNProfCORHook : public INProfCORHook,public ICorProfilerCallback2{
 public:
 	CNProfCORHook() {
-		this->profiler = NULL;
+		this->profiler = 0;
 	}
 	DECLARE_PROTECT_FINAL_CONSTRUCT()
 	HRESULT FinalConstruct() {
@@ -469,7 +437,7 @@ public:
 		EnterCriticalSection(&criticalSection);
 		profiler->End();
 		delete profiler;
-		profiler = NULL;
+		profiler = 0;
 		LeaveCriticalSection(&criticalSection);
 		return S_OK;
 	}
@@ -553,7 +521,7 @@ public:
 	}
 	STDMETHOD(ThreadAssignedToOSThread)(ThreadID managedThreadId, DWORD osThreadId) {
 		EnterCriticalSection(&criticalSection);
-		profiler->ThreadMap( managedThreadId, osThreadId );
+		profiler->ThreadMap(managedThreadId, osThreadId);
 		LeaveCriticalSection(&criticalSection);
 		return S_OK;
 	}
