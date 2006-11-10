@@ -88,7 +88,7 @@ public:
 		stream>>s;
 		return s;
 	}
-	void ParseElementType( IMetaDataImport *metaDataImport,COR_SIGNATURE** signature, string& buffer ) {
+	void ParseElementType(IMetaDataImport *metaDataImport,COR_SIGNATURE** signature,string& text) {
 		map<CorElementType,string> types;	
 		types[ELEMENT_TYPE_VOID]="void";
 		types[ELEMENT_TYPE_BOOLEAN]="bool";	
@@ -111,7 +111,7 @@ public:
 		(*signature)++;
 		CorElementType element=(CorElementType)(**signature);
 		if(types.find(element)!=types.end()) {
-			buffer+=types[element];
+			text+=types[element];
 		}
 		else {
 			switch(element) {
@@ -134,82 +134,81 @@ public:
 					while(classOnly!=classname && (*(classOnly-1))!='.') {
 						classOnly--;
 					}
-					buffer+=classOnly;
+					text+=classOnly;
 					break;	
 				}
 				case ELEMENT_TYPE_SZARRAY:
-					ParseElementType( metaDataImport, signature, buffer ); 
-					buffer+="[]";
+					ParseElementType(metaDataImport,signature,text); 
+					text+="[]";
 					break;		
-				case ELEMENT_TYPE_ARRAY:	
-					{	
-						ULONG rank;
-						ParseElementType(metaDataImport, signature, buffer);
-						rank = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);
-						if ( rank == 0 ) {
-							buffer+="[?]";
-						}
-						else {
-							ULONG *lower;
-							ULONG *sizes;
-							ULONG numsizes;
-							ULONG arraysize = (sizeof ( ULONG ) * 2 * rank);
-			                
-							lower = (ULONG *)_alloca( arraysize );
-							memset( lower, 0, arraysize );
-							sizes = &lower[rank];
+				case ELEMENT_TYPE_ARRAY: {	
+					ULONG rank;
+					ParseElementType(metaDataImport,signature,text);
+					rank = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);
+					if ( rank == 0 ) {
+						text+="[?]";
+					}
+					else {
+						ULONG *lower;
+						ULONG *sizes;
+						ULONG numsizes;
+						ULONG arraysize = (sizeof ( ULONG ) * 2 * rank);
+		                
+						lower = (ULONG *)_alloca( arraysize );
+						memset( lower, 0, arraysize );
+						sizes = &lower[rank];
 
-							numsizes = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);
-							if ( numsizes <= rank ) {
-        						ULONG numlower;			                    
-								for ( ULONG i = 0; i < numsizes; i++ ) {
-									sizes[i] = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);
-								}			                    
-								numlower = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);	
-								if ( numlower <= rank ) {
-									for (ULONG i = 0; i < numlower; i++) {
-										lower[i] = CorSigUncompressData((PCCOR_SIGNATURE&)*signature); 
-									}
-									buffer+="[";
-									for (ULONG i = 0; i < rank; i++ ) {	
-										if ( (sizes[i] != 0) && (lower[i] != 0) ) {	
-											if ( lower[i] == 0 ) {
-												buffer+=ToString(sizes[i]);
-											}
-											else {
-												buffer+=ToString(lower[i]);	
-												buffer+="...";
-												if ( sizes[i] != 0 ) {
-													buffer+=ToString((lower[i] + sizes[i] + 1) );	
-												}
-											}	
-										}			                            	
-										if ( i < (rank - 1) ) {
-											buffer+=",";
-										}
-									}		                        
-									buffer+="]";
+						numsizes = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);
+						if ( numsizes <= rank ) {
+    						ULONG numlower;			                    
+							for ( ULONG i = 0; i < numsizes; i++ ) {
+								sizes[i] = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);
+							}			                    
+							numlower = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);	
+							if ( numlower <= rank ) {
+								for (ULONG i = 0; i < numlower; i++) {
+									lower[i] = CorSigUncompressData((PCCOR_SIGNATURE&)*signature); 
 								}
+								text+="[";
+								for (ULONG i = 0; i < rank; i++ ) {	
+									if ( (sizes[i] != 0) && (lower[i] != 0) ) {	
+										if ( lower[i] == 0 ) {
+											text+=ToString(sizes[i]);
+										}
+										else {
+											text+=ToString(lower[i]);	
+											text+="...";
+											if ( sizes[i] != 0 ) {
+												text+=ToString((lower[i] + sizes[i] + 1) );	
+											}
+										}	
+									}			                            	
+									if ( i < (rank - 1) ) {
+										text+=",";
+									}
+								}		                        
+								text+="]";
 							}
 						}
-					} 
-					break;	
+					}
+					break;
+				}
 				case ELEMENT_TYPE_PINNED:
-					ParseElementType(metaDataImport,signature,buffer); 
-					buffer+="pinned";
+					ParseElementType(metaDataImport,signature,text); 
+					text+="pinned";
 					break;
 				case ELEMENT_TYPE_PTR:   
-					ParseElementType( metaDataImport, signature, buffer ); 
-					buffer+="*";
+					ParseElementType(metaDataImport,signature,text); 
+					text+="*";
 					break;
 				case ELEMENT_TYPE_BYREF:   
-					buffer+="ref ";
-					ParseElementType( metaDataImport, signature, buffer ); 
+					text+="ref ";
+					ParseElementType(metaDataImport,signature,text); 
 					break;
 				default:
 				case ELEMENT_TYPE_END:
 				case ELEMENT_TYPE_SENTINEL:
-					buffer+="<UNKNOWN>";
+					text+="<UNKNOWN>";
 					break;           	
 			}
 		}
@@ -297,7 +296,6 @@ public:
 		for(map<DWORD,ThreadID>::iterator i=threadMap.begin();i!=threadMap.end();i++) {
 			DWORD threadId=(*i).first;
 			HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME|THREAD_QUERY_INFORMATION|THREAD_GET_CONTEXT,false,threadId);
-			//if(threadHandle!=0) {
 			int suspendCount=SuspendThread(threadHandle);
 			vector<FunctionID>* functions=new vector<FunctionID>();
 			ThreadID id=i->second;
@@ -339,22 +337,21 @@ public:
 						break;
 					}
 				}
-				//}
-				if(found) {
-					profilerInfo->DoStackSnapshot(
-						id,StackWalker,COR_PRF_SNAPSHOT_DEFAULT,functions,(BYTE*)&context,sizeof(context));
-
-					for(int index=0;index<functions->size();index++) {
-						FunctionID id=functions->at(index);
-						map<FunctionID,FunctionID>::iterator found = signatures.find(id);
-						if(found == signatures.end()){
-							signatures.insert(make_pair(id,id));
-						}
-					}
-					stackWalks.push_back(functions);
-				}
-				ResumeThread(threadHandle);
 			}
+			if(found) {
+				profilerInfo->DoStackSnapshot(
+					id,StackWalker,COR_PRF_SNAPSHOT_DEFAULT,functions,(BYTE*)&context,sizeof(context));
+
+				for(int index=0;index<functions->size();index++) {
+					FunctionID id=functions->at(index);
+					map<FunctionID,FunctionID>::iterator found = signatures.find(id);
+					if(found == signatures.end()){
+						signatures.insert(make_pair(id,id));
+					}
+				}
+				stackWalks.push_back(functions);
+			}
+			ResumeThread(threadHandle);
 		}
 		SetTimer();
 	}
