@@ -236,7 +236,7 @@ public:
 	}
 	void EndAll(ProfilerHelper& profilerHelper) {
 		file=new ofstream(GetTemporaryFileName().c_str(), ios::binary);
-		for(map< FunctionID, FunctionID >::iterator i = signatures.begin(); i != signatures.end(); i++ ) {
+		for(map<FunctionID,FunctionID>::iterator i=signatures.begin();i!=signatures.end();i++) {
 			FunctionID id=i->second;
 			WriteInteger(id);
 			UINT32 methodAttributes;
@@ -287,8 +287,31 @@ public:
 	}
 	static void CALLBACK TimerFunction(UINT wTimerID, UINT msg, DWORD dwUser, DWORD dw1, DWORD dw2) {
 		Profiler* profiler=(Profiler*)dwUser;
-		profiler->WalkStack();
+		__int64 totalTime=(__int64)0;
+		for(map<DWORD,ThreadID>::iterator i=profiler->threadMap.begin();i!=profiler->threadMap.end();i++) {
+			HANDLE thread=OpenThread(THREAD_QUERY_INFORMATION,false,i->first);
+			FILETIME creationTime;
+			FILETIME exitTime;
+			FILETIME kernelTime;
+			FILETIME userTime;
+			GetThreadTimes(
+				thread,
+				&creationTime,
+				&exitTime,
+				&kernelTime,
+				&userTime
+			);
+			__int64 l;
+			memcpy(&l,&userTime,sizeof(l));
+			totalTime+=l;
+			CloseHandle(thread);
+		}
+		if(totalTime-lastTime>100) {
+			lastTime=totalTime;
+			profiler->WalkStack();
+		}
 	}
+	static __int64 lastTime;
 	static UINT timer;
 	void WalkStack() {
 		KillTimer();
@@ -351,16 +374,18 @@ public:
 				stackWalks.push_back(functions);
 			}
 			ResumeThread(threadHandle);
+			CloseHandle(threadHandle);
 		}
 		SetTimer();
 	}
+	map< DWORD, ThreadID > threadMap;
 protected:
 	CComPtr< ICorProfilerInfo2 > profilerInfo;
 	ProfilerHelper profilerHelper;
-	map< DWORD, ThreadID > threadMap;
 	bool statistical;
 };
 UINT Profiler::timer;
+__int64 Profiler::lastTime;
 [
 	object,
 	uuid("FDEDE932-9F80-4CE5-891E-3B24768CFBCB"),

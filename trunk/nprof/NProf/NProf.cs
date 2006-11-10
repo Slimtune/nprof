@@ -60,7 +60,6 @@ namespace NProf {
 			Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("NProf.Resources.app-icon.ico"));
 			Text = Title;
 			profiler = new Profiler();
-
 			runs = new ContainerListView();
 			ContainerListViewColumnHeader header = new ContainerListViewColumnHeader("Profiling runs", 90);
 			runs.Columns.Add(header);
@@ -75,7 +74,6 @@ namespace NProf {
 					ShowRun((Run)runs.SelectedItems[0].Tag);
 				}
 			};
-
 			callers = new MethodView("Caller methods");
 			callers.Size = new Size(100, 200);
 			callers.Dock = DockStyle.Bottom;
@@ -87,7 +85,6 @@ namespace NProf {
 					callees.MoveTo(((FunctionInfo)callers.SelectedItems[0].Tag).ID);
 				}
 			};
-
 			callees = new MethodView("Callee methods");
 			callees.Size = new Size(100, 100);
 			callees.Dock = DockStyle.Fill;
@@ -119,38 +116,32 @@ namespace NProf {
 					e.Handled = true;
 				}
 			};
-			Menu = new MainMenu(new MenuItem[]
-				{
-					new MenuItem(
-						"File",
-						new MenuItem[] 
-						{
-							new MenuItem(
-								"&New",
-								delegate
-								{
-									runs.Items.Clear();
-									NProf.arguments.Text = "";
-									NProf.application.Text = "";
-									callees.Items.Clear();
-									callers.Items.Clear();
-								},
-								Shortcut.CtrlN),
-							new MenuItem("-"),
-							new MenuItem("E&xit",delegate {Close();})
-						}),
-					new MenuItem(
-						"Project",
-						new MenuItem[]
-						{
-							new MenuItem(
-								"Start",
-								delegate{StartRun();},
-								Shortcut.F5),
-							new MenuItem("-"),
-							new MenuItem("Find",delegate{ShowSearch();},Shortcut.CtrlF)
-						})
-				});
+			Menu = new MainMenu(new MenuItem[] {
+				new MenuItem(
+					"File",
+					new MenuItem[] {
+						new MenuItem("&New",
+							delegate {
+								runs.Items.Clear();
+								NProf.arguments.Text = "";
+								NProf.application.Text = "";
+								callees.Items.Clear();
+								callers.Items.Clear();
+							},
+							Shortcut.CtrlN),
+						new MenuItem("-"),
+						new MenuItem("E&xit",delegate {Close();})
+					}),
+				new MenuItem(
+					"Project",
+					new MenuItem[] {
+						new MenuItem(
+							"Start",
+							delegate{StartRun();},
+							Shortcut.F5),
+						new MenuItem("-"),
+						new MenuItem("Find",delegate{ShowSearch();},Shortcut.CtrlF)
+			})});
 			Panel rightPanel = new Panel();
 			rightPanel.Dock = DockStyle.Fill;
 			Panel methodPanel = new Panel();
@@ -170,9 +161,7 @@ namespace NProf {
 			closeFind.Width = 17;
 			closeFind.Height = 20;
 			closeFind.TextAlign = ContentAlignment.BottomLeft;
-			closeFind.Click += delegate {
-				findPanel.Visible = false;
-			};
+			closeFind.Click += delegate {findPanel.Visible = false;};
 
 			Button findNext = new Button();
 			findNext.AutoSize = true;
