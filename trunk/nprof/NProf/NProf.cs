@@ -351,15 +351,8 @@ namespace NProf {
 		public int maxSamples;
 		public List<List<int>> stackWalks = new List<List<int>>();
 		private void InterpreteData() {
-			//int currentWalk = 0;
-			//foreach (List<int> stackWalk in stackWalks) {
-			//    currentWalk++;
-				Interprete(functions,false);
-			//}
-			//foreach (List<int> reversedWalk in stackWalks) {
-			//    currentWalk++;
-				Interprete(callers,true);
-			//}
+			Interprete(functions,false);
+			Interprete(callers,true);
 			maxSamples = 0;
 			foreach (FunctionInfo function in functions.Values) {
 				if (function.Samples > maxSamples) {
@@ -367,7 +360,6 @@ namespace NProf {
 				}
 			}
 		}
-
 		private void Interprete2(int currentWalk, List<int> stackWalk,Dictionary<int, FunctionInfo> map) {
 			for (int i = 0; i < stackWalk.Count; i++) {
 				FunctionInfo function = Run.GetFunctionInfo(map, stackWalk[stackWalk.Count - i - 1]);
@@ -378,7 +370,6 @@ namespace NProf {
 				function.lastWalk = currentWalk;
 			}
 		}
-
 		private void Interprete(Dictionary<int, FunctionInfo> map,bool reverse) {
 			int currentWalk = 0;
 			foreach (List<int> stackWalk in stackWalks) {
@@ -396,40 +387,6 @@ namespace NProf {
 				}
 			}
 		}
-		//private void InterpreteData() {
-		//    int currentWalk = 0;
-		//    foreach (List<int> stackWalk in stackWalks) {
-		//        currentWalk++;
-		//        for (int i = 0; i < stackWalk.Count; i++) {
-		//            FunctionInfo function = Run.GetFunctionInfo(functions, stackWalk[stackWalk.Count - i - 1]);
-		//            if (function.lastWalk != currentWalk) {
-		//                function.Samples++;
-		//                function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.Count - i - 1, stackWalk));
-		//            }
-		//            function.lastWalk = currentWalk;
-		//        }
-		//    }
-		//    // combine with above
-		//    foreach (List<int> reversedWalk in stackWalks) {
-		//        List<int> stackWalk = new List<int>(reversedWalk);
-		//        stackWalk.Reverse();
-		//        currentWalk++;
-		//        for (int i = 0; i < stackWalk.Count; i++) {
-		//            FunctionInfo function = Run.GetFunctionInfo(callers, stackWalk[stackWalk.Count - i - 1]);
-		//            if (function.lastWalk != currentWalk) {
-		//                function.Samples++;
-		//                function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.Count - i - 1, stackWalk));
-		//            }
-		//            function.lastWalk = currentWalk;
-		//        }
-		//    }
-		//    maxSamples = 0;
-		//    foreach (FunctionInfo function in functions.Values) {
-		//        if (function.Samples > maxSamples) {
-		//            maxSamples = function.Samples;
-		//        }
-		//    }
-		//}
 		private string ReadString(BinaryReader br) {
 			int length = br.ReadInt32();
 			byte[] abString = new byte[length];
