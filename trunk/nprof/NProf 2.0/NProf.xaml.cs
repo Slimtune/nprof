@@ -29,16 +29,42 @@ using Microsoft.Win32;
 using System.Globalization;
 using DotNetLib.Windows.Forms;
 
+//using System;
+//using System.Collections.Generic;
+//using System.Text;
+//using System.Windows;
+//using System.Windows.Controls;
+//using System.Windows.Data;
+//using System.Windows.Documents;
+//using System.Windows.Input;
+//using System.Windows.Media;
+//using System.Windows.Media.Imaging;
+//using System.Windows.Shapes;
+
+
+namespace NProf_WPF {
+	/// <summary>
+	/// Interaction logic for Window1.xaml
+	/// </summary>
+
+	public partial class NProf : System.Windows.Window {
+
+		public NProf() {
+			InitializeComponent();
+		}
+
+	}
+}
 namespace NProf {
 	public class NProf : Form {
 		public ContainerListView runs;
 		private MethodView callees;
 		private MethodView callers;
 		private Profiler profiler;
-		private TextBox findText;
+		private System.Windows.Forms.TextBox findText;
 		private FlowLayoutPanel findPanel;
-		public static TextBox application;
-		public static TextBox arguments;
+		public static System.Windows.Forms.TextBox application;
+		public static System.Windows.Forms.TextBox arguments;
 		public void ShowSearch() {
 			findPanel.Visible = !findPanel.Visible;
 			findText.Focus();
@@ -77,7 +103,7 @@ namespace NProf {
 			};
 
 			callers = new MethodView("Caller methods");
-			callers.Size = new Size(100, 200);
+			callers.Size = new System.Drawing.Size(100, 200);
 			callers.Dock = DockStyle.Bottom;
 			callers.GotFocus += delegate {
 				callees.SelectedItems.Clear();
@@ -220,7 +246,7 @@ namespace NProf {
 			browse.TabIndex = 0;
 			browse.Focus();
 			browse.Click += delegate {
-				OpenFileDialog dialog = new OpenFileDialog();
+				System.Windows.Forms.OpenFileDialog dialog = new System.Windows.Forms.OpenFileDialog();
 				dialog.Filter = "Executable files (*.exe)|*.exe";
 				DialogResult dr = dialog.ShowDialog();
 				if (dr == DialogResult.OK) {
@@ -281,12 +307,12 @@ namespace NProf {
 		private void findPrevious_Click(object sender, EventArgs e) {
 			Find(false, true);
 		}
-		[STAThread]
-		static void Main(string[] args) {
-			string s = Guid.NewGuid().ToString();
-			Application.EnableVisualStyles();
-			Application.Run(form);
-		}
+		//[STAThread]
+		//static void Main(string[] args) {
+		//    string s = Guid.NewGuid().ToString();
+		//    Application.EnableVisualStyles();
+		//    Application.Run(form);
+		//}
 		public static NProf form = new NProf();
 
 		private void InitializeComponent() {
