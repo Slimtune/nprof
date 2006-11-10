@@ -62,7 +62,6 @@
     </Compile>
     <Compile Include="NProf.xaml.cs">
       <DependentUpon>NProf.xaml</DependentUpon>
-      <SubType>Component</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
