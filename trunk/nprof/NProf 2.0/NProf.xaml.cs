@@ -28,6 +28,7 @@ using System.Windows.Shapes;
 using System.Diagnostics;
 using System.IO;
 using Microsoft.Win32;
+using _treeListView;
 
 
 namespace NProf_WPF {
@@ -38,25 +39,28 @@ namespace NProf_WPF {
 				return "NProf " + Profiler.Version;
 			}
 		}
-		//public void AddRun(Run run) {
-		//    int count = 1;
-		//    string text = Path.GetFileNameWithoutExtension(application.Text);
-		//    foreach (ContainerListViewItem i in runs.Items) {
-		//        if (i.Text.StartsWith(text)) {
-		//            count++;
-		//        }
-		//    }
-		//    ContainerListViewItem item = new ContainerListViewItem(Path.GetFileNameWithoutExtension(application.Text) + " " + count);
-		//    item.Tag = run;
-		//    runs.Items.Add(item);
-		//    runs.SelectedItems.Clear();
-		//    runs.SelectedItems.Add(item);
-		//    ShowRun(run);
-		//}
-		//public void ShowRun(Run run) {
-		//    callees.Update(run, run.functions);
-		//    callers.Update(run, run.callers);
-		//}
+		public void AddRun(Run run) {
+			int count = 1;
+			string text = System.IO.Path.GetFileNameWithoutExtension(executable.Text);
+			foreach (ListViewItem i in runs.Items) {
+				string t = (string)i.Content;
+				if (t.StartsWith(text)) {
+					count++;
+				}
+			}
+
+			ListViewItem item = new ListViewItem();
+			item.Content=System.IO.Path.GetFileNameWithoutExtension(executable.Text) + " " + count;
+			item.Tag = run;
+			runs.Items.Add(item);
+			runs.SelectedItems.Clear();
+			runs.SelectedItems.Add(item);
+			ShowRun(run);
+		}
+		public void ShowRun(Run run) {
+			callees.Update(run, run.functions);
+			callers.Update(run, run.callers);
+		}
 		//private void findNext_Click(object sender, EventArgs e) {
 		//    Find(true, true);
 		//}
@@ -83,12 +87,15 @@ namespace NProf_WPF {
 			MenuItem item=new MenuItem();
 			item.Header=header;
 			item.ItemsSource=items;
+			//item.InputBindings.Add();
 			return item;
 		}
-		public MenuItem MenuItem(string header,RoutedEventHandler e) {
+		public MenuItem MenuItem(string header,RoutedEventHandler e,ModifierKeys modifierKey,Key key) {
 			MenuItem item=new MenuItem();
 			item.Header=header;
 			item.Click+=e;
+			//((RoutedUICommand)item.Command).InputGestures.Add(new KeyGesture(key,modifierKey));
+			//item.Command=e;
 			return item;
 		}
 		public static NProf form;// = new NProf();
@@ -169,10 +176,12 @@ namespace NProf_WPF {
 								NProf.executable.Text = "";
 								callees.Items.Clear();
 								callers.Items.Clear();
-							}
+							},
+							ModifierKeys.Control,
+							Key.N
 						),
 						new Separator(),
-						MenuItem("Exit",delegate {Close();})
+						MenuItem("Exit",delegate {Close();},ModifierKeys.None,Key.None)
 					}
 				),
 				MenuItem(
@@ -180,21 +189,14 @@ namespace NProf_WPF {
 		            new object[] {
 		                MenuItem(
 		                    "Start",
-		                    delegate{StartRun();}
-						),
+		                    delegate{StartRun();},
+							ModifierKeys.None,
+						Key.F5),
 		                new Separator(),
-		                MenuItem("Find",delegate{ShowSearch();})
+		                MenuItem("Find",delegate{ShowSearch();},ModifierKeys.Control,Key.F)
 		            }
 				)
 		};
-			//Panel rightPanel = new Panel();
-			//rightPanel.Dock = DockStyle.Fill;
-			//Panel methodPanel = new Panel();
-			//methodPanel.Size = new Size(100, 100);
-			//methodPanel.Dock = DockStyle.Fill;
-
-			//Splitter methodSplitter = new Splitter();
-			//methodSplitter.Dock = DockStyle.Bottom;
 			//findPanel = new FlowLayoutPanel();
 			//findPanel.BorderStyle = BorderStyle.FixedSingle;
 			//findPanel.Visible = false;
@@ -230,10 +232,6 @@ namespace NProf_WPF {
 			//findPanel.Controls.AddRange(new Control[] {closeFind,findLabel,findText,findNext ,findPrevious});
 			//methodPanel.Controls.AddRange(new Control[] {callees,methodSplitter,callers,findPanel});
 
-			//Splitter mainSplitter = new Splitter();
-			//mainSplitter.Dock = DockStyle.Left;
-			//rightPanel.Controls.AddRange(new Control[] { methodPanel, mainSplitter, runs });
-
 			StackPanel options = new StackPanel();
 			executable = new TextBox();
 			executable.Width = 300;
@@ -243,15 +241,16 @@ namespace NProf_WPF {
 			applicationLabel.Content = "Executable:";
 			Button browse = new Button();
 			browse.Content = "Browse...";
-			browse.TabIndex = 0;
+			//browse.TabIndex = 0;
 			browse.Focus();
+			
 			browse.Click += delegate {
 				OpenFileDialog dialog = new OpenFileDialog();
 				dialog.Filter = "Executable files (*.exe)|*.exe";
 				if (dialog.ShowDialog() ==true) {
 					executable.Text = dialog.FileName;
 					executable.Focus();
-					executable.SelectAll();
+					//executable.SelectAll();
 				}
 			};
 			StackPanel argumentsPanel = new StackPanel();
@@ -294,9 +293,6 @@ namespace NProf_WPF {
 			};
 			this.Width = 800;
 			this.Height = 600;
-			//this.Load += delegate {
-			//    Size = new Size(800, 600);
-			//};
 		}
 		private void StartRun() {
 			Run run = new Run(profiler);
@@ -331,16 +327,6 @@ namespace NProf_WPF {
 					if (function.Samples > maxSamples) {
 						maxSamples = function.Samples;
 					}
-				}
-			}
-			private void Interprete2(int currentWalk, List<int> stackWalk, Dictionary<int, FunctionInfo> map) {
-				for (int i = 0; i < stackWalk.Count; i++) {
-					FunctionInfo function = Run.GetFunctionInfo(map, stackWalk[stackWalk.Count - i - 1]);
-					if (function.lastWalk != currentWalk) {
-						function.Samples++;
-						function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.Count - i - 1, stackWalk));
-					}
-					function.lastWalk = currentWalk;
 				}
 			}
 			private void Interprete(Dictionary<int, FunctionInfo> map, bool reverse) {
@@ -397,15 +383,18 @@ namespace NProf_WPF {
 					}
 				}
 			}
+			public delegate void MethodInvoker();
 			public void Complete(object sender, EventArgs e) {
 				if (File.Exists(FileName)) {
 					ReadStackWalks();
 					File.Delete(FileName);
 				}
-				//NProf.form.BeginInvoke(new EventHandler(delegate {
-				//    InterpreteData();
-				//    NProf.form.AddRun(this);
-				//}));
+				InterpreteData();
+				NProf.form.Dispatcher.BeginInvoke(
+					System.Windows.Threading.DispatcherPriority.Normal,
+					new MethodInvoker(delegate() {
+						NProf.form.AddRun(this);
+				}));
 			}
 			public Dictionary<int, string> signatures = new Dictionary<int, string>();
 			public Dictionary<int, FunctionInfo> functions = new Dictionary<int, FunctionInfo>();
@@ -460,7 +449,7 @@ namespace NProf_WPF {
 			public readonly int id;
 			public readonly List<int> frames;
 		}
-		public class MethodView : ListView {
+		public class MethodView : TreeListView {
 			//public void MoveTo(int id) {
 			//    SelectedItems.Clear();
 			//    foreach (ContainerListViewItem item in Items) {
@@ -472,20 +461,22 @@ namespace NProf_WPF {
 			//        }
 			//    }
 			//}
-			//public void Update(Run run, Dictionary<int, FunctionInfo> functions) {
-			//    currentRun = run;
-			//    SuspendLayout();
-			//    BeginUpdate();
-			//    Items.Clear();
-			//    foreach (FunctionInfo method in SortFunctions(functions.Values)) {
-			//        AddItem(Items, method);
-			//    }
-			//    foreach (ContainerListViewItem item in Items) {
-			//        UpdateView(item);
-			//    }
-			//    EndUpdate();
-			//    ResumeLayout();
-			//}
+			public Run currentRun;
+			public void Update(Run run, Dictionary<int, FunctionInfo> functions) {
+				currentRun = run;
+				//SuspendLayout();
+				//BeginUpdate();
+				Items.Clear();
+				foreach (FunctionInfo method in functions.Values) {
+				//foreach (FunctionInfo method in SortFunctions(functions.Values)) {
+					AddItem(Items, method);
+				}
+				//foreach (object item in Items) {
+				//    UpdateView(item);
+				//}
+				//EndUpdate();
+				//ResumeLayout();
+			}
 			//public void Find(string text, bool forward, bool step) {
 			//    if (text != "") {
 			//        ContainerListViewItem item;
@@ -544,7 +535,6 @@ namespace NProf_WPF {
 			//        }
 			//    }
 			//}
-			//public Run currentRun;
 			public MethodView(string name) {
 				//HeaderStyle = ColumnHeaderStyle.Clickable;
 				//Columns.Add(name);
@@ -577,36 +567,41 @@ namespace NProf_WPF {
 			//    });
 			//    return functions;
 			//}
-			//void MakeSureComputed(ContainerListViewItem item, bool parentExpanded) {
-			//    if (item.Items.Count == 0) {
-			//        foreach (FunctionInfo function in SortFunctions(((FunctionInfo)item.Tag).Children.Values)) {
-			//            AddFunctionItem(item.Items, function);
-			//        }
-			//    }
-			//    if (item.Expanded || parentExpanded) {
-			//        foreach (ContainerListViewItem subItem in item.Items) {
-			//            MakeSureComputed(subItem, item.Expanded);
-			//        }
-			//    }
-			//}
-			//void UpdateView(ContainerListViewItem item) {
-			//    SuspendLayout();
-			//    BeginUpdate();
-			//    MakeSureComputed(item, true);
-			//    EndUpdate();
-			//    ResumeLayout();
-			//}
-			//private ContainerListViewItem AddItem(ContainerListViewItemCollection parent, FunctionInfo function) {
-			//    ContainerListViewItem item = parent.Add(currentRun.signatures[function.ID].Signature);
-			//    item.SubItems[1].Text = ((((double)function.Samples) / (double)currentRun.maxSamples) * 100.0).ToString("0.00;-0.00;0.00");
-			//    int childSamples = 0;
-			//    foreach (FunctionInfo f in function.Children.Values) {
-			//        childSamples += f.Samples;
-			//    }
-			//    item.SubItems[2].Text = ((((double)function.Samples - childSamples) / (double)currentRun.maxSamples) * 100.0).ToString("0.00;-0.00;0.00");
-			//    item.Tag = function;
-			//    return item;
-			//}
+			void MakeSureComputed(ListViewItem item, bool parentExpanded) {
+				//if (item.Items.Count == 0) {
+				//    foreach (FunctionInfo function in SortFunctions(((FunctionInfo)item.Tag).Children.Values)) {
+				//        AddFunctionItem(item.Items, function);
+				//    }
+				//}
+				//if (item.Expanded || parentExpanded) {
+				//    foreach (ContainerListViewItem subItem in item.Items) {
+				//        MakeSureComputed(subItem, item.Expanded);
+				//    }
+				//}
+			}
+			void UpdateView(ListViewItem item) {
+				//SuspendLayout();
+				//BeginUpdate();
+				MakeSureComputed(item, true);
+				//EndUpdate();
+				//ResumeLayout();
+			}
+
+
+			private void AddItem(ItemCollection parent, FunctionInfo function) {
+				parent.Add(currentRun.signatures[function.ID]);
+				//ContainerListViewItem item = parent.Add(currentRun.signatures[function.ID]);
+				//ContainerListViewItem item = parent.Add(currentRun.signatures[function.ID]);
+				//item.SubItems[1].Text = ((((double)function.Samples) / (double)currentRun.maxSamples) * 100.0).ToString("0.00;-0.00;0.00");
+				//int childSamples = 0;
+				//foreach (FunctionInfo f in function.Children.Values) {
+				//    childSamples += f.Samples;
+				//}
+				//item.SubItems[2].Text = ((((double)function.Samples - childSamples) / (double)currentRun.maxSamples) * 100.0).ToString("0.00;-0.00;0.00");
+				//item.Tag = function;
+				//return item;
+			}
+
 			//public void AddFunctionItem(ContainerListViewItemCollection parent, FunctionInfo function) {
 			//    ContainerListViewItem item = AddItem(parent, function);
 			//    foreach (FunctionInfo callee in function.Children.Values) {

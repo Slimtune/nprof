@@ -83,6 +83,12 @@
     </Compile>
     <AppDesigner Include="Properties\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TreeListView\TreeListView.csproj">
+      <Project>{B23E2725-AA04-4D22-8105-3C3DFE583781}</Project>
+      <Name>TreeListView</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildBinPath)\Microsoft.WinFX.targets" />
 </Project>

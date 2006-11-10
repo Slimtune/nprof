@@ -53,7 +53,7 @@ public:
 		mdTypeDef classToken = 0;
 		profilerInfo->GetClassIDInfo(classID, 0, &classToken);
 		if(classToken != mdTypeDefNil) {
-			WCHAR classNameString[ MAX_FUNCTION_LENGTH ];
+			WCHAR classNameString[MAX_FUNCTION_LENGTH];
 			metaDataImport->GetTypeDefProps(classToken, classNameString, MAX_FUNCTION_LENGTH,0, 0, 0);
 			text+=CW2A(classNameString);
 			text+=".";
@@ -118,23 +118,22 @@ public:
 				case ELEMENT_TYPE_CLASS:	
 				case ELEMENT_TYPE_VALUETYPE:
 				case ELEMENT_TYPE_CMOD_REQD:
-				case ELEMENT_TYPE_CMOD_OPT: {	
+				case ELEMENT_TYPE_CMOD_OPT: 
+				{
 					mdToken	token;	
-					char classname[MAX_FUNCTION_LENGTH];
-					signature += CorSigUncompressToken( (PCCOR_SIGNATURE) *signature, &token ); 
+					string className;//[MAX_FUNCTION_LENGTH];
+					(*signature) += CorSigUncompressToken((PCCOR_SIGNATURE)(*signature),&token);
 					if ( TypeFromToken( token ) != mdtTypeRef ) {
-						HRESULT	hr;
 						WCHAR zName[MAX_FUNCTION_LENGTH];
-						hr = metaDataImport->GetTypeDefProps( token, zName, MAX_FUNCTION_LENGTH, 0, 0, 0);
-						if ( SUCCEEDED( hr ) ) {
-							wcstombs( classname, zName, MAX_FUNCTION_LENGTH );
-						}
+						metaDataImport->GetTypeDefProps(token,zName,MAX_FUNCTION_LENGTH,0,0,0);
+						className=CW2A(zName);//,MAX_FUNCTION_LENGTH);
 					}
-					char* classOnly=classname+strlen(classname);
-					while(classOnly!=classname && (*(classOnly-1))!='.') {
-						classOnly--;
+					int index=className.length();
+					while(index>0 && className[index-1]!='.') {
+						index--;
 					}
-					text+=classOnly;
+					text+=className.substr(index);
+					//text+=className.substr(className.find_last_of("."));
 					break;	
 				}
 				case ELEMENT_TYPE_SZARRAY:
