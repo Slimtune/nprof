@@ -539,6 +539,7 @@ namespace NProf {
 		}
 		public Run currentRun;
 		public MethodView(string name) {
+			this.DefaultItemHeight = 20;
 			this.SelectedItemsChanged += new EventHandler(MethodView_SelectedItemsChanged);
 			HeaderStyle = ColumnHeaderStyle.Clickable;
 			Columns.Add(name);
@@ -597,23 +598,42 @@ namespace NProf {
 		}
 		public class CustomLabel : Label {
 			private double fraction;
-			public CustomLabel(double fraction) {
-				this.fraction = fraction;
-				Text=(fraction* 100.0).ToString("0.00;-0.00;0.00");
-				TextAlign = ContentAlignment.MiddleCenter;
-				Height = 12;
+			public CustomLabel(double fraction):this(fraction,(fraction * 100.0).ToString("0.00;-0.00;0.00")) {
+				//this.fraction = fraction;
+				//Text = (fraction * 100.0).ToString("0.00;-0.00;0.00");
+				//TextAlign = ContentAlignment.MiddleLeft;
+				//Height = 12;
 			}
+			public CustomLabel(double fraction,string text) {
+				this.fraction = fraction;
+				Text = text;
+				TextAlign = ContentAlignment.MiddleLeft;
+				Height = 12;
+				this.Padding = new Padding(2);
+			}
+
+			//public CustomLabel(double fraction) {
+			//    this.fraction = fraction;
+			//    Text=(fraction* 100.0).ToString("0.00;-0.00;0.00");
+			//    TextAlign = ContentAlignment.MiddleCenter;
+			//    Height = 12;
+			//}
 			protected override void OnPaint(PaintEventArgs e) {
-				int middle=Convert.ToInt32(Width*(1.0-fraction));
-				e.Graphics.FillRectangle(Brushes.LightBlue, new Rectangle(0, 0, middle, Height));
-				e.Graphics.FillRectangle(Brushes.Red, new Rectangle(middle, 0, Width, Height));
+				int width = 100;
+				int middle = Convert.ToInt32(width * fraction);
+				e.Graphics.FillRectangle(Brushes.LightBlue, new Rectangle(middle, 0, width-middle, Height));
+				e.Graphics.FillRectangle(Brushes.Red, new Rectangle(0, 0, middle, Height));
 				base.OnPaint(e);
 			}
 		}
 		private ContainerListViewItem AddItem(ContainerListViewItemCollection parent, FunctionInfo function) {
 			ContainerListViewItem item = parent.Add(currentRun.signatures[function.ID].Signature);
+			double fraction = ((double)function.Samples) / (double)currentRun.maxSamples;
+			item.SubItems[0].ItemControl = new CustomLabel(fraction,currentRun.signatures[function.ID].Signature);
+			//ContainerListViewItem item = parent.Add(currentRun.signatures[function.ID].Signature);
 
-			item.SubItems[1].ItemControl = new CustomLabel(((double)function.Samples) / (double)currentRun.maxSamples);
+			item.SubItems[1].Text=(fraction* 100.0).ToString("0.00;-0.00;0.00");
+			//item.SubItems[1].ItemControl = new CustomLabel(fraction);
 			int childSamples = 0;
 			foreach (FunctionInfo f in function.Children.Values) {
 				childSamples += f.Samples;
