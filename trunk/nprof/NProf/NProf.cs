@@ -30,6 +30,46 @@ using System.Globalization;
 using DotNetLib.Windows.Forms;
 
 namespace NProf {
+	public class CustomLabel : Label {
+		public double fraction;
+		private int width;
+		private double oldFraction;
+		public CustomLabel(int width,double fraction,double oldFraction, string text) {
+			this.width = width;
+			this.fraction = fraction;
+			this.oldFraction = oldFraction;
+			Text = text;
+			TextAlign = ContentAlignment.MiddleLeft;
+			Height = 12;
+			this.Padding = new Padding(2);
+		}
+		protected override void OnPaint(PaintEventArgs e) {
+			int middle = Convert.ToInt32(width * fraction);
+			e.Graphics.FillRectangle(Brushes.WhiteSmoke, new Rectangle(middle, 0, width - middle, Height));
+			e.Graphics.FillRectangle(Brushes.LightBlue, new Rectangle(0, 0, middle, Height));
+			double change;
+			Brush color;
+			int first;
+			int second;
+			int difference=Math.Abs(Convert.ToInt32((oldFraction-fraction)*width));
+			if (oldFraction < fraction) {
+				color = Brushes.Red;
+				first = middle - difference;
+				//second= middle;
+				//first=middle+difference;
+			}
+			else {
+				color = Brushes.Green;
+				first = middle;
+				//first = middle;
+				//second=middle+difference;
+			}
+			if (oldFraction != 0) {
+				e.Graphics.FillRectangle(color, new Rectangle(first, 0, difference, Height));
+			}
+			base.OnPaint(e);
+		}
+	}
 	public class NProf : Form {
 		public ContainerListView runs;
 		private MethodView callees;
@@ -56,27 +96,25 @@ namespace NProf {
 				return "NProf " + Profiler.Version;
 			}
 		}
+		public static StatusBar status = new StatusBar();
 		private NProf() {
 			Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("NProf.Resources.app-icon.ico"));
 			Text = Title;
 			profiler = new Profiler();
 			runs = new ContainerListView();
 			runs.ColumnSortColor = Color.White;
-			runs.Columns.Add("Run");
-			runs.Columns.Add("Time");
+			runs.Columns.Add("Runs");
 			runs.Columns[0].SortDataType = SortDataType.String;
-			runs.Columns[1].SortDataType = SortDataType.Double;
-			runs.Columns[1].ContentAlign = ContentAlignment.MiddleRight;
-			runs.HeaderStyle=ColumnHeaderStyle.Clickable;
 			runs.AllowMultiSelect = true;
 			runs.Dock = DockStyle.Left;
 			runs.Width = 200;
+			runs.DefaultItemHeight = 20;
 			runs.DoubleClick += delegate {
 				if (runs.SelectedItems.Count != 0) {
 					ShowRun((Run)runs.SelectedItems[0].Tag);
 				}
 			};
-			callers = new MethodView("Caller methods");
+			callers = new MethodView("Callers");
 			callers.Size = new Size(100, 200);
 			callers.Dock = DockStyle.Bottom;
 			callers.GotFocus += delegate {
@@ -87,7 +125,7 @@ namespace NProf {
 					callees.MoveTo(((FunctionInfo)callers.SelectedItems[0].Tag).ID);
 				}
 			};
-			callees = new MethodView("Callee methods");
+			callees = new MethodView("Callees");
 			callees.Size = new Size(100, 100);
 			callees.Dock = DockStyle.Fill;
 			callees.GotFocus += delegate {
@@ -228,7 +266,7 @@ namespace NProf {
 			argumentLabel.AutoSize = true;
 			mainPanel.Controls.Add(argumentLabel, 0, 1);
 			mainPanel.Controls.Add(arguments, 1, 1);
-			Controls.AddRange(new Control[] { rightPanel, mainPanel });
+			Controls.AddRange(new Control[] { rightPanel, mainPanel ,status});
 			application.TextChanged += delegate {
 				Text = Path.GetFileNameWithoutExtension(application.Text) + " - " + Title;
 			};
@@ -250,26 +288,44 @@ namespace NProf {
 		public void AddRun(Run run) {
 			int count=1;
 			string text = Path.GetFileNameWithoutExtension(application.Text);
+			int maxStackWalks=run.stackWalks.Count;
 			foreach (ContainerListViewItem i in runs.Items) {
 				if (i.Text.StartsWith(text)) {
 					count++;
 				}
+				int c=((Run)i.Tag).stackWalks.Count;
+				if(c>maxStackWalks) {
+					maxStackWalks=c;
+				}
 			}
-			ContainerListViewItem item = new ContainerListViewItem(Path.GetFileNameWithoutExtension(application.Text) + " " + count);
+			string title = Path.GetFileNameWithoutExtension(application.Text) + " " + count;
+			ContainerListViewItem item = new ContainerListViewItem(title);
 			item.Tag = run;
 			runs.Items.Add(item);
 			runs.SelectedItems.Clear();
-			item.SubItems[1].Text = (((double)run.stackWalks.Count) / 200.0).ToString("0.00;-0.00;0.00");
-			//Label label = new Label();
-			//label.BackColor = Color.Yellow;
-			//item.SubItems[1].ItemControl=label;
-			//.Text = (((double)run.stackWalks.Count) / 200.0).ToString("0.00;-0.00;0.00");
+			item.SubItems[0].ItemControl=new CustomLabel(50,(((double)run.stackWalks.Count) / maxStackWalks),0,title);
 			runs.SelectedItems.Add(item);
+			foreach (ContainerListViewItem i in runs.Items) {
+				((CustomLabel)i.SubItems[0].ItemControl).fraction = ((Run)i.Tag).stackWalks.Count/(double)maxStackWalks;
+			}
 			ShowRun(run);
 		}
 		public void ShowRun(Run run) {
-			callees.Update(run, run.functions);
-			callers.Update(run, run.callers);
+			Run compareRun;
+			if (runs.Items.Count > 1) {
+				ContainerListViewItem first = runs.Items[0];//[runs.SelectedItems.Count - 2];
+				//ContainerListViewItem first = runs.SelectedItems[runs.SelectedItems.Count - 2];
+				compareRun = (Run)first.Tag;
+			}
+			//if (runs.SelectedItems.Count > 1) {
+			//    ContainerListViewItem first = runs.SelectedItems[runs.SelectedItems.Count - 2];
+			//    compareRun = (Run)first.Tag;
+			//}
+			else {
+				compareRun = null;
+			}
+			callees.Update(run, run.functions,compareRun!=null?compareRun.functions:null);
+			callers.Update(run, run.callers,compareRun!=null?compareRun.callers:null);
 		}
 		private void findNext_Click(object sender, EventArgs e) {
 			Find(true, true);
@@ -406,10 +462,8 @@ namespace NProf {
 					if (functionId == -1) {
 						break;
 					}
-					signatures[functionId] = new FunctionSignature(
-						r.ReadUInt32(),
-						ReadString(r)
-					);
+					r.ReadUInt32();
+					signatures[functionId] = ReadString(r);
 				}
 				while (true) {
 					List<int> stackWalk = new List<int>();
@@ -437,7 +491,7 @@ namespace NProf {
 				NProf.form.AddRun(this);
 			}));
 		}
-		public Dictionary<int, FunctionSignature> signatures = new Dictionary<int, FunctionSignature>();
+		public Dictionary<int, string> signatures = new Dictionary<int, string>();
 		public Dictionary<int, FunctionInfo> functions = new Dictionary<int, FunctionInfo>();
 		public Dictionary<int, FunctionInfo> callers = new Dictionary<int, FunctionInfo>();
 		public Run(Profiler p) {
@@ -465,16 +519,26 @@ namespace NProf {
 				}
 			}
 		}
-		public void Update(Run run, Dictionary<int, FunctionInfo> functions) {
+		public void Update(Run run, Dictionary<int, FunctionInfo> functions, Dictionary<int, FunctionInfo> compareFunctions) {
 			currentRun = run;
 			SuspendLayout();
 			BeginUpdate();
 			Items.Clear();
 			foreach (FunctionInfo method in SortFunctions(functions.Values)) {
-				AddItem(Items, method);
+				FunctionInfo oldFunction;
+				if (compareFunctions != null && compareFunctions.ContainsKey(method.ID)) {
+					oldFunction = compareFunctions[method.ID];
+				}
+				else {
+					oldFunction = null;
+				}
+				AddItem(Items, method,oldFunction);
 			}
+			//foreach (FunctionInfo method in SortFunctions(functions.Values)) {
+			//    AddItem(Items, method,);
+			//}
 			foreach (ContainerListViewItem item in Items) {
-				UpdateView(item);
+				MakeSureComputed(item);
 			}
 			EndUpdate();
 			ResumeLayout();
@@ -541,34 +605,26 @@ namespace NProf {
 		public MethodView(string name) {
 			this.DefaultItemHeight = 20;
 			this.SelectedItemsChanged += new EventHandler(MethodView_SelectedItemsChanged);
-			HeaderStyle = ColumnHeaderStyle.Clickable;
 			Columns.Add(name);
-			Columns.Add("Inclusive time");
-			//Columns.Add("Exclusive time");
 			Columns[0].Width = 350;
 			Columns[0].SortDataType = SortDataType.String;
-			Columns[1].SortDataType = SortDataType.Double;
-			//Columns[2].SortDataType = SortDataType.Double;
-			Columns[1].ToolTip = "Percentage of time spent in method and its children";
-			//Columns[2].ToolTip = "Percentage of time spent in method";
 			this.ShowPlusMinus = true;
 			ShowRootTreeLines = true;
 			ShowTreeLines = true;
 			FullItemSelect = true;
-			Columns[1].ContentAlign = ContentAlignment.MiddleRight;
-			//Columns[2].ContentAlign = ContentAlignment.MiddleRight;
 			ColumnSortColor = Color.White;
 			Font = new Font("Tahoma", 8.0f);
 			this.BeforeExpand += delegate(object sender,ContainerListViewCancelEventArgs e) {
-				UpdateView(e.Item);
+				MakeSureComputed(e.Item);
 			};
 		}
-
 		void MethodView_SelectedItemsChanged(object sender, EventArgs e) {
-			SelectedItems[0].SubItems[1].ItemControl.BackColor = this.ItemSelectedColor;
+			if (SelectedItems.Count != 0) {
+				NProf.status.Text = ((((FunctionInfo)SelectedItems[0].Tag).Samples / (double)currentRun.maxSamples) * 100).ToString("0.00;-0.00;0.00") + "%";
+			}
 		}
 		void MakeSureComputed(ContainerListViewItem item) {
-			MakeSureComputed(item, false);
+			MakeSureComputed(item, true);
 		}
 		public List<FunctionInfo> SortFunctions(IEnumerable<FunctionInfo> f) {
 			List<FunctionInfo> functions = new List<FunctionInfo>(f);
@@ -589,51 +645,17 @@ namespace NProf {
 				}
 			}
 		}
-		void UpdateView(ContainerListViewItem item) {
-			SuspendLayout();
-			BeginUpdate();
-			MakeSureComputed(item, true);
-			EndUpdate();
-			ResumeLayout();
-		}
-		public class CustomLabel : Label {
-			private double fraction;
-			public CustomLabel(double fraction):this(fraction,(fraction * 100.0).ToString("0.00;-0.00;0.00")) {
-				//this.fraction = fraction;
-				//Text = (fraction * 100.0).ToString("0.00;-0.00;0.00");
-				//TextAlign = ContentAlignment.MiddleLeft;
-				//Height = 12;
-			}
-			public CustomLabel(double fraction,string text) {
-				this.fraction = fraction;
-				Text = text;
-				TextAlign = ContentAlignment.MiddleLeft;
-				Height = 12;
-				this.Padding = new Padding(2);
-			}
-
-			//public CustomLabel(double fraction) {
-			//    this.fraction = fraction;
-			//    Text=(fraction* 100.0).ToString("0.00;-0.00;0.00");
-			//    TextAlign = ContentAlignment.MiddleCenter;
-			//    Height = 12;
-			//}
-			protected override void OnPaint(PaintEventArgs e) {
-				int width = 100;
-				int middle = Convert.ToInt32(width * fraction);
-				e.Graphics.FillRectangle(Brushes.LightBlue, new Rectangle(middle, 0, width-middle, Height));
-				e.Graphics.FillRectangle(Brushes.Red, new Rectangle(0, 0, middle, Height));
-				base.OnPaint(e);
-			}
-		}
-		private ContainerListViewItem AddItem(ContainerListViewItemCollection parent, FunctionInfo function) {
-			ContainerListViewItem item = parent.Add(currentRun.signatures[function.ID].Signature);
+		private ContainerListViewItem AddItem(ContainerListViewItemCollection parent, FunctionInfo function,FunctionInfo oldFunction) {
+			ContainerListViewItem item = parent.Add(currentRun.signatures[function.ID]);
 			double fraction = ((double)function.Samples) / (double)currentRun.maxSamples;
-			item.SubItems[0].ItemControl = new CustomLabel(fraction,currentRun.signatures[function.ID].Signature);
-			//ContainerListViewItem item = parent.Add(currentRun.signatures[function.ID].Signature);
-
-			item.SubItems[1].Text=(fraction* 100.0).ToString("0.00;-0.00;0.00");
-			//item.SubItems[1].ItemControl = new CustomLabel(fraction);
+			double oldFraction;
+			if (oldFunction != null) {
+				oldFraction = ((double)oldFunction.Samples) / (double)currentRun.maxSamples;
+			}
+			else {
+				oldFraction = 0;
+			}
+			item.SubItems[0].ItemControl = new CustomLabel(400,fraction,oldFraction,currentRun.signatures[function.ID]);
 			int childSamples = 0;
 			foreach (FunctionInfo f in function.Children.Values) {
 				childSamples += f.Samples;
@@ -641,14 +663,13 @@ namespace NProf {
 			item.Tag = function;
 			return item;
 		}
-
 		void label_Paint(object sender, PaintEventArgs e) {
 			e.Graphics.DrawRectangle(Pens.Red,new Rectangle(10,5,100,10));
 		}
 		public void AddFunctionItem(ContainerListViewItemCollection parent, FunctionInfo function) {
-			ContainerListViewItem item = AddItem(parent, function);
+			ContainerListViewItem item = AddItem(parent, function,null);
 			foreach (FunctionInfo callee in function.Children.Values) {
-				AddItem(item.Items, callee);
+				AddItem(item.Items, callee,null);
 			}
 		}
 		public void Add(FunctionInfo function) {
@@ -687,12 +708,5 @@ namespace NProf {
 		}
 		private Run run;
 		private Process process;
-	}
-	public class FunctionSignature {
-		public FunctionSignature(UInt32 methodAttributes, string signature) {
-			this.Signature = signature;
-		}
-		public string NameSpace;
-		public string Signature;
 	}
 }

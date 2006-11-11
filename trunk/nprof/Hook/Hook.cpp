@@ -222,7 +222,7 @@ HRESULT __stdcall __stdcall StackWalker(FunctionID funcId,UINT_PTR ip,COR_PRF_FR
 	}
 	return S_OK;
 }
-const int interval=1;
+const int interval=2;
 class Profiler {
 public: 
 	vector<vector<FunctionID>*> stackWalks;
@@ -304,6 +304,9 @@ public:
 			__int64 l;
 			memcpy(&l,&userTime,sizeof(l));
 			totalTime+=l;
+			__int64 m;
+			memcpy(&m,&userTime,sizeof(m));
+			totalTime+=m;
 			CloseHandle(thread);
 		}
 		if(totalTime-lastTime>50) {
