@@ -61,14 +61,16 @@ namespace NProf {
 			Text = Title;
 			profiler = new Profiler();
 			runs = new ContainerListView();
-			ContainerListViewColumnHeader header = new ContainerListViewColumnHeader("Profiling runs", 90);
-			runs.Columns.Add(header);
-			runs.SizeChanged += delegate {
-				header.Width = runs.Size.Width - 5;
-			};
+			runs.ColumnSortColor = Color.White;
+			runs.Columns.Add("Run");
+			runs.Columns.Add("Time");
+			runs.Columns[0].SortDataType = SortDataType.String;
+			runs.Columns[1].SortDataType = SortDataType.Double;
+			runs.Columns[1].ContentAlign = ContentAlignment.MiddleRight;
+			runs.HeaderStyle=ColumnHeaderStyle.Clickable;
 			runs.AllowMultiSelect = true;
 			runs.Dock = DockStyle.Left;
-			runs.Width = 100;
+			runs.Width = 200;
 			runs.DoubleClick += delegate {
 				if (runs.SelectedItems.Count != 0) {
 					ShowRun((Run)runs.SelectedItems[0].Tag);
@@ -257,6 +259,11 @@ namespace NProf {
 			item.Tag = run;
 			runs.Items.Add(item);
 			runs.SelectedItems.Clear();
+			item.SubItems[1].Text = (((double)run.stackWalks.Count) / 200.0).ToString("0.00;-0.00;0.00");
+			//Label label = new Label();
+			//label.BackColor = Color.Yellow;
+			//item.SubItems[1].ItemControl=label;
+			//.Text = (((double)run.stackWalks.Count) / 200.0).ToString("0.00;-0.00;0.00");
 			runs.SelectedItems.Add(item);
 			ShowRun(run);
 		}
@@ -361,10 +368,15 @@ namespace NProf {
 		}
 		private void Interprete(Dictionary<int, FunctionInfo> map,bool reverse) {
 			int currentWalk = 0;
-			foreach (List<int> stackWalk in stackWalks) {
+			foreach (List<int> original in stackWalks) {
 				currentWalk++;
+				List<int> stackWalk;
 				if (reverse) {
+					stackWalk = new List<int>(original);
 					stackWalk.Reverse();
+				}
+				else {
+					stackWalk = original;
 				}
 				for (int i = 0; i < stackWalk.Count; i++) {
 					FunctionInfo function = Run.GetFunctionInfo(map, stackWalk[stackWalk.Count - i - 1]);
@@ -527,26 +539,32 @@ namespace NProf {
 		}
 		public Run currentRun;
 		public MethodView(string name) {
+			this.SelectedItemsChanged += new EventHandler(MethodView_SelectedItemsChanged);
 			HeaderStyle = ColumnHeaderStyle.Clickable;
 			Columns.Add(name);
 			Columns.Add("Inclusive time");
-			Columns.Add("Exclusive time");
+			//Columns.Add("Exclusive time");
 			Columns[0].Width = 350;
+			Columns[0].SortDataType = SortDataType.String;
 			Columns[1].SortDataType = SortDataType.Double;
-			Columns[2].SortDataType = SortDataType.Double;
+			//Columns[2].SortDataType = SortDataType.Double;
 			Columns[1].ToolTip = "Percentage of time spent in method and its children";
-			Columns[2].ToolTip = "Percentage of time spent in method";
+			//Columns[2].ToolTip = "Percentage of time spent in method";
 			this.ShowPlusMinus = true;
 			ShowRootTreeLines = true;
 			ShowTreeLines = true;
 			FullItemSelect = true;
 			Columns[1].ContentAlign = ContentAlignment.MiddleRight;
-			Columns[2].ContentAlign = ContentAlignment.MiddleRight;
+			//Columns[2].ContentAlign = ContentAlignment.MiddleRight;
 			ColumnSortColor = Color.White;
 			Font = new Font("Tahoma", 8.0f);
 			this.BeforeExpand += delegate(object sender,ContainerListViewCancelEventArgs e) {
 				UpdateView(e.Item);
 			};
+		}
+
+		void MethodView_SelectedItemsChanged(object sender, EventArgs e) {
+			SelectedItems[0].SubItems[1].ItemControl.BackColor = this.ItemSelectedColor;
 		}
 		void MakeSureComputed(ContainerListViewItem item) {
 			MakeSureComputed(item, false);
@@ -577,16 +595,35 @@ namespace NProf {
 			EndUpdate();
 			ResumeLayout();
 		}
+		public class CustomLabel : Label {
+			private double fraction;
+			public CustomLabel(double fraction) {
+				this.fraction = fraction;
+				Text=(fraction* 100.0).ToString("0.00;-0.00;0.00");
+				TextAlign = ContentAlignment.MiddleCenter;
+				Height = 12;
+			}
+			protected override void OnPaint(PaintEventArgs e) {
+				int middle=Convert.ToInt32(Width*(1.0-fraction));
+				e.Graphics.FillRectangle(Brushes.LightBlue, new Rectangle(0, 0, middle, Height));
+				e.Graphics.FillRectangle(Brushes.Red, new Rectangle(middle, 0, Width, Height));
+				base.OnPaint(e);
+			}
+		}
 		private ContainerListViewItem AddItem(ContainerListViewItemCollection parent, FunctionInfo function) {
 			ContainerListViewItem item = parent.Add(currentRun.signatures[function.ID].Signature);
-			item.SubItems[1].Text = ((((double)function.Samples) / (double)currentRun.maxSamples) * 100.0).ToString("0.00;-0.00;0.00");
+
+			item.SubItems[1].ItemControl = new CustomLabel(((double)function.Samples) / (double)currentRun.maxSamples);
 			int childSamples = 0;
 			foreach (FunctionInfo f in function.Children.Values) {
 				childSamples += f.Samples;
 			}
-			item.SubItems[2].Text = ((((double)function.Samples-childSamples) / (double)currentRun.maxSamples) * 100.0).ToString("0.00;-0.00;0.00");
 			item.Tag = function;
 			return item;
+		}
+
+		void label_Paint(object sender, PaintEventArgs e) {
+			e.Graphics.DrawRectangle(Pens.Red,new Rectangle(10,5,100,10));
 		}
 		public void AddFunctionItem(ContainerListViewItemCollection parent, FunctionInfo function) {
 			ContainerListViewItem item = AddItem(parent, function);

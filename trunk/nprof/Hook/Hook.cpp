@@ -222,7 +222,7 @@ HRESULT __stdcall __stdcall StackWalker(FunctionID funcId,UINT_PTR ip,COR_PRF_FR
 	}
 	return S_OK;
 }
-const int interval=5;
+const int interval=1;
 class Profiler {
 public: 
 	vector<vector<FunctionID>*> stackWalks;
@@ -306,7 +306,7 @@ public:
 			totalTime+=l;
 			CloseHandle(thread);
 		}
-		if(totalTime-lastTime>100) {
+		if(totalTime-lastTime>50) {
 			lastTime=totalTime;
 			profiler->WalkStack();
 		}
@@ -371,8 +371,8 @@ public:
 						signatures.insert(make_pair(id,id));
 					}
 				}
-				stackWalks.push_back(functions);
 			}
+			stackWalks.push_back(functions);
 			ResumeThread(threadHandle);
 			CloseHandle(threadHandle);
 		}
