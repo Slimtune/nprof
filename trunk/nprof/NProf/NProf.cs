@@ -30,46 +30,46 @@ using System.Globalization;
 using DotNetLib.Windows.Forms;
 
 namespace NProf {
-	public class CustomLabel : Label {
-		public double fraction;
-		private int width;
-		private double oldFraction;
-		public CustomLabel(int width,double fraction,double oldFraction, string text) {
-			this.width = width;
-			this.fraction = fraction;
-			this.oldFraction = oldFraction;
-			Text = text;
-			TextAlign = ContentAlignment.MiddleLeft;
-			Height = 12;
-			this.Padding = new Padding(2);
-		}
-		protected override void OnPaint(PaintEventArgs e) {
-			int middle = Convert.ToInt32(width * fraction);
-			e.Graphics.FillRectangle(Brushes.WhiteSmoke, new Rectangle(middle, 0, width - middle, Height));
-			e.Graphics.FillRectangle(Brushes.LightBlue, new Rectangle(0, 0, middle, Height));
-			double change;
-			Brush color;
-			int first;
-			int second;
-			int difference=Math.Abs(Convert.ToInt32((oldFraction-fraction)*width));
-			if (oldFraction < fraction) {
-				color = Brushes.Red;
-				first = middle - difference;
-				//second= middle;
-				//first=middle+difference;
-			}
-			else {
-				color = Brushes.Green;
-				first = middle;
-				//first = middle;
-				//second=middle+difference;
-			}
-			if (oldFraction != 0) {
-				e.Graphics.FillRectangle(color, new Rectangle(first, 0, difference, Height));
-			}
-			base.OnPaint(e);
-		}
-	}
+	//public class CustomLabel : Label {
+	//    public double fraction;
+	//    private int width;
+	//    private double oldFraction;
+	//    public CustomLabel(int width,double fraction,double oldFraction, string text) {
+	//        this.width = width;
+	//        this.fraction = fraction;
+	//        this.oldFraction = oldFraction;
+	//        Text = text;
+	//        TextAlign = ContentAlignment.MiddleLeft;
+	//        Height = 12;
+	//        this.Padding = new Padding(2);
+	//    }
+	//    protected override void OnPaint(PaintEventArgs e) {
+	//        int middle = Convert.ToInt32(width * fraction);
+	//        e.Graphics.FillRectangle(Brushes.WhiteSmoke, new Rectangle(middle, 0, width - middle, Height));
+	//        e.Graphics.FillRectangle(Brushes.LightBlue, new Rectangle(0, 0, middle, Height));
+	//        double change;
+	//        Brush color;
+	//        int first;
+	//        int second;
+	//        int difference=Math.Abs(Convert.ToInt32((oldFraction-fraction)*width));
+	//        if (oldFraction < fraction) {
+	//            color = Brushes.Red;
+	//            first = middle - difference;
+	//            //second= middle;
+	//            //first=middle+difference;
+	//        }
+	//        else {
+	//            color = Brushes.Green;
+	//            first = middle;
+	//            //first = middle;
+	//            //second=middle+difference;
+	//        }
+	//        if (oldFraction != 0) {
+	//            e.Graphics.FillRectangle(color, new Rectangle(first, 0, difference, Height));
+	//        }
+	//        base.OnPaint(e);
+	//    }
+	//}
 	public class NProf : Form {
 		public ContainerListView runs;
 		private MethodView callees;
@@ -96,7 +96,7 @@ namespace NProf {
 				return "NProf " + Profiler.Version;
 			}
 		}
-		public static StatusBar status = new StatusBar();
+		//public static StatusBar status = new StatusBar();
 		private NProf() {
 			Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("NProf.Resources.app-icon.ico"));
 			Text = Title;
@@ -108,7 +108,7 @@ namespace NProf {
 			runs.AllowMultiSelect = true;
 			runs.Dock = DockStyle.Left;
 			runs.Width = 200;
-			runs.DefaultItemHeight = 20;
+			//runs.DefaultItemHeight = 20;
 			runs.DoubleClick += delegate {
 				if (runs.SelectedItems.Count != 0) {
 					ShowRun((Run)runs.SelectedItems[0].Tag);
@@ -266,7 +266,7 @@ namespace NProf {
 			argumentLabel.AutoSize = true;
 			mainPanel.Controls.Add(argumentLabel, 0, 1);
 			mainPanel.Controls.Add(arguments, 1, 1);
-			Controls.AddRange(new Control[] { rightPanel, mainPanel ,status});
+			Controls.AddRange(new Control[] { rightPanel, mainPanel});
 			application.TextChanged += delegate {
 				Text = Path.GetFileNameWithoutExtension(application.Text) + " - " + Title;
 			};
@@ -303,11 +303,14 @@ namespace NProf {
 			item.Tag = run;
 			runs.Items.Add(item);
 			runs.SelectedItems.Clear();
-			item.SubItems[0].ItemControl=new CustomLabel(50,(((double)run.stackWalks.Count) / maxStackWalks),0,title);
+			item.SubItems[0].Text = title;
+			//item.SubItems[0].Text=((((double)run.stackWalks.Count) / maxStackWalks) * 50).ToString();
+			//item.SubItems[0].ItemControl = new CustomLabel(50, (((double)run.stackWalks.Count) / maxStackWalks), 0, title);
 			runs.SelectedItems.Add(item);
-			foreach (ContainerListViewItem i in runs.Items) {
-				((CustomLabel)i.SubItems[0].ItemControl).fraction = ((Run)i.Tag).stackWalks.Count/(double)maxStackWalks;
-			}
+			//foreach (ContainerListViewItem i in runs.Items) {
+			//    ((CustomLabel)i.SubItems[0].ItemControl).fraction = ((Run)i.Tag).stackWalks.Count / (double)maxStackWalks;
+			//    //((CustomLabel)i.SubItems[0].ItemControl).fraction = ((Run)i.Tag).stackWalks.Count / (double)maxStackWalks;
+			//}
 			ShowRun(run);
 		}
 		public void ShowRun(Run run) {
@@ -603,6 +606,9 @@ namespace NProf {
 		}
 		public Run currentRun;
 		public MethodView(string name) {
+			this.SizeChanged += delegate {
+				this.Columns[0].Width = this.Width - 30;
+			};
 			this.DefaultItemHeight = 20;
 			this.SelectedItemsChanged += new EventHandler(MethodView_SelectedItemsChanged);
 			Columns.Add(name);
@@ -619,9 +625,9 @@ namespace NProf {
 			};
 		}
 		void MethodView_SelectedItemsChanged(object sender, EventArgs e) {
-			if (SelectedItems.Count != 0) {
-				NProf.status.Text = ((((FunctionInfo)SelectedItems[0].Tag).Samples / (double)currentRun.maxSamples) * 100).ToString("0.00;-0.00;0.00") + "%";
-			}
+			//if (SelectedItems.Count != 0) {
+			//    NProf.status.Text = ((((FunctionInfo)SelectedItems[0].Tag).Samples / (double)currentRun.maxSamples) * 100).ToString("0.00;-0.00;0.00") + "%";
+			//}
 		}
 		void MakeSureComputed(ContainerListViewItem item) {
 			MakeSureComputed(item, true);
@@ -655,7 +661,29 @@ namespace NProf {
 			else {
 				oldFraction = 0;
 			}
-			item.SubItems[0].ItemControl = new CustomLabel(400,fraction,oldFraction,currentRun.signatures[function.ID]);
+			FlowLayoutPanel panel = new FlowLayoutPanel();
+			//panel.BackColor = Color.Yellow;
+			panel.Padding = new Padding(0);
+			panel.Margin = new Padding(0);
+			panel.FlowDirection = FlowDirection.LeftToRight;
+			//panel.AutoSize = true;
+			Label signature=new Label();
+			//signature.BackColor = Color.Green;
+			//signature.BorderStyle = BorderStyle.None;
+			signature.Margin = new Padding(0);
+			signature.Text=currentRun.signatures[function.ID];
+			signature.AutoSize = true;
+			Label time=new Label();
+			time.Text=(fraction * 100.0).ToString("0.00;-0.00;0.00");
+			time.Width = 34;
+			//time.BackColor = Color.Red;
+			time.TextAlign = ContentAlignment.TopRight;
+			time.Padding = new Padding(0,0,2,0);
+			time.Margin = new Padding(0);
+			panel.Controls.Add(time);
+			panel.Controls.Add(signature);
+			item.SubItems[0].ItemControl = panel;
+
 			int childSamples = 0;
 			foreach (FunctionInfo f in function.Children.Values) {
 				childSamples += f.Samples;
