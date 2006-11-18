@@ -28,6 +28,7 @@
 #include "Dbghelp.h"
 #include "resource.h"
 #include <iostream>
+#include <set>
 
 using namespace ATL;
 using namespace std;
@@ -43,12 +44,11 @@ public:
 	}
 	string GetClass(string className) {
 		int index=className.length();
-		for(;index>0 && className[index-1]!='.';index--) {
-		}
+		for(;index>0 && className[index-1]!='.';index--);
 		return className.substr(index);
 	}
-	void GetFunctionSignature(FunctionID functionId,UINT32& methodAttributes,string& text) {
-
+	string GetFunctionSignature(FunctionID functionId) {
+		string text;
 		ClassID classID;
 		ModuleID moduleID;
 		mdToken moduleToken;
@@ -82,7 +82,6 @@ public:
 		if(FAILED(metaDataImport->GetMethodProps( (mdMethodDef) token,0,0,0,0,&methodAttr,&sigBlob,0,0,0 ))) {
 			DebugBreak();
 		}
-		methodAttributes = methodAttr;
 
 		ULONG callConv;
 		sigBlob += CorSigUncompressData(sigBlob, &callConv);
@@ -91,17 +90,17 @@ public:
 		ULONG argCount=0;
 		sigBlob += CorSigUncompressData(sigBlob, &argCount);
 
-		string returnType=ParseElementType(metaDataImport, &sigBlob);
+		ParseElementType(metaDataImport, &sigBlob);
 
 		for(ULONG i = 0; (sigBlob != 0) && (i < (argCount)); i++) {
 			if(i!=0){
 				text+=", ";
 			}
-			string type=ParseElementType(metaDataImport,&sigBlob);
-			text+=type;
+			text+=ParseElementType(metaDataImport,&sigBlob);
 		}
 		text+=")";
 		metaDataImport->Release();
+		return text;
 	}
 	template<class T> string ToString(T i) {
 		string s;
@@ -111,124 +110,119 @@ public:
 		return s;
 	}
 	string ParseElementType(IMetaDataImport *metaDataImport,PCCOR_SIGNATURE* signature) {
-		string text;
-		map<CorElementType,string> types;	
-		types[ELEMENT_TYPE_VOID]="void";
-		types[ELEMENT_TYPE_BOOLEAN]="bool";	
-		types[ELEMENT_TYPE_CHAR]="wchar";
-		types[ELEMENT_TYPE_I1]="byte";
-		types[ELEMENT_TYPE_U1]="ubyte";
-		types[ELEMENT_TYPE_I2]="short";
-		types[ELEMENT_TYPE_U2]="ushort";
-		types[ELEMENT_TYPE_I4]="int";
-		types[ELEMENT_TYPE_U4]="uint";	
-		types[ELEMENT_TYPE_I8]="long";	
-		types[ELEMENT_TYPE_U8]="ulong";	
-		types[ELEMENT_TYPE_R4]="float";	
-		types[ELEMENT_TYPE_R8]="double";	
-		types[ELEMENT_TYPE_U]="uint";	
-		types[ELEMENT_TYPE_I]="int";	
-		types[ELEMENT_TYPE_OBJECT]="object";	
-		types[ELEMENT_TYPE_STRING]="string";	
-		types[ELEMENT_TYPE_TYPEDBYREF]="refany";
 		(*signature)++;
-		CorElementType element=(CorElementType)(**signature);
-		if(types.find(element)!=types.end()) {
-			text+=types[element];
-		}
-		else {
-			switch(element) {
-				case ELEMENT_TYPE_CLASS:	
-				case ELEMENT_TYPE_VALUETYPE:
-				case ELEMENT_TYPE_CMOD_REQD:
-				case ELEMENT_TYPE_CMOD_OPT: 
-				{
-					mdToken	token;
-					(*signature) += CorSigUncompressToken((PCCOR_SIGNATURE)(*signature),&token);
-					if(TypeFromToken(token)!=mdtTypeRef) {
-						//DebugBreak();
-						WCHAR zName[MAX_FUNCTION_LENGTH];
-						metaDataImport->GetTypeDefProps(token,zName,MAX_FUNCTION_LENGTH,0,0,0);
-						text+=CW2A(zName);
-					}
-					break;	
+		switch((CorElementType)(**signature)) {
+			case ELEMENT_TYPE_VOID:
+				return "void";
+			case ELEMENT_TYPE_BOOLEAN:
+				return "bool";
+			case ELEMENT_TYPE_CHAR:
+				return "wchar";
+			case ELEMENT_TYPE_I1:
+				return "byte";
+			case ELEMENT_TYPE_U1:
+				return "ubyte";
+			case ELEMENT_TYPE_I2:
+				return "short";
+			case ELEMENT_TYPE_U2:
+				return "ushort";
+			case ELEMENT_TYPE_I4:
+				return "int";
+			case ELEMENT_TYPE_U4:
+				return "uint";
+			case ELEMENT_TYPE_I8:
+				return "long";
+			case ELEMENT_TYPE_U8:
+				return "ulong";
+			case ELEMENT_TYPE_R4:
+				return "float";
+			case ELEMENT_TYPE_R8:
+				return "double";
+			case ELEMENT_TYPE_U:
+				return "uint";
+			case ELEMENT_TYPE_I:
+				return "int";
+			case ELEMENT_TYPE_OBJECT:
+				return "object";
+			case ELEMENT_TYPE_STRING:
+				return "string";
+			case ELEMENT_TYPE_TYPEDBYREF:
+				return "refany";
+			case ELEMENT_TYPE_CLASS:	
+			case ELEMENT_TYPE_VALUETYPE:
+			case ELEMENT_TYPE_CMOD_REQD:
+			case ELEMENT_TYPE_CMOD_OPT:
+				mdToken	token;
+				(*signature) += CorSigUncompressToken((PCCOR_SIGNATURE)(*signature),&token);
+				if(TypeFromToken(token)!=mdtTypeRef) {
+					WCHAR zName[MAX_FUNCTION_LENGTH];
+					metaDataImport->GetTypeDefProps(token,zName,MAX_FUNCTION_LENGTH,0,0,0);
+					return CW2A(zName);
 				}
-				case ELEMENT_TYPE_SZARRAY:
-					text+=ParseElementType(metaDataImport,signature); 
-					text+="[]";
-					break;		
-				case ELEMENT_TYPE_ARRAY: {	
-					ULONG rank;
-					text+=ParseElementType(metaDataImport,signature);
-					rank = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);
-					if ( rank == 0 ) {
-						text+="[?]";
-					}
-					else {
-						ULONG *lower;
-						ULONG *sizes;
-						ULONG numsizes;
-						ULONG arraysize = (sizeof ( ULONG ) * 2 * rank);
-		                
-						lower = (ULONG *)_alloca( arraysize );
-						memset( lower, 0, arraysize );
-						sizes = &lower[rank];
+				return "";
+			case ELEMENT_TYPE_SZARRAY:
+				return ParseElementType(metaDataImport,signature)+"[]";
+			case ELEMENT_TYPE_ARRAY: {	
+				ULONG rank;
+				string text=ParseElementType(metaDataImport,signature);
+				rank = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);
+				if ( rank == 0 ) {
+					text+="[?]";
+				}
+				else {
+					ULONG *lower;
+					ULONG *sizes;
+					ULONG numsizes;
+					ULONG arraysize = (sizeof ( ULONG ) * 2 * rank);
+	                
+					lower=(ULONG*)_alloca(arraysize);
+					memset(lower,0,arraysize);
+					sizes = &lower[rank];
 
-						numsizes = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);
-						if ( numsizes <= rank ) {
-    						ULONG numlower;			                    
-							for ( ULONG i = 0; i < numsizes; i++ ) {
-								sizes[i] = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);
-							}			                    
-							numlower = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);	
-							if ( numlower <= rank ) {
-								for (ULONG i = 0; i < numlower; i++) {
-									lower[i] = CorSigUncompressData((PCCOR_SIGNATURE&)*signature); 
-								}
-								text+="[";
-								for (ULONG i = 0; i < rank; i++ ) {	
-									if ( (sizes[i] != 0) && (lower[i] != 0) ) {	
-										if ( lower[i] == 0 ) {
-											text+=ToString(sizes[i]);
-										}
-										else {
-											text+=ToString(lower[i]);	
-											text+="...";
-											if ( sizes[i] != 0 ) {
-												text+=ToString((lower[i] + sizes[i] + 1) );	
-											}
-										}	
-									}			                            	
-									if ( i < (rank - 1) ) {
-										text+=",";
-									}
-								}		                        
-								text+="]";
+					numsizes = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);
+					if ( numsizes <= rank ) {
+						ULONG numlower;			                    
+						for ( ULONG i = 0; i < numsizes; i++ ) {
+							sizes[i] = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);
+						}			                    
+						numlower = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);	
+						if ( numlower <= rank ) {
+							for (ULONG i = 0; i < numlower; i++) {
+								lower[i] = CorSigUncompressData((PCCOR_SIGNATURE&)*signature); 
 							}
+							text+="[";
+							for (ULONG i = 0; i < rank; i++ ) {	
+								if ( (sizes[i] != 0) && (lower[i] != 0) ) {	
+									if ( lower[i] == 0 ) {
+										text+=ToString(sizes[i]);
+									}
+									else {
+										text+=ToString(lower[i]);	
+										text+="...";
+										if ( sizes[i] != 0 ) {
+											text+=ToString((lower[i] + sizes[i] + 1) );	
+										}
+									}	
+								}			                            	
+								if ( i < (rank - 1) ) {
+									text+=",";
+								}
+							}		                        
+							text+="]";
 						}
 					}
-					break;
 				}
-				case ELEMENT_TYPE_PINNED:
-					text+=ParseElementType(metaDataImport,signature);
-					text+="pinned";
-					break;
-				case ELEMENT_TYPE_PTR:   
-					text+=ParseElementType(metaDataImport,signature);
-					text+="*";
-					break;
-				case ELEMENT_TYPE_BYREF:   
-					text+="ref ";
-					text+=ParseElementType(metaDataImport,signature);
-					break;
-				default:
-				case ELEMENT_TYPE_END:
-				case ELEMENT_TYPE_SENTINEL:
-					text+="<UNKNOWN>";
-					break;           	
+				return text;
 			}
+			case ELEMENT_TYPE_PINNED:
+				return ParseElementType(metaDataImport,signature)+"pinned";
+			case ELEMENT_TYPE_PTR:   
+				return ParseElementType(metaDataImport,signature)+"*";
+			case ELEMENT_TYPE_BYREF:   
+				return "ref "+ParseElementType(metaDataImport,signature);
+			default:
+				return "<UNKNOWN>";
 		}
-		return text;
 	}
 	CComPtr< ICorProfilerInfo2 > profilerInfo;
 };
@@ -244,7 +238,7 @@ const int interval=2;
 class Profiler {
 public: 
 	vector<vector<FunctionID>*> stackWalks;
-	map< FunctionID, FunctionID> signatures;
+	set<FunctionID> signatures;
 	ofstream* file;
 	string GetTemporaryFileName() {
 		char path[MAX_PATH];
@@ -254,14 +248,9 @@ public:
 	}
 	void EndAll(ProfilerHelper& profilerHelper) {
 		file=new ofstream(GetTemporaryFileName().c_str(), ios::binary);
-		for(map<FunctionID,FunctionID>::iterator i=signatures.begin();i!=signatures.end();i++) {
-			FunctionID id=i->second;
-			WriteInteger(id);
-			UINT32 methodAttributes;
-			string signature;
-			profilerHelper.GetFunctionSignature(id, methodAttributes, signature);
-			WriteInteger(methodAttributes);
-			WriteString(signature);
+		for(set<FunctionID>::iterator i=signatures.begin();i!=signatures.end();i++) {
+			WriteInteger(*i);
+			WriteString(profilerHelper.GetFunctionSignature(*i));
 		}
 		WriteInteger(-1);
 		for(vector<vector<FunctionID>*>::iterator stackWalk = stackWalks.begin(); stackWalk != stackWalks.end(); stackWalk++ ) {
@@ -387,9 +376,9 @@ public:
 
 				for(int index=0;index<functions->size();index++) {
 					FunctionID id=functions->at(index);
-					map<FunctionID,FunctionID>::iterator found = signatures.find(id);
+					const set<FunctionID>::iterator found = signatures.find(id);
 					if(found == signatures.end()){
-						signatures.insert(make_pair(id,id));
+						signatures.insert(id);
 					}
 				}
 			}

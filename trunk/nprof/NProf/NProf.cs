@@ -409,7 +409,6 @@ namespace NProf {
 					if (functionId == -1) {
 						break;
 					}
-					r.ReadUInt32();
 					signatures[functionId] = ReadString(r);
 				}
 				while (true) {
@@ -561,7 +560,6 @@ namespace NProf {
 		public Run currentOldRun;
 		public MethodView(string name) {
 			this.DefaultItemHeight = 20;
-			//this.SelectedItemsChanged += new EventHandler(MethodView_SelectedItemsChanged);
 			Columns.Add(name);
 			Columns[0].Width = 350;
 			Columns[0].SortDataType = SortDataType.String;
@@ -602,11 +600,7 @@ namespace NProf {
 			public ChildLabel(string text,ContainerListViewItem item) {
 				this.item = item;
 				this.Click += delegate {
-					item.Focused = true;
-					//item.ListView.SelectedItems.Clear();
-					//item.ListView.SelectedItems
-					//item.ListView.SelectedItems.Add(item);//Selected = true;
-					//item.ListView.Invalidate();
+					item.Selected = true;
 				};
 				this.Text = text;
 				Margin = new Padding(0);
