@@ -65,8 +65,6 @@ namespace NProf {
 			runs.ColumnSortColor = Color.White;
 			runs.Columns.Add("Runs");
 			runs.Columns.Add("Time");
-			//runs.Columns[0].SortDataType = SortDataType.String;
-			//runs.Columns[0].SortDataType = SortDataType.None;
 			runs.AllowMultiSelect = true;
 			runs.Dock = DockStyle.Left;
 			runs.Width = 200;
