@@ -42,73 +42,65 @@ public:
 		this->profilerInfo = profilerInfo;
 	}
 	string GetClass(string className) {
-		int index=className.find_first_of(".");
-		if(index!=string.npos) {
-			return className.substr();
+		int index=className.length();
+		for(;index>0 && className[index-1]!='.';index--) {
 		}
-		else {
-			return "";
-		}
+		return className.substr(index);
 	}
 	void GetFunctionSignature(FunctionID functionId,UINT32& methodAttributes,string& text) {
+
 		ClassID classID;
 		ModuleID moduleID;
 		mdToken moduleToken;
 		if(FAILED(profilerInfo->GetFunctionInfo(functionId,&classID,&moduleID,&moduleToken))) {
 			DebugBreak();
 		}
+
 		IMetaDataImport *metaDataImport = 0;	
 		mdToken	token;
 		if(FAILED(profilerInfo->GetTokenAndMetaDataFromFunction(functionId, IID_IMetaDataImport, (IUnknown **)&metaDataImport,&token))) {
 			DebugBreak();
 		}
-		WCHAR functionNameString[MAX_FUNCTION_LENGTH];
-		if(FAILED(metaDataImport->GetMethodProps(token, 0, functionNameString, MAX_FUNCTION_LENGTH,0,0,0,0,0,0))) {
+
+		WCHAR functionName[MAX_FUNCTION_LENGTH];
+		if(FAILED(metaDataImport->GetMethodProps(token, 0, functionName, MAX_FUNCTION_LENGTH,0,0,0,0,0,0))) {
 			DebugBreak();
 		}
+
 		mdTypeDef classToken = 0;
 		profilerInfo->GetClassIDInfo(classID, 0, &classToken);
 		if(classToken != mdTypeDefNil) {
-			WCHAR classNameString[MAX_FUNCTION_LENGTH];
-			if(FAILED(metaDataImport->GetTypeDefProps(classToken, classNameString, MAX_FUNCTION_LENGTH,0, 0, 0))) {
+			WCHAR className[MAX_FUNCTION_LENGTH];
+			if(FAILED(metaDataImport->GetTypeDefProps(classToken, className, MAX_FUNCTION_LENGTH,0, 0, 0))) {
 				DebugBreak();
 			}
-			string s=CW2A(classNameString);
-			text+=GetClass(s);
-			text+=".";
-			text+=CW2A(functionNameString);
+			text=text+GetClass((string)CW2A(className))+"."+(string)CW2A(functionName);
 		}
+
 		DWORD methodAttr = 0;
-		PCCOR_SIGNATURE sigBlob = NULL;
-		//HRESULT hr=metaDataImport->GetMethodProps((mdMethodDef)token,0,0,0,0,&methodAttr,&sigBlob,0,0,0);
-		
-		if(FAILED(metaDataImport->GetMethodProps( (mdMethodDef) token,
-								NULL,
-								NULL,
-								0,
-								NULL,
-								&methodAttr,
-								&sigBlob,
-								NULL,
-								NULL,
-								NULL ))) {
+		PCCOR_SIGNATURE sigBlob = 0;
+		if(FAILED(metaDataImport->GetMethodProps( (mdMethodDef) token,0,0,0,0,&methodAttr,&sigBlob,0,0,0 ))) {
 			DebugBreak();
 		}
-		ULONG callConv;
 		methodAttributes = methodAttr;
+
+		ULONG callConv;
 		sigBlob += CorSigUncompressData(sigBlob, &callConv);
+
 		text+="(";
 		ULONG argCount=0;
 		sigBlob += CorSigUncompressData(sigBlob, &argCount);
+
 		string returnType;
 		ParseElementType(metaDataImport, &sigBlob, returnType);
+
 		for(ULONG i = 0; (sigBlob != 0) && (i < (argCount)); i++) {
-			string buffer;
-			ParseElementType(metaDataImport,&sigBlob,buffer);									
 			if(i!=0){
 				text+=", ";
 			}
-			text+=buffer;
+			string type;
+			ParseElementType(metaDataImport,&sigBlob,type);
+			text+=type;
 		}
 		text+=")";
 		metaDataImport->Release();
@@ -152,15 +144,14 @@ public:
 				case ELEMENT_TYPE_CMOD_REQD:
 				case ELEMENT_TYPE_CMOD_OPT: 
 				{
-					mdToken	token;	
-					string className;//[MAX_FUNCTION_LENGTH];
+					mdToken	token;
 					(*signature) += CorSigUncompressToken((PCCOR_SIGNATURE)(*signature),&token);
-					if ( TypeFromToken( token ) != mdtTypeRef ) {
+					if(TypeFromToken(token)!=mdtTypeRef) {
+						//DebugBreak();
 						WCHAR zName[MAX_FUNCTION_LENGTH];
 						metaDataImport->GetTypeDefProps(token,zName,MAX_FUNCTION_LENGTH,0,0,0);
-						className=CW2A(zName);//,MAX_FUNCTION_LENGTH);
+						text+=CW2A(zName);
 					}
-					text+=GetClass(className);
 					break;	
 				}
 				case ELEMENT_TYPE_SZARRAY:
