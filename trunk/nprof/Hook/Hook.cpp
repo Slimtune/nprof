@@ -91,15 +91,13 @@ public:
 		ULONG argCount=0;
 		sigBlob += CorSigUncompressData(sigBlob, &argCount);
 
-		string returnType;
-		ParseElementType(metaDataImport, &sigBlob, returnType);
+		string returnType=ParseElementType(metaDataImport, &sigBlob);
 
 		for(ULONG i = 0; (sigBlob != 0) && (i < (argCount)); i++) {
 			if(i!=0){
 				text+=", ";
 			}
-			string type;
-			ParseElementType(metaDataImport,&sigBlob,type);
+			string type=ParseElementType(metaDataImport,&sigBlob);
 			text+=type;
 		}
 		text+=")";
@@ -112,7 +110,8 @@ public:
 		stream>>s;
 		return s;
 	}
-	void ParseElementType(IMetaDataImport *metaDataImport,PCCOR_SIGNATURE* signature,string& text) {
+	string ParseElementType(IMetaDataImport *metaDataImport,PCCOR_SIGNATURE* signature) {
+		string text;
 		map<CorElementType,string> types;	
 		types[ELEMENT_TYPE_VOID]="void";
 		types[ELEMENT_TYPE_BOOLEAN]="bool";	
@@ -155,12 +154,12 @@ public:
 					break;	
 				}
 				case ELEMENT_TYPE_SZARRAY:
-					ParseElementType(metaDataImport,signature,text); 
+					text+=ParseElementType(metaDataImport,signature); 
 					text+="[]";
 					break;		
 				case ELEMENT_TYPE_ARRAY: {	
 					ULONG rank;
-					ParseElementType(metaDataImport,signature,text);
+					text+=ParseElementType(metaDataImport,signature);
 					rank = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);
 					if ( rank == 0 ) {
 						text+="[?]";
@@ -211,16 +210,16 @@ public:
 					break;
 				}
 				case ELEMENT_TYPE_PINNED:
-					ParseElementType(metaDataImport,signature,text); 
+					text+=ParseElementType(metaDataImport,signature);
 					text+="pinned";
 					break;
 				case ELEMENT_TYPE_PTR:   
-					ParseElementType(metaDataImport,signature,text); 
+					text+=ParseElementType(metaDataImport,signature);
 					text+="*";
 					break;
 				case ELEMENT_TYPE_BYREF:   
 					text+="ref ";
-					ParseElementType(metaDataImport,signature,text); 
+					text+=ParseElementType(metaDataImport,signature);
 					break;
 				default:
 				case ELEMENT_TYPE_END:
@@ -229,6 +228,7 @@ public:
 					break;           	
 			}
 		}
+		return text;
 	}
 	CComPtr< ICorProfilerInfo2 > profilerInfo;
 };
