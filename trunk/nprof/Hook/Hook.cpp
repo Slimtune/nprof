@@ -41,856 +41,78 @@ public:
 	void Initialize(ICorProfilerInfo2* profilerInfo) {
 		this->profilerInfo = profilerInfo;
 	}
-	void GetFunctionSignature( 
-		FunctionID functionId,
-		UINT32& methodAttributes,
-		string& signature
-		)
-	{
-		ULONG args;
-		WCHAR returnTypeString[ MAX_FUNCTION_LENGTH ];
-		WCHAR parametersString[ MAX_FUNCTION_LENGTH ];
-		WCHAR functionNameString[ MAX_FUNCTION_LENGTH ];
-		WCHAR classNameString[ MAX_FUNCTION_LENGTH ];
-		GetFunctionProperties( functionId, &methodAttributes, &args, returnTypeString, parametersString, classNameString, functionNameString );
-
-
-		//returnType = CW2A( returnTypeString );
-		//parameters = CW2A( parametersString );
-		//className = CW2A( classNameString );
-		//functionName = CW2A( functionNameString );
-		signature=(string)CW2A( classNameString )+"."+(string)CW2A( functionNameString )+"("+(string)CW2A( parametersString )+")";
-		//signature=className+"."+functionName+"("+parameters+")";
-	}
-	//HRESULT 
-	void GetFunctionProperties( 
-					   FunctionID functionID,
-										   UINT32* methodAttributes,
-										   ULONG *argCount,
-										   WCHAR *returnType, 
-										   WCHAR *parameters,
-										   WCHAR *className,
-						   WCHAR *funName )
-	{
-		HRESULT hr = E_FAIL; // assume success
-
-		// init return values
-		*argCount = 0;
-		returnType[0] = NULL; 
-		parameters[0] = NULL;
-		funName[0] = NULL;
-		className[0] = NULL;
-
-		if ( functionID != NULL )
-		{
-			mdToken	token;
-			ClassID classID;
-			ModuleID moduleID;
-			IMetaDataImport *metaDataImport = NULL;	
-			mdToken moduleToken;
-		    
-			//
-			// Get the classID 
-			//
-			//try
-			//{
-				if(FAILED(profilerInfo->GetFunctionInfo(
-							functionID,
-							&classID,
-							&moduleID,
-							&moduleToken ))) {
-					throw("GetFunctionInfo failed");
-				}
-				else {
-					hr=1;
-				}
-			//}
-			//catch ( ... )
-			//{
-			//	hr = E_FAIL;
-			//}
-			if ( FAILED( hr ) )
-			{
-				hr = S_OK;
-				swprintf( funName, L"FAILED" );	
-			}
-			else
-			{
-				//
-				// Get the MetadataImport interface and the metadata token 
-				//
-				hr = profilerInfo->GetTokenAndMetaDataFromFunction( functionID, 
-		           								 				IID_IMetaDataImport, 
-																(IUnknown **)&metaDataImport,
-																&token );
-				if ( SUCCEEDED( hr ) )
-				{
-					hr = metaDataImport->GetMethodProps( token,
-													NULL,
-													funName,
-													MAX_FUNCTION_LENGTH,
-													0,
-													0,
-													NULL,
-													NULL,
-													NULL, 
-													NULL );
-					if ( SUCCEEDED( hr ) )
-					{
-						mdTypeDef classToken = NULL;
-
-						hr = profilerInfo->GetClassIDInfo( classID, 
-					        						   NULL,  
-													   &classToken );
-						
-						if SUCCEEDED( hr )
-						{
-			      			if ( classToken != mdTypeDefNil )
-							{
-			          			hr = metaDataImport->GetTypeDefProps( classToken, 
-																 className, 
-																 MAX_FUNCTION_LENGTH,
-																 NULL, 
-																 NULL, 
-																 NULL ); 
-							}
-							DWORD methodAttr = 0;
-							PCCOR_SIGNATURE sigBlob = NULL;
-
-
-							hr = metaDataImport->GetMethodProps( (mdMethodDef) token,
-															NULL,
-															NULL,
-															0,
-															NULL,
-															&methodAttr,
-															&sigBlob,
-															NULL,
-															NULL,
-															NULL );
-							if ( SUCCEEDED( hr ) )
-							{
-								ULONG callConv;
-
-								//
-								// Is the method static ?
-								//
-								*methodAttributes = methodAttr;
-				     			//
-								// Make sure we have a method signature.
-								//
-								char buffer[2 * MAX_FUNCTION_LENGTH];
-								sigBlob += CorSigUncompressData( sigBlob, &callConv );
-								if ( callConv != IMAGE_CEE_CS_CALLCONV_FIELD )
-								{
-									static WCHAR* callConvNames[8] = 
-									{	
-										L"", 
-										L"unmanaged cdecl ", 
-										L"unmanaged stdcall ",	
-										L"unmanaged thiscall ",	
-										L"unmanaged fastcall ",	
-										L"vararg ",	 
-										L"<error> "	 
-										L"<error> "	 
-									};	
-									buffer[0] = '\0';
-									if ( (callConv & 7) != 0 )
-										sprintf( buffer, "%s ", callConvNames[callConv & 7]);	
-									
-									//
-									// Grab the argument count
-									//
-									sigBlob += CorSigUncompressData( sigBlob, argCount );
-
-									//
-									// Get the return type
-									//
-									sigBlob = ParseElementType( metaDataImport, sigBlob, buffer );
-
-									//
-									// if the return typ returned back empty, write void
-									//
-									if ( buffer[0] == '\0' )
-										sprintf( buffer, "void" );
-
-									swprintf( returnType, L"%S",buffer );
-									
-									//
-									// Get the parameters
-									//								
-									for ( ULONG i = 0; 
-										  (SUCCEEDED( hr ) && (sigBlob != NULL) && (i < (*argCount))); 
-										  i++ )
-									{
-										buffer[0] = '\0';
-
-										sigBlob = ParseElementType( metaDataImport, sigBlob, buffer );									
-										if ( i == 0 )
-											swprintf( parameters, L"%S", buffer );
-
-										else if ( sigBlob != NULL )
-											swprintf( parameters, L"%s, %S", parameters, buffer );
-										
-										else
-											hr = E_FAIL;
-									}								    								
-								}
-								else
-								{
-									//
-									// Get the return type
-									//
-									buffer[0] = '\0';
-									sigBlob = ParseElementType( metaDataImport, sigBlob, buffer );
-									swprintf( returnType, L"%s %S",returnType, buffer );
-								}
-							} 
-						} 
-					} 
-
-					metaDataImport->Release();
-				} 		
-			}
-		}
-		//
-		// This corresponds to an unmanaged frame
-		//
-		else
-		{
-			//
-			// Set up return parameters
-			//
-			hr = S_OK;
-			swprintf( funName, L"UNMANAGED FRAME" );	
-		}
-		//return hr;
-	}
-	PCCOR_SIGNATURE ParseElementType( IMetaDataImport *metaDataImport,
-											  PCCOR_SIGNATURE signature, 
-											  char *buffer )
-	{
-		switch ( *signature++ ) 
-		{	
-			case ELEMENT_TYPE_VOID:
-				strcat( buffer, "void" );	
-				break;					
-			case ELEMENT_TYPE_BOOLEAN:	
-				strcat( buffer, "bool" );	
-				break;	
-			case ELEMENT_TYPE_CHAR:
-				strcat( buffer, "wchar" );	
-				break;		
-			case ELEMENT_TYPE_I1:
-				strcat( buffer, "int8" );	
-				break;		
-			case ELEMENT_TYPE_U1:
-				strcat( buffer, "unsigned int8" );	
-				break;		
-			case ELEMENT_TYPE_I2:
-				strcat( buffer, "int16" );	
-				break;		
-			case ELEMENT_TYPE_U2:
-				strcat( buffer, "unsigned int16" );	
-				break;			
-			case ELEMENT_TYPE_I4:
-				strcat( buffer, "int32" );	
-				break;
-			case ELEMENT_TYPE_U4:
-				strcat( buffer, "unsigned int32" );	
-				break;		
-			case ELEMENT_TYPE_I8:
-				strcat( buffer, "int64" );	
-				break;		
-			case ELEMENT_TYPE_U8:
-				strcat( buffer, "unsigned int64" );	
-				break;		
-			case ELEMENT_TYPE_R4:
-				strcat( buffer, "float32" );	
-				break;			
-			case ELEMENT_TYPE_R8:
-				strcat( buffer, "float64" );	
-				break;		
-			case ELEMENT_TYPE_U:
-				strcat( buffer, "unsigned int" );	
-				break;		 
-			case ELEMENT_TYPE_I:
-				strcat( buffer, "int" );	
-				break;			  
-			case ELEMENT_TYPE_OBJECT:
-				strcat( buffer, "Object" );	
-				break;		 
-			case ELEMENT_TYPE_STRING:
-				strcat( buffer, "String" );	
-				break;		 
-			case ELEMENT_TYPE_TYPEDBYREF:
-				strcat( buffer, "refany" );	
-				break;				       
-			case ELEMENT_TYPE_CLASS:	
-			case ELEMENT_TYPE_VALUETYPE:
-			case ELEMENT_TYPE_CMOD_REQD:
-			case ELEMENT_TYPE_CMOD_OPT:
-				{	
-					mdToken	token;	
-					char classname[MAX_FUNCTION_LENGTH];
-
-					classname[0] = '\0';
-	   				signature += CorSigUncompressToken( signature, &token ); 
-					if ( TypeFromToken( token ) != mdtTypeRef )
-					{
-        				HRESULT	hr;
-						WCHAR zName[MAX_FUNCTION_LENGTH];
-						
-						hr = metaDataImport->GetTypeDefProps( token, 
-														 zName,
-														 MAX_FUNCTION_LENGTH,
-														 NULL,
-														 NULL,
-														 NULL );
-						if ( SUCCEEDED( hr ) )
-							wcstombs( classname, zName, MAX_FUNCTION_LENGTH );
-					}
-					strcat( buffer, classname );		
-				}
-				break;	
-			case ELEMENT_TYPE_SZARRAY:	 
-				signature = ParseElementType( metaDataImport, signature, buffer ); 
-				strcat( buffer, "[]" );
-				break;		
-			case ELEMENT_TYPE_ARRAY:	
-				{	
-					ULONG rank;
-					signature = ParseElementType( metaDataImport, signature, buffer );                 
-					rank = CorSigUncompressData( signature );													
-					if ( rank == 0 ) 
-						strcat( buffer, "[?]" );
-
-					else 
-					{
-						ULONG *lower;	
-						ULONG *sizes; 	
-						ULONG numsizes; 
-						ULONG arraysize = (sizeof ( ULONG ) * 2 * rank);
-		                                     
-						lower = (ULONG *)_alloca( arraysize );                                                        
-						memset( lower, 0, arraysize ); 
-						sizes = &lower[rank];
-
-						numsizes = CorSigUncompressData( signature );	
-						if ( numsizes <= rank )
-						{
-            				ULONG numlower;
-		                    
-							for ( ULONG i = 0; i < numsizes; i++ )	
-								sizes[i] = CorSigUncompressData( signature );	
-		                    
-							numlower = CorSigUncompressData( signature );	
-							if ( numlower <= rank )
-							{
-								for (ULONG i = 0; i < numlower; i++)	
-									lower[i] = CorSigUncompressData( signature ); 
-		                        
-								strcat( buffer, "[" );	
-								for (ULONG i = 0; i < rank; i++ )	
-								{	
-									if ( (sizes[i] != 0) && (lower[i] != 0) )	
-									{	
-										if ( lower[i] == 0 )	
-											sprintf ( buffer, "%d", sizes[i] );	
-
-										else	
-										{	
-											sprintf( buffer, "%d", lower[i] );	
-											strcat( buffer, "..." );	
-											
-											if ( sizes[i] != 0 )	
-												sprintf( buffer, "%d", (lower[i] + sizes[i] + 1) );	
-										}	
-									}
-		                            	
-									if ( i < (rank - 1) ) 
-										strcat( buffer, "," );	
-								}	
-		                        
-								strcat( buffer, "]" );  
-							}						
-						}
-					}
-				} 
-				break;	
-			case ELEMENT_TYPE_PINNED:
-				signature = ParseElementType( metaDataImport, signature, buffer ); 
-				strcat( buffer, "pinned" );	
-				break;	
-			case ELEMENT_TYPE_PTR:   
-				signature = ParseElementType( metaDataImport, signature, buffer ); 
-				strcat( buffer, "*" );	
-				break;   
-			case ELEMENT_TYPE_BYREF:   
-				signature = ParseElementType( metaDataImport, signature, buffer ); 
-				strcat( buffer, "&" );	
-				break;  		    
-			default:	
-			case ELEMENT_TYPE_END:	
-			case ELEMENT_TYPE_SENTINEL:	
-				strcat( buffer, "<UNKNOWN>" );	
-				break;				                      				            
-		} // switch	
-		return signature;
-	}
-	//PCCOR_SIGNATURE ProfilerHelper::ParseElementType( IMetaDataImport *metaDataImport,
-	//	PCCOR_SIGNATURE signature, string& buffer ) {
-	//	map<CorElementType,string> types;
-	//
-	//	types[ELEMENT_TYPE_VOID]="void";
-	//	types[ELEMENT_TYPE_BOOLEAN]="bool";	
-	//	types[ELEMENT_TYPE_CHAR]="wchar";
-	//	types[ELEMENT_TYPE_I1]="byte";
-	//	types[ELEMENT_TYPE_U1]="ubyte";
-	//	types[ELEMENT_TYPE_I2]="short";
-	//	types[ELEMENT_TYPE_U2]="ushort";
-	//	types[ELEMENT_TYPE_I4]="int";
-	//	types[ELEMENT_TYPE_U4]="uint";	
-	//	types[ELEMENT_TYPE_I8]="long";	
-	//	types[ELEMENT_TYPE_U8]="ulong";	
-	//	types[ELEMENT_TYPE_R4]="float";	
-	//	types[ELEMENT_TYPE_R8]="double";	
-	//	types[ELEMENT_TYPE_U]="uint";	
-	//	types[ELEMENT_TYPE_I]="int";	
-	//	types[ELEMENT_TYPE_OBJECT]="object";	
-	//	types[ELEMENT_TYPE_STRING]="string";	
-	//	types[ELEMENT_TYPE_TYPEDBYREF]="refany";
-	//	CorElementType element=(CorElementType)*signature++;
-	//	if(types.find(element)!=types.end()) {
-	//		buffer+=types[element];
-	//	}
-	//	else {
-	//		switch(element) {
-	//			case ELEMENT_TYPE_CLASS:	
-	//			case ELEMENT_TYPE_VALUETYPE:
-	//			case ELEMENT_TYPE_CMOD_REQD:
-	//			case ELEMENT_TYPE_CMOD_OPT: {	
-	//				mdToken	token;	
-	//				char classname[MAX_FUNCTION_LENGTH];
-	//				signature += CorSigUncompressToken( signature, &token ); 
-	//				if ( TypeFromToken( token ) != mdtTypeRef ) {
-	//					HRESULT	hr;
-	//					WCHAR zName[MAX_FUNCTION_LENGTH];
-	//					hr = metaDataImport->GetTypeDefProps( token, zName, MAX_FUNCTION_LENGTH, NULL, NULL, NULL );
-	//					if ( SUCCEEDED( hr ) ) {
-	//						wcstombs( classname, zName, MAX_FUNCTION_LENGTH );
-	//					}
-	//				}
-	//				char* classOnly=classname+strlen(classname);
-	//				while(classOnly!=classname && (*(classOnly-1))!='.') {
-	//					classOnly--;
-	//				}
-	//				buffer+=classOnly;
-	//				break;	
-	//			}
-	//			case ELEMENT_TYPE_SZARRAY:
-	//				signature = ParseElementType( metaDataImport, signature, buffer ); 
-	//				buffer+="[]";
-	//				break;		
-	//			case ELEMENT_TYPE_ARRAY:	
-	//				{	
-	//					ULONG rank;
-	//					signature = ParseElementType( metaDataImport, signature, buffer );                 
-	//					rank = CorSigUncompressData( signature );													
-	//					if ( rank == 0 ) {
-	//						buffer+="[?]";
-	//					}
-	//					else {
-	//						ULONG *lower;
-	//						ULONG *sizes;
-	//						ULONG numsizes;
-	//						ULONG arraysize = (sizeof ( ULONG ) * 2 * rank);
-	//		                                     
-	//						lower = (ULONG *)_alloca( arraysize );
-	//						memset( lower, 0, arraysize );
-	//						sizes = &lower[rank];
-
-	//						numsizes = CorSigUncompressData( signature );
-	//						if ( numsizes <= rank ) {
- //       						ULONG numlower;
-	//		                    
-	//							for ( ULONG i = 0; i < numsizes; i++ ) {
-	//								sizes[i] = CorSigUncompressData( signature );
-	//							}
-	//		                    
-	//							numlower = CorSigUncompressData( signature );	
-	//							if ( numlower <= rank ) {
-	//								for (ULONG i = 0; i < numlower; i++) {
-	//									lower[i] = CorSigUncompressData( signature ); 
-	//								}
-	//								buffer+="[";
-	//								for (ULONG i = 0; i < rank; i++ ) {	
-	//									if ( (sizes[i] != 0) && (lower[i] != 0) ) {	
-	//										if ( lower[i] == 0 ) {
-	//											buffer+=ToString(sizes[i]);
-	//										}
-
-	//										else	
-	//										{	
-	//											buffer+=ToString(lower[i]);	
-	//											buffer+="...";
-	//											if ( sizes[i] != 0 ) {
-	//												buffer+=ToString((lower[i] + sizes[i] + 1) );	
-	//											}
-	//										}	
-	//									}
-	//		                            	
-	//									if ( i < (rank - 1) ) {
-	//										buffer+=",";
-	//									}
-	//								}		                        
-	//								buffer+="]";
-	//							}
-	//						}
-	//					}
-	//				} 
-	//				break;	
-	//			case ELEMENT_TYPE_PINNED:
-	//				signature = ParseElementType( metaDataImport, signature, buffer ); 
-	//				buffer+="pinned";
-	//				break;
-	//			case ELEMENT_TYPE_PTR:   
-	//				signature = ParseElementType( metaDataImport, signature, buffer ); 
-	//				buffer+="*";
-	//				break;
-	//			case ELEMENT_TYPE_BYREF:   
-	//				buffer+="ref ";
-	//				signature = ParseElementType( metaDataImport, signature, buffer ); 
-	//				break;
-	//			default:
-	//			case ELEMENT_TYPE_END:
-	//			case ELEMENT_TYPE_SENTINEL:
-	//				buffer+="<UNKNOWN>";
-	//				break;           	
-	//		}
-	//	}
-	//	return signature;
-
-	//	//switch ( *signature++ ) {	
-	//	//	case ELEMENT_TYPE_VOID:
-	//	//		buffer+="void";	
-	//	//		break;					
-	//	//	case ELEMENT_TYPE_BOOLEAN:
-	//	//		buffer+="bool";	
-	//	//		break;	
-	//	//	case ELEMENT_TYPE_CHAR:
-	//	//		buffer+="wchar";
-	//	//		break;		
-	//	//	case ELEMENT_TYPE_I1:
-	//	//		buffer+="byte";
-	//	//		break;		
-	//	//	case ELEMENT_TYPE_U1:
-	//	//		buffer+="ubyte";
-	//	//		break;		
-	//	//	case ELEMENT_TYPE_I2:
-	//	//		buffer+="short";
-	//	//		break;		
-	//	//	case ELEMENT_TYPE_U2:
-	//	//		buffer+="ushort";
-	//	//		break;			
-	//	//	case ELEMENT_TYPE_I4:
-	//	//		buffer+="int";
-	//	//		break;
-	//	//	case ELEMENT_TYPE_U4:
-	//	//		buffer+="uint";	
-	//	//		break;		
-	//	//	case ELEMENT_TYPE_I8:
-	//	//		buffer+="long";	
-	//	//		break;		
-	//	//	case ELEMENT_TYPE_U8:
-	//	//		buffer+="ulong";	
-	//	//		break;		
-	//	//	case ELEMENT_TYPE_R4:
-	//	//		buffer+="float";	
-	//	//		break;			
-	//	//	case ELEMENT_TYPE_R8:
-	//	//		buffer+="double";	
-	//	//		break;		
-	//	//	case ELEMENT_TYPE_U:
-	//	//		buffer+="uint";	
-	//	//		break;		 
-	//	//	case ELEMENT_TYPE_I:
-	//	//		buffer+="int";	
-	//	//		break;			  
-	//	//	case ELEMENT_TYPE_OBJECT:
-	//	//		buffer+="object";	
-	//	//		break;		 
-	//	//	case ELEMENT_TYPE_STRING:
-	//	//		buffer+="string";	
-	//	//		break;		 
-	//	//	case ELEMENT_TYPE_TYPEDBYREF:
-	//	//		buffer+="refany";	
-	//	//		break;				       
-	//	//	case ELEMENT_TYPE_CLASS:	
-	//	//	case ELEMENT_TYPE_VALUETYPE:
-	//	//	case ELEMENT_TYPE_CMOD_REQD:
-	//	//	case ELEMENT_TYPE_CMOD_OPT: {	
-	//	//		mdToken	token;	
-	//	//		char classname[MAX_FUNCTION_LENGTH];
- // // 				signature += CorSigUncompressToken( signature, &token ); 
-	//	//		if ( TypeFromToken( token ) != mdtTypeRef ) {
- // //  				HRESULT	hr;
-	//	//			WCHAR zName[MAX_FUNCTION_LENGTH];
-	//	//			hr = metaDataImport->GetTypeDefProps( token, zName, MAX_FUNCTION_LENGTH, NULL, NULL, NULL );
-	//	//			if ( SUCCEEDED( hr ) ) {
-	//	//				wcstombs( classname, zName, MAX_FUNCTION_LENGTH );
-	//	//			}
-	//	//		}
-	//	//		char* classOnly=classname+strlen(classname);
-	//	//		while(classOnly!=classname && (*(classOnly-1))!='.') {
-	//	//			classOnly--;
-	//	//		}
-	//	//		buffer+=classOnly;
-	//	//		break;	
-	//	//	}
-	//	//	case ELEMENT_TYPE_SZARRAY:
-	//	//		signature = ParseElementType( metaDataImport, signature, buffer ); 
-	//	//		buffer+="[]";
-	//	//		break;		
-	//	//	case ELEMENT_TYPE_ARRAY:	
-	//	//		{	
-	//	//			ULONG rank;
-	//	//			signature = ParseElementType( metaDataImport, signature, buffer );                 
-	//	//			rank = CorSigUncompressData( signature );													
-	//	//			if ( rank == 0 ) {
-	//	//				buffer+="[?]";
-	//	//			}
-	//	//			else {
-	//	//				ULONG *lower;
-	//	//				ULONG *sizes;
-	//	//				ULONG numsizes;
-	//	//				ULONG arraysize = (sizeof ( ULONG ) * 2 * rank);
-	//	//                                     
-	//	//				lower = (ULONG *)_alloca( arraysize );
-	//	//				memset( lower, 0, arraysize );
-	//	//				sizes = &lower[rank];
-
-	//	//				numsizes = CorSigUncompressData( signature );
-	//	//				if ( numsizes <= rank ) {
- // //          				ULONG numlower;
-	//	//                    
-	//	//					for ( ULONG i = 0; i < numsizes; i++ ) {
-	//	//						sizes[i] = CorSigUncompressData( signature );
-	//	//					}
-	//	//                    
-	//	//					numlower = CorSigUncompressData( signature );	
-	//	//					if ( numlower <= rank ) {
-	//	//						for (ULONG i = 0; i < numlower; i++) {
-	//	//							lower[i] = CorSigUncompressData( signature ); 
-	//	//						}
-	//	//						buffer+="[";
-	//	//						for (ULONG i = 0; i < rank; i++ ) {	
-	//	//							if ( (sizes[i] != 0) && (lower[i] != 0) ) {	
-	//	//								if ( lower[i] == 0 ) {
-	//	//									buffer+=ToString(sizes[i]);
-	//	//								}
-
-	//	//								else	
-	//	//								{	
-	//	//									buffer+=ToString(lower[i]);	
-	//	//									buffer+="...";
-	//	//									if ( sizes[i] != 0 ) {
-	//	//										buffer+=ToString((lower[i] + sizes[i] + 1) );	
-	//	//									}
-	//	//								}	
-	//	//							}
-	//	//                            	
-	//	//							if ( i < (rank - 1) ) {
-	//	//								buffer+=",";
-	//	//							}
-	//	//						}		                        
-	//	//						buffer+="]";
-	//	//					}
-	//	//				}
-	//	//			}
-	//	//		} 
-	//	//		break;	
-	//	//	case ELEMENT_TYPE_PINNED:
-	//	//		signature = ParseElementType( metaDataImport, signature, buffer ); 
-	//	//		buffer+="pinned";
-	//	//		break;
-	//	//	case ELEMENT_TYPE_PTR:   
-	//	//		signature = ParseElementType( metaDataImport, signature, buffer ); 
-	//	//		buffer+="*";
-	//	//		break;
-	//	//	case ELEMENT_TYPE_BYREF:   
-	//	//		buffer+="ref ";
-	//	//		signature = ParseElementType( metaDataImport, signature, buffer ); 
-	//	//		break;
-	//	//	default:
-	//	//	case ELEMENT_TYPE_END:
-	//	//	case ELEMENT_TYPE_SENTINEL:
-	//	//		buffer+="<UNKNOWN>";
-	//	//		break;           				            
-	//	//}
-	//	//return signature;
-	//}
-	//void ProfilerHelper::GetFunctionSignature( 
-	//	FunctionID functionId,
-	//	UINT32& methodAttributes,
-	//	string& signature
-	//) {
-	//	ULONG argCount;
-	//	HRESULT hr = E_FAIL;
-	//	argCount = 0;
-	//	if ( functionId != NULL ) {
-	//		mdToken	token;
-	//		ClassID classID;
-	//		ModuleID moduleID;
-	//		IMetaDataImport *metaDataImport = NULL;	
-	//		mdToken moduleToken;		    
-	//		try {
-	//			hr = profilerInfo->GetFunctionInfo(functionId,&classID,&moduleID,&moduleToken );
-	//		}
-	//		catch ( ... ) {
-	//			hr = E_FAIL;
-	//		}
-	//		if (FAILED(hr)) {
-	//			hr = S_OK;
-	//			signature+="FAILED";
-	//		}
-	//		else {
-	//			hr = profilerInfo->GetTokenAndMetaDataFromFunction( 
-	//				functionId, IID_IMetaDataImport, (IUnknown **)&metaDataImport,&token );
-	//			if(SUCCEEDED(hr)) {
-	//				WCHAR functionNameString[ MAX_FUNCTION_LENGTH ];
-	//				hr = metaDataImport->GetMethodProps( token, NULL, functionNameString, MAX_FUNCTION_LENGTH,
-	//					0,0,NULL,NULL,NULL,NULL);
-	//				if(SUCCEEDED(hr)) {
-	//					string functionName=CW2A(functionNameString);
-	//					mdTypeDef classToken = NULL;
-	//					hr = profilerInfo->GetClassIDInfo(classID, NULL, &classToken);
-	//					if(SUCCEEDED(hr)) {
-	//		      			if(classToken != mdTypeDefNil) {
-	//							WCHAR classNameString[ MAX_FUNCTION_LENGTH ];
-	//		          			hr = metaDataImport->GetTypeDefProps( 
-	//								classToken, classNameString, MAX_FUNCTION_LENGTH,NULL, NULL, NULL );
-	//							signature+=CW2A(classNameString);
-	//						}
-	//						DWORD methodAttr = 0;
-	//						PCCOR_SIGNATURE sigBlob = NULL;
-
-	//						hr = metaDataImport->GetMethodProps( 
-	//							(mdMethodDef) token,NULL,NULL,0,NULL,&methodAttr,&sigBlob,NULL,NULL,NULL );
-	//						if(SUCCEEDED(hr)) {
-	//							ULONG callConv;
-	//							methodAttributes = methodAttr;
-	//							string buffer;
-	//							sigBlob += CorSigUncompressData( sigBlob, &callConv );
-	//							if ( callConv != IMAGE_CEE_CS_CALLCONV_FIELD )
-	//							{
-	//								buffer="";
-	//								sigBlob += CorSigUncompressData( sigBlob, &argCount );
-	//								sigBlob = ParseElementType( metaDataImport, sigBlob, buffer);									
-	//								signature+="(";
-	//								for ( ULONG i = 0; (SUCCEEDED( hr ) && (sigBlob != NULL) && (i < (argCount))); i++ ) {
-	//									sigBlob = ParseElementType( metaDataImport, sigBlob, buffer );									
-	//									if ( i == 0 ) {
-	//										//signature+=buffer;
-	//									}
-	//									else if(i==1) {
-	//										signature+=buffer;
-	//									}
-	//									else if ( sigBlob != NULL ) {
-	//										signature+=", "+buffer;
-	//									}										
-	//									else {
-	//										hr = E_FAIL;
-	//									}
-	//									buffer="";
-	//								}	
-	//								signature+=")";
-	//							}
-	//							else {
-	//								sigBlob = ParseElementType( metaDataImport, sigBlob, buffer );
-	//								signature+=buffer;
-	//							}
-	//						} 
-	//					} 
-	//				}
-	//				metaDataImport->Release();
-	//			} 		
-	//		}
-	//	}
-	//	else {
-	//		signature+="UNMANAGED FRAME";
-	//	}
-	//}
 	string GetClass(string className) {
-		int index=className.length();
-		while(index>0 && className[index-1]!='.') {
-			index--;
+		int index=className.find_first_of(".");
+		if(index!=string.npos) {
+			return className.substr();
 		}
-		return className.substr(index);
+		else {
+			return "";
+		}
 	}
-	//void GetFunctionSignature(FunctionID functionId,UINT32& methodAttributes,string& text) {
-	//	ClassID classID;
-	//	ModuleID moduleID;
-	//	mdToken moduleToken;
-	//	if(FAILED(profilerInfo->GetFunctionInfo(functionId,&classID,&moduleID,&moduleToken))) {
-	//		DebugBreak();
-	//	}
-	//	IMetaDataImport *metaDataImport = 0;	
-	//	mdToken	token;
-	//	if(FAILED(profilerInfo->GetTokenAndMetaDataFromFunction(functionId, IID_IMetaDataImport, (IUnknown **)&metaDataImport,&token))) {
-	//		DebugBreak();
-	//	}
-	//	WCHAR functionNameString[MAX_FUNCTION_LENGTH];
-	//	if(FAILED(metaDataImport->GetMethodProps(token, 0, functionNameString, MAX_FUNCTION_LENGTH,0,0,0,0,0,0))) {
-	//		DebugBreak();
-	//	}
-	//	mdTypeDef classToken = 0;
-	//	profilerInfo->GetClassIDInfo(classID, 0, &classToken);
-	//	if(classToken != mdTypeDefNil) {
-	//		WCHAR classNameString[MAX_FUNCTION_LENGTH];
-	//		if(FAILED(metaDataImport->GetTypeDefProps(classToken, classNameString, MAX_FUNCTION_LENGTH,0, 0, 0))) {
-	//			DebugBreak();
-	//		}
-	//		string s=CW2A(classNameString);
-	//		text+=GetClass(s);
-	//		text+=".";
-	//		text+=CW2A(functionNameString);
-	//	}
-	//	DWORD methodAttr = 0;
-	//	PCCOR_SIGNATURE sigBlob = NULL;
-	//	//HRESULT hr=metaDataImport->GetMethodProps((mdMethodDef)token,0,0,0,0,&methodAttr,&sigBlob,0,0,0);
-	//	
-	//	if(FAILED(metaDataImport->GetMethodProps( (mdMethodDef) token,
-	//							NULL,
-	//							NULL,
-	//							0,
-	//							NULL,
-	//							&methodAttr,
-	//							&sigBlob,
-	//							NULL,
-	//							NULL,
-	//							NULL ))) {
-	//		DebugBreak();
-	//	}
-	//	ULONG callConv;
-	//	methodAttributes = methodAttr;
-	//	sigBlob += CorSigUncompressData(sigBlob, &callConv);
-	//	text+="(";
-	//	ULONG argCount=0;
-	//	sigBlob += CorSigUncompressData(sigBlob, &argCount);
-	//	string returnType;
-	//	ParseElementType(metaDataImport, &sigBlob, returnType);
-	//	for(ULONG i = 0; (sigBlob != 0) && (i < (argCount)); i++) {
-	//		string buffer;
-	//		ParseElementType(metaDataImport,&sigBlob,buffer);									
-	//		if(i!=0){
-	//			text+=", ";
-	//		}
-	//		text+=buffer;
-	//	}
-	//	text+=")";
-	//	metaDataImport->Release();
-	//}
+	void GetFunctionSignature(FunctionID functionId,UINT32& methodAttributes,string& text) {
+		ClassID classID;
+		ModuleID moduleID;
+		mdToken moduleToken;
+		if(FAILED(profilerInfo->GetFunctionInfo(functionId,&classID,&moduleID,&moduleToken))) {
+			DebugBreak();
+		}
+		IMetaDataImport *metaDataImport = 0;	
+		mdToken	token;
+		if(FAILED(profilerInfo->GetTokenAndMetaDataFromFunction(functionId, IID_IMetaDataImport, (IUnknown **)&metaDataImport,&token))) {
+			DebugBreak();
+		}
+		WCHAR functionNameString[MAX_FUNCTION_LENGTH];
+		if(FAILED(metaDataImport->GetMethodProps(token, 0, functionNameString, MAX_FUNCTION_LENGTH,0,0,0,0,0,0))) {
+			DebugBreak();
+		}
+		mdTypeDef classToken = 0;
+		profilerInfo->GetClassIDInfo(classID, 0, &classToken);
+		if(classToken != mdTypeDefNil) {
+			WCHAR classNameString[MAX_FUNCTION_LENGTH];
+			if(FAILED(metaDataImport->GetTypeDefProps(classToken, classNameString, MAX_FUNCTION_LENGTH,0, 0, 0))) {
+				DebugBreak();
+			}
+			string s=CW2A(classNameString);
+			text+=GetClass(s);
+			text+=".";
+			text+=CW2A(functionNameString);
+		}
+		DWORD methodAttr = 0;
+		PCCOR_SIGNATURE sigBlob = NULL;
+		//HRESULT hr=metaDataImport->GetMethodProps((mdMethodDef)token,0,0,0,0,&methodAttr,&sigBlob,0,0,0);
+		
+		if(FAILED(metaDataImport->GetMethodProps( (mdMethodDef) token,
+								NULL,
+								NULL,
+								0,
+								NULL,
+								&methodAttr,
+								&sigBlob,
+								NULL,
+								NULL,
+								NULL ))) {
+			DebugBreak();
+		}
+		ULONG callConv;
+		methodAttributes = methodAttr;
+		sigBlob += CorSigUncompressData(sigBlob, &callConv);
+		text+="(";
+		ULONG argCount=0;
+		sigBlob += CorSigUncompressData(sigBlob, &argCount);
+		string returnType;
+		ParseElementType(metaDataImport, &sigBlob, returnType);
+		for(ULONG i = 0; (sigBlob != 0) && (i < (argCount)); i++) {
+			string buffer;
+			ParseElementType(metaDataImport,&sigBlob,buffer);									
+			if(i!=0){
+				text+=", ";
+			}
+			text+=buffer;
+		}
+		text+=")";
+		metaDataImport->Release();
+	}
 	template<class T> string ToString(T i) {
 		string s;
 		stringstream stream;
@@ -898,125 +120,125 @@ public:
 		stream>>s;
 		return s;
 	}
-	//void ParseElementType(IMetaDataImport *metaDataImport,PCCOR_SIGNATURE* signature,string& text) {
-	//	map<CorElementType,string> types;	
-	//	types[ELEMENT_TYPE_VOID]="void";
-	//	types[ELEMENT_TYPE_BOOLEAN]="bool";	
-	//	types[ELEMENT_TYPE_CHAR]="wchar";
-	//	types[ELEMENT_TYPE_I1]="byte";
-	//	types[ELEMENT_TYPE_U1]="ubyte";
-	//	types[ELEMENT_TYPE_I2]="short";
-	//	types[ELEMENT_TYPE_U2]="ushort";
-	//	types[ELEMENT_TYPE_I4]="int";
-	//	types[ELEMENT_TYPE_U4]="uint";	
-	//	types[ELEMENT_TYPE_I8]="long";	
-	//	types[ELEMENT_TYPE_U8]="ulong";	
-	//	types[ELEMENT_TYPE_R4]="float";	
-	//	types[ELEMENT_TYPE_R8]="double";	
-	//	types[ELEMENT_TYPE_U]="uint";	
-	//	types[ELEMENT_TYPE_I]="int";	
-	//	types[ELEMENT_TYPE_OBJECT]="object";	
-	//	types[ELEMENT_TYPE_STRING]="string";	
-	//	types[ELEMENT_TYPE_TYPEDBYREF]="refany";
-	//	(*signature)++;
-	//	CorElementType element=(CorElementType)(**signature);
-	//	if(types.find(element)!=types.end()) {
-	//		text+=types[element];
-	//	}
-	//	else {
-	//		switch(element) {
-	//			case ELEMENT_TYPE_CLASS:	
-	//			case ELEMENT_TYPE_VALUETYPE:
-	//			case ELEMENT_TYPE_CMOD_REQD:
-	//			case ELEMENT_TYPE_CMOD_OPT: 
-	//			{
-	//				mdToken	token;	
-	//				string className;//[MAX_FUNCTION_LENGTH];
-	//				(*signature) += CorSigUncompressToken((PCCOR_SIGNATURE)(*signature),&token);
-	//				if ( TypeFromToken( token ) != mdtTypeRef ) {
-	//					WCHAR zName[MAX_FUNCTION_LENGTH];
-	//					metaDataImport->GetTypeDefProps(token,zName,MAX_FUNCTION_LENGTH,0,0,0);
-	//					className=CW2A(zName);//,MAX_FUNCTION_LENGTH);
-	//				}
-	//				text+=GetClass(className);
-	//				break;	
-	//			}
-	//			case ELEMENT_TYPE_SZARRAY:
-	//				ParseElementType(metaDataImport,signature,text); 
-	//				text+="[]";
-	//				break;		
-	//			case ELEMENT_TYPE_ARRAY: {	
-	//				ULONG rank;
-	//				ParseElementType(metaDataImport,signature,text);
-	//				rank = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);
-	//				if ( rank == 0 ) {
-	//					text+="[?]";
-	//				}
-	//				else {
-	//					ULONG *lower;
-	//					ULONG *sizes;
-	//					ULONG numsizes;
-	//					ULONG arraysize = (sizeof ( ULONG ) * 2 * rank);
-	//	                
-	//					lower = (ULONG *)_alloca( arraysize );
-	//					memset( lower, 0, arraysize );
-	//					sizes = &lower[rank];
+	void ParseElementType(IMetaDataImport *metaDataImport,PCCOR_SIGNATURE* signature,string& text) {
+		map<CorElementType,string> types;	
+		types[ELEMENT_TYPE_VOID]="void";
+		types[ELEMENT_TYPE_BOOLEAN]="bool";	
+		types[ELEMENT_TYPE_CHAR]="wchar";
+		types[ELEMENT_TYPE_I1]="byte";
+		types[ELEMENT_TYPE_U1]="ubyte";
+		types[ELEMENT_TYPE_I2]="short";
+		types[ELEMENT_TYPE_U2]="ushort";
+		types[ELEMENT_TYPE_I4]="int";
+		types[ELEMENT_TYPE_U4]="uint";	
+		types[ELEMENT_TYPE_I8]="long";	
+		types[ELEMENT_TYPE_U8]="ulong";	
+		types[ELEMENT_TYPE_R4]="float";	
+		types[ELEMENT_TYPE_R8]="double";	
+		types[ELEMENT_TYPE_U]="uint";	
+		types[ELEMENT_TYPE_I]="int";	
+		types[ELEMENT_TYPE_OBJECT]="object";	
+		types[ELEMENT_TYPE_STRING]="string";	
+		types[ELEMENT_TYPE_TYPEDBYREF]="refany";
+		(*signature)++;
+		CorElementType element=(CorElementType)(**signature);
+		if(types.find(element)!=types.end()) {
+			text+=types[element];
+		}
+		else {
+			switch(element) {
+				case ELEMENT_TYPE_CLASS:	
+				case ELEMENT_TYPE_VALUETYPE:
+				case ELEMENT_TYPE_CMOD_REQD:
+				case ELEMENT_TYPE_CMOD_OPT: 
+				{
+					mdToken	token;	
+					string className;//[MAX_FUNCTION_LENGTH];
+					(*signature) += CorSigUncompressToken((PCCOR_SIGNATURE)(*signature),&token);
+					if ( TypeFromToken( token ) != mdtTypeRef ) {
+						WCHAR zName[MAX_FUNCTION_LENGTH];
+						metaDataImport->GetTypeDefProps(token,zName,MAX_FUNCTION_LENGTH,0,0,0);
+						className=CW2A(zName);//,MAX_FUNCTION_LENGTH);
+					}
+					text+=GetClass(className);
+					break;	
+				}
+				case ELEMENT_TYPE_SZARRAY:
+					ParseElementType(metaDataImport,signature,text); 
+					text+="[]";
+					break;		
+				case ELEMENT_TYPE_ARRAY: {	
+					ULONG rank;
+					ParseElementType(metaDataImport,signature,text);
+					rank = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);
+					if ( rank == 0 ) {
+						text+="[?]";
+					}
+					else {
+						ULONG *lower;
+						ULONG *sizes;
+						ULONG numsizes;
+						ULONG arraysize = (sizeof ( ULONG ) * 2 * rank);
+		                
+						lower = (ULONG *)_alloca( arraysize );
+						memset( lower, 0, arraysize );
+						sizes = &lower[rank];
 
-	//					numsizes = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);
-	//					if ( numsizes <= rank ) {
- //   						ULONG numlower;			                    
-	//						for ( ULONG i = 0; i < numsizes; i++ ) {
-	//							sizes[i] = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);
-	//						}			                    
-	//						numlower = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);	
-	//						if ( numlower <= rank ) {
-	//							for (ULONG i = 0; i < numlower; i++) {
-	//								lower[i] = CorSigUncompressData((PCCOR_SIGNATURE&)*signature); 
-	//							}
-	//							text+="[";
-	//							for (ULONG i = 0; i < rank; i++ ) {	
-	//								if ( (sizes[i] != 0) && (lower[i] != 0) ) {	
-	//									if ( lower[i] == 0 ) {
-	//										text+=ToString(sizes[i]);
-	//									}
-	//									else {
-	//										text+=ToString(lower[i]);	
-	//										text+="...";
-	//										if ( sizes[i] != 0 ) {
-	//											text+=ToString((lower[i] + sizes[i] + 1) );	
-	//										}
-	//									}	
-	//								}			                            	
-	//								if ( i < (rank - 1) ) {
-	//									text+=",";
-	//								}
-	//							}		                        
-	//							text+="]";
-	//						}
-	//					}
-	//				}
-	//				break;
-	//			}
-	//			case ELEMENT_TYPE_PINNED:
-	//				ParseElementType(metaDataImport,signature,text); 
-	//				text+="pinned";
-	//				break;
-	//			case ELEMENT_TYPE_PTR:   
-	//				ParseElementType(metaDataImport,signature,text); 
-	//				text+="*";
-	//				break;
-	//			case ELEMENT_TYPE_BYREF:   
-	//				text+="ref ";
-	//				ParseElementType(metaDataImport,signature,text); 
-	//				break;
-	//			default:
-	//			case ELEMENT_TYPE_END:
-	//			case ELEMENT_TYPE_SENTINEL:
-	//				text+="<UNKNOWN>";
-	//				break;           	
-	//		}
-	//	}
-	//}
+						numsizes = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);
+						if ( numsizes <= rank ) {
+    						ULONG numlower;			                    
+							for ( ULONG i = 0; i < numsizes; i++ ) {
+								sizes[i] = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);
+							}			                    
+							numlower = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);	
+							if ( numlower <= rank ) {
+								for (ULONG i = 0; i < numlower; i++) {
+									lower[i] = CorSigUncompressData((PCCOR_SIGNATURE&)*signature); 
+								}
+								text+="[";
+								for (ULONG i = 0; i < rank; i++ ) {	
+									if ( (sizes[i] != 0) && (lower[i] != 0) ) {	
+										if ( lower[i] == 0 ) {
+											text+=ToString(sizes[i]);
+										}
+										else {
+											text+=ToString(lower[i]);	
+											text+="...";
+											if ( sizes[i] != 0 ) {
+												text+=ToString((lower[i] + sizes[i] + 1) );	
+											}
+										}	
+									}			                            	
+									if ( i < (rank - 1) ) {
+										text+=",";
+									}
+								}		                        
+								text+="]";
+							}
+						}
+					}
+					break;
+				}
+				case ELEMENT_TYPE_PINNED:
+					ParseElementType(metaDataImport,signature,text); 
+					text+="pinned";
+					break;
+				case ELEMENT_TYPE_PTR:   
+					ParseElementType(metaDataImport,signature,text); 
+					text+="*";
+					break;
+				case ELEMENT_TYPE_BYREF:   
+					text+="ref ";
+					ParseElementType(metaDataImport,signature,text); 
+					break;
+				default:
+				case ELEMENT_TYPE_END:
+				case ELEMENT_TYPE_SENTINEL:
+					text+="<UNKNOWN>";
+					break;           	
+			}
+		}
+	}
 	CComPtr< ICorProfilerInfo2 > profilerInfo;
 };
 HRESULT __stdcall __stdcall StackWalker(FunctionID funcId,UINT_PTR ip,COR_PRF_FRAME_INFO frameInfo,
@@ -1046,8 +268,7 @@ public:
 			WriteInteger(id);
 			UINT32 methodAttributes;
 			string signature;
-
-			profilerHelper.GetFunctionSignature(id, methodAttributes,signature);//, returnType,className,functionName,parameters);// signature);
+			profilerHelper.GetFunctionSignature(id, methodAttributes, signature);
 			WriteInteger(methodAttributes);
 			WriteString(signature);
 		}
