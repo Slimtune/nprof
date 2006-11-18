@@ -44,7 +44,7 @@ public:
 	void GetFunctionSignature( 
 		FunctionID functionId,
 		UINT32& methodAttributes,
-		string &signature
+		string& signature
 		)
 	{
 		ULONG args;
@@ -54,16 +54,13 @@ public:
 		WCHAR classNameString[ MAX_FUNCTION_LENGTH ];
 		GetFunctionProperties( functionId, &methodAttributes, &args, returnTypeString, parametersString, classNameString, functionNameString );
 
-		//string& returnType, 
-		//string& className,
-		//string& functionName,
-		//string& parameters 
 
-		string returnType = CW2A( returnTypeString );
-		string parameters = CW2A( parametersString );
-		string className = CW2A( classNameString );
-		string functionName = CW2A( functionNameString );
-		signature=className+"."+functionName+"("+parameters+")";
+		//returnType = CW2A( returnTypeString );
+		//parameters = CW2A( parametersString );
+		//className = CW2A( classNameString );
+		//functionName = CW2A( functionNameString );
+		signature=(string)CW2A( classNameString )+"."+(string)CW2A( functionNameString )+"("+(string)CW2A( parametersString )+")";
+		//signature=className+"."+functionName+"("+parameters+")";
 	}
 	HRESULT GetFunctionProperties( 
 					   FunctionID functionID,
@@ -1043,13 +1040,6 @@ public:
 			WriteInteger(id);
 			UINT32 methodAttributes;
 			string signature;
-
-
-			//string returnType;// = CW2A( returnTypeString );
-			//string parameters;// = CW2A( parametersString );
-			//string className;// = CW2A( classNameString );
-			//string functionName;// = CW2A( functionNameString );
-			//string signature;
 
 			profilerHelper.GetFunctionSignature(id, methodAttributes,signature);//, returnType,className,functionName,parameters);// signature);
 			WriteInteger(methodAttributes);

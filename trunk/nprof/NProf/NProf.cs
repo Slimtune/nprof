@@ -235,11 +235,6 @@ namespace NProf {
 		}
 		private void StartRun() {
 			string message;
-			bool success = profiler.CheckSetup(out message);
-			if (!success) {
-				MessageBox.Show(this, message, "Application setup error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-				return;
-			}
 			Run run = new Run(profiler);
 			run.profiler.completed = new EventHandler(run.Complete);
 			run.Start();
@@ -566,7 +561,7 @@ namespace NProf {
 		public Run currentOldRun;
 		public MethodView(string name) {
 			this.DefaultItemHeight = 20;
-			this.SelectedItemsChanged += new EventHandler(MethodView_SelectedItemsChanged);
+			//this.SelectedItemsChanged += new EventHandler(MethodView_SelectedItemsChanged);
 			Columns.Add(name);
 			Columns[0].Width = 350;
 			Columns[0].SortDataType = SortDataType.String;
@@ -579,11 +574,6 @@ namespace NProf {
 			this.BeforeExpand += delegate(object sender,ContainerListViewCancelEventArgs e) {
 				MakeSureComputed(e.Item);
 			};
-		}
-		void MethodView_SelectedItemsChanged(object sender, EventArgs e) {
-			//if (SelectedItems.Count != 0) {
-			//    NProf.status.Text = ((((FunctionInfo)SelectedItems[0].Tag).Samples / (double)currentRun.maxSamples) * 100).ToString("0.00;-0.00;0.00") + "%";
-			//}
 		}
 		void MakeSureComputed(ContainerListViewItem item) {
 			MakeSureComputed(item, true);
@@ -612,7 +602,11 @@ namespace NProf {
 			public ChildLabel(string text,ContainerListViewItem item) {
 				this.item = item;
 				this.Click += delegate {
-					item.Selected = true;
+					item.Focused = true;
+					//item.ListView.SelectedItems.Clear();
+					//item.ListView.SelectedItems
+					//item.ListView.SelectedItems.Add(item);//Selected = true;
+					//item.ListView.Invalidate();
 				};
 				this.Text = text;
 				Margin = new Padding(0);
@@ -634,23 +628,12 @@ namespace NProf {
 			panel.FlowDirection = FlowDirection.LeftToRight;
 
 			Label signature=new ChildLabel(currentRun.signatures[function.ID],item);
-			//signature.Margin = new Padding(0);
-			//signature.Text=;
 			signature.AutoSize = true;
-
 
 			Label time = new ChildLabel((fraction * 100.0).ToString("0.00;-0.00;0.00"),item);
 			time.Width = 34;
 			time.TextAlign = ContentAlignment.TopRight;
 			time.Padding = new Padding(0, 0, 2, 0);
-			//time.Margin = new Padding(0);
-
-			//Label time=new Label();
-			//time.Text=(fraction * 100.0).ToString("0.00;-0.00;0.00");
-			//time.Width = 34;
-			//time.TextAlign = ContentAlignment.TopRight;
-			//time.Padding = new Padding(0,0,2,0);
-			//time.Margin = new Padding(0);
 
 			panel.Controls.Add(time);
 			if (oldFunction != null) {
@@ -662,10 +645,6 @@ namespace NProf {
 			panel.Controls.Add(signature);
 			item.SubItems[0].ItemControl = panel;
 
-			//int childSamples = 0;
-			//foreach (FunctionInfo f in function.Children.Values) {
-			//    childSamples += f.Samples;
-			//}
 			item.Tag = function;
 			return item;
 		}
@@ -688,16 +667,6 @@ namespace NProf {
 			get { return "0.11"; }
 		}
 		public EventHandler completed;
-		public bool CheckSetup(out string message) {
-			message = String.Empty;
-			using (RegistryKey rk = Registry.ClassesRoot.OpenSubKey("CLSID\\" + "{" + PROFILER_GUID + "}")) {
-				if (rk == null) {
-					message = "Unable to find the registry key for the profiler hook.  Please register the NProf.Hook.dll file.";
-					return false;
-				}
-			}
-			return true;
-		}
 		public bool Start(Run run) {
 			this.run = run;
 			process = new Process();
