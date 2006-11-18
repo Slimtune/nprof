@@ -30,46 +30,6 @@ using System.Globalization;
 using DotNetLib.Windows.Forms;
 
 namespace NProf {
-	//public class CustomLabel : Label {
-	//    public double fraction;
-	//    private int width;
-	//    private double oldFraction;
-	//    public CustomLabel(int width,double fraction,double oldFraction, string text) {
-	//        this.width = width;
-	//        this.fraction = fraction;
-	//        this.oldFraction = oldFraction;
-	//        Text = text;
-	//        TextAlign = ContentAlignment.MiddleLeft;
-	//        Height = 12;
-	//        this.Padding = new Padding(2);
-	//    }
-	//    protected override void OnPaint(PaintEventArgs e) {
-	//        int middle = Convert.ToInt32(width * fraction);
-	//        e.Graphics.FillRectangle(Brushes.WhiteSmoke, new Rectangle(middle, 0, width - middle, Height));
-	//        e.Graphics.FillRectangle(Brushes.LightBlue, new Rectangle(0, 0, middle, Height));
-	//        double change;
-	//        Brush color;
-	//        int first;
-	//        int second;
-	//        int difference=Math.Abs(Convert.ToInt32((oldFraction-fraction)*width));
-	//        if (oldFraction < fraction) {
-	//            color = Brushes.Red;
-	//            first = middle - difference;
-	//            //second= middle;
-	//            //first=middle+difference;
-	//        }
-	//        else {
-	//            color = Brushes.Green;
-	//            first = middle;
-	//            //first = middle;
-	//            //second=middle+difference;
-	//        }
-	//        if (oldFraction != 0) {
-	//            e.Graphics.FillRectangle(color, new Rectangle(first, 0, difference, Height));
-	//        }
-	//        base.OnPaint(e);
-	//    }
-	//}
 	public class NProf : Form {
 		public ContainerListView runs;
 		private MethodView callees;
@@ -96,20 +56,21 @@ namespace NProf {
 				return "NProf " + Profiler.Version;
 			}
 		}
-		//public static StatusBar status = new StatusBar();
 		private NProf() {
+			WindowState = FormWindowState.Maximized;
 			Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("NProf.Resources.app-icon.ico"));
 			Text = Title;
 			profiler = new Profiler();
 			runs = new ContainerListView();
 			runs.ColumnSortColor = Color.White;
 			runs.Columns.Add("Runs");
-			runs.Columns[0].SortDataType = SortDataType.String;
+			runs.Columns.Add("Time");
+			//runs.Columns[0].SortDataType = SortDataType.String;
+			//runs.Columns[0].SortDataType = SortDataType.None;
 			runs.AllowMultiSelect = true;
 			runs.Dock = DockStyle.Left;
 			runs.Width = 200;
-			//runs.DefaultItemHeight = 20;
-			runs.DoubleClick += delegate {
+			runs.SelectedItemsChanged += delegate {
 				if (runs.SelectedItems.Count != 0) {
 					ShowRun((Run)runs.SelectedItems[0].Tag);
 				}
@@ -120,7 +81,7 @@ namespace NProf {
 			callers.GotFocus += delegate {
 				callees.SelectedItems.Clear();
 			};
-			callers.DoubleClick += delegate {
+			callers.DoubleClick+= delegate {
 				if (callers.SelectedItems.Count != 0) {
 					callees.MoveTo(((FunctionInfo)callers.SelectedItems[0].Tag).ID);
 				}
@@ -131,7 +92,7 @@ namespace NProf {
 			callees.GotFocus += delegate {
 				callers.SelectedItems.Clear();
 			};
-			callees.DoubleClick += delegate {
+			callees.DoubleClick+= delegate {
 				if (callees.SelectedItems.Count != 0) {
 					callers.MoveTo(((FunctionInfo)callees.SelectedItems[0].Tag).ID);
 				}
@@ -304,31 +265,21 @@ namespace NProf {
 			runs.Items.Add(item);
 			runs.SelectedItems.Clear();
 			item.SubItems[0].Text = title;
-			//item.SubItems[0].Text=((((double)run.stackWalks.Count) / maxStackWalks) * 50).ToString();
-			//item.SubItems[0].ItemControl = new CustomLabel(50, (((double)run.stackWalks.Count) / maxStackWalks), 0, title);
+			item.SubItems[1].Text = (((double)run.stackWalks.Count) / maxStackWalks).ToString("0.00;-0.00;0.00")+"s";
 			runs.SelectedItems.Add(item);
-			//foreach (ContainerListViewItem i in runs.Items) {
-			//    ((CustomLabel)i.SubItems[0].ItemControl).fraction = ((Run)i.Tag).stackWalks.Count / (double)maxStackWalks;
-			//    //((CustomLabel)i.SubItems[0].ItemControl).fraction = ((Run)i.Tag).stackWalks.Count / (double)maxStackWalks;
-			//}
 			ShowRun(run);
 		}
 		public void ShowRun(Run run) {
 			Run compareRun;
-			if (runs.Items.Count > 1) {
-				ContainerListViewItem first = runs.Items[0];//[runs.SelectedItems.Count - 2];
-				//ContainerListViewItem first = runs.SelectedItems[runs.SelectedItems.Count - 2];
+			if (runs.SelectedItems.Count > 1) {
+				ContainerListViewItem first = runs.SelectedItems[runs.SelectedItems.Count - 1];
 				compareRun = (Run)first.Tag;
 			}
-			//if (runs.SelectedItems.Count > 1) {
-			//    ContainerListViewItem first = runs.SelectedItems[runs.SelectedItems.Count - 2];
-			//    compareRun = (Run)first.Tag;
-			//}
 			else {
 				compareRun = null;
 			}
-			callees.Update(run, run.functions,compareRun!=null?compareRun.functions:null);
-			callers.Update(run, run.callers,compareRun!=null?compareRun.callers:null);
+			callees.Update(run, run.functions,compareRun!=null?compareRun.functions:null,compareRun);
+			callers.Update(run, run.callers,compareRun!=null?compareRun.callers:null,compareRun);
 		}
 		private void findNext_Click(object sender, EventArgs e) {
 			Find(true, true);
@@ -338,7 +289,7 @@ namespace NProf {
 		}
 		[STAThread]
 		static void Main(string[] args) {
-			string s = Guid.NewGuid().ToString();
+			string s = Guid.NewGuid().ToString().ToUpper();
 			Application.EnableVisualStyles();
 			Application.Run(form);
 		}
@@ -510,20 +461,28 @@ namespace NProf {
 		private DateTime end;
 		public Profiler profiler;
 	}
-	public class MethodView : ContainerListView {
+	public class View : ContainerListView {
+		public View() {
+			this.SizeChanged += delegate {
+				this.Columns[0].Width = this.Width - 30;
+			};
+		}
+	}
+	public class MethodView : View {
 		public void MoveTo(int id) {
 			SelectedItems.Clear();
 			foreach (ContainerListViewItem item in Items) {
 				if (((FunctionInfo)item.Tag).ID == id) {
 					SelectedItems.Add(item);
 					EnsureVisible(item);
-					Focus();
+					Invalidate();
 					break;
 				}
 			}
 		}
-		public void Update(Run run, Dictionary<int, FunctionInfo> functions, Dictionary<int, FunctionInfo> compareFunctions) {
+		public void Update(Run run, Dictionary<int, FunctionInfo> functions, Dictionary<int, FunctionInfo> compareFunctions,Run oldRun) {
 			currentRun = run;
+			currentOldRun = oldRun;
 			SuspendLayout();
 			BeginUpdate();
 			Items.Clear();
@@ -576,6 +535,7 @@ namespace NProf {
 						SelectedItems.Clear();
 						item.Focused = true;
 						item.Selected = true;
+						item.Focused = true;
 						this.Invalidate();
 						break;
 					}
@@ -605,10 +565,8 @@ namespace NProf {
 			}
 		}
 		public Run currentRun;
+		public Run currentOldRun;
 		public MethodView(string name) {
-			this.SizeChanged += delegate {
-				this.Columns[0].Width = this.Width - 30;
-			};
 			this.DefaultItemHeight = 20;
 			this.SelectedItemsChanged += new EventHandler(MethodView_SelectedItemsChanged);
 			Columns.Add(name);
@@ -651,6 +609,17 @@ namespace NProf {
 				}
 			}
 		}
+		public class ChildLabel : Label {
+			private ContainerListViewItem item;
+			public ChildLabel(string text,ContainerListViewItem item) {
+				this.item = item;
+				this.Click += delegate {
+					item.Selected = true;
+				};
+				this.Text = text;
+				Margin = new Padding(0);
+			}
+		}
 		private ContainerListViewItem AddItem(ContainerListViewItemCollection parent, FunctionInfo function,FunctionInfo oldFunction) {
 			ContainerListViewItem item = parent.Add(currentRun.signatures[function.ID]);
 			double fraction = ((double)function.Samples) / (double)currentRun.maxSamples;
@@ -662,32 +631,43 @@ namespace NProf {
 				oldFraction = 0;
 			}
 			FlowLayoutPanel panel = new FlowLayoutPanel();
-			//panel.BackColor = Color.Yellow;
 			panel.Padding = new Padding(0);
 			panel.Margin = new Padding(0);
 			panel.FlowDirection = FlowDirection.LeftToRight;
-			//panel.AutoSize = true;
-			Label signature=new Label();
-			//signature.BackColor = Color.Green;
-			//signature.BorderStyle = BorderStyle.None;
-			signature.Margin = new Padding(0);
-			signature.Text=currentRun.signatures[function.ID];
+
+			Label signature=new ChildLabel(currentRun.signatures[function.ID],item);
+			//signature.Margin = new Padding(0);
+			//signature.Text=;
 			signature.AutoSize = true;
-			Label time=new Label();
-			time.Text=(fraction * 100.0).ToString("0.00;-0.00;0.00");
+
+
+			Label time = new ChildLabel((fraction * 100.0).ToString("0.00;-0.00;0.00"),item);
 			time.Width = 34;
-			//time.BackColor = Color.Red;
 			time.TextAlign = ContentAlignment.TopRight;
-			time.Padding = new Padding(0,0,2,0);
-			time.Margin = new Padding(0);
+			time.Padding = new Padding(0, 0, 2, 0);
+			//time.Margin = new Padding(0);
+
+			//Label time=new Label();
+			//time.Text=(fraction * 100.0).ToString("0.00;-0.00;0.00");
+			//time.Width = 34;
+			//time.TextAlign = ContentAlignment.TopRight;
+			//time.Padding = new Padding(0,0,2,0);
+			//time.Margin = new Padding(0);
+
 			panel.Controls.Add(time);
+			if (oldFunction != null) {
+				int difference=function.Samples-oldFunction.Samples;
+				Label old = new ChildLabel((difference*fraction).ToString("+0.00;-0.00;+0.00"), item);
+				old.Width = 44;
+				panel.Controls.Add(old);
+			}
 			panel.Controls.Add(signature);
 			item.SubItems[0].ItemControl = panel;
 
-			int childSamples = 0;
-			foreach (FunctionInfo f in function.Children.Values) {
-				childSamples += f.Samples;
-			}
+			//int childSamples = 0;
+			//foreach (FunctionInfo f in function.Children.Values) {
+			//    childSamples += f.Samples;
+			//}
 			item.Tag = function;
 			return item;
 		}
@@ -705,9 +685,9 @@ namespace NProf {
 		}
 	}
 	public class Profiler {
-		public const string PROFILER_GUID = "029C3A01-70C1-46D2-92B7-24B157DF55CE";
+		public const string PROFILER_GUID = "107F578A-E019-4BAF-86A1-7128A749DB05";
 		public static string Version {
-			get { return "0.10.1"; }
+			get { return "0.11"; }
 		}
 		public EventHandler completed;
 		public bool CheckSetup(out string message) {
