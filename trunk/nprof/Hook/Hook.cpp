@@ -62,7 +62,8 @@ public:
 		signature=(string)CW2A( classNameString )+"."+(string)CW2A( functionNameString )+"("+(string)CW2A( parametersString )+")";
 		//signature=className+"."+functionName+"("+parameters+")";
 	}
-	HRESULT GetFunctionProperties( 
+	//HRESULT 
+	void GetFunctionProperties( 
 					   FunctionID functionID,
 										   UINT32* methodAttributes,
 										   ULONG *argCount,
@@ -91,18 +92,23 @@ public:
 			//
 			// Get the classID 
 			//
-			try
-			{
-				hr = profilerInfo->GetFunctionInfo(
+			//try
+			//{
+				if(FAILED(profilerInfo->GetFunctionInfo(
 							functionID,
 							&classID,
 							&moduleID,
-							&moduleToken );
-			}
-			catch ( ... )
-			{
-				hr = E_FAIL;
-			}
+							&moduleToken ))) {
+					throw("GetFunctionInfo failed");
+				}
+				else {
+					hr=1;
+				}
+			//}
+			//catch ( ... )
+			//{
+			//	hr = E_FAIL;
+			//}
 			if ( FAILED( hr ) )
 			{
 				hr = S_OK;
@@ -258,7 +264,7 @@ public:
 			hr = S_OK;
 			swprintf( funName, L"UNMANAGED FRAME" );	
 		}
-		return hr;
+		//return hr;
 	}
 	PCCOR_SIGNATURE ParseElementType( IMetaDataImport *metaDataImport,
 											  PCCOR_SIGNATURE signature, 
