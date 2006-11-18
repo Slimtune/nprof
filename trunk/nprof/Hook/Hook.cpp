@@ -90,7 +90,8 @@ public:
 		ULONG argCount=0;
 		sigBlob += CorSigUncompressData(sigBlob, &argCount);
 
-		ParseElementType(metaDataImport, &sigBlob);
+		//DebugBreak();
+		//ParseElementType(metaDataImport, &sigBlob);
 
 		for(ULONG i = 0; (sigBlob != 0) && (i < (argCount)); i++) {
 			if(i!=0){
@@ -109,9 +110,9 @@ public:
 		stream>>s;
 		return s;
 	}
-	string ParseElementType(IMetaDataImport *metaDataImport,PCCOR_SIGNATURE* signature) {
-		(*signature)++;
-		switch((CorElementType)(**signature)) {
+	string ParseElementType(IMetaDataImport *metaDataImport,PCCOR_SIGNATURE* ppSignature) {
+		(*ppSignature)++;
+		switch((CorElementType)(**ppSignature)) {
 			case ELEMENT_TYPE_VOID:
 				return "void";
 			case ELEMENT_TYPE_BOOLEAN:
@@ -153,19 +154,20 @@ public:
 			case ELEMENT_TYPE_CMOD_REQD:
 			case ELEMENT_TYPE_CMOD_OPT:
 				mdToken	token;
-				(*signature) += CorSigUncompressToken((PCCOR_SIGNATURE)(*signature),&token);
+				(*ppSignature)++;
+				(*ppSignature) += CorSigUncompressToken((PCCOR_SIGNATURE)(*ppSignature),&token);
 				if(TypeFromToken(token)!=mdtTypeRef) {
 					WCHAR zName[MAX_FUNCTION_LENGTH];
 					metaDataImport->GetTypeDefProps(token,zName,MAX_FUNCTION_LENGTH,0,0,0);
-					return CW2A(zName);
+					return GetClass((string)CW2A(zName));
 				}
 				return "";
 			case ELEMENT_TYPE_SZARRAY:
-				return ParseElementType(metaDataImport,signature)+"[]";
+				return ParseElementType(metaDataImport,ppSignature)+"[]";
 			case ELEMENT_TYPE_ARRAY: {	
 				ULONG rank;
-				string text=ParseElementType(metaDataImport,signature);
-				rank = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);
+				string text=ParseElementType(metaDataImport,ppSignature);
+				rank = CorSigUncompressData((PCCOR_SIGNATURE&)*ppSignature);
 				if ( rank == 0 ) {
 					text+="[?]";
 				}
@@ -179,16 +181,16 @@ public:
 					memset(lower,0,arraysize);
 					sizes = &lower[rank];
 
-					numsizes = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);
+					numsizes = CorSigUncompressData((PCCOR_SIGNATURE&)*ppSignature);
 					if ( numsizes <= rank ) {
 						ULONG numlower;			                    
 						for ( ULONG i = 0; i < numsizes; i++ ) {
-							sizes[i] = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);
+							sizes[i] = CorSigUncompressData((PCCOR_SIGNATURE&)*ppSignature);
 						}			                    
-						numlower = CorSigUncompressData((PCCOR_SIGNATURE&)*signature);	
+						numlower = CorSigUncompressData((PCCOR_SIGNATURE&)*ppSignature);	
 						if ( numlower <= rank ) {
 							for (ULONG i = 0; i < numlower; i++) {
-								lower[i] = CorSigUncompressData((PCCOR_SIGNATURE&)*signature); 
+								lower[i] = CorSigUncompressData((PCCOR_SIGNATURE&)*ppSignature); 
 							}
 							text+="[";
 							for (ULONG i = 0; i < rank; i++ ) {	
@@ -215,11 +217,11 @@ public:
 				return text;
 			}
 			case ELEMENT_TYPE_PINNED:
-				return ParseElementType(metaDataImport,signature)+"pinned";
+				return ParseElementType(metaDataImport,ppSignature)+"pinned";
 			case ELEMENT_TYPE_PTR:   
-				return ParseElementType(metaDataImport,signature)+"*";
+				return ParseElementType(metaDataImport,ppSignature)+"*";
 			case ELEMENT_TYPE_BYREF:   
-				return "ref "+ParseElementType(metaDataImport,signature);
+				return "ref "+ParseElementType(metaDataImport,ppSignature);
 			default:
 				return "<UNKNOWN>";
 		}
@@ -326,7 +328,7 @@ public:
 	void WalkStack() {
 		KillTimer();
 		for(map<DWORD,ThreadID>::iterator i=threadMap.begin();i!=threadMap.end();i++) {
-			DWORD threadId=(*i).first;
+			DWORD threadId=i->first;
 			HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME|THREAD_QUERY_INFORMATION|THREAD_GET_CONTEXT,false,threadId);
 			int suspendCount=SuspendThread(threadHandle);
 			vector<FunctionID>* functions=new vector<FunctionID>();
