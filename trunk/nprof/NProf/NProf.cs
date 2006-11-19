@@ -258,7 +258,8 @@ namespace NProf {
 			runs.Items.Add(item);
 			runs.SelectedItems.Clear();
 			item.SubItems[0].Text = title;
-			item.SubItems[1].Text = (((double)run.stackWalks.Count) / maxStackWalks).ToString("0.00;-0.00;0.00")+"s";
+			item.SubItems[1].Text = run.seconds.ToString("0.00;-0.00;0.00") + "s";
+			//item.SubItems[1].Text = (((double)run.stackWalks.Count) / maxStackWalks).ToString("0.00;-0.00;0.00") + "s";
 			runs.SelectedItems.Add(item);
 			ShowRun(run);
 		}
@@ -312,7 +313,9 @@ namespace NProf {
 		public readonly List<int> frames;
 	}
 	public class FunctionInfo {
-		public FunctionInfo(int ID) {
+		public Run run;
+		public FunctionInfo(int ID,Run run) {
+			this.run = run;
 			this.ID = ID;
 		}
 		public readonly int ID;
@@ -326,7 +329,7 @@ namespace NProf {
 					children = new Dictionary<int, FunctionInfo>();
 					foreach (StackWalk walk in stackWalks) {
 						if (walk.length != 0) {
-							FunctionInfo callee = Run.GetFunctionInfo(children, walk.frames[walk.length - 1]);
+							FunctionInfo callee = Run.GetFunctionInfo(children, walk.frames[walk.length - 1],run);
 							if (callee.lastWalk != walk.id) {
 								callee.Samples++;
 							}
@@ -339,10 +342,10 @@ namespace NProf {
 		}
 	}
 	public class Run {
-		public static FunctionInfo GetFunctionInfo(Dictionary<int, FunctionInfo> functions, int id) {
+		public static FunctionInfo GetFunctionInfo(Dictionary<int, FunctionInfo> functions, int id,Run run) {
 			FunctionInfo result;
 			if (!functions.TryGetValue(id, out result)) {
-				result = new FunctionInfo(id);
+				result = new FunctionInfo(id,run);
 				functions[id] = result;
 			}
 			return result;
@@ -350,8 +353,8 @@ namespace NProf {
 		public int maxSamples;
 		public List<List<int>> stackWalks = new List<List<int>>();
 		private void InterpreteData() {
-			Interprete(functions,false);
-			Interprete(callers,true);
+			Interprete(functions,false,this);
+			Interprete(callers,true,this);
 			maxSamples = 0;
 			foreach (FunctionInfo function in functions.Values) {
 				if (function.Samples > maxSamples) {
@@ -359,17 +362,17 @@ namespace NProf {
 				}
 			}
 		}
-		private void Interprete2(int currentWalk, List<int> stackWalk,Dictionary<int, FunctionInfo> map) {
-			for (int i = 0; i < stackWalk.Count; i++) {
-				FunctionInfo function = Run.GetFunctionInfo(map, stackWalk[stackWalk.Count - i - 1]);
-				if (function.lastWalk != currentWalk) {
-					function.Samples++;
-					function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.Count - i - 1, stackWalk));
-				}
-				function.lastWalk = currentWalk;
-			}
-		}
-		private void Interprete(Dictionary<int, FunctionInfo> map,bool reverse) {
+		//private void Interprete2(int currentWalk, List<int> stackWalk,Dictionary<int, FunctionInfo> map,Run run) {
+		//    for (int i = 0; i < stackWalk.Count; i++) {
+		//        FunctionInfo function = Run.GetFunctionInfo(map, stackWalk[stackWalk.Count - i - 1],run);
+		//        if (function.lastWalk != currentWalk) {
+		//            function.Samples++;
+		//            function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.Count - i - 1, stackWalk));
+		//        }
+		//        function.lastWalk = currentWalk;
+		//    }
+		//}
+		private void Interprete(Dictionary<int, FunctionInfo> map,bool reverse,Run run) {
 			int currentWalk = 0;
 			foreach (List<int> original in stackWalks) {
 				currentWalk++;
@@ -382,7 +385,7 @@ namespace NProf {
 					stackWalk = original;
 				}
 				for (int i = 0; i < stackWalk.Count; i++) {
-					FunctionInfo function = Run.GetFunctionInfo(map, stackWalk[stackWalk.Count - i - 1]);
+					FunctionInfo function = Run.GetFunctionInfo(map, stackWalk[stackWalk.Count - i - 1],run);
 					if (function.lastWalk != currentWalk) {
 						function.Samples++;
 						function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.Count - i - 1, stackWalk));
@@ -402,8 +405,11 @@ namespace NProf {
 				return Path.Combine(Path.GetDirectoryName(Path.GetTempFileName()), Profiler.PROFILER_GUID + ".nprof");
 			}
 		}
+		public double seconds = 0;
 		private void ReadStackWalks() {
 			using (BinaryReader r = new BinaryReader(File.Open(FileName, FileMode.Open))) {
+				int time = r.ReadInt32();
+				this.seconds = time / 10000000.0;
 				while (true) {
 					int functionId = r.ReadInt32();
 					if (functionId == -1) {
@@ -559,7 +565,7 @@ namespace NProf {
 		public Run currentRun;
 		public Run currentOldRun;
 		public MethodView(string name) {
-			this.DefaultItemHeight = 20;
+			this.DefaultItemHeight = 22;
 			Columns.Add(name);
 			Columns[0].Width = 350;
 			Columns[0].SortDataType = SortDataType.String;
@@ -595,8 +601,32 @@ namespace NProf {
 				}
 			}
 		}
+		public class TimeLabel : ChildLabel {
+			public TimeLabel(double fraction, ContainerListViewItem item)
+				: base((fraction * 100.0).ToString("+0.00;-0.00;0.00"), item) {
+				TextAlign = ContentAlignment.TopRight;
+				Padding = new Padding(0, 0, 0, 0);
+				Width = 44;
+			}
+		}
+		public class GraphicalTimeLabel: ChildLabel {
+			protected double fraction;
+			public GraphicalTimeLabel(double fraction, ContainerListViewItem item)
+				: base((fraction * 100.0).ToString("0.00;-0.00;0.00"), item){
+				TextAlign = ContentAlignment.TopRight;
+				Padding = new Padding(0, 0, 0, 0);
+				this.fraction = fraction;
+			}
+			protected override void OnPaint(PaintEventArgs e) {
+				int width = Width - 1;
+				int x = Convert.ToInt32(fraction * this.Width);
+				e.Graphics.FillRectangle(Brushes.LightBlue, new Rectangle(width - x, 0,x,this.Height));
+				e.Graphics.DrawRectangle(Pens.Black, new Rectangle(0, 0, this.Width - 1, this.Height - 2));
+				base.OnPaint(e);
+			}
+		}
 		public class ChildLabel : Label {
-			private ContainerListViewItem item;
+			protected ContainerListViewItem item;
 			public ChildLabel(string text,ContainerListViewItem item) {
 				this.item = item;
 				this.Click += delegate {
@@ -606,12 +636,24 @@ namespace NProf {
 				Margin = new Padding(0);
 			}
 		}
-		private ContainerListViewItem AddItem(ContainerListViewItemCollection parent, FunctionInfo function,FunctionInfo oldFunction) {
+		//public class CustomLabel : ChildLabel {
+		//    protected override string Caption {
+		//        get {
+		//            return text;
+		//        }
+				
+		//    }
+		//    private string text;
+		//    public CustomLabel(string text, ContainerListViewItem item):base(item) {
+		//        this.text=text;
+		//    }
+		//}
+		private ContainerListViewItem AddItem(ContainerListViewItemCollection parent, FunctionInfo function,FunctionInfo oldFunction,bool compare) {
 			ContainerListViewItem item = parent.Add(currentRun.signatures[function.ID]);
 			double fraction = ((double)function.Samples) / (double)currentRun.maxSamples;
 			double oldFraction;
 			if (oldFunction != null) {
-				oldFraction = ((double)oldFunction.Samples) / (double)currentRun.maxSamples;
+				oldFraction = (((double)oldFunction.Samples) / (double)oldFunction.run.maxSamples) *oldFunction.run.seconds;
 			}
 			else {
 				oldFraction = 0;
@@ -620,22 +662,28 @@ namespace NProf {
 			panel.Padding = new Padding(0);
 			panel.Margin = new Padding(0);
 			panel.FlowDirection = FlowDirection.LeftToRight;
+			//panel.AutoSize = true;
 
 			Label signature=new ChildLabel(currentRun.signatures[function.ID],item);
 			signature.AutoSize = true;
 
-			Label time = new ChildLabel((fraction * 100.0).ToString("0.00;-0.00;0.00"),item);
-			time.Width = 34;
-			time.TextAlign = ContentAlignment.TopRight;
-			time.Padding = new Padding(0, 0, 2, 0);
+			Label time = new GraphicalTimeLabel(fraction,item);
+			//Label time = new ChildLabel((fraction * 100.0).ToString("0.00;-0.00;0.00"),item);
+			time.Width = 36;
+			time.Height = 16;
+			//time.TextAlign = ContentAlignment.TopRight;
+			//time.Padding = new Padding(0, 0, 0, 0);
+			//time.Padding = new Padding(1, 1, 2, 1);
+			//time.
 
 			panel.Controls.Add(time);
-			if (oldFunction != null) {
-				int difference=function.Samples-oldFunction.Samples;
-				Label old = new ChildLabel((difference*fraction).ToString("+0.00;-0.00;+0.00"), item);
-				old.Width = 44;
-				panel.Controls.Add(old);
-			}
+			//if (oldFunction != null) {
+			double difference = (((double)function.Samples / (double)function.run.maxSamples) * function.run.seconds - (oldFraction)) / function.run.seconds;
+			//double difference = ((double)function.Samples - oldFunction.Samples) / function.run.maxSamples;
+			Label old = new TimeLabel(difference, item);//).ToString("+0.00;-0.00;+0.00"), item);
+			//Label old = new ChildLabel((difference * fraction).ToString("+0.00;-0.00;+0.00"), item);
+			panel.Controls.Add(old);
+			//}
 			panel.Controls.Add(signature);
 			item.SubItems[0].ItemControl = panel;
 

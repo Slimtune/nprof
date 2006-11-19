@@ -250,6 +250,7 @@ public:
 	}
 	void EndAll(ProfilerHelper& profilerHelper) {
 		file=new ofstream(GetTemporaryFileName().c_str(), ios::binary);
+		WriteInteger(lastTime);
 		for(set<FunctionID>::iterator i=signatures.begin();i!=signatures.end();i++) {
 			WriteInteger(*i);
 			WriteString(profilerHelper.GetFunctionSignature(*i));
@@ -313,9 +314,9 @@ public:
 			__int64 l;
 			memcpy(&l,&userTime,sizeof(l));
 			totalTime+=l;
-			__int64 m;
-			memcpy(&m,&userTime,sizeof(m));
-			totalTime+=m;
+			//__int64 m;
+			//memcpy(&m,&kernelTime,sizeof(m));
+			//totalTime+=m;
 			CloseHandle(thread);
 		}
 		if(totalTime-lastTime>50) {
