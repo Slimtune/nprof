@@ -259,7 +259,6 @@ namespace NProf {
 			runs.SelectedItems.Clear();
 			item.SubItems[0].Text = title;
 			item.SubItems[1].Text = run.seconds.ToString("0.00;-0.00;0.00") + "s";
-			//item.SubItems[1].Text = (((double)run.stackWalks.Count) / maxStackWalks).ToString("0.00;-0.00;0.00") + "s";
 			runs.SelectedItems.Add(item);
 			ShowRun(run);
 		}
@@ -314,6 +313,11 @@ namespace NProf {
 	}
 	public class FunctionInfo {
 		public Run run;
+		public string Signature {
+			get {
+				return run.signatures[ID];
+			}
+		}
 		public FunctionInfo(int ID,Run run) {
 			this.run = run;
 			this.ID = ID;
@@ -355,23 +359,14 @@ namespace NProf {
 		private void InterpreteData() {
 			Interprete(functions,false,this);
 			Interprete(callers,true,this);
+			List<FunctionInfo> startFunctions = new List<FunctionInfo>();
 			maxSamples = 0;
-			foreach (FunctionInfo function in functions.Values) {
-				if (function.Samples > maxSamples) {
-					maxSamples = function.Samples;
+			foreach (List<int> stackWalk in stackWalks) {
+				if (stackWalk.Count != 0) {
+					maxSamples++;
 				}
 			}
 		}
-		//private void Interprete2(int currentWalk, List<int> stackWalk,Dictionary<int, FunctionInfo> map,Run run) {
-		//    for (int i = 0; i < stackWalk.Count; i++) {
-		//        FunctionInfo function = Run.GetFunctionInfo(map, stackWalk[stackWalk.Count - i - 1],run);
-		//        if (function.lastWalk != currentWalk) {
-		//            function.Samples++;
-		//            function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.Count - i - 1, stackWalk));
-		//        }
-		//        function.lastWalk = currentWalk;
-		//    }
-		//}
 		private void Interprete(Dictionary<int, FunctionInfo> map,bool reverse,Run run) {
 			int currentWalk = 0;
 			foreach (List<int> original in stackWalks) {
@@ -630,25 +625,14 @@ namespace NProf {
 			public ChildLabel(string text,ContainerListViewItem item) {
 				this.item = item;
 				this.Click += delegate {
+					item.ListView.Focus();// = true;
 					item.Selected = true;
 				};
 				this.Text = text;
 				Margin = new Padding(0);
 			}
 		}
-		//public class CustomLabel : ChildLabel {
-		//    protected override string Caption {
-		//        get {
-		//            return text;
-		//        }
-				
-		//    }
-		//    private string text;
-		//    public CustomLabel(string text, ContainerListViewItem item):base(item) {
-		//        this.text=text;
-		//    }
-		//}
-		private ContainerListViewItem AddItem(ContainerListViewItemCollection parent, FunctionInfo function,FunctionInfo oldFunction,bool compare) {
+		private ContainerListViewItem AddItem(ContainerListViewItemCollection parent, FunctionInfo function,FunctionInfo oldFunction) {
 			ContainerListViewItem item = parent.Add(currentRun.signatures[function.ID]);
 			double fraction = ((double)function.Samples) / (double)currentRun.maxSamples;
 			double oldFraction;
@@ -668,22 +652,13 @@ namespace NProf {
 			signature.AutoSize = true;
 
 			Label time = new GraphicalTimeLabel(fraction,item);
-			//Label time = new ChildLabel((fraction * 100.0).ToString("0.00;-0.00;0.00"),item);
 			time.Width = 36;
 			time.Height = 16;
-			//time.TextAlign = ContentAlignment.TopRight;
-			//time.Padding = new Padding(0, 0, 0, 0);
-			//time.Padding = new Padding(1, 1, 2, 1);
-			//time.
 
 			panel.Controls.Add(time);
-			//if (oldFunction != null) {
 			double difference = (((double)function.Samples / (double)function.run.maxSamples) * function.run.seconds - (oldFraction)) / function.run.seconds;
-			//double difference = ((double)function.Samples - oldFunction.Samples) / function.run.maxSamples;
 			Label old = new TimeLabel(difference, item);//).ToString("+0.00;-0.00;+0.00"), item);
-			//Label old = new ChildLabel((difference * fraction).ToString("+0.00;-0.00;+0.00"), item);
 			panel.Controls.Add(old);
-			//}
 			panel.Controls.Add(signature);
 			item.SubItems[0].ItemControl = panel;
 

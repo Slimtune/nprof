@@ -85,19 +85,24 @@ public:
 
 		ULONG callConv;
 		sigBlob += CorSigUncompressData(sigBlob, &callConv);
+		if ( callConv != IMAGE_CEE_CS_CALLCONV_FIELD ) {
 
-		text+="(";
-		ULONG argCount=0;
-		sigBlob += CorSigUncompressData(sigBlob, &argCount);
-
-		//DebugBreak();
-		//ParseElementType(metaDataImport, &sigBlob);
-
-		for(ULONG i = 0; (sigBlob != 0) && (i < (argCount)); i++) {
-			if(i!=0){
-				text+=", ";
+			ULONG argCount=0;
+			sigBlob += CorSigUncompressData(sigBlob, &argCount);
+			//DebugBreak();
+			sigBlob--;
+			string returnType=ParseElementType(metaDataImport, &sigBlob);
+			text+=" "+ToString(argCount)+" "+returnType+" (";
+			//sigBlob--;
+			if(sigBlob!=0) {
+				for(ULONG i = 0; (sigBlob != 0) && (i < (argCount)); i++) {
+					if(i!=0){
+						text+=", ";
+					}
+					text+=ParseElementType(metaDataImport,&sigBlob);
+					//sigBlob--;
+				}
 			}
-			text+=ParseElementType(metaDataImport,&sigBlob);
 		}
 		text+=")";
 		metaDataImport->Release();
@@ -111,8 +116,10 @@ public:
 		return s;
 	}
 	string ParseElementType(IMetaDataImport *metaDataImport,PCCOR_SIGNATURE* ppSignature) {
+		ULONG count=0;
 		(*ppSignature)++;
-		switch((CorElementType)(**ppSignature)) {
+		CorElementType type=(CorElementType)**ppSignature;
+		switch((CorElementType)type) {
 			case ELEMENT_TYPE_VOID:
 				return "void";
 			case ELEMENT_TYPE_BOOLEAN:
@@ -147,6 +154,8 @@ public:
 				return "object";
 			case ELEMENT_TYPE_STRING:
 				return "string";
+			case ELEMENT_TYPE_VAR:
+				return "var ";
 			case ELEMENT_TYPE_TYPEDBYREF:
 				return "refany";
 			case ELEMENT_TYPE_CLASS:	
@@ -159,6 +168,7 @@ public:
 				if(TypeFromToken(token)!=mdtTypeRef) {
 					WCHAR zName[MAX_FUNCTION_LENGTH];
 					metaDataImport->GetTypeDefProps(token,zName,MAX_FUNCTION_LENGTH,0,0,0);
+					(*ppSignature)--;
 					return GetClass((string)CW2A(zName));
 				}
 				return "";
@@ -216,13 +226,46 @@ public:
 				}
 				return text;
 			}
+			case ELEMENT_TYPE_GENERICINST:
+				return "<GENERIC TYPE>";
+			//case ELEMENT_TYPE_GENERICINST: {
+			//	(*ppSignature)++;
+			//	COR_SIGNATURE elem_type=**ppSignature;
+		 //     
+			//	(*ppSignature)++;
+			//	string text="generic type: ";
+			//	(*ppSignature) += CorSigUncompressToken((PCCOR_SIGNATURE)(*ppSignature),&token);
+			//	if(TypeFromToken(token)!=mdtTypeRef) {
+			//		WCHAR zName[MAX_FUNCTION_LENGTH];
+			//		metaDataImport->GetTypeDefProps(token,zName,MAX_FUNCTION_LENGTH,0,0,0);
+			//		text+=(string)CW2A(zName);
+			//	}
+			//	int count=**ppSignature;
+			//	(*ppSignature)++;
+			//	//(*ppSignature)++;
+			//	text+="<";
+			//	for (BYTE i=0; i < count; i++)
+			//	{
+			//		if(i!=0) {
+			//			text+=", ";
+			//		}
+			//		text+=ParseElementType(metaDataImport,ppSignature);
+			//	}
+			//	text+=">";
+			//	return text;
+			//}
 			case ELEMENT_TYPE_PINNED:
 				return ParseElementType(metaDataImport,ppSignature)+"pinned";
 			case ELEMENT_TYPE_PTR:   
 				return ParseElementType(metaDataImport,ppSignature)+"*";
 			case ELEMENT_TYPE_BYREF:   
 				return "ref "+ParseElementType(metaDataImport,ppSignature);
+			case ELEMENT_TYPE_END:
+				return "<end>";
 			default:
+				cout<<type<<"\n";
+
+				//DebugBreak();
 				return "<UNKNOWN>";
 		}
 	}
@@ -314,9 +357,6 @@ public:
 			__int64 l;
 			memcpy(&l,&userTime,sizeof(l));
 			totalTime+=l;
-			//__int64 m;
-			//memcpy(&m,&kernelTime,sizeof(m));
-			//totalTime+=m;
 			CloseHandle(thread);
 		}
 		if(totalTime-lastTime>50) {
