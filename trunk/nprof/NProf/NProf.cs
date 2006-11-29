@@ -242,16 +242,17 @@ namespace NProf {
 		public void AddRun(Run run) {
 			int count=1;
 			string text = Path.GetFileNameWithoutExtension(application.Text);
-			int maxStackWalks=run.stackWalks.Count;
-			foreach (ContainerListViewItem i in runs.Items) {
-				if (i.Text.StartsWith(text)) {
-					count++;
-				}
-				int c=((Run)i.Tag).stackWalks.Count;
-				if(c>maxStackWalks) {
-					maxStackWalks=c;
-				}
-			}
+			//int maxStackWalks=run.stackWalks.Count;
+			//foreach (ContainerListViewItem i in runs.Items) {
+			//    if (i.Text.StartsWith(text)) {
+			//        count++;
+			//    }
+			//    int c=((Run)i.Tag).stackWalks.Count;
+			//    if(c>maxStackWalks) {
+			//        maxStackWalks=c;
+			//    }
+			//}
+			//MessageBox.Show(maxStackWalks.ToString());
 			string title = Path.GetFileNameWithoutExtension(application.Text) + " " + count;
 			ContainerListViewItem item = new ContainerListViewItem(title);
 			item.Tag = run;
@@ -366,6 +367,8 @@ namespace NProf {
 					maxSamples++;
 				}
 			}
+			MessageBox.Show(stackWalks.Count.ToString());
+			MessageBox.Show(maxSamples.ToString());
 		}
 		private void Interprete(Dictionary<int, FunctionInfo> map,bool reverse,Run run) {
 			int currentWalk = 0;
@@ -473,10 +476,12 @@ namespace NProf {
 				}
 			}
 		}
+		// replace completely
 		public void Update(Run run, Dictionary<int, FunctionInfo> functions, Dictionary<int, FunctionInfo> compareFunctions,Run oldRun) {
 			currentRun = run;
 			currentOldRun = oldRun;
 			SuspendLayout();
+			Invalidate();
 			BeginUpdate();
 			Items.Clear();
 			foreach (FunctionInfo method in SortFunctions(functions.Values)) {
@@ -497,6 +502,7 @@ namespace NProf {
 			}
 			EndUpdate();
 			ResumeLayout();
+			GC.Collect();
 		}
 		public void Find(string text, bool forward, bool step) {
 			if (text != "") {
@@ -609,7 +615,7 @@ namespace NProf {
 			public GraphicalTimeLabel(double fraction, ContainerListViewItem item)
 				: base((fraction * 100.0).ToString("0.00;-0.00;0.00"), item){
 				TextAlign = ContentAlignment.TopRight;
-				Padding = new Padding(0, 0, 0, 0);
+				Padding = new Padding(0, 0, 2, 0);
 				this.fraction = fraction;
 			}
 			protected override void OnPaint(PaintEventArgs e) {
@@ -658,7 +664,7 @@ namespace NProf {
 			panel.Controls.Add(time);
 			double difference = (((double)function.Samples / (double)function.run.maxSamples) * function.run.seconds - (oldFraction)) / function.run.seconds;
 			Label old = new TimeLabel(difference, item);//).ToString("+0.00;-0.00;+0.00"), item);
-			panel.Controls.Add(old);
+			//panel.Controls.Add(old);
 			panel.Controls.Add(signature);
 			item.SubItems[0].ItemControl = panel;
 
@@ -670,7 +676,7 @@ namespace NProf {
 		}
 		public void AddFunctionItem(ContainerListViewItemCollection parent, FunctionInfo function) {
 			ContainerListViewItem item = AddItem(parent, function,null);
-			foreach (FunctionInfo callee in function.Children.Values) {
+			foreach (FunctionInfo callee in SortFunctions(function.Children.Values)) {
 				AddItem(item.Items, callee,null);
 			}
 		}

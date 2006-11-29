@@ -85,14 +85,14 @@ public:
 
 		ULONG callConv;
 		sigBlob += CorSigUncompressData(sigBlob, &callConv);
-		if ( callConv != IMAGE_CEE_CS_CALLCONV_FIELD ) {
+		text+="(";
+		//if ( callConv != IMAGE_CEE_CS_CALLCONV_FIELD ) {
 
 			ULONG argCount=0;
 			sigBlob += CorSigUncompressData(sigBlob, &argCount);
 			//DebugBreak();
 			sigBlob--;
 			string returnType=ParseElementType(metaDataImport, &sigBlob);
-			text+=" "+ToString(argCount)+" "+returnType+" (";
 			//sigBlob--;
 			if(sigBlob!=0) {
 				for(ULONG i = 0; (sigBlob != 0) && (i < (argCount)); i++) {
@@ -103,7 +103,7 @@ public:
 					//sigBlob--;
 				}
 			}
-		}
+		//}
 		text+=")";
 		metaDataImport->Release();
 		return text;
@@ -171,7 +171,7 @@ public:
 					(*ppSignature)--;
 					return GetClass((string)CW2A(zName));
 				}
-				return "";
+				return "mdtTypeRef";
 			case ELEMENT_TYPE_SZARRAY:
 				return ParseElementType(metaDataImport,ppSignature)+"[]";
 			case ELEMENT_TYPE_ARRAY: {	
@@ -226,32 +226,21 @@ public:
 				}
 				return text;
 			}
-			case ELEMENT_TYPE_GENERICINST:
-				return "<GENERIC TYPE>";
 			//case ELEMENT_TYPE_GENERICINST: {
-			//	(*ppSignature)++;
-			//	COR_SIGNATURE elem_type=**ppSignature;
-		 //     
-			//	(*ppSignature)++;
 			//	string text="generic type: ";
-			//	(*ppSignature) += CorSigUncompressToken((PCCOR_SIGNATURE)(*ppSignature),&token);
-			//	if(TypeFromToken(token)!=mdtTypeRef) {
-			//		WCHAR zName[MAX_FUNCTION_LENGTH];
-			//		metaDataImport->GetTypeDefProps(token,zName,MAX_FUNCTION_LENGTH,0,0,0);
-			//		text+=(string)CW2A(zName);
-			//	}
-			//	int count=**ppSignature;
-			//	(*ppSignature)++;
-			//	//(*ppSignature)++;
+			//	text+=ParseElementType(metaDataImport,ppSignature);
+			//	//ParseElementType(
+			//	//(*ppSignature) += CorSigUncompressToken((PCCOR_SIGNATURE)(*ppSignature),&token);
+			//	////(*ppSignature)--;
+			//	////if(TypeFromToken(token)!=mdtTypeRef) {
+			//	//	WCHAR zName[MAX_FUNCTION_LENGTH];
+			//	//	metaDataImport->GetTypeDefProps(token,zName,MAX_FUNCTION_LENGTH,0,0,0);
+			//	//	text+=(string)CW2A(zName);
+			//	////}
+			//	ULONG count=0;
+			//	(*ppSignature) += CorSigUncompressData(*ppSignature, &count);
 			//	text+="<";
-			//	for (BYTE i=0; i < count; i++)
-			//	{
-			//		if(i!=0) {
-			//			text+=", ";
-			//		}
-			//		text+=ParseElementType(metaDataImport,ppSignature);
-			//	}
-			//	text+=">";
+			//	text+=ToString(count);
 			//	return text;
 			//}
 			case ELEMENT_TYPE_PINNED:
@@ -259,13 +248,11 @@ public:
 			case ELEMENT_TYPE_PTR:   
 				return ParseElementType(metaDataImport,ppSignature)+"*";
 			case ELEMENT_TYPE_BYREF:   
-				return "ref "+ParseElementType(metaDataImport,ppSignature);
+				return ParseElementType(metaDataImport,ppSignature)+"&";
 			case ELEMENT_TYPE_END:
-				return "<end>";
+				//return "<end>";
+			case ELEMENT_TYPE_GENERICINST:
 			default:
-				cout<<type<<"\n";
-
-				//DebugBreak();
 				return "<UNKNOWN>";
 		}
 	}
@@ -318,6 +305,7 @@ public:
 		file->write((char*)&id,sizeof(FunctionID));
 	}
 	Profiler::Profiler( ICorProfilerInfo2* profilerInfo ) {
+		//lastTime=(__int64)0;
 		this->profilerInfo = profilerInfo;
 		this->profilerHelper.Initialize(profilerInfo);
 		profilerInfo->SetEventMask(COR_PRF_ENABLE_STACK_SNAPSHOT|COR_PRF_MONITOR_THREADS|COR_PRF_DISABLE_INLINING);
@@ -329,7 +317,8 @@ public:
 	void SetTimer() {
 		TIMECAPS timeCaps;
 		timeGetDevCaps(&timeCaps, sizeof(TIMECAPS));
-		timer = timeSetEvent(interval,timeCaps.wPeriodMin,TimerFunction,(DWORD_PTR)this,TIME_PERIODIC);
+		cout << timeCaps.wPeriodMin;
+		timer = timeSetEvent(interval,1,TimerFunction,(DWORD_PTR)this,TIME_PERIODIC);
 	}
 	void ThreadMap(ThreadID threadId, DWORD dwOSThread) {
 		threadMap[dwOSThread] = threadId;
@@ -357,17 +346,37 @@ public:
 			__int64 l;
 			memcpy(&l,&userTime,sizeof(l));
 			totalTime+=l;
+
+			__int64 x;
+			memcpy(&x,&kernelTime,sizeof(x));
+			totalTime+=x;
+
 			CloseHandle(thread);
 		}
-		if(totalTime-lastTime>50) {
-			lastTime=totalTime;
-			profiler->WalkStack();
+		if(totalTime-lastTime>1) {
+			if(profiler->WalkStack()) {
+				lastTime=totalTime;
+			}
 		}
+
+		//else {
+		//	lastTime++;
+		//}
+
+		//__int64 difference=totalTime-lastTime+10;
+		//if(difference >((__int64)0)) {
+		//	profiler->WalkStack();
+		//	lastTime=totalTime;
+		//}
+		//else {
+		//	lastTime++;
+		//}
 	}
 	static __int64 lastTime;
 	static UINT timer;
-	void WalkStack() {
-		KillTimer();
+	bool WalkStack() {
+		//KillTimer();
+		bool anyFound=false;
 		for(map<DWORD,ThreadID>::iterator i=threadMap.begin();i!=threadMap.end();i++) {
 			DWORD threadId=i->first;
 			HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME|THREAD_QUERY_INFORMATION|THREAD_GET_CONTEXT,false,threadId);
@@ -380,40 +389,41 @@ public:
 			GetThreadContext(threadHandle,&context);
 			FunctionID newID;
 
-			bool found;
-			if(profilerInfo->GetFunctionFromIP((BYTE*)context.Eip,&newID)!=S_OK && newID!=0) {
-				found=true;
-			}
-			else {
-				found=false;
-				STACKFRAME64 stackFrame;
-				memset(&stackFrame, 0, sizeof(stackFrame));
-				stackFrame.AddrPC.Offset = context.Eip;
-				stackFrame.AddrPC.Mode = AddrModeFlat;
-				stackFrame.AddrFrame.Offset = context.Ebp;
-				stackFrame.AddrFrame.Mode = AddrModeFlat;
-				stackFrame.AddrStack.Offset = context.Esp;
-				stackFrame.AddrStack.Mode = AddrModeFlat;
-				while(true) {
-					if(!StackWalk64(IMAGE_FILE_MACHINE_I386,GetCurrentProcess(),threadHandle,
-						 &stackFrame,0,0,SymFunctionTableAccess64,SymGetModuleBase64,0)) {
-						break;
-					}
-					if (stackFrame.AddrPC.Offset == stackFrame.AddrReturn.Offset) {
-						break;
-					}
-					FunctionID id;
-					if(profilerInfo->GetFunctionFromIP((BYTE*)stackFrame.AddrPC.Offset,&id)==S_OK && id!=0) {
-						memset(&context,0,sizeof(context));
-						context.Eip=stackFrame.AddrPC.Offset;
-						context.Ebp=stackFrame.AddrFrame.Offset;
-						context.Esp=stackFrame.AddrStack.Offset;
-						found=true;
-						break;
-					}
-				}
-			}
-			if(found) {
+			//bool found;
+			//if(profilerInfo->GetFunctionFromIP((BYTE*)context.Eip,&newID)!=S_OK && newID!=0) {
+			//	found=true;
+			//}
+			//else {
+			//	found=false;
+			//	STACKFRAME64 stackFrame;
+			//	memset(&stackFrame, 0, sizeof(stackFrame));
+			//	stackFrame.AddrPC.Offset = context.Eip;
+			//	stackFrame.AddrPC.Mode = AddrModeFlat;
+			//	stackFrame.AddrFrame.Offset = context.Ebp;
+			//	stackFrame.AddrFrame.Mode = AddrModeFlat;
+			//	stackFrame.AddrStack.Offset = context.Esp;
+			//	stackFrame.AddrStack.Mode = AddrModeFlat;
+			//	while(true) {
+			//		if(!StackWalk64(IMAGE_FILE_MACHINE_I386,GetCurrentProcess(),threadHandle,
+			//			 &stackFrame,0,0,SymFunctionTableAccess64,SymGetModuleBase64,0)) {
+			//			break;
+			//		}
+			//		if (stackFrame.AddrPC.Offset == stackFrame.AddrReturn.Offset) {
+			//			break;
+			//		}
+			//		FunctionID id;
+			//		if(profilerInfo->GetFunctionFromIP((BYTE*)stackFrame.AddrPC.Offset,&id)==S_OK && id!=0) {
+			//			memset(&context,0,sizeof(context));
+			//			context.Eip=stackFrame.AddrPC.Offset;
+			//			context.Ebp=stackFrame.AddrFrame.Offset;
+			//			context.Esp=stackFrame.AddrStack.Offset;
+			//			found=true;
+			//			break;
+			//		}
+			//	}
+			//}
+			//if(found) {
+				//anyFound=true;
 				profilerInfo->DoStackSnapshot(
 					id,StackWalker,COR_PRF_SNAPSHOT_DEFAULT,functions,(BYTE*)&context,sizeof(context));
 
@@ -424,12 +434,16 @@ public:
 						signatures.insert(id);
 					}
 				}
-			}
+			//}
 			stackWalks.push_back(functions);
+			if(functions->size()!=0) {
+				anyFound=true;
+			}
 			ResumeThread(threadHandle);
 			CloseHandle(threadHandle);
 		}
-		SetTimer();
+		//SetTimer();
+		return anyFound;
 	}
 	map< DWORD, ThreadID > threadMap;
 protected:
