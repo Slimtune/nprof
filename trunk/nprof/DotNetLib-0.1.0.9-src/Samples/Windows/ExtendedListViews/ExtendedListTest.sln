@@ -1,0 +1,33 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtendedListTest", "ExtendedListTest.csproj", "{04803CF1-9EE2-4646-8B23-F6424CFE1A7D}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetLib.Windows.Forms.2003", "..\..\..\Source\Windows\DotNetLib.Windows.Forms\DotNetLib.Windows.Forms.2003.csproj", "{BBD77471-F50D-4CFB-8C9C-0F84B31C62F2}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{04803CF1-9EE2-4646-8B23-F6424CFE1A7D}.Debug.ActiveCfg = Debug|.NET
+		{04803CF1-9EE2-4646-8B23-F6424CFE1A7D}.Debug.Build.0 = Debug|.NET
+		{04803CF1-9EE2-4646-8B23-F6424CFE1A7D}.Release.ActiveCfg = Release|.NET
+		{04803CF1-9EE2-4646-8B23-F6424CFE1A7D}.Release.Build.0 = Release|.NET
+		{BBD77471-F50D-4CFB-8C9C-0F84B31C62F2}.Debug.ActiveCfg = Debug|.NET
+		{BBD77471-F50D-4CFB-8C9C-0F84B31C62F2}.Debug.Build.0 = Debug|.NET
+		{BBD77471-F50D-4CFB-8C9C-0F84B31C62F2}.Release.ActiveCfg = Release|.NET
+		{BBD77471-F50D-4CFB-8C9C-0F84B31C62F2}.Release.Build.0 = Release|.NET
+	EndGlobalSection
+	GlobalSection(SolutionItems) = postSolution
+		..\..\..\CHANGES.htm = ..\..\..\CHANGES.htm
+		..\..\..\TODO.htm = ..\..\..\TODO.htm
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
