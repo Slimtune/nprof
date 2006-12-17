@@ -318,7 +318,7 @@ public:
 		TIMECAPS timeCaps;
 		timeGetDevCaps(&timeCaps, sizeof(TIMECAPS));
 		cout << timeCaps.wPeriodMin;
-		timer = timeSetEvent(interval,1,TimerFunction,(DWORD_PTR)this,TIME_PERIODIC);
+		timer = timeSetEvent(interval,1,TimerFunction,	(DWORD_PTR)this,TIME_PERIODIC);
 	}
 	void ThreadMap(ThreadID threadId, DWORD dwOSThread) {
 		threadMap[dwOSThread] = threadId;
@@ -329,6 +329,7 @@ public:
 	}
 	static void CALLBACK TimerFunction(UINT wTimerID, UINT msg, DWORD dwUser, DWORD dw1, DWORD dw2) {
 		Profiler* profiler=(Profiler*)dwUser;
+		profiler->KillTimer();
 		__int64 totalTime=(__int64)0;
 		for(map<DWORD,ThreadID>::iterator i=profiler->threadMap.begin();i!=profiler->threadMap.end();i++) {
 			HANDLE thread=OpenThread(THREAD_QUERY_INFORMATION,false,i->first);
@@ -353,11 +354,14 @@ public:
 
 			CloseHandle(thread);
 		}
-		if(totalTime-lastTime>1) {
-			if(profiler->WalkStack()) {
-				lastTime=totalTime;
-			}
-		}
+		profiler->WalkStack();
+		profiler->SetTimer();
+
+		//if(totalTime-lastTime>1) {
+		//	if(profiler->WalkStack()) {
+		//		lastTime=totalTime;
+		//	}
+		//}
 
 		//else {
 		//	lastTime++;
@@ -424,6 +428,10 @@ public:
 			//}
 			//if(found) {
 				//anyFound=true;
+
+				//profilerInfo->DoStackSnapshot(
+				//	id,StackWalker,COR_PRF_SNAPSHOT_DEFAULT,functions,NULL,NULL);//(BYTE*)&context,sizeof(context));
+
 				profilerInfo->DoStackSnapshot(
 					id,StackWalker,COR_PRF_SNAPSHOT_DEFAULT,functions,(BYTE*)&context,sizeof(context));
 

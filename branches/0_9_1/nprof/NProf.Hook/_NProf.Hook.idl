@@ -16,7 +16,7 @@ import "C:\Programme\Microsoft Visual Studio 8\SDK\v2.0\include\corprof.idl";
 	helpstring("INProfCORHook Interface"),
 	pointer_default(unique)
 ] 
-#line 20 "c:\\nprof\\trunk\\nprof\\nprof.hook\\nprofcorhook.h"
+#line 20 "d:\\nprof\\branches\\0_9_1\\nprof\\nprof.hook\\nprofcorhook.h"
 interface INProfCORHook : IDispatch {
 };
 
@@ -32,7 +32,7 @@ library NProfHook
 		uuid(791DA9FE-05A0-495E-94BF-9AD875C4DF0F),
 		helpstring("nprof COR Profiling Hook Class")
 	] 
-#line 36 "c:\\nprof\\trunk\\nprof\\nprof.hook\\nprofcorhook.h"
+#line 36 "d:\\nprof\\branches\\0_9_1\\nprof\\nprof.hook\\nprofcorhook.h"
 	coclass CNProfCORHook {
 		interface INProfCORHook;
 	};
