@@ -73,10 +73,6 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DotNetLib.Windows.Forms.Themes, Version=0.1.0.1, Culture=neutral, PublicKeyToken=ab1c38c639888ab7, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\DotNetLib.Windows.Forms.Themes\bin\Debug\DotNetLib.Windows.Forms.Themes.dll</HintPath>
-    </Reference>
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
@@ -146,6 +142,12 @@
     <EmbeddedResource Include="Resources\listview.bmp" />
     <EmbeddedResource Include="Resources\tv_minus.bmp" />
     <EmbeddedResource Include="Resources\tv_plus.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DotNetLib.Windows.Forms.Themes\DotNetLib.Windows.Forms.Themes.2003.vcproj">
+      <Project>{E6E2418F-5751-4751-90C2-81FD6BD41DDE}</Project>
+      <Name>DotNetLib.Windows.Forms.Themes</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
