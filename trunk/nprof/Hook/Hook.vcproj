@@ -84,7 +84,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="ws2_32.lib Winmm.lib Dbghelp.lib"
+				AdditionalDependencies="ws2_32.lib Winmm.lib Dbghelp.lib user32.lib gdi32.lib comdlg32.lib winspool.lib kernel32.lib advapi32.lib  cap.lib wst.lib"
 				OutputFile="$(OutDir)/NProf.Hook.dll"
 				LinkIncremental="0"
 				MergedIDLBaseFileName="_NProf.Hook.idl"
@@ -239,10 +239,6 @@
 		</File>
 		<File
 			RelativePath=".\Hook.rgs"
-			>
-		</File>
-		<File
-			RelativePath="Resource.h"
 			>
 		</File>
 	</Files>

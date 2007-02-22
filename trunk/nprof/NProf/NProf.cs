@@ -31,7 +31,7 @@ using DotNetLib.Windows.Forms;
 
 namespace NProf {
 	public class NProf : Form {
-		public static Font font = new Font("Courier New", 10.0f);
+		public static Font font = new Font("Courier New", 9.0f);
 		public ContainerListView runs;
 		private MethodView callees;
 		private MethodView callers;
@@ -280,7 +280,10 @@ namespace NProf {
 			callers.Update(run, run.callers,compareRun!=null?compareRun.callers:null,compareRun);
 		}
 		private void findNext_Click(object sender, EventArgs e) {
-			Find(true, true);
+			callees.BeginUpdate();
+			ContainerListViewItem item = callees.SelectedItems[0];
+			callees.Items.Remove(item);
+			callees.EndUpdate(); 
 		}
 		private void findPrevious_Click(object sender, EventArgs e) {
 			Find(false, true);
@@ -482,7 +485,6 @@ namespace NProf {
 				}
 			}
 		}
-		// replace completely
 		public void Update(Run run, Dictionary<int, FunctionInfo> functions, Dictionary<int, FunctionInfo> compareFunctions,Run oldRun) {
 			currentRun = run;
 			currentOldRun = oldRun;
@@ -613,7 +615,7 @@ namespace NProf {
 				oldFraction = 0;
 			}
 			double percent=(100.0*((double)function.Samples / (double)function.run.maxSamples));
-			item.Text = percent.ToString("0.00;-0.00;0.00").PadLeft(5,' ') + " " + currentRun.signatures[function.ID].Trim();
+			item.Text = percent.ToString("0.00;-0.00;0.00").PadLeft(5, ' ') + " " + currentRun.signatures[function.ID].Trim();
 			item.Tag = function;
 			return item;
 		}
