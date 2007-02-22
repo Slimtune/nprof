@@ -25,7 +25,7 @@ Name: english; MessagesFile: compiler:Default.isl
 Source: NProf\bin\Release\NProf.exe; DestDir: {app}; Flags: ignoreversion
 Source: NProf\bin\Release\DotNetLib.Windows.Forms.dll; DestDir: {app}; Flags: ignoreversion
 Source: NProf\bin\Release\DotNetLib.Windows.Forms.Themes.dll; DestDir: {app}; Flags: ignoreversion
-Source: RegisterProfilerHook.bat; DestDir: {app}; Flags: ignoreversion
+Source: registerHook.bat; DestDir: {app}; Flags: ignoreversion
 Source: Hook\Release\NProf.Hook.dll; DestDir: {app}; Flags: ignoreversion
 Source: Libraries\DotNetLib\msvcr70.dll; DestDir: {app}; Flags: ignoreversion
 
@@ -33,5 +33,5 @@ Source: Libraries\DotNetLib\msvcr70.dll; DestDir: {app}; Flags: ignoreversion
 Name: {group}\..\NProf 0.10.1; Filename: {app}\NProf.exe
 
 [Run]
-Filename: {app}\RegisterProfilerHook.bat;  Flags: runhidden waituntilidle
+Filename: {app}\registerHook.bat;  Flags: runhidden waituntilidle
 Filename: {app}\NProf.exe; Description: {cm:LaunchProgram,NProf}; Flags: nowait postinstall skipifsilent
