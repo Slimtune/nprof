@@ -33,8 +33,10 @@ namespace NProf {
 	public class NProf : Form {
 		public static Font font = new Font("Courier New", 9.0f);
 		public ContainerListView runs;
-		private MethodView callees;
-		private MethodView callers;
+		private MethodView callees = new MethodView();
+
+		private MethodView callers = new MethodView();
+
 		private Profiler profiler;
 		private TextBox findText;
 		private FlowLayoutPanel findPanel;
@@ -57,6 +59,46 @@ namespace NProf {
 				return "NProf " + Profiler.Version;
 			}
 		}
+		public void GoToCaller(MethodView source) {
+			MoveTo(source, callers);
+		}
+		public void GoToCallee(MethodView source)
+		{
+			MoveTo(source, callees);
+			//if (callers.SelectedItems.Count != 0)
+			//{
+			//    ContainerListViewItem item = callers.SelectedItems[0];
+			//    int id = ((FunctionInfo)item.Tag).ID;
+			//    if (item.ParentItem.ParentItem == null)
+			//    {
+			//        callees.MoveTo(id);
+			//    }
+			//    else
+			//    {
+			//        callers.MoveTo(id);
+			//    }
+			//    item.Collapse();
+
+			//}
+		}
+
+		public void MoveTo(MethodView source,MethodView target) {
+			if (source.SelectedItems.Count != 0) {
+				target.MoveTo(((FunctionInfo)source.SelectedItems[0].Tag).ID);
+			}
+			//if (callers.SelectedItems.Count != 0) {
+			//    ContainerListViewItem item = callers.SelectedItems[0];
+			//    int id = ((FunctionInfo)item.Tag).ID;
+			//    if (item.ParentItem.ParentItem == null) {
+			//        callees.MoveTo(id);
+			//    }
+			//    else {
+			//        callers.MoveTo(id);
+			//    }
+			//    item.Collapse();
+
+			//}
+		}
 		private NProf() {
 			WindowState = FormWindowState.Maximized;
 			Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("NProf.Resources.app-icon.ico"));
@@ -64,7 +106,7 @@ namespace NProf {
 			profiler = new Profiler();
 			runs = new ContainerListView();
 			runs.ColumnSortColor = Color.White;
-			runs.Columns.Add("Runs");
+			runs.Columns.Add("Program");
 			runs.Columns.Add("Time");
 			runs.Font = font;
 			runs.AllowMultiSelect = true;
@@ -75,15 +117,18 @@ namespace NProf {
 					ShowRun((Run)runs.SelectedItems[0].Tag);
 				}
 			};
-			callers = new MethodView("Callers");
-			callers.Size = new Size(100, 200);
-			callers.Dock = DockStyle.Bottom;
+			//callers.Size = new Size(100, 200);
+			//callers.Dock = DockStyle.Bottom;
 			callers.GotFocus += delegate {
 				callees.SelectedItems.Clear();
 			};
+			//ListView view = new ListView();
+			//ListViewItem item = new ListViewItem();
+			
 			callers.DoubleClick+= delegate {
 				if (callers.SelectedItems.Count != 0) {
 					ContainerListViewItem item=callers.SelectedItems[0];
+					
 					int id=((FunctionInfo)item.Tag).ID;
 					if (item.ParentItem.ParentItem == null) {
 						callees.MoveTo(id);
@@ -95,9 +140,8 @@ namespace NProf {
 
 				}
 			};
-			callees = new MethodView("Callees");
-			callees.Size = new Size(100, 100);
-			callees.Dock = DockStyle.Fill;
+			//callees.Size = new Size(100, 100);
+			//callees.Dock = DockStyle.Fill;
 			callees.GotFocus += delegate {
 				callers.SelectedItems.Clear();
 			};
@@ -113,6 +157,47 @@ namespace NProf {
 					item.Collapse();
 				}
 			};
+			ContextMenu callerMenu = new ContextMenu(
+				new MenuItem[] {
+					new MenuItem(
+						"go to method",
+						delegate {
+							GoToCaller(callers);
+						},
+						Shortcut.CtrlN
+					),
+					new MenuItem(
+						"go to callee",
+						delegate {
+							GoToCallee(callers);
+						},
+						Shortcut.CtrlN
+					)
+				}
+			);
+			callers.Click += delegate {
+				MessageBox.Show("clicked");
+			};
+			ContextMenu calleesMenu = new ContextMenu(
+				new MenuItem[] {
+					new MenuItem(
+						"go to method",
+						delegate
+						{
+							GoToCallee(callers);
+						},
+						Shortcut.CtrlE
+					),
+					new MenuItem(
+						"go to callee",
+						delegate 
+						{
+							GoToCaller(callers);
+						},
+						Shortcut.CtrlN
+					)
+				}
+			);
 			callees.SelectedItemsChanged += delegate {
 				if (callees.SelectedItems.Count != 0) {
 					ContainerListViewItem item = callees.SelectedItems[0];
@@ -198,7 +283,14 @@ namespace NProf {
 			findPrevious.Text = "Previous";
 
 			findPanel.Controls.AddRange(new Control[] {closeFind,findLabel,findText,findNext ,findPrevious});
-			methodPanel.Controls.AddRange(new Control[] {callees,methodSplitter,callers,findPanel});
+
+			Panel calleePanel = MakePanel("Callers",callees);
+			Panel callerPanel = MakePanel("Callees",callers);
+			calleePanel.Size = new Size(100, 100);
+			callerPanel.Size = new Size(100, 100);
+			//calleePanel.Dock = DockStyle.Top;
+			//callerPanel.Dock = DockStyle.Bottom;
+			methodPanel.Controls.AddRange(new Control[] {calleePanel,methodSplitter,callerPanel,findPanel});
 
 			Splitter mainSplitter = new Splitter();
 			mainSplitter.Dock = DockStyle.Left;
@@ -222,7 +314,7 @@ namespace NProf {
 			mainPanel.Controls.Add(applicationLabel, 0, 0);
 			mainPanel.Controls.Add(application, 1, 0);
 			Button browse = new Button();
-			browse.Text = "Browse...";
+			browse.Text = "&Browse...";
 			browse.TabIndex = 0;
 			browse.Focus();
 			browse.Click += delegate {
@@ -245,17 +337,25 @@ namespace NProf {
 			mainPanel.Controls.Add(arguments, 1, 1);
 			Controls.AddRange(new Control[] { rightPanel, mainPanel});
 			application.TextChanged += delegate {
-				Text = Path.GetFileNameWithoutExtension(application.Text) + " - " + Title;
+				string fileName = Path.GetFileNameWithoutExtension(application.Text);
+				Text = fileName + " - " + Title;
 			};
 		}
+		private static FlowLayoutPanel MakePanel(string name, MethodView view) {
+			FlowLayoutPanel panel = new FlowLayoutPanel();
+			panel.FlowDirection = FlowDirection.TopDown;
+			Label label=new Label();
+			label.Text=name;
+			panel.Controls.Add(label);
+			panel.Controls.Add(view);
+			return panel;
+		}
 		private void StartRun() {
-			string message;
 			Run run = new Run(profiler);
 			run.profiler.completed = new EventHandler(run.Complete);
 			run.Start();
 		}
 		public void AddRun(Run run) {
-			int count=1;
 			string text = Path.GetFileNameWithoutExtension(application.Text) + " " + runs.Items.Count;
 			string title = Path.GetFileNameWithoutExtension(application.Text);
 			ContainerListViewItem item = new ContainerListViewItem(title);
@@ -263,7 +363,7 @@ namespace NProf {
 			runs.Items.Add(item);
 			runs.SelectedItems.Clear();
 			item.SubItems[0].Text = title;
-			item.SubItems[1].Text = run.seconds.ToString("0.00;-0.00;0.00") + "s";
+			item.SubItems[1].Text = run.Duration.TotalSeconds.ToString("0.00;-0.00;0.00") + "s";
 			runs.SelectedItems.Add(item);
 			ShowRun(run);
 		}
@@ -374,8 +474,8 @@ namespace NProf {
 					maxSamples++;
 				}
 			}
-			MessageBox.Show(stackWalks.Count.ToString());
-			MessageBox.Show(maxSamples.ToString());
+			//MessageBox.Show(stackWalks.Count.ToString());
+			//MessageBox.Show(maxSamples.ToString());
 		}
 		private void Interprete(Dictionary<int, FunctionInfo> map,bool reverse,Run run) {
 			int currentWalk = 0;
@@ -410,11 +510,19 @@ namespace NProf {
 				return Path.Combine(Path.GetDirectoryName(Path.GetTempFileName()), Profiler.PROFILER_GUID + ".nprof");
 			}
 		}
-		public double seconds = 0;
+		public TimeSpan Duration
+		{
+			get
+			{
+				return this.end - this.start;
+			}
+		}
+		//public double seconds = 0;
 		private void ReadStackWalks() {
 			using (BinaryReader r = new BinaryReader(File.Open(FileName, FileMode.Open))) {
-				int time = r.ReadInt32();
-				this.seconds = time / 10000000.0;
+				//int time = r.ReadInt32();
+				//this.seconds = time / 10000000.0;
+				this.end = DateTime.Now;
 				while (true) {
 					int functionId = r.ReadInt32();
 					if (functionId == -1) {
@@ -451,17 +559,16 @@ namespace NProf {
 		public Dictionary<int, string> signatures = new Dictionary<int, string>();
 		public Dictionary<int, FunctionInfo> functions = new Dictionary<int, FunctionInfo>();
 		public Dictionary<int, FunctionInfo> callers = new Dictionary<int, FunctionInfo>();
+		private DateTime start=DateTime.MinValue;
+		private DateTime end=DateTime.MinValue;
 		public Run(Profiler p) {
 			this.profiler = p;
-			this.start = DateTime.Now;
-			this.end = DateTime.MaxValue;
 		}
 		public bool Start() {
 			start = DateTime.Now;
+			// refactor this:
 			return profiler.Start(this);
 		}
-		private DateTime start;
-		private DateTime end;
 		public Profiler profiler;
 	}
 	public class View : ContainerListView {
@@ -569,14 +676,17 @@ namespace NProf {
 		}
 		public Run currentRun;
 		public Run currentOldRun;
+		public MethodView()
+			: this("Percentage     Method signature") {
+		}
 		public MethodView(string name) {
 			Columns.Add(name);
-			Columns[0].SortDataType = SortDataType.String;
+			//Columns[0].SortDataType = SortDataType.String;
 			this.ShowPlusMinus = true;
 			ShowRootTreeLines = true;
 			ShowTreeLines = true;
 			FullItemSelect = true;
-			ColumnSortColor = Color.White;
+			//ColumnSortColor = Color.White;
 			Font = NProf.font;
 			this.BeforeExpand += delegate(object sender,ContainerListViewCancelEventArgs e) {
 				MakeSureComputed(e.Item);
@@ -607,15 +717,8 @@ namespace NProf {
 		private ContainerListViewItem AddItem(ContainerListViewItemCollection parent, FunctionInfo function,FunctionInfo oldFunction) {
 			ContainerListViewItem item = parent.Add(currentRun.signatures[function.ID]);
 			double fraction = ((double)function.Samples) / (double)currentRun.maxSamples;
-			double oldFraction;
-			if (oldFunction != null) {
-				oldFraction = (((double)oldFunction.Samples) / (double)oldFunction.run.maxSamples) *oldFunction.run.seconds;
-			}
-			else {
-				oldFraction = 0;
-			}
-			double percent=(100.0*((double)function.Samples / (double)function.run.maxSamples));
-			item.Text = percent.ToString("0.00;-0.00;0.00").PadLeft(5, ' ') + " " + currentRun.signatures[function.ID].Trim();
+    		double percent=(100.0*((double)function.Samples / (double)function.run.maxSamples));
+			item.Text = "  " + percent.ToString("0.00;-0.00;0.00").PadLeft(5, ' ') + "   " + currentRun.signatures[function.ID].Trim();
 			item.Tag = function;
 			return item;
 		}

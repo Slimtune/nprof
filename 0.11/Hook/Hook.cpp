@@ -30,7 +30,6 @@
 #include <iostream>
 #include <set>
 #include "winreg.h"
-#define Li2Double(x) ((double)((x).HighPart) * 4.294967296E9 + (double)((x).LowPart))
 
 #include    <windows.h>
 #include    <winperf.h>
@@ -289,7 +288,8 @@ public:
 	}
 	void EndAll(ProfilerHelper& profilerHelper) {
 		file=new ofstream(GetTemporaryFileName().c_str(), ios::binary);
-		WriteInteger(lastTime);
+		//GetProcessTimes(GetCurrentProcess(),
+		//WriteInteger(lastTime);
 		for(set<FunctionID>::iterator i=signatures.begin();i!=signatures.end();i++) {
 			WriteInteger(*i);
 			WriteString(profilerHelper.GetFunctionSignature(*i));
@@ -342,7 +342,7 @@ public:
 		Profiler* profiler=(Profiler*)dwUser;
 		profiler->WalkStack();
 	}
-	static __int64 lastTime;
+	//static __int64 lastTime;
 	static UINT timer;
 	map<DWORD,DWORD> switchMap;
 	void WalkStack() {
@@ -429,7 +429,7 @@ protected:
 	bool statistical;
 };
 UINT Profiler::timer;
-__int64 Profiler::lastTime;
+//__int64 Profiler::lastTime;
 [
 	object,
 	uuid("FDEDE932-9F80-4CE5-891E-3B24768CFBCB"),
