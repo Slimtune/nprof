@@ -111,17 +111,14 @@ public:
 
 			ULONG argCount=0;
 			sigBlob += CorSigUncompressData(sigBlob, &argCount);
-			//DebugBreak();
 			sigBlob--;
 			string returnType=ParseElementType(metaDataImport, &sigBlob);
-			//sigBlob--;
 			if(sigBlob!=0) {
 				for(ULONG i = 0; (sigBlob != 0) && (i < (argCount)); i++) {
 					if(i!=0){
 						text+=", ";
 					}
 					text+=ParseElementType(metaDataImport,&sigBlob);
-					//sigBlob--;
 				}
 			}
 		//}
@@ -291,7 +288,6 @@ const int interval=2;
 class Profiler {
 public: 
 	vector<vector<FunctionID>*> stackWalks;
-	//set<FunctionID> signatures;
 	ofstream* file;
 
 	map< FunctionID, string> signatures;
@@ -304,7 +300,6 @@ public:
 	}
 	void EndAll(ProfilerHelper& profilerHelper) {
 		file=new ofstream(GetTemporaryFileName().c_str(), ios::binary);
-		//WriteInteger(lastTime);
 		for(map< FunctionID, string >::iterator i=signatures.begin();i!=signatures.end();i++) {
 			WriteInteger(i->first);
 			WriteString(i->second);
@@ -330,7 +325,6 @@ public:
 	}
 	Profiler::Profiler( ICorProfilerInfo2* profilerInfo ) {
 		InitializeCriticalSection(&threadMapLock);
-		//lastTime=(__int64)0;
 		this->profilerInfo = profilerInfo;
 		this->profilerHelper.Initialize(profilerInfo);
 		profilerInfo->SetEventMask(COR_PRF_ENABLE_STACK_SNAPSHOT|COR_PRF_MONITOR_THREADS|COR_PRF_DISABLE_INLINING);
@@ -344,7 +338,6 @@ public:
 		timeGetDevCaps(&timeCaps, sizeof(TIMECAPS));
 		cout << timeCaps.wPeriodMin;
 		timer = timeSetEvent(interval,10,TimerFunction,	(DWORD_PTR)this,TIME_PERIODIC);
-		//timer = timeSetEvent(interval,1,TimerFunction,	(DWORD_PTR)this,TIME_PERIODIC);
 	}
 
 	// Called by the profiler hook when a managed thread is assigned to an OS thread
@@ -366,8 +359,6 @@ public:
 			ThreadID itManagedThreadId=(*it).second;
 			if (itManagedThreadId == managedThreadId)
 			{
-				//DWORD osThreadId=(*it).first;
-
 				threadMap.erase(it);
 				break;
 			}
@@ -388,7 +379,6 @@ public:
 		Profiler* profiler=(Profiler*)dwUser;
 		profiler->WalkStack();
 	}
-	//static __int64 lastTime;
 	static UINT timer;
 	map<DWORD,DWORD> switchMap;
 	void WalkStack() {
@@ -495,8 +485,6 @@ protected:
 	bool statistical;
 };
 UINT Profiler::timer;
-//__int64 Profiler::lastTime;
-//__int64 Profiler::lastTime;
 [
 	object,
 	uuid("FDEDE932-9F80-4CE5-891E-3B24768CFBCB"),
