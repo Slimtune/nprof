@@ -249,12 +249,13 @@ namespace NProf {
 						new MenuItem(
 							"Start",
 							delegate{StartRun();},
-							Shortcut.F5),
-						new MenuItem("-"),
-						new MenuItem("Find method",delegate{ShowSearch();},Shortcut.CtrlF)
+							Shortcut.F5)
+						//,
+						//new MenuItem("-"),
+						//new MenuItem("Find method",delegate{ShowSearch();},Shortcut.CtrlF)
 			})});
-			Panel rightPanel = new Panel();
-			rightPanel.Dock = DockStyle.Fill;
+			Panel panel = new Panel();
+			panel.Dock = DockStyle.Fill;
 			SplitContainer methodPanel = new SplitContainer();
 			methodPanel.Orientation = Orientation.Horizontal;
 			//SplitContainer methodPanel = new SplitContainer();
@@ -265,18 +266,19 @@ namespace NProf {
 			Splitter methodSplitter = new Splitter();
 			methodSplitter.Dock = DockStyle.Bottom;
 			findPanel = new FlowLayoutPanel();
-			findPanel.Dock = DockStyle.Top;
+			//findPanel.Dock = DockStyle.Top;
 			findPanel.BorderStyle = BorderStyle.FixedSingle;
-			findPanel.Visible = false;
+			//findPanel.Visible = false;
 			findPanel.WrapContents = false;
 			findPanel.AutoSize = true;
-			findPanel.Dock = DockStyle.Top;
-			Button closeFind = new Button();
-			closeFind.Text = "x";
-			closeFind.Width = 17;
-			closeFind.Height = 20;
-			closeFind.TextAlign = ContentAlignment.BottomLeft;
-			closeFind.Click += delegate {findPanel.Visible = false;};
+			//findPanel.Dock = DockStyle.Top;
+			//findPanel.Dock = DockStyle.Top;
+			//Button closeFind = new Button();
+			//closeFind.Text = "x";
+			//closeFind.Width = 17;
+			//closeFind.Height = 20;
+			//closeFind.TextAlign = ContentAlignment.BottomLeft;
+			//closeFind.Click += delegate {findPanel.Visible = false;};
 
 			Button findNext = new Button();
 			findNext.AutoSize = true;
@@ -295,7 +297,8 @@ namespace NProf {
 			findPrevious.Click += new EventHandler(findPrevious_Click);
 			findPrevious.Text = "Previous";
 
-			findPanel.Controls.AddRange(new Control[] {closeFind,findLabel,findText,findNext ,findPrevious});
+			findPanel.Controls.AddRange(new Control[] { findLabel, findText, findNext, findPrevious });
+			//findPanel.Controls.AddRange(new Control[] { closeFind, findLabel, findText, findNext, findPrevious });
 
 			//Panel calleePanel = MakePanel(callees);
 			//Panel callerPanel = MakePanel(callers);
@@ -311,17 +314,22 @@ namespace NProf {
 			callers.Dock = DockStyle.Fill;
 			methodPanel.Panel2.Controls.Add(callers);
 			methodPanel.Panel1.Controls.Add(callees);
-
+			Panel rightPanel = new Panel();
+			methodPanel.Dock = DockStyle.Fill;
+			findPanel.Dock = DockStyle.Top;
+			rightPanel.Dock = DockStyle.Fill;
+			rightPanel.Controls.Add(methodPanel);
+			rightPanel.Controls.Add(findPanel);
 			//methodPanel.Panel1.Controls.Add(calleePanel);
 			//methodPanel.Panel2.Controls.Add(callerPanel);
 			//methodPanel.Controls.AddRange(new Control[] { calleePanel, methodSplitter, callerPanel, findPanel });
 
 			Splitter mainSplitter = new Splitter();
-			findPanel.Dock = DockStyle.Top;
 			mainSplitter.Dock = DockStyle.Left;
+
 			// TODO: use SplitContainer instead of normal panel
-			rightPanel.Controls.AddRange(new Control[] { methodPanel, mainSplitter, runs });
-			rightPanel.Controls.Add(findPanel);
+			panel.Controls.AddRange(new Control[] { rightPanel, mainSplitter, runs});
+			//rightPanel.Controls.Add(findPanel);
 			methodPanel.Dock = DockStyle.Fill;
 
 
@@ -364,7 +372,7 @@ namespace NProf {
 			argumentLabel.AutoSize = true;
 			mainPanel.Controls.Add(argumentLabel, 0, 1);
 			mainPanel.Controls.Add(arguments, 1, 1);
-			Controls.AddRange(new Control[] { rightPanel, mainPanel});
+			Controls.AddRange(new Control[] { panel, mainPanel});
 			application.TextChanged += delegate {
 				string fileName = Path.GetFileName(application.Text);
 				Text = fileName + " - " + Title;
