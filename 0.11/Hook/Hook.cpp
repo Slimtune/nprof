@@ -38,6 +38,19 @@
 #include    <string.h>
 #include    <tchar.h>
 
+// HOOK_TRACE should be used for debug messages pertaining to the CLR performance hook
+#if 0
+#define HOOK_TRACE(...) ATLTRACE(__VA_ARGS__)
+#else
+#define HOOK_TRACE(...) 
+#endif
+
+// DUMP_TRACE should be used for debug messages pertaining to obtaining and dumping data
+#if 0
+#define DUMP_TRACE(...) ATLTRACE(__VA_ARGS__)
+#else
+#define DUMP_TRACE(...) 
+#endif
 using namespace ATL;
 using namespace std;
 
@@ -278,8 +291,11 @@ const int interval=2;
 class Profiler {
 public: 
 	vector<vector<FunctionID>*> stackWalks;
-	set<FunctionID> signatures;
+	//set<FunctionID> signatures;
 	ofstream* file;
+
+	map< FunctionID, string> signatures;
+	
 	string GetTemporaryFileName() {
 		char path[MAX_PATH];
 		path[0]=0;
@@ -288,11 +304,10 @@ public:
 	}
 	void EndAll(ProfilerHelper& profilerHelper) {
 		file=new ofstream(GetTemporaryFileName().c_str(), ios::binary);
-		//GetProcessTimes(GetCurrentProcess(),
 		//WriteInteger(lastTime);
-		for(set<FunctionID>::iterator i=signatures.begin();i!=signatures.end();i++) {
-			WriteInteger(*i);
-			WriteString(profilerHelper.GetFunctionSignature(*i));
+		for(map< FunctionID, string >::iterator i=signatures.begin();i!=signatures.end();i++) {
+			WriteInteger(i->first);
+			WriteString(i->second);
 		}
 		WriteInteger(-1);
 		for(vector<vector<FunctionID>*>::iterator stackWalk = stackWalks.begin(); stackWalk != stackWalks.end(); stackWalk++ ) {
@@ -314,6 +329,7 @@ public:
 		file->write((char*)&id,sizeof(FunctionID));
 	}
 	Profiler::Profiler( ICorProfilerInfo2* profilerInfo ) {
+		InitializeCriticalSection(&threadMapLock);
 		//lastTime=(__int64)0;
 		this->profilerInfo = profilerInfo;
 		this->profilerHelper.Initialize(profilerInfo);
@@ -330,6 +346,36 @@ public:
 		timer = timeSetEvent(interval,10,TimerFunction,	(DWORD_PTR)this,TIME_PERIODIC);
 		//timer = timeSetEvent(interval,1,TimerFunction,	(DWORD_PTR)this,TIME_PERIODIC);
 	}
+
+	// Called by the profiler hook when a managed thread is assigned to an OS thread
+	void ThreadAssigned( ThreadID managedThreadId, DWORD dwOSThread )
+	{
+		EnterCriticalSection(&threadMapLock);
+		threadMap[ dwOSThread ] = managedThreadId;
+		LeaveCriticalSection(&threadMapLock);
+	};
+	
+	// Called by the profiler hook when a managed thread is shut down.
+	//  At this stage, we must stop stack walking it or 'bad things happen'
+	void ThreadDestroyed( ThreadID managedThreadId )
+	{
+		EnterCriticalSection(&threadMapLock);
+		
+		for(map< DWORD, ThreadID >::iterator it=threadMap.begin();it!=threadMap.end();it++)
+		{
+			ThreadID itManagedThreadId=(*it).second;
+			if (itManagedThreadId == managedThreadId)
+			{
+				//DWORD osThreadId=(*it).first;
+
+				threadMap.erase(it);
+				break;
+			}
+		}
+		
+		LeaveCriticalSection(&threadMapLock);
+	};
+
 	void ThreadMap(ThreadID threadId, DWORD dwOSThread) {
 		threadMap[dwOSThread] = threadId;
 	}
@@ -348,6 +394,7 @@ public:
 	void WalkStack() {
 		bool anyFound=false;
 
+		EnterCriticalSection(&threadMapLock);
 		for(map<DWORD,ThreadID>::iterator i=threadMap.begin();i!=threadMap.end();i++) {
 			DWORD threadId=i->first;
 
@@ -406,9 +453,11 @@ public:
 
 				for(int index=0;index<functions->size();index++) {
 					FunctionID id=functions->at(index);
-					const set<FunctionID>::iterator found = signatures.find(id);
+					//const set<FunctionID>::iterator found = signatures.find(id);
+					const map< FunctionID, string >::iterator found = signatures.find(id);
 					if(found == signatures.end()){
-						signatures.insert(id);
+						//signatures.insert(id);
+						FoundNewFunction(id);
 					}
 				}
 			//}
@@ -419,9 +468,26 @@ public:
 			ResumeThread(threadHandle);
 			CloseHandle(threadHandle);
 		}
+
+		LeaveCriticalSection(&threadMapLock);
+		
 		//SetTimer();
 		//return anyFound;
 	}
+
+	void FoundNewFunction(FunctionID functionId)
+	{
+		DUMP_TRACE("FoundNewFunction %d", functionId);
+		
+		string signatureString = profilerHelper.GetFunctionSignature(functionId);
+		
+		DUMP_TRACE("signature %s", signatureString.c_str());
+	
+		signatures.insert(make_pair(functionId,signatureString));
+	}
+
+	// threadMapLock protects threadMap.  It might synchronize more in future (with a suitable rename)
+	CRITICAL_SECTION threadMapLock;
 	map< DWORD, ThreadID > threadMap;
 protected:
 	CComPtr< ICorProfilerInfo2 > profilerInfo;
@@ -429,6 +495,7 @@ protected:
 	bool statistical;
 };
 UINT Profiler::timer;
+//__int64 Profiler::lastTime;
 //__int64 Profiler::lastTime;
 [
 	object,
@@ -556,12 +623,24 @@ public:
 		return E_NOTIMPL;
 	}
 	STDMETHOD(ThreadDestroyed)(ThreadID threadId) {
-		return E_NOTIMPL;
+		HOOK_TRACE(">> CNProfCORHook::ThreadDestroyed %d", threadId);
+
+		EnterCriticalSection(&criticalSection);
+		profiler->ThreadDestroyed( threadId );
+		LeaveCriticalSection(&criticalSection);
+		
+		HOOK_TRACE("<< CNProfCORHook::ThreadDestroyed %d", threadId);
+
+		return S_OK;
 	}
 	STDMETHOD(ThreadAssignedToOSThread)(ThreadID managedThreadId, DWORD osThreadId) {
+		HOOK_TRACE(">> CNProfCORHook::ThreadAssignedToOSThread %d %d", managedThreadId, osThreadId);
+
 		EnterCriticalSection(&criticalSection);
-		profiler->ThreadMap(managedThreadId, osThreadId);
+		profiler->ThreadAssigned( managedThreadId, osThreadId );
 		LeaveCriticalSection(&criticalSection);
+		
+		HOOK_TRACE("<< CNProfCORHook::ThreadAssignedToOSThread");
 		return S_OK;
 	}
 	STDMETHOD(RemotingClientInvocationStarted)() {

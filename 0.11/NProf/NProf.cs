@@ -33,9 +33,9 @@ namespace NProf {
 	public class NProf : Form {
 		public static Font font = new Font("Courier New", 9.0f);
 		public ContainerListView runs;
-		private MethodView callees = new MethodView();
+		private MethodView callees = new MethodView("Callees");
 
-		private MethodView callers = new MethodView();
+		private MethodView callers = new MethodView("Callers");
 
 		private Profiler profiler;
 		private TextBox findText;
@@ -133,26 +133,24 @@ namespace NProf {
 			profiler = new Profiler();
 			runs = new ContainerListView();
 			runs.ColumnSortColor = Color.White;
-			runs.Columns.Add("Program");
+			runs.Columns.Add("Executable");
 			runs.Columns.Add("Time");
 			runs.Font = font;
 			runs.AllowMultiSelect = true;
 			runs.Dock = DockStyle.Left;
 			runs.Width = 200;
+			runs.Columns[0].Width = 105;
+
+
+
 			runs.SelectedItemsChanged += delegate {
 				if (runs.SelectedItems.Count != 0) {
 					ShowRun((Run)runs.SelectedItems[0].Tag);
 				}
 			};
-			//callers.Size = new Size(100, 200);
-			//callers.Dock = DockStyle.Bottom;
-			//callers.Dock = DockStyle.Fill;
-			//callees.Dock = DockStyle.Fill;
 			callers.GotFocus += delegate {
 				callees.SelectedItems.Clear();
 			};
-			//ListView view = new ListView();
-			//ListViewItem item = new ListViewItem();
 			callers.DoubleClick += delegate { CallersNext(); };
 			callers.KeyDown += delegate(object sender, KeyEventArgs e) {
 				if (e.KeyData == Keys.Enter) {
@@ -299,17 +297,23 @@ namespace NProf {
 
 			findPanel.Controls.AddRange(new Control[] {closeFind,findLabel,findText,findNext ,findPrevious});
 
-			Panel calleePanel = MakePanel("Callees",callees);
-			Panel callerPanel = MakePanel("Callers",callers);
-			calleePanel.Dock = DockStyle.Fill;
-			callerPanel.Dock = DockStyle.Fill;
+			//Panel calleePanel = MakePanel(callees);
+			//Panel callerPanel = MakePanel(callers);
+			//calleePanel.Dock = DockStyle.Fill;
+			//callerPanel.Dock = DockStyle.Fill;
 			//calleePanel.Size = new Size(100, 100);
 			//callerPanel.Size = new Size(100, 100);
 			//calleePanel.Dock = DockStyle.Top;
 			//callerPanel.Dock = DockStyle.Bottom;
-			methodPanel.BackColor = Color.Blue;
-			methodPanel.Panel1.Controls.Add(calleePanel);
-			methodPanel.Panel2.Controls.Add(callerPanel);
+			callees.Size = new Size(100, 100);
+			callers.Size = new Size(100, 100);
+			callees.Dock = DockStyle.Fill;
+			callers.Dock = DockStyle.Fill;
+			methodPanel.Panel2.Controls.Add(callers);
+			methodPanel.Panel1.Controls.Add(callees);
+
+			//methodPanel.Panel1.Controls.Add(calleePanel);
+			//methodPanel.Panel2.Controls.Add(callerPanel);
 			//methodPanel.Controls.AddRange(new Control[] { calleePanel, methodSplitter, callerPanel, findPanel });
 
 			Splitter mainSplitter = new Splitter();
@@ -362,28 +366,28 @@ namespace NProf {
 			mainPanel.Controls.Add(arguments, 1, 1);
 			Controls.AddRange(new Control[] { rightPanel, mainPanel});
 			application.TextChanged += delegate {
-				string fileName = Path.GetFileNameWithoutExtension(application.Text);
+				string fileName = Path.GetFileName(application.Text);
 				Text = fileName + " - " + Title;
 			};
 		}
 
-		private static Panel MakePanel(string name, MethodView view) {
-			Panel panel = new Panel();
-			//panel.FlowDirection = FlowDirection.TopDown;
-			panel.BackColor = Color.Green;
+		//private static Panel MakePanel(MethodView view) {
+		//    Panel panel = new Panel();
+		//    //panel.FlowDirection = FlowDirection.TopDown;
+		//    panel.BackColor = Color.Green;
 
-			Label label = new Label();
-			label.TextAlign = ContentAlignment.MiddleLeft;
-			label.Text = name;
-			label.BackColor = Color.Red;
-			label.Dock = DockStyle.Top;
-			view.BackColor = Color.Yellow;
-			view.Size = new Size(100, 100);
-			view.Dock = DockStyle.Fill;
-			panel.Controls.Add(view);
-			panel.Controls.Add(label);
-			return panel;
-		}
+		//    //Label label = new Label();
+		//    //label.TextAlign = ContentAlignment.MiddleLeft;
+		//    //label.Text = name;
+		//    //label.BackColor = Color.Red;
+		//    //label.Dock = DockStyle.Top;
+		//    view.BackColor = Color.Yellow;
+		//    view.Size = new Size(100, 100);
+		//    view.Dock = DockStyle.Fill;
+		//    panel.Controls.Add(view);
+		//    //panel.Controls.Add(label);
+		//    return panel;
+		//}
 		//private static FlowLayoutPanel MakePanel(string name, MethodView view) {
 		//    FlowLayoutPanel panel = new FlowLayoutPanel();
 		//    panel.FlowDirection = FlowDirection.TopDown;
@@ -723,11 +727,11 @@ namespace NProf {
 		}
 		public Run currentRun;
 		public Run currentOldRun;
-		public MethodView()
-			: this(" Percent  Method signature") {
-		}
+		//public MethodView()
+		//    : this() {
+		//}
 		public MethodView(string name) {
-			Columns.Add(name);
+			Columns.Add(" Percent  " + name);
 			//Columns[0].SortDataType = SortDataType.String;
 			this.ShowPlusMinus = true;
 			ShowRootTreeLines = true;
