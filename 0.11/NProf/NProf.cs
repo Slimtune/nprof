@@ -65,39 +65,12 @@ namespace NProf {
 		public void GoToCallee(MethodView source)
 		{
 			MoveTo(source, callees);
-			//if (callers.SelectedItems.Count != 0)
-			//{
-			//    ContainerListViewItem item = callers.SelectedItems[0];
-			//    int id = ((FunctionInfo)item.Tag).ID;
-			//    if (item.ParentItem.ParentItem == null)
-			//    {
-			//        callees.MoveTo(id);
-			//    }
-			//    else
-			//    {
-			//        callers.MoveTo(id);
-			//    }
-			//    item.Collapse();
-
-			//}
 		}
 
 		public void MoveTo(MethodView source,MethodView target) {
 			if (source.SelectedItems.Count != 0) {
 				target.MoveTo(((FunctionInfo)source.SelectedItems[0].Tag).ID);
 			}
-			//if (callers.SelectedItems.Count != 0) {
-			//    ContainerListViewItem item = callers.SelectedItems[0];
-			//    int id = ((FunctionInfo)item.Tag).ID;
-			//    if (item.ParentItem.ParentItem == null) {
-			//        callees.MoveTo(id);
-			//    }
-			//    else {
-			//        callers.MoveTo(id);
-			//    }
-			//    item.Collapse();
-
-			//}
 		}
 		private void CallersNext() {
 			if (callers.SelectedItems.Count != 0) {
@@ -231,16 +204,6 @@ namespace NProf {
 				new MenuItem(
 					"File",
 					new MenuItem[] {
-						//new MenuItem("&New",
-						//    delegate {
-						//        runs.Items.Clear();
-						//        NProf.arguments.Text = "";
-						//        NProf.application.Text = "";
-						//        callees.Items.Clear();
-						//        callers.Items.Clear();
-						//    },
-						//    Shortcut.CtrlN),
-						//new MenuItem("-"),
 						new MenuItem("E&xit",delegate {Close();})
 					}),
 				new MenuItem(
@@ -250,35 +213,18 @@ namespace NProf {
 							"Start",
 							delegate{StartRun();},
 							Shortcut.F5)
-						//,
-						//new MenuItem("-"),
-						//new MenuItem("Find method",delegate{ShowSearch();},Shortcut.CtrlF)
 			})});
 			Panel panel = new Panel();
 			panel.Dock = DockStyle.Fill;
 			SplitContainer methodPanel = new SplitContainer();
 			methodPanel.Orientation = Orientation.Horizontal;
-			//SplitContainer methodPanel = new SplitContainer();
-			//methodPanel.FlowDirection = FlowDirection.TopDown;
-			//Panel methodPanel = new Panel();
-			//methodPanel.Size = new Size(100, 100);
 
 			Splitter methodSplitter = new Splitter();
 			methodSplitter.Dock = DockStyle.Bottom;
 			findPanel = new FlowLayoutPanel();
-			//findPanel.Dock = DockStyle.Top;
 			findPanel.BorderStyle = BorderStyle.FixedSingle;
-			//findPanel.Visible = false;
 			findPanel.WrapContents = false;
 			findPanel.AutoSize = true;
-			//findPanel.Dock = DockStyle.Top;
-			//findPanel.Dock = DockStyle.Top;
-			//Button closeFind = new Button();
-			//closeFind.Text = "x";
-			//closeFind.Width = 17;
-			//closeFind.Height = 20;
-			//closeFind.TextAlign = ContentAlignment.BottomLeft;
-			//closeFind.Click += delegate {findPanel.Visible = false;};
 
 			Button findNext = new Button();
 			findNext.AutoSize = true;
@@ -298,16 +244,7 @@ namespace NProf {
 			findPrevious.Text = "Previous";
 
 			findPanel.Controls.AddRange(new Control[] { findLabel, findText, findNext, findPrevious });
-			//findPanel.Controls.AddRange(new Control[] { closeFind, findLabel, findText, findNext, findPrevious });
 
-			//Panel calleePanel = MakePanel(callees);
-			//Panel callerPanel = MakePanel(callers);
-			//calleePanel.Dock = DockStyle.Fill;
-			//callerPanel.Dock = DockStyle.Fill;
-			//calleePanel.Size = new Size(100, 100);
-			//callerPanel.Size = new Size(100, 100);
-			//calleePanel.Dock = DockStyle.Top;
-			//callerPanel.Dock = DockStyle.Bottom;
 			callees.Size = new Size(100, 100);
 			callers.Size = new Size(100, 100);
 			callees.Dock = DockStyle.Fill;
@@ -316,20 +253,15 @@ namespace NProf {
 			methodPanel.Panel1.Controls.Add(callees);
 			Panel rightPanel = new Panel();
 			methodPanel.Dock = DockStyle.Fill;
-			findPanel.Dock = DockStyle.Top;
+			findPanel.Dock = DockStyle.Bottom;
 			rightPanel.Dock = DockStyle.Fill;
 			rightPanel.Controls.Add(methodPanel);
 			rightPanel.Controls.Add(findPanel);
-			//methodPanel.Panel1.Controls.Add(calleePanel);
-			//methodPanel.Panel2.Controls.Add(callerPanel);
-			//methodPanel.Controls.AddRange(new Control[] { calleePanel, methodSplitter, callerPanel, findPanel });
 
 			Splitter mainSplitter = new Splitter();
 			mainSplitter.Dock = DockStyle.Left;
 
-			// TODO: use SplitContainer instead of normal panel
 			panel.Controls.AddRange(new Control[] { rightPanel, mainSplitter, runs});
-			//rightPanel.Controls.Add(findPanel);
 			methodPanel.Dock = DockStyle.Fill;
 
 
@@ -378,39 +310,6 @@ namespace NProf {
 				Text = fileName + " - " + Title;
 			};
 		}
-
-		//private static Panel MakePanel(MethodView view) {
-		//    Panel panel = new Panel();
-		//    //panel.FlowDirection = FlowDirection.TopDown;
-		//    panel.BackColor = Color.Green;
-
-		//    //Label label = new Label();
-		//    //label.TextAlign = ContentAlignment.MiddleLeft;
-		//    //label.Text = name;
-		//    //label.BackColor = Color.Red;
-		//    //label.Dock = DockStyle.Top;
-		//    view.BackColor = Color.Yellow;
-		//    view.Size = new Size(100, 100);
-		//    view.Dock = DockStyle.Fill;
-		//    panel.Controls.Add(view);
-		//    //panel.Controls.Add(label);
-		//    return panel;
-		//}
-		//private static FlowLayoutPanel MakePanel(string name, MethodView view) {
-		//    FlowLayoutPanel panel = new FlowLayoutPanel();
-		//    panel.FlowDirection = FlowDirection.TopDown;
-		//    panel.BackColor = Color.Green;
-		//    Label label=new Label();
-		//    label.Text=name;
-		//    label.BackColor = Color.Red;
-		//    //label.Dock = DockStyle.Top;
-		//    view.BackColor = Color.Yellow;
-		//    view.Size = new Size(100, 100);
-		//    view.Dock = DockStyle.Fill;
-		//    panel.Controls.Add(label);
-		//    panel.Controls.Add(view);
-		//    return panel;
-		//}
 		private void StartRun() {
 			Run run = new Run(profiler);
 			run.profiler.completed = new EventHandler(run.Complete);
@@ -535,8 +434,6 @@ namespace NProf {
 					maxSamples++;
 				}
 			}
-			//MessageBox.Show(stackWalks.Count.ToString());
-			//MessageBox.Show(maxSamples.ToString());
 		}
 		private void Interprete(Dictionary<int, FunctionInfo> map,bool reverse,Run run) {
 			int currentWalk = 0;
@@ -647,6 +544,7 @@ namespace NProf {
 					EnsureVisible(item);
 					Invalidate();
 					this.Focus();
+					item.Focused = true;
 					break;
 				}
 			}
@@ -735,17 +633,12 @@ namespace NProf {
 		}
 		public Run currentRun;
 		public Run currentOldRun;
-		//public MethodView()
-		//    : this() {
-		//}
 		public MethodView(string name) {
 			Columns.Add(" Percent  " + name);
-			//Columns[0].SortDataType = SortDataType.String;
 			this.ShowPlusMinus = true;
 			ShowRootTreeLines = true;
 			ShowTreeLines = true;
 			FullItemSelect = true;
-			//ColumnSortColor = Color.White;
 			Font = NProf.font;
 			this.BeforeExpand += delegate(object sender,ContainerListViewCancelEventArgs e) {
 				MakeSureComputed(e.Item);

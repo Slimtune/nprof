@@ -38,6 +38,9 @@
 #include    <string.h>
 #include    <tchar.h>
 
+#include "SimpleSymbolEngine.h"
+
+
 // HOOK_TRACE should be used for debug messages pertaining to the CLR performance hook
 #if 0
 #define HOOK_TRACE(...) ATLTRACE(__VA_ARGS__)
@@ -324,6 +327,7 @@ public:
 		file->write((char*)&id,sizeof(FunctionID));
 	}
 	Profiler::Profiler( ICorProfilerInfo2* profilerInfo ) {
+		//DebugBreak();
 		InitializeCriticalSection(&threadMapLock);
 		this->profilerInfo = profilerInfo;
 		this->profilerHelper.Initialize(profilerInfo);
@@ -379,6 +383,48 @@ public:
 		Profiler* profiler=(Profiler*)dwUser;
 		profiler->WalkStack();
 	}
+#include "SimpleSymbolEngine.h"
+
+#include <string>
+#include <iostream>
+
+void fred(HANDLE thread )
+{
+    std::string name( "fred" );
+
+    CONTEXT context = {CONTEXT_FULL};
+    ::GetThreadContext( thread, &context );
+    //::GetThreadContext( GetCurrentThread(), &context );
+    //_asm call $+5
+    //_asm pop eax
+    //_asm mov context.Eip, eax
+    //_asm mov eax, esp
+    //_asm mov context.Esp, eax
+    //_asm mov context.Ebp, ebp
+
+    SimpleSymbolEngine::instance().StackTrace( &context, std::cout,thread );
+}
+
+void middle()
+{
+    std::string name( "middle" );
+
+    //fred();
+}
+
+
+void top()
+{
+    std::string name( "top" );
+
+    middle();
+}
+
+int main()
+{
+    top();
+    return 0;
+}
 	static UINT timer;
 	map<DWORD,DWORD> switchMap;
 	void WalkStack() {
@@ -436,10 +482,34 @@ public:
 
 				//profilerInfo->DoStackSnapshot(
 				//	id,StackWalker,COR_PRF_SNAPSHOT_DEFAULT,functions,NULL,NULL);//(BYTE*)&context,sizeof(context));
+				//DebugBreak();
 
 
 				profilerInfo->DoStackSnapshot(
 					id,StackWalker,COR_PRF_SNAPSHOT_DEFAULT,functions,(BYTE*)&context,sizeof(context));
+				//if(functions->size()== 0)
+				//{
+				DWORD currentThreadId=GetCurrentThreadId();
+				//cout << threadId;
+				if(threadId!=currentThreadId) {
+					//os << currentThreadId << "\n";
+					//fred(threadHandle);
+				}
+					//StackWalk(
+					//	IMAGE_FILE_MACHINE_I386,
+					//	hProcess,
+					//	GetCurrentThread(), // this value doesn't matter much if previous one is a real handle
+					//	&stackFrame, 
+					//	pContext,
+					//	NULL,
+					//	::SymFunctionTableAccess,
+					//	::SymGetModuleBase,
+					//	NULL
+					//)
+					//)
+     //  {
+           
+				//}
 
 				for(int index=0;index<functions->size();index++) {
 					FunctionID id=functions->at(index);

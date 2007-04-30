@@ -241,6 +241,14 @@
 			RelativePath=".\Hook.rgs"
 			>
 		</File>
+		<File
+			RelativePath=".\SimpleSymbolEngine.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\SimpleSymbolEngine.h"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
