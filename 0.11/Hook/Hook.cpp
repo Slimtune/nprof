@@ -30,6 +30,8 @@
 #include <iostream>
 #include <set>
 #include "winreg.h"
+//#include "..\StackWalker\StackWalker.h"
+#include "Stackwalker.h"
 
 #include    <windows.h>
 #include    <winperf.h>
@@ -279,7 +281,7 @@ public:
 	}
 	CComPtr< ICorProfilerInfo2 > profilerInfo;
 };
-HRESULT __stdcall __stdcall StackWalker(FunctionID funcId,UINT_PTR ip,COR_PRF_FRAME_INFO frameInfo,
+HRESULT __stdcall __stdcall StackWalk(FunctionID funcId,UINT_PTR ip,COR_PRF_FRAME_INFO frameInfo,
 	ULONG32 contextSize,BYTE context[  ],void *clientData
 ) {
 	if(funcId!=0) {
@@ -327,12 +329,13 @@ public:
 		file->write((char*)&id,sizeof(FunctionID));
 	}
 	Profiler::Profiler( ICorProfilerInfo2* profilerInfo ) {
-		//DebugBreak();
 		InitializeCriticalSection(&threadMapLock);
+		//DebugBreak();
 		this->profilerInfo = profilerInfo;
 		this->profilerHelper.Initialize(profilerInfo);
 		profilerInfo->SetEventMask(COR_PRF_ENABLE_STACK_SNAPSHOT|COR_PRF_MONITOR_THREADS|COR_PRF_DISABLE_INLINING);
 		SetTimer();
+		sw.LoadModules();
 	}
 	void KillTimer() {
 		timeKillEvent(timer);
@@ -383,50 +386,9 @@ public:
 		Profiler* profiler=(Profiler*)dwUser;
 		profiler->WalkStack();
 	}
-#include "SimpleSymbolEngine.h"
-
-#include <string>
-#include <iostream>
-
-void fred(HANDLE thread )
-{
-    std::string name( "fred" );
-
-    CONTEXT context = {CONTEXT_FULL};
-    ::GetThreadContext( thread, &context );
-    //::GetThreadContext( GetCurrentThread(), &context );
-    //_asm call $+5
-    //_asm pop eax
-    //_asm mov context.Eip, eax
-    //_asm mov eax, esp
-    //_asm mov context.Esp, eax
-    //_asm mov context.Ebp, ebp
-
-    SimpleSymbolEngine::instance().StackTrace( &context, std::cout,thread );
-}
-
-void middle()
-{
-    std::string name( "middle" );
-
-    //fred();
-}
-
-
-void top()
-{
-    std::string name( "top" );
-
-    middle();
-}
-
-int main()
-{
-    top();
-    return 0;
-}
 	static UINT timer;
 	map<DWORD,DWORD> switchMap;
+	StackWalker sw;
 	void WalkStack() {
 		bool anyFound=false;
 
@@ -442,85 +404,168 @@ int main()
 			CONTEXT context;
 			context.ContextFlags=CONTEXT_FULL;
 			GetThreadContext(threadHandle,&context);
-			FunctionID newID;
 
-			//bool found;
-			//if(profilerInfo->GetFunctionFromIP((BYTE*)context.Eip,&newID)!=S_OK && newID!=0) {
-			//	found=true;
+			HANDLE process=GetCurrentProcess();
+
+
+			//STACKFRAME64 stackFrame = {0};
+
+			//stackFrame.AddrPC.Offset = context.Eip;
+			//stackFrame.AddrPC.Mode = AddrModeFlat;
+
+			//stackFrame.AddrFrame.Offset = context.Ebp;
+			//stackFrame.AddrFrame.Mode = AddrModeFlat;
+
+			//stackFrame.AddrStack.Offset = context.Esp;
+			//stackFrame.AddrStack.Mode = AddrModeFlat;
+
+			//if(threadId!=GetCurrentThreadId())
+			//{
 			//}
-			//else {
-			//	found=false;
-			//	STACKFRAME64 stackFrame;
-			//	memset(&stackFrame, 0, sizeof(stackFrame));
-			//	stackFrame.AddrPC.Offset = context.Eip;
-			//	stackFrame.AddrPC.Mode = AddrModeFlat;
-			//	stackFrame.AddrFrame.Offset = context.Ebp;
-			//	stackFrame.AddrFrame.Mode = AddrModeFlat;
-			//	stackFrame.AddrStack.Offset = context.Esp;
-			//	stackFrame.AddrStack.Mode = AddrModeFlat;
-			//	while(true) {
-			//		if(!StackWalk64(IMAGE_FILE_MACHINE_I386,GetCurrentProcess(),threadHandle,
-			//			 &stackFrame,0,0,SymFunctionTableAccess64,SymGetModuleBase64,0)) {
-			//			break;
-			//		}
-			//		if (stackFrame.AddrPC.Offset == stackFrame.AddrReturn.Offset) {
-			//			break;
-			//		}
-			//		FunctionID id;
-			//		if(profilerInfo->GetFunctionFromIP((BYTE*)stackFrame.AddrPC.Offset,&id)==S_OK && id!=0) {
-			//			memset(&context,0,sizeof(context));
-			//			context.Eip=stackFrame.AddrPC.Offset;
-			//			context.Ebp=stackFrame.AddrFrame.Offset;
-			//			context.Esp=stackFrame.AddrStack.Offset;
-			//			found=true;
-			//			break;
-			//		}
+			//sw.ShowCallstack(GetCurrentThread());
+			//sw.ShowCallstack(GetCurrentThread(), pExp->ContextRecord);
+
+			int count=0;
+			profilerInfo->DoStackSnapshot(
+				id,
+				StackWalk,
+				COR_PRF_SNAPSHOT_DEFAULT,
+				functions,
+				(BYTE*)&context,sizeof(context)
+			);
+
+			//while(true) {
+			//	if(count>100)
+			//	{
+			//		cout << "too many iterations\n";
+			//		break;
 			//	}
+			//	count++;
+			//	//profilerInfo->DoStackSnapshot(
+			//	//	id,StackWalk,COR_PRF_SNAPSHOT_DEFAULT,functions,(BYTE*)&context,sizeof(context));
+			//	//if(functions->size()!=0) {
+			//	//	cout << "it was also found";
+			//	//	break;
+			//	//}
+
+
+			//	FunctionID function;
+			//	if(SUCCEEDED(profilerInfo->GetFunctionFromIP((LPCBYTE)stackFrame.AddrPC.Offset,&function))) {
+			//	//if(SUCCEEDED(profilerInfo->GetFunctionFromIP((LPCBYTE)&stackFrame.AddrPC.Offset,&function))) {
+			//		//cout << "it was found\n";
+			//		if(function!=0) {
+			//			functions->push_back(function);
+			//			break;
+			//		}
+			////		CONTEXT managedContext;
+			////		//managedContext.Eip=context.Eip;
+			////		//managedContext.Ebp=context.Ebp;
+			////		//managedContext.Esp=context.Esp;
+
+			////		managedContext.Eip=stackFrame.AddrPC.Offset;
+			////		managedContext.Ebp=stackFrame.AddrFrame.Offset;
+			////		managedContext.Esp=stackFrame.AddrStack.Offset;
+			//////context.ContextFlags=CONTEXT_FULL;
+
+			////		if(SUCCEEDED(profilerInfo->DoStackSnapshot(
+			////			id,
+			////			StackWalker,
+			////			COR_PRF_SNAPSHOT_REGISTER_CONTEXT,
+			////			//COR_PRF_SNAPSHOT_DEFAULT,
+			////			functions,
+			////			(BYTE*)&managedContext,
+			////			sizeof(managedContext)
+			////		)))
+			////		{
+			////			if(functions->size()!=0)
+			////			{
+			////				break;
+			////			}
+			////			//cout << "it was also walked\n";
+			////		}
+			////		else
+			////		{
+			////			//cout << "horrible bug:" << function <<"\n";
+			////			//functions->push_back(function);
+			////			//break;
+			////			/*continue*/;
+			////		}
+			//		//break;
+			//	}
+			//	//break;
+
+			//	//STACKFRAME64 frame = {0};
+			//	//frame.AddrPC.Offset=context.Eip;
+			//	//frame.AddrPC.Mode=AddrModeFlat;
+			//	//frame.AddrStack.Offset=context.Esp;
+			//	//frame.AddrStack.Mode=AddrModeFlat;
+			//	//frame.AddrFrame.Offset=context.Ebp;
+			//	//frame.AddrFrame.Mode=AddrModeFlat;
+
+			//	//stackFrame.AddrPC.Offset = context.Eip;
+			//	//stackFrame.AddrPC.Mode = AddrModeFlat;
+
+			//	//stackFrame.AddrFrame.Offset = context.Ebp;
+			//	//stackFrame.AddrFrame.Mode = AddrModeFlat;
+
+			//	//stackFrame.AddrStack.Offset = context.Esp;
+			//	//stackFrame.AddrStack.Mode = AddrModeFlat;
+
+
+			//	//while ( 
+			//	//StackWalk64();
+			//	//if(StackWalk64(
+			//	//   IMAGE_FILE_MACHINE_I386,
+			//	//   process,
+			//	//   //hProcess,
+			//	//   threadHandle,
+			//	//   //GetCurrentThread(), // this value doesn't matter much if previous one is a real handle
+			//	//   &frame,
+			//	//   &context,
+			//	//   NULL,
+			//	//   ::SymFunctionTableAccess64,
+			//	//   ::SymGetModuleBase64,
+			//	//   NULL ))
+			//	//{
+			//	//	break;
+			//	//}
+
+			//	//if(!StackWalk64(
+			//	////if(!StackWalk(
+ 		//	//	   IMAGE_FILE_MACHINE_I386,
+			//	//   process,
+			//	//   //hProcess,
+			//	//   threadHandle,
+			//	//   //GetCurrentThread(), // this value doesn't matter much if previous one is a real handle
+			//	//   &stackFrame,
+			//	//   &context,
+			//	//   NULL,
+			//	//   ::SymFunctionTableAccess64,
+			//	//   ::SymGetModuleBase64,
+			//	//   NULL ))
+			//	//{
+			//	//	//cout << "it was not found";
+			//	//	sw.ShowCallstack(threadHandle);
+			//	//	break;
+			//	//}
+			//	//{
+			//	//	//os << "  0x" << (PVOID) stackFrame.AddrFrame.Offset << "  " << addressToString( (PVOID)stackFrame.AddrPC.Offset ) << "\n";
+			//	//}
+
+			//	//os.flush();
 			//}
-			//if(found) {
-				//anyFound=true;
+			CloseHandle(process);
 
-				//profilerInfo->DoStackSnapshot(
-				//	id,StackWalker,COR_PRF_SNAPSHOT_DEFAULT,functions,NULL,NULL);//(BYTE*)&context,sizeof(context));
-				//DebugBreak();
-
-
-				profilerInfo->DoStackSnapshot(
-					id,StackWalker,COR_PRF_SNAPSHOT_DEFAULT,functions,(BYTE*)&context,sizeof(context));
-				//if(functions->size()== 0)
-				//{
-				DWORD currentThreadId=GetCurrentThreadId();
-				//cout << threadId;
-				if(threadId!=currentThreadId) {
-					//os << currentThreadId << "\n";
-					//fred(threadHandle);
+			for(int index=0;index<functions->size();index++) {
+				FunctionID id=functions->at(index);
+				const map< FunctionID, string >::iterator found = signatures.find(id);
+				if(found == signatures.end()){
+					FoundNewFunction(id);
 				}
-					//StackWalk(
-					//	IMAGE_FILE_MACHINE_I386,
-					//	hProcess,
-					//	GetCurrentThread(), // this value doesn't matter much if previous one is a real handle
-					//	&stackFrame, 
-					//	pContext,
-					//	NULL,
-					//	::SymFunctionTableAccess,
-					//	::SymGetModuleBase,
-					//	NULL
-					//)
-					//)
-     //  {
-           
-				//}
+			}
 
-				for(int index=0;index<functions->size();index++) {
-					FunctionID id=functions->at(index);
-					//const set<FunctionID>::iterator found = signatures.find(id);
-					const map< FunctionID, string >::iterator found = signatures.find(id);
-					if(found == signatures.end()){
-						//signatures.insert(id);
-						FoundNewFunction(id);
-					}
-				}
-			//}
+
+
 			stackWalks.push_back(functions);
 			if(functions->size()!=0) {
 				anyFound=true;

@@ -27,12 +27,50 @@ using System.Windows.Forms;
 using System.Data;
 using Microsoft.Win32;
 using System.Globalization;
-using DotNetLib.Windows.Forms;
 
 namespace NProf {
+	public class NamespaceView : View {
+		public NamespaceView() {
+			this.CheckBoxes = true;
+			//this.CheckBoxes = true;
+		}
+		public void Update(Run run, Dictionary<int, FunctionInfo> functions, Dictionary<int, FunctionInfo> compareFunctions, Run oldRun) {
+			BeginUpdate();
+			//ListViewItem item=this.Items.Add("hello");
+			//item.SubItems.Add("hello");
+			//Invalidate();
+			foreach (FunctionInfo function in functions.Values) {
+				TreeNodeCollection items = this.Nodes;
+				//ContainerListViewItemCollection items = this.Items;
+				foreach (string name in function.Namespace.Split('.')) {
+					bool found = false;
+					foreach (TreeNode item in items) {
+					//foreach (ContainerListViewItem item in items) {
+						if (item.Text == name) {
+							items = item.Nodes;
+							//items = item.Items;
+							found = true;
+							break;
+						}
+					}
+					if (!found) {
+						TreeNode item = new TreeNode(name);
+						//TreeNode item = new ContainerListViewItem(name);
+						//ContainerListViewItem item = new ContainerListViewItem(name);
+						items.Add(item);
+						items = item.Nodes;
+						//items = item.Items;
+					}
+				}
+			}
+			EndUpdate();
+		}
+	}
 	public class NProf : Form {
 		public static Font font = new Font("Courier New", 9.0f);
-		public ContainerListView runs;
+		public ListView runs;
+		public NamespaceView namespaces;
+		//public NamespaceView namespaces;
 		private MethodView callees = new MethodView("Callees");
 
 		private MethodView callers = new MethodView("Callers");
@@ -47,7 +85,8 @@ namespace NProf {
 			findText.Focus();
 		}
 		public void Find(bool forward, bool step) {
-			if (callers.SelectedItems.Count != 0) {
+			if (callers.SelectedNode !=null ) {
+			//if (callers.SelectedItems.Count != 0) {
 				callers.Find(findText.Text, forward, step);
 			}
 			else {
@@ -68,16 +107,21 @@ namespace NProf {
 		}
 
 		public void MoveTo(MethodView source,MethodView target) {
-			if (source.SelectedItems.Count != 0) {
-				target.MoveTo(((FunctionInfo)source.SelectedItems[0].Tag).ID);
+			if (source.SelectedNode !=null) {
+			//if (source.SelectedItems.Count != 0) {
+				target.MoveTo(((FunctionInfo)source.SelectedNode.Tag).ID);
+				//target.MoveTo(((FunctionInfo)source.SelectedItems[0].Tag).ID);
 			}
 		}
 		private void CallersNext() {
-			if (callers.SelectedItems.Count != 0) {
-				ContainerListViewItem item = callers.SelectedItems[0];
+			if (callers.SelectedNode != null ) {
+			//if (callers.SelectedItems.Count != 0) {
+				TreeNode item = callers.SelectedNode;
+				//ContainerListViewItem item = callers.SelectedItems[0];
 
 				int id = ((FunctionInfo)item.Tag).ID;
-				if (item.ParentItem.ParentItem == null) {
+				if (item.Parent.Parent== null) {
+				//if (item.ParentItem.ParentItem == null) {
 					callees.MoveTo(id);
 				}
 				else {
@@ -88,10 +132,14 @@ namespace NProf {
 			}
 		}
 		private void CalleesNext() {
-			if (callees.SelectedItems.Count != 0) {
-				ContainerListViewItem item = callees.SelectedItems[0];
-				if (item.ParentItem.ParentItem == null) {
+			if (callees.SelectedNode != null) {
+			//if (callees.SelectedItems.Count != 0) {
+				TreeNode item = callees.SelectedNode;
+				//ContainerListViewItem item = callees.SelectedItems[0];
+				if (item.Parent.Parent == null) {
+				//if (item.ParentItem.ParentItem == null) {
 					callers.MoveTo(((FunctionInfo)item.Tag).ID);
+					//callers.MoveTo(((FunctionInfo)item.Tag).ID);
 				}
 				else {
 					callees.MoveTo(((FunctionInfo)item.Tag).ID);
@@ -100,29 +148,100 @@ namespace NProf {
 			}
 		}
 		private NProf() {
+
+			//ListView listView1 = new ListView();
+			////Set the List to Detail View
+			//listView1.View = System.Windows.Forms.View.Details;
+			//listView1.CheckBoxes = true;
+
+			////To Activate an Item you must doubleclick the item
+			////This will fire the 
+			//listView1.Activation = ItemActivation.TwoClick;
+
+			////Add Columns
+			//listView1.Columns.Add("Column 1", 100,
+			//    HorizontalAlignment.Center);
+
+			//listView1.Columns.Add("Column 2", 100,
+			//    HorizontalAlignment.Center);
+
+			//listView1.Columns.Add("Column 3", 100,
+			//    HorizontalAlignment.Center);
+
+			//listView1.Columns.Add("Column 4", 100,
+			//    HorizontalAlignment.Center);
+
+			////Create ListViewItem
+			//System.Windows.Forms.ListViewItem itmp = new
+			//     System.Windows.Forms.ListViewItem("PARENT Item");
+
+			//Modify Some of the Items Properties
+			//itmp.BackColor = System.Drawing.Color.Silver;
+			//itmp.ForeColor = System.Drawing.Color.Navy;
+			//itmp.Checked = true;
+
+			////Create SubItem 1
+			//System.Windows.Forms.ListViewItem.ListViewSubItem itms1 = new
+			//     System.Windows.Forms.ListViewItem.ListViewSubItem
+			//    (itmp, "SubItem 1");
+
+			////Create SubItem 2
+			//System.Windows.Forms.ListViewItem.ListViewSubItem itms2 = new
+			//      System.Windows.Forms.ListViewItem.ListViewSubItem
+			//    (itmp, "SubItem 2");
+
+			////Create SubItem 3
+			//System.Windows.Forms.ListViewItem.ListViewSubItem itms3 = new
+			//      System.Windows.Forms.ListViewItem.ListViewSubItem
+			//    (itmp, "SubItem 3");
+
+			////Add SubItems to parent Item
+			//itmp.SubItems.Add(itms1);
+			//itmp.SubItems.Add(itms2);
+			//itmp.SubItems.Add(itms3);
+
+			//Add Parent Item to ListView Control
+			//listView1.Items.Add(itmp);	
+
 			WindowState = FormWindowState.Maximized;
 			Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("NProf.Resources.app-icon.ico"));
 			Text = Title;
 			profiler = new Profiler();
-			runs = new ContainerListView();
-			runs.ColumnSortColor = Color.White;
+			runs = new ListView();
+			//runs = new ContainerListView();
+			//namespaces = listView1;
+			namespaces = new NamespaceView();
+			//ListViewItem i = namespaces.Items.Add("hello");
+			//i.Items.Add("asdf");
+			//i.Items.Add("asdf");
+			//i.Items.Add("whatever");
+			namespaces.Height = 100;
+			namespaces.Text = "Namespaces";
+			namespaces.Dock = DockStyle.Bottom;
+			//runs.ColumnSortColor = Color.White;
 			runs.Columns.Add("Executable");
 			runs.Columns.Add("Time");
 			runs.Font = font;
-			runs.AllowMultiSelect = true;
-			runs.Dock = DockStyle.Left;
-			runs.Width = 200;
+			//runs.AllowMultiSelect = true;
+			runs.Dock = DockStyle.Fill;
+			//runs.Dock = DockStyle.Left;
+			//runs.Width = 200;
 			runs.Columns[0].Width = 105;
+			//namespaces.Invalidate();
+			//namespacess.Columns.Add("Namespaces");
+			//namespaces.Items.Add("hi").Items.Add("hello");
 
 
 
-			runs.SelectedItemsChanged += delegate {
+			runs.SelectedIndexChanged+= delegate {
+			//runs.SelectedItemsChanged += delegate {
 				if (runs.SelectedItems.Count != 0) {
 					ShowRun((Run)runs.SelectedItems[0].Tag);
 				}
 			};
 			callers.GotFocus += delegate {
-				callees.SelectedItems.Clear();
+				//callees.SelectedNode.Clear();
+				//callees.SelectedItems.Clear();
 			};
 			callers.DoubleClick += delegate { CallersNext(); };
 			callers.KeyDown += delegate(object sender, KeyEventArgs e) {
@@ -137,7 +256,7 @@ namespace NProf {
 			};
 			// TODO: inherit from base class
 			callees.GotFocus += delegate {
-				callers.SelectedItems.Clear();
+				//callers.SelectedItems.Clear();
 			};
 			callees.DoubleClick += delegate {
 				CalleesNext();
@@ -180,16 +299,16 @@ namespace NProf {
 					)
 				}
 			);
-			callees.SelectedItemsChanged += delegate {
-				if (callees.SelectedItems.Count != 0) {
-					ContainerListViewItem item = callees.SelectedItems[0];
-					if (item.Items.Count == 0) {
-						foreach (FunctionInfo f in ((FunctionInfo)item.Tag).Children.Values) {
-							callees.AddFunctionItem(item.Items, f);
-						}
-					}
-				}
-			};
+			//callees.SelectedItemsChanged += delegate {
+			//    if (callees.SelectedItems.Count != 0) {
+			//        ContainerListViewItem item = callees.SelectedItems[0];
+			//        if (item.Items.Count == 0) {
+			//            foreach (FunctionInfo f in ((FunctionInfo)item.Tag).Children.Values) {
+			//                callees.AddFunctionItem(item.Items, f);
+			//            }
+			//        }
+			//    }
+			//};
 			findText = new TextBox();
 			findText.TextChanged += delegate {
 				Find(true, false);
@@ -261,7 +380,16 @@ namespace NProf {
 			Splitter mainSplitter = new Splitter();
 			mainSplitter.Dock = DockStyle.Left;
 
-			panel.Controls.AddRange(new Control[] { rightPanel, mainSplitter, runs});
+			Panel leftPanel = new Panel();
+			leftPanel.Width = 200;
+			leftPanel.Dock = DockStyle.Left;
+			leftPanel.Controls.Add(runs);
+			Splitter leftSplitter = new Splitter();
+			leftSplitter.Dock = DockStyle.Bottom;
+			leftPanel.Controls.Add(leftSplitter);
+			leftPanel.Controls.Add(namespaces);
+
+			panel.Controls.AddRange(new Control[] { rightPanel, mainSplitter, leftPanel});
 			methodPanel.Dock = DockStyle.Fill;
 
 
@@ -318,19 +446,23 @@ namespace NProf {
 		public void AddRun(Run run) {
 			string text = Path.GetFileNameWithoutExtension(application.Text) + " " + runs.Items.Count;
 			string title = Path.GetFileNameWithoutExtension(application.Text);
-			ContainerListViewItem item = new ContainerListViewItem(title);
+			ListViewItem item = new ListViewItem(title);
+			//ContainerListViewItem item = new ContainerListViewItem(title);
 			item.Tag = run;
 			runs.Items.Add(item);
+			//runs.Items.Add(item);
 			runs.SelectedItems.Clear();
 			item.SubItems[0].Text = title;
-			item.SubItems[1].Text = run.Duration.TotalSeconds.ToString("0.00;-0.00;0.00") + "s";
-			runs.SelectedItems.Add(item);
+			//item.SubItems[1].Text = run.Duration.TotalSeconds.ToString("0.00;-0.00;0.00") + "s";
+			item.Selected = true;
+			//runs.SelectedItems.Add(item);
 			ShowRun(run);
 		}
 		public void ShowRun(Run run) {
 			Run compareRun;
 			if (runs.SelectedItems.Count > 1) {
-				ContainerListViewItem first = runs.SelectedItems[runs.SelectedItems.Count - 1];
+				ListViewItem first = runs.SelectedItems[runs.SelectedItems.Count - 1];
+				//ContainerListViewItem first = runs.SelectedItems[runs.SelectedItems.Count - 1];
 				compareRun = (Run)first.Tag;
 			}
 			else {
@@ -338,11 +470,14 @@ namespace NProf {
 			}
 			callees.Update(run, run.functions,compareRun!=null?compareRun.functions:null,compareRun);
 			callers.Update(run, run.callers,compareRun!=null?compareRun.callers:null,compareRun);
+			namespaces.Update(run, run.callers, compareRun != null ? compareRun.callers : null, compareRun);
 		}
 		private void findNext_Click(object sender, EventArgs e) {
 			callees.BeginUpdate();
-			ContainerListViewItem item = callees.SelectedItems[0];
-			callees.Items.Remove(item);
+			TreeNode item = callees.SelectedNode;
+			//ContainerListViewItem item = callees.SelectedItems[0];
+			//callees.Nodes.Remove(item);
+			//callees.Items.Remove(item);
 			callees.EndUpdate(); 
 		}
 		private void findPrevious_Click(object sender, EventArgs e) {
@@ -386,9 +521,16 @@ namespace NProf {
 				return run.signatures[ID];
 			}
 		}
-		public FunctionInfo(int ID,Run run) {
+		public string Namespace {
+			get {
+				return nameSpace;
+			}
+		}
+		private string nameSpace;
+		public FunctionInfo(int ID,Run run,string nameSpace) {
 			this.run = run;
 			this.ID = ID;
+			this.nameSpace = nameSpace;
 		}
 		public readonly int ID;
 		public int Samples;
@@ -417,7 +559,7 @@ namespace NProf {
 		public static FunctionInfo GetFunctionInfo(Dictionary<int, FunctionInfo> functions, int id,Run run) {
 			FunctionInfo result;
 			if (!functions.TryGetValue(id, out result)) {
-				result = new FunctionInfo(id,run);
+				result = new FunctionInfo(id,run,"System.Web");
 				functions[id] = result;
 			}
 			return result;
@@ -527,35 +669,43 @@ namespace NProf {
 		}
 		public Profiler profiler;
 	}
-	public class View : ContainerListView {
+	public class View : TreeView {
 		public View() {
 			this.Font=NProf.font;
-			this.SizeChanged += delegate {
-				this.Columns[0].Width = this.Width - 30;
-			};
+			this.ShowPlusMinus = true;
+			//ShowRootTreeLines = true;
+			//ShowTreeLines = true;
+			//FullItemSelect = true;
+
 		}
 	}
 	public class MethodView : View {
 		public void MoveTo(int id) {
-			SelectedItems.Clear();
-			foreach (ContainerListViewItem item in Items) {
+			//SelectedItems.Clear();
+			//SelectedItems.Clear();
+			foreach (TreeNode item in Nodes) {
 				if (((FunctionInfo)item.Tag).ID == id) {
-					SelectedItems.Add(item);
-					EnsureVisible(item);
+					this.SelectedNode = item;
+					//item.SelectedImageIndex;
+					//SelectedItems.Add(item);
+					//this.scrollt
+					//EnsureVisible(item);
 					Invalidate();
 					this.Focus();
-					item.Focused = true;
+					//item.Focused = true;
 					break;
 				}
 			}
 		}
+		// remove compareFunctions
 		public void Update(Run run, Dictionary<int, FunctionInfo> functions, Dictionary<int, FunctionInfo> compareFunctions,Run oldRun) {
 			currentRun = run;
 			currentOldRun = oldRun;
 			SuspendLayout();
 			Invalidate();
 			BeginUpdate();
-			Items.Clear();
+			Nodes.Clear();
+			//Items.Clear();
 			foreach (FunctionInfo method in SortFunctions(functions.Values)) {
 				FunctionInfo oldFunction;
 				if (compareFunctions != null && compareFunctions.ContainsKey(method.ID)) {
@@ -564,9 +714,11 @@ namespace NProf {
 				else {
 					oldFunction = null;
 				}
-				AddItem(Items, method,oldFunction);
+				AddItem(Nodes, method, oldFunction);
+				//AddItem(Items, method, oldFunction);
 			}
-			foreach (ContainerListViewItem item in Items) {
+			foreach (TreeNode item in Nodes) {
+			//foreach (ContainerListViewItem item in Nodes) {
 				MakeSureComputed(item);
 			}
 			EndUpdate();
@@ -574,51 +726,65 @@ namespace NProf {
 		}
 		public void Find(string text, bool forward, bool step) {
 			if (text != "") {
-				ContainerListViewItem item;
-				if (SelectedItems.Count == 0) {
-					if (Items.Count == 0) {
+				TreeNode item;
+				//ContainerListViewItem item;
+				if (SelectedNode == null) {
+				//if (SelectedItems.Count == 0) {
+					if (Nodes.Count == 0) {
+					//if (Items.Count == 0) {
 						item = null;
 					}
 					else {
-						item = Items[0];
+						item = Nodes[0];
+						//item = Items[0];
 					}
 				}
 				else {
 					if (step) {
 						if (forward) {
-							item = SelectedItems[0].NextVisibleItem;
+							item = SelectedNode.NextVisibleNode;
+							//item = SelectedItems[0].NextVisibleItem;
 						}
 						else {
-							item = SelectedItems[0].PreviousVisibleItem;
+							item = SelectedNode.PrevVisibleNode;
+							//item = SelectedItems[0].PreviousVisibleItem;
 						}
 					}
 					else {
-						item = SelectedItems[0];
+						item = SelectedNode;
+						//item = SelectedItems[0];
 					}
 				}
-				ContainerListViewItem firstItem = item;
+				TreeNode firstItem = item;
+				//ContainerListViewItem firstItem = item;
 				while (item != null) {
 					if (item.Text.ToLower().Contains(text.ToLower())) {
-						SelectedItems.Clear();
-						item.Focused = true;
-						item.Selected = true;
-						item.Focused = true;
+						SelectedNode = null;//SelectedItems.Clear();
+						//SelectedItems.Clear();
+						//item.Focused = true;
+						SelectedNode = item;
+						//item.Selected = true;
+						//item.Focused = true;
 						this.Invalidate();
 						break;
 					}
 					else {
 						if (forward) {
-							item = item.NextVisibleItem;
+							item = item.NextVisibleNode;
+							//item = item.NextVisibleItem;
 						}
 						else {
-							item = item.PreviousVisibleItem;
+							item = item.PrevVisibleNode;
+							//item = item.PreviousVisibleItem;
 						}
 						if (item == null) {
 							if (forward) {
-								item = Items[0];
+								item = Nodes[0];
+								//item = Items[0];
 							}
 							else {
-								item = Items[Items.Count - 1];
+								item = Nodes[Nodes.Count - 1];
+								//item = Items[Items.Count - 1];
 							}
 						}
 					}
@@ -627,24 +793,28 @@ namespace NProf {
 					}
 				}
 				if (item != null) {
-					EnsureVisible(item);
+					//EnsureVisible(item);
+					//EnsureVisible(item);
 				}
 			}
 		}
 		public Run currentRun;
 		public Run currentOldRun;
 		public MethodView(string name) {
-			Columns.Add(" Percent  " + name);
-			this.ShowPlusMinus = true;
-			ShowRootTreeLines = true;
-			ShowTreeLines = true;
-			FullItemSelect = true;
-			Font = NProf.font;
-			this.BeforeExpand += delegate(object sender,ContainerListViewCancelEventArgs e) {
-				MakeSureComputed(e.Item);
+
+			//this " Percent  " + name
+			//Columns.Add(" Percent  " + name);
+			this.BeforeExpand += delegate(object sender, TreeViewCancelEventArgs e) {
+			//this.BeforeExpand += delegate(object sender,ContainerListViewCancelEventArgs e) {
+				MakeSureComputed(e.Node);
+				//MakeSureComputed(e.Item);
+			};
+			this.SizeChanged += delegate {
+				//this.Columns[0].Width = this.Width - 30;
 			};
 		}
-		void MakeSureComputed(ContainerListViewItem item) {
+		void MakeSureComputed(TreeNode item) {
+		//void MakeSureComputed(ContainerListViewItem item) {
 			MakeSureComputed(item, true);
 		}
 		public List<FunctionInfo> SortFunctions(IEnumerable<FunctionInfo> f) {
@@ -654,20 +824,28 @@ namespace NProf {
 			});
 			return functions;
 		}
-		void MakeSureComputed(ContainerListViewItem item, bool parentExpanded) {
-			if (item.Items.Count == 0) {
+		void MakeSureComputed(TreeNode item, bool parentExpanded) {
+		//void MakeSureComputed(ContainerListViewItem item, bool parentExpanded) {
+			if (item.Nodes.Count == 0) {
+			//if (item.Items.Count == 0) {
 				foreach (FunctionInfo function in SortFunctions(((FunctionInfo)item.Tag).Children.Values)) {
-					AddFunctionItem(item.Items, function);
+					AddFunctionItem(item.Nodes, function);
+					//AddFunctionItem(item.Items, function);
 				}
 			}
-			if (item.Expanded || parentExpanded) {
-				foreach (ContainerListViewItem subItem in item.Items) {
-					MakeSureComputed(subItem, item.Expanded);
+			if (item.IsExpanded || parentExpanded) {
+			//if (item.Expanded || parentExpanded) {
+				foreach (TreeNode subItem in item.Nodes) {
+				//foreach (ContainerListViewItem subItem in item.Items) {
+					MakeSureComputed(subItem, item.IsExpanded);
+					//MakeSureComputed(subItem, item.Expanded);
 				}
 			}
 		}
-		private ContainerListViewItem AddItem(ContainerListViewItemCollection parent, FunctionInfo function,FunctionInfo oldFunction) {
-			ContainerListViewItem item = parent.Add(currentRun.signatures[function.ID]);
+		private TreeNode AddItem(TreeNodeCollection parent, FunctionInfo function, FunctionInfo oldFunction) {
+		//private ContainerListViewItem AddItem(ContainerListViewItemCollection parent, FunctionInfo function,FunctionInfo oldFunction) {
+			TreeNode item = parent.Add(currentRun.signatures[function.ID]);
+			//ContainerListViewItem item = parent.Add(currentRun.signatures[function.ID]);
 			double fraction = ((double)function.Samples) / (double)currentRun.maxSamples;
     		double percent=(100.0*((double)function.Samples / (double)function.run.maxSamples));
 			item.Text = " " + percent.ToString("0.00;-0.00;0.00").PadLeft(5, ' ') + "  " + currentRun.signatures[function.ID].Trim();
@@ -677,14 +855,18 @@ namespace NProf {
 		void label_Paint(object sender, PaintEventArgs e) {
 			e.Graphics.DrawRectangle(Pens.Red,new Rectangle(10,5,100,10));
 		}
-		public void AddFunctionItem(ContainerListViewItemCollection parent, FunctionInfo function) {
-			ContainerListViewItem item = AddItem(parent, function,null);
+		public void AddFunctionItem(TreeNodeCollection parent, FunctionInfo function) {
+		//public void AddFunctionItem(ContainerListViewItemCollection parent, FunctionInfo function) {
+			TreeNode item = AddItem(parent, function, null);
+			//ContainerListViewItem item = AddItem(parent, function, null);
 			foreach (FunctionInfo callee in SortFunctions(function.Children.Values)) {
-				AddItem(item.Items, callee,null);
+				AddItem(item.Nodes, callee, null);
+				//AddItem(item.Items, callee, null);
 			}
 		}
 		public void Add(FunctionInfo function) {
-			AddFunctionItem(Items, function);
+			AddFunctionItem(Nodes, function);
+			//AddFunctionItem(Items, function);
 		}
 	}
 	public class Profiler {

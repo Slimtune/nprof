@@ -52,7 +52,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
+				Optimization="0"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
@@ -247,6 +247,14 @@
 		</File>
 		<File
 			RelativePath=".\SimpleSymbolEngine.h"
+			>
+		</File>
+		<File
+			RelativePath=".\StackWalker.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\StackWalker.h"
 			>
 		</File>
 	</Files>

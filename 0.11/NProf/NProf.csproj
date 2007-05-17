@@ -110,16 +110,6 @@
     <EmbeddedResource Include="Resources\app-icon.ico" />
     <Content Include="Resources\toolbar16.png" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\DotNetLib\Windows\DotNetLib.Windows.Forms.Themes\DotNetLib.Windows.Forms.Themes.2003.vcproj">
-      <Project>{E6E2418F-5751-4751-90C2-81FD6BD41DDE}</Project>
-      <Name>DotNetLib.Windows.Forms.Themes</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DotNetLib\Windows\DotNetLib.Windows.Forms\DotNetLib.Windows.Forms.2003.csproj">
-      <Project>{BBD77471-F50D-4CFB-8C9C-0F84B31C62F2}</Project>
-      <Name>DotNetLib.Windows.Forms.2003</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
