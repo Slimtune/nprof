@@ -32,67 +32,123 @@ namespace NProf {
 	public class NamespaceView : View {
 		public NamespaceView() {
 			this.CheckBoxes = true;
-			//this.CheckBoxes = true;
 		}
 		public void Update(Run run, Dictionary<int, FunctionInfo> functions, Dictionary<int, FunctionInfo> compareFunctions, Run oldRun) {
 			BeginUpdate();
-			//ListViewItem item=this.Items.Add("hello");
-			//item.SubItems.Add("hello");
-			//Invalidate();
 			foreach (FunctionInfo function in functions.Values) {
 				TreeNodeCollection items = this.Nodes;
-				//ContainerListViewItemCollection items = this.Items;
 				foreach (string name in function.Namespace.Split('.')) {
 					bool found = false;
 					foreach (TreeNode item in items) {
-					//foreach (ContainerListViewItem item in items) {
 						if (item.Text == name) {
 							items = item.Nodes;
-							//items = item.Items;
 							found = true;
 							break;
 						}
 					}
 					if (!found) {
 						TreeNode item = new TreeNode(name);
-						//TreeNode item = new ContainerListViewItem(name);
-						//ContainerListViewItem item = new ContainerListViewItem(name);
 						items.Add(item);
 						items = item.Nodes;
-						//items = item.Items;
 					}
 				}
 			}
 			EndUpdate();
 		}
 	}
+	public class SearchPanel : FlowLayoutPanel {
+		//private void findNext_Click(object sender, EventArgs e) {
+		//    callees.BeginUpdate();
+		//    TreeNode item = callees.SelectedNode;
+		//    //ContainerListViewItem item = callees.SelectedItems[0];
+		//    //callees.Nodes.Remove(item);
+		//    //callees.Items.Remove(item);
+		//    callees.EndUpdate();
+		//}
+		//private void findPrevious_Click(object sender, EventArgs e) {
+		//    Find(false, true);
+		//}
+		private MethodView methodView;
+		public void Find(bool forward, bool step) {
+			if (methodView.SelectedNode != null) {
+				methodView.Find(findText.Text, forward, step);
+			}
+			else {
+				methodView.Find(findText.Text, forward, step);
+			}
+		}
+		public SearchPanel(MethodView methodView) {
+			Dock = DockStyle.Bottom;
+			this.methodView = methodView;
+			findText = new TextBox();
+			findText.TextChanged += delegate {
+				Find(true, false);
+			};
+			findText.KeyDown += delegate(object sender, KeyEventArgs e) {
+				if (e.KeyCode == Keys.Enter) {
+					Find(true, true);
+					e.Handled = true;
+				}
+			};
+
+			BorderStyle = BorderStyle.FixedSingle;
+			WrapContents = false;
+			AutoSize = true;
+			Button findNext = new Button();
+			findNext.AutoSize = true;
+			findNext.Text = "Next";
+			findNext.Click += delegate (object sender, EventArgs e) {
+				Find(false, true);
+				//methodView.BeginUpdate();
+				//TreeNode item = callees.SelectedNode;
+				//callees.EndUpdate();
+			};
+
+
+			Label findLabel = new Label();
+			findLabel.Text = "Find:";
+			findLabel.Dock = DockStyle.Fill;
+			findLabel.TextAlign = ContentAlignment.MiddleLeft;
+			findLabel.AutoSize = true;
+
+			Button findPrevious = new Button();
+			findPrevious.AutoSize = true;
+			findPrevious.FlatAppearance.BorderSize = 0;
+			findPrevious.Click += delegate(object sender, EventArgs e) {
+				Find(false, true);
+			};
+			findPrevious.Text = "Previous";
+
+			Controls.AddRange(new Control[] { findLabel, findText, findNext, findPrevious });
+		}
+		private TextBox findText;
+
+	}
 	public class NProf : Form {
 		public static Font font = new Font("Courier New", 9.0f);
 		public ListView runs;
 		public NamespaceView namespaces;
-		//public NamespaceView namespaces;
 		private MethodView callees = new MethodView("Callees");
 
 		private MethodView callers = new MethodView("Callers");
 
 		private Profiler profiler;
-		private TextBox findText;
-		private FlowLayoutPanel findPanel;
+		//private SearchPanel searchPanel;
+		//private FlowLayoutPanel findPanel;
 		public static TextBox application;
 		public static TextBox arguments;
-		public void ShowSearch() {
-			findPanel.Visible = !findPanel.Visible;
-			findText.Focus();
-		}
-		public void Find(bool forward, bool step) {
-			if (callers.SelectedNode !=null ) {
-			//if (callers.SelectedItems.Count != 0) {
-				callers.Find(findText.Text, forward, step);
-			}
-			else {
-				callees.Find(findText.Text, forward, step);
-			}
-		}
+		//public void ShowSearch() {
+		//    searchPanel.Visible = !searchPanel.Visible;
+		//    findText.Focus();
+		//}
+		//public void Find(bool forward, bool step) {
+		//    if (callers.SelectedNode !=null ) {
+		//        callers.Find(findText.Text, forward, step);
+		//    }
+		//    else {
+		//        callees.Find(findText.Text, forward, step);
+		//    }
+		//}
 		public string Title {
 			get {
 				return "NProf " + Profiler.Version;
@@ -108,20 +164,15 @@ namespace NProf {
 
 		public void MoveTo(MethodView source,MethodView target) {
 			if (source.SelectedNode !=null) {
-			//if (source.SelectedItems.Count != 0) {
 				target.MoveTo(((FunctionInfo)source.SelectedNode.Tag).ID);
-				//target.MoveTo(((FunctionInfo)source.SelectedItems[0].Tag).ID);
 			}
 		}
 		private void CallersNext() {
 			if (callers.SelectedNode != null ) {
-			//if (callers.SelectedItems.Count != 0) {
 				TreeNode item = callers.SelectedNode;
-				//ContainerListViewItem item = callers.SelectedItems[0];
 
 				int id = ((FunctionInfo)item.Tag).ID;
 				if (item.Parent.Parent== null) {
-				//if (item.ParentItem.ParentItem == null) {
 					callees.MoveTo(id);
 				}
 				else {
@@ -133,13 +184,9 @@ namespace NProf {
 		}
 		private void CalleesNext() {
 			if (callees.SelectedNode != null) {
-			//if (callees.SelectedItems.Count != 0) {
 				TreeNode item = callees.SelectedNode;
-				//ContainerListViewItem item = callees.SelectedItems[0];
 				if (item.Parent.Parent == null) {
-				//if (item.ParentItem.ParentItem == null) {
 					callers.MoveTo(((FunctionInfo)item.Tag).ID);
-					//callers.MoveTo(((FunctionInfo)item.Tag).ID);
 				}
 				else {
 					callees.MoveTo(((FunctionInfo)item.Tag).ID);
@@ -149,14 +196,6 @@ namespace NProf {
 		}
 		private NProf() {
 
-			//ListView listView1 = new ListView();
-			////Set the List to Detail View
-			//listView1.View = System.Windows.Forms.View.Details;
-			//listView1.CheckBoxes = true;
-
-			////To Activate an Item you must doubleclick the item
-			////This will fire the 
-			//listView1.Activation = ItemActivation.TwoClick;
 
 			////Add Columns
 			//listView1.Columns.Add("Column 1", 100,
@@ -309,16 +348,16 @@ namespace NProf {
 			//        }
 			//    }
 			//};
-			findText = new TextBox();
-			findText.TextChanged += delegate {
-				Find(true, false);
-			};
-			findText.KeyDown += delegate(object sender, KeyEventArgs e) {
-				if (e.KeyCode == Keys.Enter) {
-					Find(true, true);
-					e.Handled = true;
-				}
-			};
+			//findText = new TextBox();
+			//findText.TextChanged += delegate {
+			//    Find(true, false);
+			//};
+			//findText.KeyDown += delegate(object sender, KeyEventArgs e) {
+			//    if (e.KeyCode == Keys.Enter) {
+			//        Find(true, true);
+			//        e.Handled = true;
+			//    }
+			//};
 			Menu = new MainMenu(new MenuItem[] {
 				new MenuItem(
 					"File",
@@ -340,29 +379,30 @@ namespace NProf {
 
 			Splitter methodSplitter = new Splitter();
 			methodSplitter.Dock = DockStyle.Bottom;
-			findPanel = new FlowLayoutPanel();
-			findPanel.BorderStyle = BorderStyle.FixedSingle;
-			findPanel.WrapContents = false;
-			findPanel.AutoSize = true;
+			//searchPanel = new SearchPanel(callers);
+			//findPanel = new FlowLayoutPanel();
+			//findPanel.BorderStyle = BorderStyle.FixedSingle;
+			//findPanel.WrapContents = false;
+			//findPanel.AutoSize = true;
 
-			Button findNext = new Button();
-			findNext.AutoSize = true;
-			findNext.Text = "Next";
-			findNext.Click += new EventHandler(findNext_Click);
+			//Button findNext = new Button();
+			//findNext.AutoSize = true;
+			//findNext.Text = "Next";
+			//findNext.Click += new EventHandler(findNext_Click);
 
-			Label findLabel = new Label();
-			findLabel.Text = "Find:";
-			findLabel.Dock = DockStyle.Fill;
-			findLabel.TextAlign = ContentAlignment.MiddleLeft;
-			findLabel.AutoSize = true;
+			//Label findLabel = new Label();
+			//findLabel.Text = "Find:";
+			//findLabel.Dock = DockStyle.Fill;
+			//findLabel.TextAlign = ContentAlignment.MiddleLeft;
+			//findLabel.AutoSize = true;
 
-			Button findPrevious = new Button();
-			findPrevious.AutoSize = true;
-			findPrevious.FlatAppearance.BorderSize = 0;
-			findPrevious.Click += new EventHandler(findPrevious_Click);
-			findPrevious.Text = "Previous";
+			//Button findPrevious = new Button();
+			//findPrevious.AutoSize = true;
+			//findPrevious.FlatAppearance.BorderSize = 0;
+			//findPrevious.Click += new EventHandler(findPrevious_Click);
+			//findPrevious.Text = "Previous";
 
-			findPanel.Controls.AddRange(new Control[] { findLabel, findText, findNext, findPrevious });
+			//findPanel.Controls.AddRange(new Control[] { findLabel, findText, findNext, findPrevious });
 
 			callees.Size = new Size(100, 100);
 			callers.Size = new Size(100, 100);
@@ -372,10 +412,13 @@ namespace NProf {
 			methodPanel.Panel1.Controls.Add(callees);
 			Panel rightPanel = new Panel();
 			methodPanel.Dock = DockStyle.Fill;
-			findPanel.Dock = DockStyle.Bottom;
+
+			//findPanel.Dock = DockStyle.Bottom;
+
 			rightPanel.Dock = DockStyle.Fill;
 			rightPanel.Controls.Add(methodPanel);
-			rightPanel.Controls.Add(findPanel);
+
+			rightPanel.Controls.Add(new SearchPanel(callers));
 
 			Splitter mainSplitter = new Splitter();
 			mainSplitter.Dock = DockStyle.Left;
@@ -472,17 +515,17 @@ namespace NProf {
 			callers.Update(run, run.callers,compareRun!=null?compareRun.callers:null,compareRun);
 			namespaces.Update(run, run.callers, compareRun != null ? compareRun.callers : null, compareRun);
 		}
-		private void findNext_Click(object sender, EventArgs e) {
-			callees.BeginUpdate();
-			TreeNode item = callees.SelectedNode;
-			//ContainerListViewItem item = callees.SelectedItems[0];
-			//callees.Nodes.Remove(item);
-			//callees.Items.Remove(item);
-			callees.EndUpdate(); 
-		}
-		private void findPrevious_Click(object sender, EventArgs e) {
-			Find(false, true);
-		}
+		//private void findNext_Click(object sender, EventArgs e) {
+		//    callees.BeginUpdate();
+		//    TreeNode item = callees.SelectedNode;
+		//    //ContainerListViewItem item = callees.SelectedItems[0];
+		//    //callees.Nodes.Remove(item);
+		//    //callees.Items.Remove(item);
+		//    callees.EndUpdate(); 
+		//}
+		//private void findPrevious_Click(object sender, EventArgs e) {
+		//    Find(false, true);
+		//}
 		[STAThread]
 		static void Main(string[] args) {
 			string s = Guid.NewGuid().ToString().ToUpper();
