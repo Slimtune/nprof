@@ -2,7 +2,7 @@
                           profiler.cpp  -  description
                              -------------------
     begin                : Sat Jan 18 2003
-    copyright            : (C) 2003, 2004, 2005, 2006 by Matthew Mastracci, Christian Staudenmeyer
+    copyright            : (C) 2003, 2004, 2005, 2006, 2007 by Matthew Mastracci, Christian Staudenmeyer
     email                : mmastrac@canada.com
  ***************************************************************************/
 
@@ -30,7 +30,6 @@
 #include <iostream>
 #include <set>
 #include "winreg.h"
-//#include "..\StackWalker\StackWalker.h"
 #include "Stackwalker.h"
 
 #include    <windows.h>
@@ -62,18 +61,34 @@ using namespace std;
 const int MAX_FUNCTION_LENGTH=2048;
 #define guid "107F578A-E019-4BAF-86A1-7128A749DB05"
 
+class FunctionInfo {
+public:
+	FunctionInfo() {
+		this->signature="";
+		this->nameSpace="";
+	}
+	FunctionInfo(string signature, string nameSpace){
+		this->signature=signature;
+		this->nameSpace=nameSpace;
+	}
+	string signature;
+	string nameSpace;
+};
+
 class ProfilerHelper
 {
 public:
 	void Initialize(ICorProfilerInfo2* profilerInfo) {
 		this->profilerInfo = profilerInfo;
 	}
-	string GetClass(string className) {
+	string GetClass(string className,string& nameSpace) {
 		int index=className.length();
 		for(;index>0 && className[index-1]!='.';index--);
+		nameSpace=className.substr(0,index-1);
 		return className.substr(index);
 	}
-	string GetFunctionSignature(FunctionID functionId) {
+	FunctionInfo* GetFunctionSignature(FunctionID functionId) {
+		FunctionInfo* function=new FunctionInfo();
 		string text;
 		ClassID classID;
 		ModuleID moduleID;
@@ -100,7 +115,13 @@ public:
 			if(FAILED(metaDataImport->GetTypeDefProps(classToken, className, MAX_FUNCTION_LENGTH,0, 0, 0))) {
 				DebugBreak();
 			}
-			text=text+GetClass((string)CW2A(className))+"."+(string)CW2A(functionName);
+			string nameSpace;
+			GetClass((string)CW2A(className),nameSpace);
+			text+=(string)CW2A(className)+"."+(string)CW2A(functionName);
+			//text=text+GetClass((string)CW2A(className),nameSpace)+"."+(string)CW2A(functionName);
+			cout << nameSpace;
+			function->nameSpace=nameSpace;
+			
 		}
 
 		DWORD methodAttr = 0;
@@ -129,7 +150,8 @@ public:
 		//}
 		text+=")";
 		metaDataImport->Release();
-		return text;
+		function->signature=text;
+		return function;
 	}
 	template<class T> string ToString(T i) {
 		string s;
@@ -192,7 +214,8 @@ public:
 					WCHAR zName[MAX_FUNCTION_LENGTH];
 					metaDataImport->GetTypeDefProps(token,zName,MAX_FUNCTION_LENGTH,0,0,0);
 					(*ppSignature)--;
-					return GetClass((string)CW2A(zName));
+					string nameSpace;
+					return GetClass((string)CW2A(zName),nameSpace);
 				}
 				return "mdtTypeRef";
 			case ELEMENT_TYPE_SZARRAY:
@@ -295,7 +318,7 @@ public:
 	vector<vector<FunctionID>*> stackWalks;
 	ofstream* file;
 
-	map< FunctionID, string> signatures;
+	map< FunctionID, FunctionInfo*> signatures;
 	
 	string GetTemporaryFileName() {
 		char path[MAX_PATH];
@@ -305,9 +328,11 @@ public:
 	}
 	void EndAll(ProfilerHelper& profilerHelper) {
 		file=new ofstream(GetTemporaryFileName().c_str(), ios::binary);
-		for(map< FunctionID, string >::iterator i=signatures.begin();i!=signatures.end();i++) {
+		for(map< FunctionID, FunctionInfo*>::iterator i=signatures.begin();i!=signatures.end();i++) {
+		//for(map< FunctionID, string >::iterator i=signatures.begin();i!=signatures.end();i++) {
 			WriteInteger(i->first);
-			WriteString(i->second);
+			WriteString(i->second->signature);
+			WriteString(i->second->nameSpace);
 		}
 		WriteInteger(-1);
 		for(vector<vector<FunctionID>*>::iterator stackWalk = stackWalks.begin(); stackWalk != stackWalks.end(); stackWalk++ ) {
@@ -330,12 +355,14 @@ public:
 	}
 	Profiler::Profiler( ICorProfilerInfo2* profilerInfo ) {
 		InitializeCriticalSection(&threadMapLock);
-		//DebugBreak();
+		//DebugBreak()
+		this->sw=new StackWalker(StackWalker::SymUseSymSrv,"C:\\SymbolCache",GetCurrentProcessId(),GetCurrentProcess());
 		this->profilerInfo = profilerInfo;
 		this->profilerHelper.Initialize(profilerInfo);
 		profilerInfo->SetEventMask(COR_PRF_ENABLE_STACK_SNAPSHOT|COR_PRF_MONITOR_THREADS|COR_PRF_DISABLE_INLINING);
 		SetTimer();
-		sw.LoadModules();
+		sw->LoadModules();
+		cout << "loaded modules";
 	}
 	void KillTimer() {
 		timeKillEvent(timer);
@@ -388,7 +415,7 @@ public:
 	}
 	static UINT timer;
 	map<DWORD,DWORD> switchMap;
-	StackWalker sw;
+	StackWalker* sw;
 	void WalkStack() {
 		bool anyFound=false;
 
@@ -407,24 +434,6 @@ public:
 
 			HANDLE process=GetCurrentProcess();
 
-
-			//STACKFRAME64 stackFrame = {0};
-
-			//stackFrame.AddrPC.Offset = context.Eip;
-			//stackFrame.AddrPC.Mode = AddrModeFlat;
-
-			//stackFrame.AddrFrame.Offset = context.Ebp;
-			//stackFrame.AddrFrame.Mode = AddrModeFlat;
-
-			//stackFrame.AddrStack.Offset = context.Esp;
-			//stackFrame.AddrStack.Mode = AddrModeFlat;
-
-			//if(threadId!=GetCurrentThreadId())
-			//{
-			//}
-			//sw.ShowCallstack(GetCurrentThread());
-			//sw.ShowCallstack(GetCurrentThread(), pExp->ContextRecord);
-
 			int count=0;
 			profilerInfo->DoStackSnapshot(
 				id,
@@ -433,139 +442,20 @@ public:
 				functions,
 				(BYTE*)&context,sizeof(context)
 			);
-
-			//while(true) {
-			//	if(count>100)
-			//	{
-			//		cout << "too many iterations\n";
-			//		break;
-			//	}
-			//	count++;
-			//	//profilerInfo->DoStackSnapshot(
-			//	//	id,StackWalk,COR_PRF_SNAPSHOT_DEFAULT,functions,(BYTE*)&context,sizeof(context));
-			//	//if(functions->size()!=0) {
-			//	//	cout << "it was also found";
-			//	//	break;
-			//	//}
-
-
-			//	FunctionID function;
-			//	if(SUCCEEDED(profilerInfo->GetFunctionFromIP((LPCBYTE)stackFrame.AddrPC.Offset,&function))) {
-			//	//if(SUCCEEDED(profilerInfo->GetFunctionFromIP((LPCBYTE)&stackFrame.AddrPC.Offset,&function))) {
-			//		//cout << "it was found\n";
-			//		if(function!=0) {
-			//			functions->push_back(function);
-			//			break;
-			//		}
-			////		CONTEXT managedContext;
-			////		//managedContext.Eip=context.Eip;
-			////		//managedContext.Ebp=context.Ebp;
-			////		//managedContext.Esp=context.Esp;
-
-			////		managedContext.Eip=stackFrame.AddrPC.Offset;
-			////		managedContext.Ebp=stackFrame.AddrFrame.Offset;
-			////		managedContext.Esp=stackFrame.AddrStack.Offset;
-			//////context.ContextFlags=CONTEXT_FULL;
-
-			////		if(SUCCEEDED(profilerInfo->DoStackSnapshot(
-			////			id,
-			////			StackWalker,
-			////			COR_PRF_SNAPSHOT_REGISTER_CONTEXT,
-			////			//COR_PRF_SNAPSHOT_DEFAULT,
-			////			functions,
-			////			(BYTE*)&managedContext,
-			////			sizeof(managedContext)
-			////		)))
-			////		{
-			////			if(functions->size()!=0)
-			////			{
-			////				break;
-			////			}
-			////			//cout << "it was also walked\n";
-			////		}
-			////		else
-			////		{
-			////			//cout << "horrible bug:" << function <<"\n";
-			////			//functions->push_back(function);
-			////			//break;
-			////			/*continue*/;
-			////		}
-			//		//break;
-			//	}
-			//	//break;
-
-			//	//STACKFRAME64 frame = {0};
-			//	//frame.AddrPC.Offset=context.Eip;
-			//	//frame.AddrPC.Mode=AddrModeFlat;
-			//	//frame.AddrStack.Offset=context.Esp;
-			//	//frame.AddrStack.Mode=AddrModeFlat;
-			//	//frame.AddrFrame.Offset=context.Ebp;
-			//	//frame.AddrFrame.Mode=AddrModeFlat;
-
-			//	//stackFrame.AddrPC.Offset = context.Eip;
-			//	//stackFrame.AddrPC.Mode = AddrModeFlat;
-
-			//	//stackFrame.AddrFrame.Offset = context.Ebp;
-			//	//stackFrame.AddrFrame.Mode = AddrModeFlat;
-
-			//	//stackFrame.AddrStack.Offset = context.Esp;
-			//	//stackFrame.AddrStack.Mode = AddrModeFlat;
-
-
-			//	//while ( 
-			//	//StackWalk64();
-			//	//if(StackWalk64(
-			//	//   IMAGE_FILE_MACHINE_I386,
-			//	//   process,
-			//	//   //hProcess,
-			//	//   threadHandle,
-			//	//   //GetCurrentThread(), // this value doesn't matter much if previous one is a real handle
-			//	//   &frame,
-			//	//   &context,
-			//	//   NULL,
-			//	//   ::SymFunctionTableAccess64,
-			//	//   ::SymGetModuleBase64,
-			//	//   NULL ))
-			//	//{
-			//	//	break;
-			//	//}
-
-			//	//if(!StackWalk64(
-			//	////if(!StackWalk(
- 		//	//	   IMAGE_FILE_MACHINE_I386,
-			//	//   process,
-			//	//   //hProcess,
-			//	//   threadHandle,
-			//	//   //GetCurrentThread(), // this value doesn't matter much if previous one is a real handle
-			//	//   &stackFrame,
-			//	//   &context,
-			//	//   NULL,
-			//	//   ::SymFunctionTableAccess64,
-			//	//   ::SymGetModuleBase64,
-			//	//   NULL ))
-			//	//{
-			//	//	//cout << "it was not found";
-			//	//	sw.ShowCallstack(threadHandle);
-			//	//	break;
-			//	//}
-			//	//{
-			//	//	//os << "  0x" << (PVOID) stackFrame.AddrFrame.Offset << "  " << addressToString( (PVOID)stackFrame.AddrPC.Offset ) << "\n";
-			//	//}
-
-			//	//os.flush();
-			//}
+			if(functions->size()==0) {
+				//cout << "test";
+				//sw->ShowCallstack(threadHandle);
+			}
 			CloseHandle(process);
 
 			for(int index=0;index<functions->size();index++) {
 				FunctionID id=functions->at(index);
-				const map< FunctionID, string >::iterator found = signatures.find(id);
+				const map< FunctionID, FunctionInfo* >::iterator found = signatures.find(id);
+				//const map< FunctionID, string >::iterator found = signatures.find(id);
 				if(found == signatures.end()){
 					FoundNewFunction(id);
 				}
 			}
-
-
-
 			stackWalks.push_back(functions);
 			if(functions->size()!=0) {
 				anyFound=true;
@@ -573,22 +463,17 @@ public:
 			ResumeThread(threadHandle);
 			CloseHandle(threadHandle);
 		}
-
 		LeaveCriticalSection(&threadMapLock);
-		
-		//SetTimer();
-		//return anyFound;
 	}
-
 	void FoundNewFunction(FunctionID functionId)
 	{
 		DUMP_TRACE("FoundNewFunction %d", functionId);
 		
-		string signatureString = profilerHelper.GetFunctionSignature(functionId);
+		FunctionInfo* function = profilerHelper.GetFunctionSignature(functionId);
 		
 		DUMP_TRACE("signature %s", signatureString.c_str());
 	
-		signatures.insert(make_pair(functionId,signatureString));
+		signatures.insert(make_pair(functionId,function));
 	}
 
 	// threadMapLock protects threadMap.  It might synchronize more in future (with a suitable rename)

@@ -30,14 +30,51 @@ using System.Globalization;
 
 namespace NProf {
 	public class NamespaceView : View {
+
+		private void Filter(MethodView view) {
+			view.Update(run, functions);
+			List<TreeNode> remove = new List<TreeNode>();
+			foreach (TreeNode node in view.Nodes) {
+				TreeNodeCollection nodes = Nodes;
+				foreach (string s in ((Function)node.Tag).Signature.Namespace.Split('.')) {
+					if (nodes[s]!=null && nodes[s].Checked) {
+						nodes = nodes[s].Nodes;
+					}
+					else {
+						nodes = null;
+						break;
+					}
+				}
+				if (nodes != null) {
+					int asdf = 0;
+				}
+				else {
+					//view.Nodes.Remove(node);
+					remove.Add(node);
+					//node.Remove();
+				}
+			}
+			foreach (TreeNode node in remove) {
+				node.Remove();
+			}
+		}
 		public NamespaceView() {
 			this.CheckBoxes = true;
+			this.AfterCheck += delegate(object sender, TreeViewEventArgs e) {
+				Filter(NProf.callees);
+				Filter(NProf.callers);
+			};
 		}
-		public void Update(Run run, Dictionary<int, FunctionInfo> functions, Dictionary<int, FunctionInfo> compareFunctions, Run oldRun) {
+		private Run run;
+		private Dictionary<int, Function> functions;
+		public void Update(Run run, Dictionary<int, Function> functions) {
+			this.run = run;
+			this.functions = functions;
+		//public void Update(Run run, Dictionary<int, Function> functions, Dictionary<int, Function> compareFunctions, Run oldRun) {
 			BeginUpdate();
-			foreach (FunctionInfo function in functions.Values) {
+			foreach (Function function in functions.Values) {
 				TreeNodeCollection items = this.Nodes;
-				foreach (string name in function.Namespace.Split('.')) {
+				foreach (string name in function.Signature.Namespace.Split('.')) {
 					bool found = false;
 					foreach (TreeNode item in items) {
 						if (item.Text == name) {
@@ -47,8 +84,8 @@ namespace NProf {
 						}
 					}
 					if (!found) {
-						TreeNode item = new TreeNode(name);
-						items.Add(item);
+						TreeNode item = items.Add(name,name);
+						item.Checked = true;
 						items = item.Nodes;
 					}
 				}
@@ -57,17 +94,6 @@ namespace NProf {
 		}
 	}
 	public class SearchPanel : FlowLayoutPanel {
-		//private void findNext_Click(object sender, EventArgs e) {
-		//    callees.BeginUpdate();
-		//    TreeNode item = callees.SelectedNode;
-		//    //ContainerListViewItem item = callees.SelectedItems[0];
-		//    //callees.Nodes.Remove(item);
-		//    //callees.Items.Remove(item);
-		//    callees.EndUpdate();
-		//}
-		//private void findPrevious_Click(object sender, EventArgs e) {
-		//    Find(false, true);
-		//}
 		private MethodView methodView;
 		public void Find(bool forward, bool step) {
 			if (methodView.SelectedNode != null) {
@@ -98,10 +124,7 @@ namespace NProf {
 			findNext.AutoSize = true;
 			findNext.Text = "Next";
 			findNext.Click += delegate (object sender, EventArgs e) {
-				Find(false, true);
-				//methodView.BeginUpdate();
-				//TreeNode item = callees.SelectedNode;
-				//callees.EndUpdate();
+				Find(true, true);
 			};
 
 
@@ -128,27 +151,13 @@ namespace NProf {
 		public static Font font = new Font("Courier New", 9.0f);
 		public ListView runs;
 		public NamespaceView namespaces;
-		private MethodView callees = new MethodView("Callees");
+		public static MethodView callees = new MethodView("Callees");
 
-		private MethodView callers = new MethodView("Callers");
+		public static MethodView callers = new MethodView("Callers");
 
 		private Profiler profiler;
-		//private SearchPanel searchPanel;
-		//private FlowLayoutPanel findPanel;
 		public static TextBox application;
 		public static TextBox arguments;
-		//public void ShowSearch() {
-		//    searchPanel.Visible = !searchPanel.Visible;
-		//    findText.Focus();
-		//}
-		//public void Find(bool forward, bool step) {
-		//    if (callers.SelectedNode !=null ) {
-		//        callers.Find(findText.Text, forward, step);
-		//    }
-		//    else {
-		//        callees.Find(findText.Text, forward, step);
-		//    }
-		//}
 		public string Title {
 			get {
 				return "NProf " + Profiler.Version;
@@ -164,14 +173,14 @@ namespace NProf {
 
 		public void MoveTo(MethodView source,MethodView target) {
 			if (source.SelectedNode !=null) {
-				target.MoveTo(((FunctionInfo)source.SelectedNode.Tag).ID);
+				target.MoveTo(((Function)source.SelectedNode.Tag).ID);
 			}
 		}
 		private void CallersNext() {
 			if (callers.SelectedNode != null ) {
 				TreeNode item = callers.SelectedNode;
 
-				int id = ((FunctionInfo)item.Tag).ID;
+				int id = ((Function)item.Tag).ID;
 				if (item.Parent.Parent== null) {
 					callees.MoveTo(id);
 				}
@@ -186,94 +195,35 @@ namespace NProf {
 			if (callees.SelectedNode != null) {
 				TreeNode item = callees.SelectedNode;
 				if (item.Parent.Parent == null) {
-					callers.MoveTo(((FunctionInfo)item.Tag).ID);
+					callers.MoveTo(((Function)item.Tag).ID);
 				}
 				else {
-					callees.MoveTo(((FunctionInfo)item.Tag).ID);
+					callees.MoveTo(((Function)item.Tag).ID);
 				}
 				item.Collapse();
 			}
 		}
 		private NProf() {
 
-
-			////Add Columns
-			//listView1.Columns.Add("Column 1", 100,
-			//    HorizontalAlignment.Center);
-
-			//listView1.Columns.Add("Column 2", 100,
-			//    HorizontalAlignment.Center);
-
-			//listView1.Columns.Add("Column 3", 100,
-			//    HorizontalAlignment.Center);
-
-			//listView1.Columns.Add("Column 4", 100,
-			//    HorizontalAlignment.Center);
-
-			////Create ListViewItem
-			//System.Windows.Forms.ListViewItem itmp = new
-			//     System.Windows.Forms.ListViewItem("PARENT Item");
-
-			//Modify Some of the Items Properties
-			//itmp.BackColor = System.Drawing.Color.Silver;
-			//itmp.ForeColor = System.Drawing.Color.Navy;
-			//itmp.Checked = true;
-
-			////Create SubItem 1
-			//System.Windows.Forms.ListViewItem.ListViewSubItem itms1 = new
-			//     System.Windows.Forms.ListViewItem.ListViewSubItem
-			//    (itmp, "SubItem 1");
-
-			////Create SubItem 2
-			//System.Windows.Forms.ListViewItem.ListViewSubItem itms2 = new
-			//      System.Windows.Forms.ListViewItem.ListViewSubItem
-			//    (itmp, "SubItem 2");
-
-			////Create SubItem 3
-			//System.Windows.Forms.ListViewItem.ListViewSubItem itms3 = new
-			//      System.Windows.Forms.ListViewItem.ListViewSubItem
-			//    (itmp, "SubItem 3");
-
-			////Add SubItems to parent Item
-			//itmp.SubItems.Add(itms1);
-			//itmp.SubItems.Add(itms2);
-			//itmp.SubItems.Add(itms3);
-
-			//Add Parent Item to ListView Control
-			//listView1.Items.Add(itmp);	
-
 			WindowState = FormWindowState.Maximized;
 			Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("NProf.Resources.app-icon.ico"));
 			Text = Title;
 			profiler = new Profiler();
 			runs = new ListView();
-			//runs = new ContainerListView();
-			//namespaces = listView1;
+			runs.View = System.Windows.Forms.View.Details;
 			namespaces = new NamespaceView();
-			//ListViewItem i = namespaces.Items.Add("hello");
-			//i.Items.Add("asdf");
-			//i.Items.Add("asdf");
-			//i.Items.Add("whatever");
 			namespaces.Height = 100;
 			namespaces.Text = "Namespaces";
 			namespaces.Dock = DockStyle.Bottom;
-			//runs.ColumnSortColor = Color.White;
 			runs.Columns.Add("Executable");
 			runs.Columns.Add("Time");
 			runs.Font = font;
-			//runs.AllowMultiSelect = true;
 			runs.Dock = DockStyle.Fill;
-			//runs.Dock = DockStyle.Left;
-			//runs.Width = 200;
 			runs.Columns[0].Width = 105;
-			//namespaces.Invalidate();
-			//namespacess.Columns.Add("Namespaces");
-			//namespaces.Items.Add("hi").Items.Add("hello");
 
 
 
 			runs.SelectedIndexChanged+= delegate {
-			//runs.SelectedItemsChanged += delegate {
 				if (runs.SelectedItems.Count != 0) {
 					ShowRun((Run)runs.SelectedItems[0].Tag);
 				}
@@ -379,30 +329,6 @@ namespace NProf {
 
 			Splitter methodSplitter = new Splitter();
 			methodSplitter.Dock = DockStyle.Bottom;
-			//searchPanel = new SearchPanel(callers);
-			//findPanel = new FlowLayoutPanel();
-			//findPanel.BorderStyle = BorderStyle.FixedSingle;
-			//findPanel.WrapContents = false;
-			//findPanel.AutoSize = true;
-
-			//Button findNext = new Button();
-			//findNext.AutoSize = true;
-			//findNext.Text = "Next";
-			//findNext.Click += new EventHandler(findNext_Click);
-
-			//Label findLabel = new Label();
-			//findLabel.Text = "Find:";
-			//findLabel.Dock = DockStyle.Fill;
-			//findLabel.TextAlign = ContentAlignment.MiddleLeft;
-			//findLabel.AutoSize = true;
-
-			//Button findPrevious = new Button();
-			//findPrevious.AutoSize = true;
-			//findPrevious.FlatAppearance.BorderSize = 0;
-			//findPrevious.Click += new EventHandler(findPrevious_Click);
-			//findPrevious.Text = "Previous";
-
-			//findPanel.Controls.AddRange(new Control[] { findLabel, findText, findNext, findPrevious });
 
 			callees.Size = new Size(100, 100);
 			callers.Size = new Size(100, 100);
@@ -413,12 +339,10 @@ namespace NProf {
 			Panel rightPanel = new Panel();
 			methodPanel.Dock = DockStyle.Fill;
 
-			//findPanel.Dock = DockStyle.Bottom;
-
 			rightPanel.Dock = DockStyle.Fill;
 			rightPanel.Controls.Add(methodPanel);
 
-			rightPanel.Controls.Add(new SearchPanel(callers));
+			//rightPanel.Controls.Add(new SearchPanel(callers));
 
 			Splitter mainSplitter = new Splitter();
 			mainSplitter.Dock = DockStyle.Left;
@@ -490,42 +414,26 @@ namespace NProf {
 			string text = Path.GetFileNameWithoutExtension(application.Text) + " " + runs.Items.Count;
 			string title = Path.GetFileNameWithoutExtension(application.Text);
 			ListViewItem item = new ListViewItem(title);
-			//ContainerListViewItem item = new ContainerListViewItem(title);
 			item.Tag = run;
 			runs.Items.Add(item);
-			//runs.Items.Add(item);
 			runs.SelectedItems.Clear();
 			item.SubItems[0].Text = title;
-			//item.SubItems[1].Text = run.Duration.TotalSeconds.ToString("0.00;-0.00;0.00") + "s";
 			item.Selected = true;
-			//runs.SelectedItems.Add(item);
 			ShowRun(run);
 		}
 		public void ShowRun(Run run) {
 			Run compareRun;
 			if (runs.SelectedItems.Count > 1) {
 				ListViewItem first = runs.SelectedItems[runs.SelectedItems.Count - 1];
-				//ContainerListViewItem first = runs.SelectedItems[runs.SelectedItems.Count - 1];
 				compareRun = (Run)first.Tag;
 			}
 			else {
 				compareRun = null;
 			}
-			callees.Update(run, run.functions,compareRun!=null?compareRun.functions:null,compareRun);
-			callers.Update(run, run.callers,compareRun!=null?compareRun.callers:null,compareRun);
-			namespaces.Update(run, run.callers, compareRun != null ? compareRun.callers : null, compareRun);
+			callees.Update(run, run.functions);
+			callers.Update(run, run.callers);
+			namespaces.Update(run, run.callers);
 		}
-		//private void findNext_Click(object sender, EventArgs e) {
-		//    callees.BeginUpdate();
-		//    TreeNode item = callees.SelectedNode;
-		//    //ContainerListViewItem item = callees.SelectedItems[0];
-		//    //callees.Nodes.Remove(item);
-		//    //callees.Items.Remove(item);
-		//    callees.EndUpdate(); 
-		//}
-		//private void findPrevious_Click(object sender, EventArgs e) {
-		//    Find(false, true);
-		//}
 		[STAThread]
 		static void Main(string[] args) {
 			string s = Guid.NewGuid().ToString().ToUpper();
@@ -558,35 +466,43 @@ namespace NProf {
 		public readonly List<int> frames;
 	}
 	public class FunctionInfo {
+		public readonly string Namespace;
+		public readonly string Signature;
+		public FunctionInfo(string signature, string nameSpace) {
+			this.Signature = signature;
+			this.Namespace = nameSpace;
+		}
+	}
+	public class Function {
 		public Run run;
-		public string Signature {
+		public FunctionInfo Signature {
 			get {
 				return run.signatures[ID];
 			}
 		}
-		public string Namespace {
-			get {
-				return nameSpace;
-			}
-		}
-		private string nameSpace;
-		public FunctionInfo(int ID,Run run,string nameSpace) {
+		//public string Namespace {
+		//    get {
+		//        return nameSpace;
+		//    }
+		//}
+		//private string nameSpace;
+		public Function(int ID,Run run) {
 			this.run = run;
 			this.ID = ID;
-			this.nameSpace = nameSpace;
+			//this.nameSpace = nameSpace;
 		}
 		public readonly int ID;
 		public int Samples;
 		public int lastWalk;
-		private Dictionary<int, FunctionInfo> children;
+		private Dictionary<int, Function> children;
 		public List<StackWalk> stackWalks = new List<StackWalk>();
-		public Dictionary<int, FunctionInfo> Children {
+		public Dictionary<int, Function> Children {
 			get {
 				if (children == null) {
-					children = new Dictionary<int, FunctionInfo>();
+					children = new Dictionary<int, Function>();
 					foreach (StackWalk walk in stackWalks) {
 						if (walk.length != 0) {
-							FunctionInfo callee = Run.GetFunctionInfo(children, walk.frames[walk.length - 1],run);
+							Function callee = Run.GetFunctionInfo(children, walk.frames[walk.length - 1],run);
 							if (callee.lastWalk != walk.id) {
 								callee.Samples++;
 							}
@@ -599,10 +515,11 @@ namespace NProf {
 		}
 	}
 	public class Run {
-		public static FunctionInfo GetFunctionInfo(Dictionary<int, FunctionInfo> functions, int id,Run run) {
-			FunctionInfo result;
+		public static Function GetFunctionInfo(Dictionary<int, Function> functions, int id,Run run) {
+			Function result;
 			if (!functions.TryGetValue(id, out result)) {
-				result = new FunctionInfo(id,run,"System.Web");
+				result = new Function(id, run);
+				//result = new Function(id, run, "System.Web");
 				functions[id] = result;
 			}
 			return result;
@@ -612,7 +529,7 @@ namespace NProf {
 		private void InterpreteData() {
 			Interprete(functions,false,this);
 			Interprete(callers,true,this);
-			List<FunctionInfo> startFunctions = new List<FunctionInfo>();
+			List<Function> startFunctions = new List<Function>();
 			maxSamples = 0;
 			foreach (List<int> stackWalk in stackWalks) {
 				if (stackWalk.Count != 0) {
@@ -620,7 +537,7 @@ namespace NProf {
 				}
 			}
 		}
-		private void Interprete(Dictionary<int, FunctionInfo> map,bool reverse,Run run) {
+		private void Interprete(Dictionary<int, Function> map,bool reverse,Run run) {
 			int currentWalk = 0;
 			foreach (List<int> original in stackWalks) {
 				currentWalk++;
@@ -633,7 +550,7 @@ namespace NProf {
 					stackWalk = original;
 				}
 				for (int i = 0; i < stackWalk.Count; i++) {
-					FunctionInfo function = Run.GetFunctionInfo(map, stackWalk[stackWalk.Count - i - 1],run);
+					Function function = Run.GetFunctionInfo(map, stackWalk[stackWalk.Count - i - 1],run);
 					if (function.lastWalk != currentWalk) {
 						function.Samples++;
 						function.stackWalks.Add(new StackWalk(currentWalk, stackWalk.Count - i - 1, stackWalk));
@@ -669,7 +586,10 @@ namespace NProf {
 					if (functionId == -1) {
 						break;
 					}
-					signatures[functionId] = ReadString(r);
+					signatures[functionId] = new FunctionInfo(
+						ReadString(r),
+						ReadString(r)
+					);
 				}
 				while (true) {
 					List<int> stackWalk = new List<int>();
@@ -697,9 +617,10 @@ namespace NProf {
 				NProf.form.AddRun(this);
 			}));
 		}
-		public Dictionary<int, string> signatures = new Dictionary<int, string>();
-		public Dictionary<int, FunctionInfo> functions = new Dictionary<int, FunctionInfo>();
-		public Dictionary<int, FunctionInfo> callers = new Dictionary<int, FunctionInfo>();
+		public Dictionary<int, FunctionInfo> signatures = new Dictionary<int, FunctionInfo>();
+		//public Dictionary<int, string> signatures = new Dictionary<int, string>();
+		public Dictionary<int, Function> functions = new Dictionary<int, Function>();
+		public Dictionary<int, Function> callers = new Dictionary<int, Function>();
 		private DateTime start=DateTime.MinValue;
 		private DateTime end=DateTime.MinValue;
 		public Run(Profiler p) {
@@ -716,118 +637,106 @@ namespace NProf {
 		public View() {
 			this.Font=NProf.font;
 			this.ShowPlusMinus = true;
-			//ShowRootTreeLines = true;
-			//ShowTreeLines = true;
-			//FullItemSelect = true;
-
 		}
 	}
 	public class MethodView : View {
 		public void MoveTo(int id) {
-			//SelectedItems.Clear();
-			//SelectedItems.Clear();
 			foreach (TreeNode item in Nodes) {
-				if (((FunctionInfo)item.Tag).ID == id) {
+				if (((Function)item.Tag).ID == id) {
 					this.SelectedNode = item;
-					//item.SelectedImageIndex;
-					//SelectedItems.Add(item);
-					//this.scrollt
-					//EnsureVisible(item);
 					Invalidate();
 					this.Focus();
-					//item.Focused = true;
 					break;
 				}
 			}
 		}
-		// remove compareFunctions
-		public void Update(Run run, Dictionary<int, FunctionInfo> functions, Dictionary<int, FunctionInfo> compareFunctions,Run oldRun) {
+		public void Update(Run run, Dictionary<int, Function> functions) {
 			currentRun = run;
-			currentOldRun = oldRun;
 			SuspendLayout();
 			Invalidate();
 			BeginUpdate();
-			Nodes.Clear();
-			//Items.Clear();
-			foreach (FunctionInfo method in SortFunctions(functions.Values)) {
-				FunctionInfo oldFunction;
-				if (compareFunctions != null && compareFunctions.ContainsKey(method.ID)) {
-					oldFunction = compareFunctions[method.ID];
-				}
-				else {
-					oldFunction = null;
-				}
-				AddItem(Nodes, method, oldFunction);
-				//AddItem(Items, method, oldFunction);
+			//Nodes.Clear();
+			foreach (Function method in SortFunctions(functions.Values)) {
+				AddItem(Nodes, method);
 			}
 			foreach (TreeNode item in Nodes) {
-			//foreach (ContainerListViewItem item in Nodes) {
 				MakeSureComputed(item);
 			}
 			EndUpdate();
 			ResumeLayout();
 		}
+		// remove compareFunctions
+		//public void Update(Run run, Dictionary<int, Function> functions) {
+		//    currentRun = run;
+		//    SuspendLayout();
+		//    Invalidate();
+		//    BeginUpdate();
+		//    Nodes.Clear();
+		//    //Items.Clear();
+		//    //foreach (Function method in SortFunctions(functions.Values)) {
+		//    //    Function oldFunction;
+		//    //    if (compareFunctions != null && compareFunctions.ContainsKey(method.ID)) {
+		//    //        oldFunction = compareFunctions[method.ID];
+		//    //    }
+		//    //    else {
+		//    //        oldFunction = null;
+		//    //    }
+		//    //    AddItem(Nodes, method, oldFunction);
+		//    //}
+		//    foreach (Function method in SortFunctions(functions.Values)) {
+		//        AddItem(Nodes, method);
+		//    }
+		//    foreach (TreeNode item in Nodes) {
+		//        MakeSureComputed(item);
+		//    }
+		//    EndUpdate();
+		//    ResumeLayout();
+		//}
 		public void Find(string text, bool forward, bool step) {
 			if (text != "") {
 				TreeNode item;
-				//ContainerListViewItem item;
 				if (SelectedNode == null) {
-				//if (SelectedItems.Count == 0) {
 					if (Nodes.Count == 0) {
-					//if (Items.Count == 0) {
 						item = null;
 					}
 					else {
 						item = Nodes[0];
-						//item = Items[0];
 					}
 				}
 				else {
 					if (step) {
 						if (forward) {
 							item = SelectedNode.NextVisibleNode;
-							//item = SelectedItems[0].NextVisibleItem;
 						}
 						else {
 							item = SelectedNode.PrevVisibleNode;
-							//item = SelectedItems[0].PreviousVisibleItem;
 						}
 					}
 					else {
 						item = SelectedNode;
-						//item = SelectedItems[0];
 					}
 				}
 				TreeNode firstItem = item;
-				//ContainerListViewItem firstItem = item;
 				while (item != null) {
 					if (item.Text.ToLower().Contains(text.ToLower())) {
-						SelectedNode = null;//SelectedItems.Clear();
-						//SelectedItems.Clear();
-						//item.Focused = true;
+						SelectedNode = null;
 						SelectedNode = item;
-						//item.Selected = true;
-						//item.Focused = true;
 						this.Invalidate();
 						break;
 					}
 					else {
 						if (forward) {
 							item = item.NextVisibleNode;
-							//item = item.NextVisibleItem;
 						}
 						else {
 							item = item.PrevVisibleNode;
-							//item = item.PreviousVisibleItem;
 						}
 						if (item == null) {
 							if (forward) {
 								item = Nodes[0];
-								//item = Items[0];
 							}
 							else {
 								item = Nodes[Nodes.Count - 1];
-								//item = Items[Items.Count - 1];
 							}
 						}
 					}
@@ -836,78 +745,74 @@ namespace NProf {
 					}
 				}
 				if (item != null) {
-					//EnsureVisible(item);
-					//EnsureVisible(item);
 				}
 			}
 		}
 		public Run currentRun;
-		public Run currentOldRun;
+		//public Run currentOldRun;
 		public MethodView(string name) {
-
-			//this " Percent  " + name
-			//Columns.Add(" Percent  " + name);
 			this.BeforeExpand += delegate(object sender, TreeViewCancelEventArgs e) {
-			//this.BeforeExpand += delegate(object sender,ContainerListViewCancelEventArgs e) {
 				MakeSureComputed(e.Node);
-				//MakeSureComputed(e.Item);
 			};
 			this.SizeChanged += delegate {
-				//this.Columns[0].Width = this.Width - 30;
 			};
 		}
 		void MakeSureComputed(TreeNode item) {
-		//void MakeSureComputed(ContainerListViewItem item) {
 			MakeSureComputed(item, true);
 		}
-		public List<FunctionInfo> SortFunctions(IEnumerable<FunctionInfo> f) {
-			List<FunctionInfo> functions = new List<FunctionInfo>(f);
-			functions.Sort(delegate(FunctionInfo a, FunctionInfo b) {
+		public List<Function> SortFunctions(IEnumerable<Function> f) {
+			List<Function> functions = new List<Function>(f);
+			functions.Sort(delegate(Function a, Function b) {
 				return b.Samples.CompareTo(a.Samples);
 			});
 			return functions;
 		}
 		void MakeSureComputed(TreeNode item, bool parentExpanded) {
-		//void MakeSureComputed(ContainerListViewItem item, bool parentExpanded) {
 			if (item.Nodes.Count == 0) {
-			//if (item.Items.Count == 0) {
-				foreach (FunctionInfo function in SortFunctions(((FunctionInfo)item.Tag).Children.Values)) {
+				foreach (Function function in SortFunctions(((Function)item.Tag).Children.Values)) {
 					AddFunctionItem(item.Nodes, function);
-					//AddFunctionItem(item.Items, function);
 				}
 			}
 			if (item.IsExpanded || parentExpanded) {
-			//if (item.Expanded || parentExpanded) {
 				foreach (TreeNode subItem in item.Nodes) {
-				//foreach (ContainerListViewItem subItem in item.Items) {
 					MakeSureComputed(subItem, item.IsExpanded);
-					//MakeSureComputed(subItem, item.Expanded);
 				}
 			}
 		}
-		private TreeNode AddItem(TreeNodeCollection parent, FunctionInfo function, FunctionInfo oldFunction) {
-		//private ContainerListViewItem AddItem(ContainerListViewItemCollection parent, FunctionInfo function,FunctionInfo oldFunction) {
-			TreeNode item = parent.Add(currentRun.signatures[function.ID]);
-			//ContainerListViewItem item = parent.Add(currentRun.signatures[function.ID]);
-			double fraction = ((double)function.Samples) / (double)currentRun.maxSamples;
-    		double percent=(100.0*((double)function.Samples / (double)function.run.maxSamples));
-			item.Text = " " + percent.ToString("0.00;-0.00;0.00").PadLeft(5, ' ') + "  " + currentRun.signatures[function.ID].Trim();
-			item.Tag = function;
-			return item;
+		private TreeNode AddItem(TreeNodeCollection parent, Function function) {
+			string signature = currentRun.signatures[function.ID].Signature;
+			if (parent[signature] != null) {
+				return parent[signature];
+			}
+			else {
+				int i = 0;
+				for (; i < parent.Count; i++) {
+					if (((Function)parent[i].Tag).Samples < function.Samples) {
+						break;
+					}
+				}
+				TreeNode item = parent.Insert(i,signature, signature);
+				//TreeNode item = parent.Add(signature, signature);
+				double fraction = ((double)function.Samples) / (double)currentRun.maxSamples;
+				double percent = (100.0 * ((double)function.Samples / (double)function.run.maxSamples));
+				item.Text = " " + percent.ToString("0.00;-0.00;0.00").PadLeft(5, ' ') + "  " + currentRun.signatures[function.ID].Signature.Trim();
+				item.Tag = function;
+				return item;
+			}
 		}
 		void label_Paint(object sender, PaintEventArgs e) {
 			e.Graphics.DrawRectangle(Pens.Red,new Rectangle(10,5,100,10));
 		}
-		public void AddFunctionItem(TreeNodeCollection parent, FunctionInfo function) {
+		public void AddFunctionItem(TreeNodeCollection parent, Function function) {
 		//public void AddFunctionItem(ContainerListViewItemCollection parent, FunctionInfo function) {
-			TreeNode item = AddItem(parent, function, null);
+			TreeNode item = AddItem(parent, function);
 			//ContainerListViewItem item = AddItem(parent, function, null);
-			foreach (FunctionInfo callee in SortFunctions(function.Children.Values)) {
-				AddItem(item.Nodes, callee, null);
+			foreach (Function callee in SortFunctions(function.Children.Values)) {
+				AddItem(item.Nodes, callee);
 				//AddItem(item.Items, callee, null);
 			}
 		}
-		public void Add(FunctionInfo function) {
+		public void Add(Function function) {
 			AddFunctionItem(Nodes, function);
 			//AddFunctionItem(Items, function);
 		}
