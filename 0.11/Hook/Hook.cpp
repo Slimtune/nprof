@@ -89,6 +89,13 @@ public:
 	}
 	FunctionInfo* GetFunctionSignature(FunctionID functionId) {
 		FunctionInfo* function=new FunctionInfo();
+		
+		// test
+		if(functionId==17) {
+			function->signature="FastAllocate";
+			function->nameSpace="FastAllocateNamespace";
+			return function;
+		}		
 		string text;
 		ClassID classID;
 		ModuleID moduleID;
@@ -119,7 +126,7 @@ public:
 			GetClass((string)CW2A(className),nameSpace);
 			text+=(string)CW2A(className)+"."+(string)CW2A(functionName);
 			//text=text+GetClass((string)CW2A(className),nameSpace)+"."+(string)CW2A(functionName);
-			cout << nameSpace;
+			//cout << nameSpace;
 			function->nameSpace=nameSpace;
 			
 		}
@@ -355,7 +362,7 @@ public:
 	}
 	Profiler::Profiler( ICorProfilerInfo2* profilerInfo ) {
 		InitializeCriticalSection(&threadMapLock);
-		//DebugBreak()
+		//DebugBreak();
 		this->sw=new StackWalker(StackWalker::SymUseSymSrv,"C:\\SymbolCache",GetCurrentProcessId(),GetCurrentProcess());
 		this->profilerInfo = profilerInfo;
 		this->profilerHelper.Initialize(profilerInfo);
@@ -443,8 +450,13 @@ public:
 				(BYTE*)&context,sizeof(context)
 			);
 			if(functions->size()==0) {
-				//cout << "test";
-				//sw->ShowCallstack(threadHandle);
+				BYTE* instructionPointer=0;
+				//sw->MoveUpCallStack(profilerInfo,threadHandle,&context,&instructionPointer);
+
+				// this is a test for profiling native methods
+				if(sw->ShowCallstack(threadHandle,&context)==17) {
+					functions->push_back(17);
+				}
 			}
 			CloseHandle(process);
 
@@ -779,7 +791,7 @@ public:
 [ 
 	module(dll, uuid = "{A461E20A-C7DC-4A89-A24E-87B5E975A96B}", 
 	name = "NProfHook", 
-	helpstring = "NProf.Hook 1.0 Type Library",
+	helpstring = "NProf.Hook 1.0 Type Library",	
 	resource_name = "IDR_NPROFHOOK")
 ];
 Profiler* CNProfCORHook::profiler;

@@ -242,14 +242,6 @@
 			>
 		</File>
 		<File
-			RelativePath=".\SimpleSymbolEngine.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\SimpleSymbolEngine.h"
-			>
-		</File>
-		<File
 			RelativePath=".\StackWalker.cpp"
 			>
 		</File>
