@@ -1,4 +1,4 @@
-/***************************************************************************
+ /***************************************************************************
                           profiler.cpp  -  description
                              -------------------
     begin                : Sat Jan 18 2003
@@ -46,12 +46,9 @@ namespace NProf {
 					}
 				}
 				if (nodes != null) {
-					int asdf = 0;
 				}
 				else {
-					//view.Nodes.Remove(node);
 					remove.Add(node);
-					//node.Remove();
 				}
 			}
 			foreach (TreeNode node in remove) {
@@ -61,16 +58,21 @@ namespace NProf {
 		public NamespaceView() {
 			this.CheckBoxes = true;
 			this.AfterCheck += delegate(object sender, TreeViewEventArgs e) {
-				Filter(NProf.callees);
-				Filter(NProf.callers);
+                if (!updating)
+                {
+                    Filter(NProf.callees);
+                    Filter(NProf.callers);
+                }
 			};
 		}
 		private Run run;
 		private Dictionary<int, Function> functions;
+        private bool updating = false;
 		public void Update(Run run, Dictionary<int, Function> functions) {
+			this.Nodes.Clear();
+            updating = true;
 			this.run = run;
 			this.functions = functions;
-		//public void Update(Run run, Dictionary<int, Function> functions, Dictionary<int, Function> compareFunctions, Run oldRun) {
 			BeginUpdate();
 			foreach (Function function in functions.Values) {
 				TreeNodeCollection items = this.Nodes;
@@ -91,6 +93,7 @@ namespace NProf {
 				}
 			}
 			EndUpdate();
+            updating = false;
 		}
 	}
 	public class SearchPanel : FlowLayoutPanel {
@@ -203,6 +206,14 @@ namespace NProf {
 				item.Collapse();
 			}
 		}
+        public static Label Caption(string text)
+        {
+            Label caption = new Label();
+            caption.Text = text;
+            caption.Dock = DockStyle.Top;
+            caption.TextAlign = ContentAlignment.MiddleLeft;
+            return caption;
+        }
 		private NProf() {
 
 			WindowState = FormWindowState.Maximized;
@@ -213,8 +224,7 @@ namespace NProf {
 			runs.View = System.Windows.Forms.View.Details;
 			namespaces = new NamespaceView();
 			namespaces.Height = 100;
-			namespaces.Text = "Namespaces";
-			namespaces.Dock = DockStyle.Bottom;
+			namespaces.Dock = DockStyle.Fill;
 			runs.Columns.Add("Executable");
 			runs.Columns.Add("Time");
 			runs.Font = font;
@@ -334,27 +344,33 @@ namespace NProf {
 			callers.Size = new Size(100, 100);
 			callees.Dock = DockStyle.Fill;
 			callers.Dock = DockStyle.Fill;
+
 			methodPanel.Panel2.Controls.Add(callers);
+            methodPanel.Panel2.Controls.Add(Caption("Method callers"));
 			methodPanel.Panel1.Controls.Add(callees);
+            methodPanel.Panel1.Controls.Add(Caption("Method calls"));
+
 			Panel rightPanel = new Panel();
 			methodPanel.Dock = DockStyle.Fill;
 
 			rightPanel.Dock = DockStyle.Fill;
 			rightPanel.Controls.Add(methodPanel);
 
-			//rightPanel.Controls.Add(new SearchPanel(callers));
+            //rightPanel.Controls.Add(new SearchPanel(callers));
+			rightPanel.Controls.Add(new SearchPanel(callees));
 
 			Splitter mainSplitter = new Splitter();
 			mainSplitter.Dock = DockStyle.Left;
 
-			Panel leftPanel = new Panel();
-			leftPanel.Width = 200;
+            SplitContainer leftPanel = new SplitContainer();
+            leftPanel.Orientation = Orientation.Horizontal;
+            leftPanel.Width = 200;
 			leftPanel.Dock = DockStyle.Left;
-			leftPanel.Controls.Add(runs);
+            leftPanel.Panel1.Controls.Add(runs);
 			Splitter leftSplitter = new Splitter();
 			leftSplitter.Dock = DockStyle.Bottom;
-			leftPanel.Controls.Add(leftSplitter);
-			leftPanel.Controls.Add(namespaces);
+            leftPanel.Panel2.Controls.Add(namespaces);
+            leftPanel.Panel2.Controls.Add(Caption("Namespaces"));
 
 			panel.Controls.AddRange(new Control[] { rightPanel, mainSplitter, leftPanel});
 			methodPanel.Dock = DockStyle.Fill;
@@ -430,9 +446,9 @@ namespace NProf {
 			else {
 				compareRun = null;
 			}
-			callees.Update(run, run.functions);
+            namespaces.Update(run, run.callers); 
+            callees.Update(run, run.functions);
 			callers.Update(run, run.callers);
-			namespaces.Update(run, run.callers);
 		}
 		[STAThread]
 		static void Main(string[] args) {
@@ -480,16 +496,9 @@ namespace NProf {
 				return run.signatures[ID];
 			}
 		}
-		//public string Namespace {
-		//    get {
-		//        return nameSpace;
-		//    }
-		//}
-		//private string nameSpace;
 		public Function(int ID,Run run) {
 			this.run = run;
 			this.ID = ID;
-			//this.nameSpace = nameSpace;
 		}
 		public readonly int ID;
 		public int Samples;
@@ -519,7 +528,6 @@ namespace NProf {
 			Function result;
 			if (!functions.TryGetValue(id, out result)) {
 				result = new Function(id, run);
-				//result = new Function(id, run, "System.Web");
 				functions[id] = result;
 			}
 			return result;
@@ -618,7 +626,6 @@ namespace NProf {
 			}));
 		}
 		public Dictionary<int, FunctionInfo> signatures = new Dictionary<int, FunctionInfo>();
-		//public Dictionary<int, string> signatures = new Dictionary<int, string>();
 		public Dictionary<int, Function> functions = new Dictionary<int, Function>();
 		public Dictionary<int, Function> callers = new Dictionary<int, Function>();
 		private DateTime start=DateTime.MinValue;
@@ -628,7 +635,6 @@ namespace NProf {
 		}
 		public bool Start() {
 			start = DateTime.Now;
-			// refactor this:
 			return profiler.Start(this);
 		}
 		public Profiler profiler;
@@ -655,7 +661,6 @@ namespace NProf {
 			SuspendLayout();
 			Invalidate();
 			BeginUpdate();
-			//Nodes.Clear();
 			foreach (Function method in SortFunctions(functions.Values)) {
 				AddItem(Nodes, method);
 			}
@@ -665,33 +670,6 @@ namespace NProf {
 			EndUpdate();
 			ResumeLayout();
 		}
-		// remove compareFunctions
-		//public void Update(Run run, Dictionary<int, Function> functions) {
-		//    currentRun = run;
-		//    SuspendLayout();
-		//    Invalidate();
-		//    BeginUpdate();
-		//    Nodes.Clear();
-		//    //Items.Clear();
-		//    //foreach (Function method in SortFunctions(functions.Values)) {
-		//    //    Function oldFunction;
-		//    //    if (compareFunctions != null && compareFunctions.ContainsKey(method.ID)) {
-		//    //        oldFunction = compareFunctions[method.ID];
-		//    //    }
-		//    //    else {
-		//    //        oldFunction = null;
-		//    //    }
-		//    //    AddItem(Nodes, method, oldFunction);
-		//    //}
-		//    foreach (Function method in SortFunctions(functions.Values)) {
-		//        AddItem(Nodes, method);
-		//    }
-		//    foreach (TreeNode item in Nodes) {
-		//        MakeSureComputed(item);
-		//    }
-		//    EndUpdate();
-		//    ResumeLayout();
-		//}
 		public void Find(string text, bool forward, bool step) {
 			if (text != "") {
 				TreeNode item;
@@ -749,7 +727,6 @@ namespace NProf {
 			}
 		}
 		public Run currentRun;
-		//public Run currentOldRun;
 		public MethodView(string name) {
 			this.BeforeExpand += delegate(object sender, TreeViewCancelEventArgs e) {
 				MakeSureComputed(e.Node);
@@ -792,29 +769,21 @@ namespace NProf {
 					}
 				}
 				TreeNode item = parent.Insert(i,signature, signature);
-				//TreeNode item = parent.Add(signature, signature);
 				double fraction = ((double)function.Samples) / (double)currentRun.maxSamples;
 				double percent = (100.0 * ((double)function.Samples / (double)function.run.maxSamples));
-				item.Text = " " + percent.ToString("0.00;-0.00;0.00").PadLeft(5, ' ') + "  " + currentRun.signatures[function.ID].Signature.Trim();
+				item.Text = percent.ToString("0.00;-0.00;0.00").PadLeft(7, ' ') + "  " + currentRun.signatures[function.ID].Signature.Trim();
 				item.Tag = function;
 				return item;
 			}
 		}
-		void label_Paint(object sender, PaintEventArgs e) {
-			e.Graphics.DrawRectangle(Pens.Red,new Rectangle(10,5,100,10));
-		}
 		public void AddFunctionItem(TreeNodeCollection parent, Function function) {
-		//public void AddFunctionItem(ContainerListViewItemCollection parent, FunctionInfo function) {
 			TreeNode item = AddItem(parent, function);
-			//ContainerListViewItem item = AddItem(parent, function, null);
 			foreach (Function callee in SortFunctions(function.Children.Values)) {
 				AddItem(item.Nodes, callee);
-				//AddItem(item.Items, callee, null);
 			}
 		}
 		public void Add(Function function) {
 			AddFunctionItem(Nodes, function);
-			//AddFunctionItem(Items, function);
 		}
 	}
 	public class Profiler {

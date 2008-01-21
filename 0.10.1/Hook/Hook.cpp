@@ -569,6 +569,7 @@ public:
 	}
 	Profiler::Profiler( ICorProfilerInfo2* profilerInfo )
 	{
+		DebugBreak();
 		this->profilerInfo = profilerInfo;
 		this->profilerHelper.Initialize( profilerInfo );
 		profilerInfo->SetEventMask( 
