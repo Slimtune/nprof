@@ -39,7 +39,7 @@
 #include    <string.h>
 #include    <tchar.h>
 
-#include "SimpleSymbolEngine.h"
+//#include "SimpleSymbolEngine.h"
 
 
 // HOOK_TRACE should be used for debug messages pertaining to the CLR performance hook
