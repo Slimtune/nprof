@@ -319,7 +319,7 @@ HRESULT __stdcall __stdcall StackWalk(FunctionID funcId,UINT_PTR ip,COR_PRF_FRAM
 	}
 	return S_OK;
 }
-const int interval=2;
+const int interval=20;
 class Profiler {
 public: 
 	vector<vector<FunctionID>*> stackWalks;

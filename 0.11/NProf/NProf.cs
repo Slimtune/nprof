@@ -192,6 +192,7 @@ namespace NProf
         }
         public RunView(Run run)
         {
+            this.Text = run.Executable;
             namespaces = new NamespaceView();
             namespaces.Height = 100;
             namespaces.Dock = DockStyle.Fill;
@@ -886,6 +887,13 @@ namespace NProf
         {
             this.profiler = p;
             this.executable = executable;
+        }
+        public string Executable
+        {
+            get
+            {
+                return this.executable;
+            }
         }
         public bool Start()
         {
