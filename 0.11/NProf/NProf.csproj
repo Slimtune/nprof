@@ -108,6 +108,8 @@
   <ItemGroup>
     <Content Include="App.ico" />
     <EmbeddedResource Include="Resources\app-icon.ico" />
+    <EmbeddedResource Include="Resources\go.bmp">
+    </EmbeddedResource>
     <Content Include="Resources\toolbar16.png" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
