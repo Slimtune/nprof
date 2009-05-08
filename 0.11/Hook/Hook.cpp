@@ -2,8 +2,8 @@
                           profiler.cpp  -  description
                              -------------------
     begin                : Sat Jan 18 2003
-    copyright            : (C) 2003, 2004, 2005, 2006, 2007 by Matthew Mastracci, Christian Staudenmeyer
-    email                : mmastrac@canada.com
+    copyright            : (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 by Matthew Mastracci, Christian Staudenmeyer
+    email                : staudenmeyer@gmail.com
  ***************************************************************************/
 
 /***************************************************************************
@@ -319,7 +319,7 @@ HRESULT __stdcall __stdcall StackWalk(FunctionID funcId,UINT_PTR ip,COR_PRF_FRAM
 	}
 	return S_OK;
 }
-const int interval=20;
+const int interval=5;
 class Profiler {
 public: 
 	vector<vector<FunctionID>*> stackWalks;
@@ -334,6 +334,7 @@ public:
 		return (string)path+guid+".nprof";
 	}
 	void EndAll(ProfilerHelper& profilerHelper) {
+		//DebugBreak();
 		file=new ofstream(GetTemporaryFileName().c_str(), ios::binary);
 		for(map< FunctionID, FunctionInfo*>::iterator i=signatures.begin();i!=signatures.end();i++) {
 		//for(map< FunctionID, string >::iterator i=signatures.begin();i!=signatures.end();i++) {
@@ -418,7 +419,9 @@ public:
 
 	static void CALLBACK TimerFunction(UINT wTimerID, UINT msg, DWORD dwUser, DWORD dw1, DWORD dw2) {
 		Profiler* profiler=(Profiler*)dwUser;
+		profiler->KillTimer();
 		profiler->WalkStack();
+		profiler->SetTimer();
 	}
 	static UINT timer;
 	map<DWORD,DWORD> switchMap;

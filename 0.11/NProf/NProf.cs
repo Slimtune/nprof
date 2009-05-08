@@ -2,8 +2,8 @@
                           profiler.cpp  -  description
                              -------------------
     begin                : Sat Jan 18 2003
-    copyright            : (C) 2003,2004,2005,2006 by Matthew Mastracci, Christian Staudenmeyer
-    email                : mmastrac@canada.com
+    copyright            : (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 by Matthew Mastracci, Christian Staudenmeyer
+    email                : staudenmeyer@gmail.com
  ***************************************************************************/
 
 /***************************************************************************
@@ -67,17 +67,17 @@ namespace NProf
             }
             view.EndUpdate();
         }
-        public NamespaceView()
+        public NamespaceView(RunView run)
         {
             this.CheckBoxes = true;
-            //this.AfterCheck += delegate(object sender, TreeViewEventArgs e)
-            //{
-            //    if (!updating)
-            //    {
-            //        Filter(NProf.callees);
-            //        Filter(NProf.callers);
-            //    }
-            //};
+            this.AfterCheck += delegate(object sender, TreeViewEventArgs e)
+            {
+                if (!updating)
+                {
+                    Filter(run.callees);
+                    Filter(run.callers);
+                }
+            };
         }
         private Run run;
         private Dictionary<int, Function> functions;
@@ -190,28 +190,15 @@ namespace NProf
             caption.TextAlign = ContentAlignment.MiddleLeft;
             return caption;
         }
+        public static int count = 0;
         public RunView(Run run)
         {
-            this.Text = run.Executable;
-            namespaces = new NamespaceView();
+            count++;
+            this.Text = Path.GetFileNameWithoutExtension(run.Executable) + " #" + count;
+            namespaces = new NamespaceView(this);
             namespaces.Height = 100;
             namespaces.Dock = DockStyle.Fill;
-            //runs.Dock = DockStyle.Fill;
 
-            //runs.SelectedIndexChanged += delegate
-            //{
-            //    if (runs.SelectedItems.Count != 0)
-            //    {
-            //        ShowRun((Run)runs.SelectedItems[0]);
-            //        //ShowRun((Run)runs.SelectedItems[0].Tag);
-            //    }
-            //};
-
-            callers.GotFocus += delegate
-            {
-                //callees.SelectedNode.Clear();
-                //callees.SelectedItems.Clear();
-            };
             callers.DoubleClick += delegate { CallersNext(); };
             callers.KeyDown += delegate(object sender, KeyEventArgs e)
             {
@@ -227,11 +214,7 @@ namespace NProf
                     CalleesNext();
                 }
             };
-            // TODO: inherit from base class
-            callees.GotFocus += delegate
-            {
-                //callers.SelectedItems.Clear();
-            };
+
             callees.DoubleClick += delegate
             {
                 CalleesNext();
@@ -283,9 +266,6 @@ namespace NProf
             SplitContainer methodPanel = new SplitContainer();
             methodPanel.Orientation = Orientation.Horizontal;
 
-
-
-
             methodPanel.Panel2.Controls.Add(callers);
             methodPanel.Panel2.Controls.Add(Caption("Method callers"));
             methodPanel.Panel1.Controls.Add(callees);
@@ -325,12 +305,10 @@ namespace NProf
         {
             MoveTo(source, callees);
         }
-
-
         NamespaceView namespaces;
-        MethodView callees = new MethodView("Callees");
+        public MethodView callees = new MethodView("Callees");
 
-        MethodView callers = new MethodView("Callers");
+        public MethodView callers = new MethodView("Callers");
 
         public void MoveTo(MethodView source, MethodView target)
         {
@@ -382,11 +360,6 @@ namespace NProf
     public class NProf : Form
     {
         public static Font font = new Font("Courier New", 9.0f);
-        //public ListBox runs;
-        //public NamespaceView namespaces;
-        //public static MethodView callees = new MethodView("Callees");
-
-        //public static MethodView callers = new MethodView("Callers");
 
         private Profiler profiler;
         public static TextBox application;
@@ -400,9 +373,8 @@ namespace NProf
                 return "NProf " + Profiler.Version;
             }
         }
-
-
-
+        TableLayoutPanel mainPanel = new TableLayoutPanel();
+        Label help = MakeLabel("Select the application to profile and click 'Start'.");
         private NProf()
         {
             WindowState = FormWindowState.Maximized;
@@ -410,91 +382,23 @@ namespace NProf
             Text = Title;
             profiler = new Profiler();
 
-
-            //callees.SelectedItemsChanged += delegate {
-            //    if (callees.SelectedItems.Count != 0) {
-            //        ContainerListViewItem item = callees.SelectedItems[0];
-            //        if (item.Items.Count == 0) {
-            //            foreach (FunctionInfo f in ((FunctionInfo)item.Tag).Children.Values) {
-            //                callees.AddFunctionItem(item.Items, f);
-            //            }
-            //        }
-            //    }
-            //};
-            //findText = new TextBox();
-            //findText.TextChanged += delegate {
-            //    Find(true, false);
-            //};
-            //findText.KeyDown += delegate(object sender, KeyEventArgs e) {
-            //    if (e.KeyCode == Keys.Enter) {
-            //        Find(true, true);
-            //        e.Handled = true;
-            //    }
-            //};
             Menu = new MainMenu(new MenuItem[] {
 				new MenuItem(
 					"File",
 					new MenuItem[] {
 						new MenuItem("E&xit",delegate {Close();})
-					}),
-				new MenuItem(
-					"Project",
-					new MenuItem[] {
-						new MenuItem(
-							"Start",
-							delegate{StartRun();},
-							Shortcut.F5)
-			})});
-            //SplitContainer methodPanel = new SplitContainer();
-            //methodPanel.Orientation = Orientation.Horizontal;
+					})
+            });
 
             Splitter methodSplitter = new Splitter();
             methodSplitter.Dock = DockStyle.Bottom;
 
-            //callees.Size = new Size(100, 100);
-            //callers.Size = new Size(100, 100);
-            //callees.Dock = DockStyle.Fill;
-            //callers.Dock = DockStyle.Fill;
-
-            //methodPanel.Panel2.Controls.Add(callers);
-            //methodPanel.Panel2.Controls.Add(Caption("Method callers"));
-            //methodPanel.Panel1.Controls.Add(callees);
-            //methodPanel.Panel1.Controls.Add(Caption("Method calls"));
-
-            //methodPanel.Dock = DockStyle.Fill;
-
-            //rightPanel.Dock = DockStyle.Fill;
-            //rightPanel.Controls.Add(methodPanel);
-
-
-
-            //SplitContainer leftPanel = new SplitContainer();
-            //leftPanel.Orientation = Orientation.Horizontal;
-            //Panel leftPanel = new Panel();
-            //leftPanel.Width = 200;
-            //leftPanel.Dock = DockStyle.Left;
-            //leftPanel.Margin = new Padding(10, 0, 0, 0);
-
-
-            //leftPanel.Panel1.Controls.Add(runs);
-            //leftPanel.Panel1.Controls.Add(Caption("Profiler runs"));
-
             Splitter leftSplitter = new Splitter();
             leftSplitter.Dock = DockStyle.Bottom;
-            //leftPanel.Panel2.Controls.Add(namespaces);
-            //leftPanel.Panel2.Controls.Add(Caption("Namespaces"));
-            //leftPanel.Controls.Add(namespaces);
-            //leftPanel.Controls.Add(Caption("Namespaces"));
-
-
-
-
-
-            //methodPanel.Dock = DockStyle.Fill;
-
-
-            TableLayoutPanel mainPanel = new TableLayoutPanel();
+ 
+            
             application = new TextBox();
+            application.Anchor = AnchorStyles.Top;
             application.Width = 250;
             arguments = new TextBox();
             arguments.Width = 250;
@@ -505,27 +409,31 @@ namespace NProf
             {
                 StartRun();
             };
-            start.BackgroundImage = Image.FromStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("NProf.Resources.go.bmp"));
+            //start.BackgroundImage = Image.FromStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("NProf.Resources.go.bmp"));
+            start.Text = "Start";
+            start.Anchor = AnchorStyles.Right;
+            start.Height = application.Height;
             start.BackgroundImageLayout = ImageLayout.Zoom;
             directory.Width = 250;
-            start.Width = 50;
+            start.Width = start.PreferredSize.Width;
+            //start.AutoSize=true;
             mainPanel.Height = 100;
             mainPanel.AutoSize = true;
             mainPanel.Dock = DockStyle.Top;
             start.TextImageRelation = TextImageRelation.TextAboveImage;
 
 
-            Label applicationLabel = new Label();
-            applicationLabel.Text = "Executable:";
-            applicationLabel.Dock = DockStyle.Fill;
-            applicationLabel.TextAlign = ContentAlignment.MiddleLeft;
-            applicationLabel.AutoSize = true;
-
             Button browse = new Button();
-            browse.Text = "..";
-            browse.AutoSize = true;
-            browse.Width = 20;
+            browse.Anchor = AnchorStyles.Top;
+            browse.Text = "...";
+            //browse.AutoSize = true;
+            browse.Width = 30;
             browse.Focus();
+            browse.Height = application.Height;
+            //browse.Padding = new Padding(0);
+            //browse.Margin = new Padding(0);
+            browse.TextAlign = ContentAlignment.MiddleCenter;
+            //browse.
             browse.Click += delegate
             {
                 OpenFileDialog dialog = new OpenFileDialog();
@@ -538,10 +446,15 @@ namespace NProf
                     application.SelectAll();
                 }
             };
+            //browse.Font = new Font("Arial", 6);
             Button directoryBrowse = new Button();
-            directoryBrowse.Text = "..";
-            directoryBrowse.AutoSize = true;
+
+            directoryBrowse.Text = "...";
+            //directoryBrowse.AutoSize = true;
             directoryBrowse.Width = 20;
+            directoryBrowse.Width = directoryBrowse.PreferredSize.Width;
+            directoryBrowse.Height = directory.Height;
+
             directoryBrowse.Click += delegate
             {
                 FolderBrowserDialog dialog = new FolderBrowserDialog();
@@ -550,34 +463,23 @@ namespace NProf
                     directory.Text = dialog.SelectedPath;
                 }
             };
-            Label argumentLabel = new Label();
-            argumentLabel.Text = "Arguments:";
-            argumentLabel.Dock = DockStyle.Fill;
-            argumentLabel.TextAlign = ContentAlignment.MiddleLeft;
-            argumentLabel.AutoSize = true;
-            Label directoryLabel = new Label();
-            directoryLabel.Text = "Working directory:";
-            directoryLabel.Dock = DockStyle.Fill;
-            directoryLabel.AutoSize = true;
 
-
-            mainPanel.Controls.Add(applicationLabel, 0, 0);
-            mainPanel.Controls.Add(application, 0, 1);
-            mainPanel.Controls.Add(browse, 1, 1);
-            mainPanel.Controls.Add(argumentLabel, 2, 0);
-            mainPanel.Controls.Add(arguments, 2, 1);
-            mainPanel.Controls.Add(directoryLabel, 3, 0);
-            mainPanel.Controls.Add(directory, 3, 1);
-            mainPanel.Controls.Add(directoryBrowse, 4, 1);
-            mainPanel.Controls.Add(start, 5, 1);
-
-
+            mainPanel.Controls.Add(MakeLabel("Application:"), 0, 0);
+            mainPanel.Controls.Add(application, 1, 0);
+            mainPanel.Controls.Add(browse, 2, 0);
+            mainPanel.Controls.Add(MakeLabel("Arguments:"), 3, 0);
+            mainPanel.Controls.Add(arguments, 4, 0);
+            mainPanel.Controls.Add(MakeLabel("Working directory:"), 5, 0);
+            mainPanel.Controls.Add(directory, 6, 0);
+            mainPanel.Controls.Add(directoryBrowse, 7, 0);
+            mainPanel.Controls.Add(start, 8, 0);
+            mainPanel.Padding = new Padding(3);
             tabs = new TabControl();
             tabs.Dock = DockStyle.Fill;
-            Controls.AddRange(new Control[] { tabs, mainPanel });
-            //Controls.AddRange(new Control[] { panel, mainPanel });
-
-
+            help.Dock = DockStyle.Fill;
+            help.TextAlign = ContentAlignment.MiddleCenter;
+            help.AutoSize = false;
+            Controls.AddRange(new Control[] {help, mainPanel });
 
             application.TextChanged += delegate
             {
@@ -585,76 +487,35 @@ namespace NProf
                 Text = fileName + " - " + Title;
             };
         }
+        private static Label MakeLabel(string text)
+        {
+            Label label = new Label();
+            label.Text = text;
+            label.Dock = DockStyle.Fill;
+            label.TextAlign = ContentAlignment.MiddleLeft;
+            label.AutoSize = true;
+            //label.Anchor = AnchorStyles.Top;
+            return label;
+        }
         private TabControl tabs;
         private void StartRun()
         {
-            Run run = new Run(profiler, Path.GetFileNameWithoutExtension(application.Text));
+            Run run = new Run(profiler, application.Text);
             run.profiler.completed = new EventHandler(run.Complete);
             run.Start();
         }
-        public void AddRun(Run run)
-        {
-            //string text = Path.GetFileNameWithoutExtension(application.Text) + " " + runs.Items.Count;
-            //string title = Path.GetFileNameWithoutExtension(application.Text);
-            //ListViewItem item = new ListViewItem(title);
-            //item.Tag = run;
-            //runs.Items.Add(run);
-            //runs.SelectedItems.Clear();
-            //item.SubItems[0].Text = run.Duration.TotalSeconds+"s     "+title;
-            //item.Selected = true;
-            ShowRun(run);
-        }
         public void ShowRun(Run run)
         {
-            //Run compareRun;
-            //if (runs.SelectedItems.Count > 1)
-            //{
-            //    ListViewItem first = runs.SelectedItems[runs.SelectedItems.Count - 1];
-            //    compareRun = (Run)first.Tag;
-            //}
-            //else
-            //{
-            //    compareRun = null;
-            //}
-            
-            //namespaces.Update(run, run.callers);
-            //SplitContainer methodPanel = new SplitContainer();
-            //methodPanel.Orientation = Orientation.Horizontal;
-
-
-
-
-            //methodPanel.Panel2.Controls.Add(callers);
-            //methodPanel.Panel2.Controls.Add(Caption("Method callers"));
-            //methodPanel.Panel1.Controls.Add(callees);
-            //methodPanel.Panel1.Controls.Add(Caption("Method calls"));
-
-            //methodPanel.Dock = DockStyle.Fill;
-            //methodPanel.Dock = DockStyle.Fill;
-            //Panel panel = new Panel();
-            //Panel rightPanel = new Panel();
-
-            //Splitter mainSplitter = new Splitter();
-            //mainSplitter.Dock = DockStyle.Left;
-
-            //Panel leftPanel = new Panel();
-            //leftPanel.Width = 200;
-            //leftPanel.Dock = DockStyle.Left;
-
-            //rightPanel.Dock = DockStyle.Fill;
-            //rightPanel.Controls.Add(methodPanel);
-
-            //leftPanel.Controls.Add(namespaces);
-            //leftPanel.Controls.Add(Caption("Namespaces"));
-
-            //panel.Dock = DockStyle.Fill;
-            //panel.Controls.AddRange(new Control[] { rightPanel, mainSplitter, leftPanel });
-            //panel.Padding = new Padding(5);
-
-            //namespaces.Update(run, run.callers);
-            //callees.Update(run, run.functions);
-            //callers.Update(run, run.callers);
-            tabs.Controls.Add(new RunView(run));
+            RunView runView=new RunView(run);
+            if (!Controls.Contains(tabs))
+            {
+                Controls.Remove(mainPanel);
+                Controls.Remove(help);
+                Controls.Add(tabs);
+                Controls.Add(mainPanel);
+            }
+            tabs.Controls.Add(runView);
+            tabs.SelectedTab = runView;
         }
         [STAThread]
         static void Main(string[] args)
@@ -875,7 +736,7 @@ namespace NProf
             NProf.form.BeginInvoke(new EventHandler(delegate
             {
                 InterpreteData();
-                NProf.form.AddRun(this);
+                NProf.form.ShowRun(this);
             }));
         }
         public Dictionary<int, FunctionInfo> signatures = new Dictionary<int, FunctionInfo>();

@@ -97,7 +97,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="NProf.cs">
-      <SubType>Component</SubType>
+      <SubType>Form</SubType>
     </Compile>
     <EmbeddedResource Include="NProf.resx">
       <SubType>Designer</SubType>
