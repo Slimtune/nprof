@@ -80,9 +80,9 @@ namespace NProf
             };
         }
         private Run run;
-        private Dictionary<int, Function> functions;
+        private Dictionary<long, Function> functions;
         private bool updating = false;
-        public void Update(Run run, Dictionary<int, Function> functions)
+        public void Update(Run run, Dictionary<long, Function> functions)
         {
             this.Nodes.Clear();
             updating = true;
@@ -323,7 +323,7 @@ namespace NProf
             {
                 TreeNode item = callers.SelectedNode;
 
-                int id = ((Function)item.Tag).ID;
+                long id = ((Function)item.Tag).ID;
                 if (item.Parent.Parent == null)
                 {
                     callees.MoveTo(id);
@@ -409,14 +409,12 @@ namespace NProf
             {
                 StartRun();
             };
-            //start.BackgroundImage = Image.FromStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("NProf.Resources.go.bmp"));
             start.Text = "Start";
             start.Anchor = AnchorStyles.Right;
             start.Height = application.Height;
             start.BackgroundImageLayout = ImageLayout.Zoom;
             directory.Width = 250;
             start.Width = start.PreferredSize.Width;
-            //start.AutoSize=true;
             mainPanel.Height = 100;
             mainPanel.AutoSize = true;
             mainPanel.Dock = DockStyle.Top;
@@ -426,14 +424,10 @@ namespace NProf
             Button browse = new Button();
             browse.Anchor = AnchorStyles.Top;
             browse.Text = "...";
-            //browse.AutoSize = true;
             browse.Width = 30;
             browse.Focus();
             browse.Height = application.Height;
-            //browse.Padding = new Padding(0);
-            //browse.Margin = new Padding(0);
             browse.TextAlign = ContentAlignment.MiddleCenter;
-            //browse.
             browse.Click += delegate
             {
                 OpenFileDialog dialog = new OpenFileDialog();
@@ -446,11 +440,9 @@ namespace NProf
                     application.SelectAll();
                 }
             };
-            //browse.Font = new Font("Arial", 6);
             Button directoryBrowse = new Button();
 
             directoryBrowse.Text = "...";
-            //directoryBrowse.AutoSize = true;
             directoryBrowse.Width = 20;
             directoryBrowse.Width = directoryBrowse.PreferredSize.Width;
             directoryBrowse.Height = directory.Height;
@@ -494,7 +486,6 @@ namespace NProf
             label.Dock = DockStyle.Fill;
             label.TextAlign = ContentAlignment.MiddleLeft;
             label.AutoSize = true;
-            //label.Anchor = AnchorStyles.Top;
             return label;
         }
         private TabControl tabs;
@@ -542,7 +533,7 @@ namespace NProf
     }
     public class StackWalk
     {
-        public StackWalk(int id, int index, List<int> frames)
+        public StackWalk(int id, int index, List<long> frames)
         {
             this.id = id;
             this.frames = frames;
@@ -550,7 +541,7 @@ namespace NProf
         }
         public readonly int length;
         public readonly int id;
-        public readonly List<int> frames;
+        public readonly List<long> frames;
     }
     public class FunctionInfo
     {
@@ -572,23 +563,23 @@ namespace NProf
                 return run.signatures[ID];
             }
         }
-        public Function(int ID, Run run)
+        public Function(long ID, Run run)
         {
             this.run = run;
             this.ID = ID;
         }
-        public readonly int ID;
+        public readonly long ID;
         public int Samples;
         public int lastWalk;
-        private Dictionary<int, Function> children;
+        private Dictionary<long, Function> children;
         public List<StackWalk> stackWalks = new List<StackWalk>();
-        public Dictionary<int, Function> Children
+        public Dictionary<long, Function> Children
         {
             get
             {
                 if (children == null)
                 {
-                    children = new Dictionary<int, Function>();
+                    children = new Dictionary<long, Function>();
                     foreach (StackWalk walk in stackWalks)
                     {
                         if (walk.length != 0)
@@ -613,7 +604,7 @@ namespace NProf
         {
             return executable +"s     " + Duration.TotalSeconds.ToString("0.00");
         }
-        public static Function GetFunctionInfo(Dictionary<int, Function> functions, int id, Run run)
+        public static Function GetFunctionInfo(Dictionary<long, Function> functions, long id, Run run)
         {
             Function result;
             if (!functions.TryGetValue(id, out result))
@@ -624,14 +615,14 @@ namespace NProf
             return result;
         }
         public int maxSamples;
-        public List<List<int>> stackWalks = new List<List<int>>();
+        public List<List<long>> stackWalks = new List<List<long>>();
         private void InterpreteData()
         {
             Interprete(functions, false, this);
             Interprete(callers, true, this);
             List<Function> startFunctions = new List<Function>();
             maxSamples = 0;
-            foreach (List<int> stackWalk in stackWalks)
+            foreach (List<long> stackWalk in stackWalks)
             {
                 if (stackWalk.Count != 0)
                 {
@@ -639,16 +630,16 @@ namespace NProf
                 }
             }
         }
-        private void Interprete(Dictionary<int, Function> map, bool reverse, Run run)
+        private void Interprete(Dictionary<long, Function> map, bool reverse, Run run)
         {
             int currentWalk = 0;
-            foreach (List<int> original in stackWalks)
+            foreach (List<long> original in stackWalks)
             {
                 currentWalk++;
-                List<int> stackWalk;
+                List<long> stackWalk;
                 if (reverse)
                 {
-                    stackWalk = new List<int>(original);
+                    stackWalk = new List<long>(original);
                     stackWalk.Reverse();
                 }
                 else
@@ -669,10 +660,10 @@ namespace NProf
         }
         private string ReadString(BinaryReader br)
         {
-            int length = br.ReadInt32();
+            long length = br.ReadInt64();
             byte[] abString = new byte[length];
-            br.Read(abString, 0, length);
-            return System.Text.ASCIIEncoding.ASCII.GetString(abString, 0, length);
+            br.Read(abString, 0, (int)length);
+            return System.Text.ASCIIEncoding.ASCII.GetString(abString, 0, (int)length);
         }
         private string FileName
         {
@@ -696,7 +687,8 @@ namespace NProf
                 this.end = DateTime.Now;
                 while (true)
                 {
-                    int functionId = r.ReadInt32();
+					//int functionId = r.ReadInt32();
+					long functionId = r.ReadInt64();
                     if (functionId == -1)
                     {
                         break;
@@ -708,11 +700,12 @@ namespace NProf
                 }
                 while (true)
                 {
-                    List<int> stackWalk = new List<int>();
+                    List<long> stackWalk = new List<long>();
                     while (true)
                     {
-                        int functionId = r.ReadInt32();
-                        if (functionId == -1)
+						long functionId = r.ReadInt64();
+						//int functionId = r.ReadInt32();
+						if (functionId == -1)
                         {
                             break;
                         }
@@ -730,7 +723,7 @@ namespace NProf
         {
             if (File.Exists(FileName))
             {
-                ReadStackWalks();
+				ReadStackWalks();
                 File.Delete(FileName);
             }
             NProf.form.BeginInvoke(new EventHandler(delegate
@@ -739,9 +732,9 @@ namespace NProf
                 NProf.form.ShowRun(this);
             }));
         }
-        public Dictionary<int, FunctionInfo> signatures = new Dictionary<int, FunctionInfo>();
-        public Dictionary<int, Function> functions = new Dictionary<int, Function>();
-        public Dictionary<int, Function> callers = new Dictionary<int, Function>();
+        public Dictionary<long, FunctionInfo> signatures = new Dictionary<long, FunctionInfo>();
+        public Dictionary<long, Function> functions = new Dictionary<long, Function>();
+        public Dictionary<long, Function> callers = new Dictionary<long, Function>();
         private DateTime start = DateTime.MinValue;
         private DateTime end = DateTime.MinValue;
         public Run(Profiler p,string executable)
@@ -773,7 +766,7 @@ namespace NProf
     }
     public class MethodView : View
     {
-        public void MoveTo(int id)
+        public void MoveTo(long id)
         {
             foreach (TreeNode item in Nodes)
             {
@@ -786,7 +779,7 @@ namespace NProf
                 }
             }
         }
-        public void Update(Run run, Dictionary<int, Function> functions)
+        public void Update(Run run, Dictionary<long, Function> functions)
         {
             currentRun = run;
             SuspendLayout();

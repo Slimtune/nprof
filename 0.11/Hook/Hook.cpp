@@ -359,7 +359,8 @@ public:
 		file->write(signature.c_str(),(int)signature.length());
 	}
 	void WriteInteger(FunctionID id) {
-		file->write((char*)&id,sizeof(FunctionID));
+		__int64 i=(__int64)id;
+		file->write((char*)&i,sizeof(__int64));
 	}
 	Profiler::Profiler( ICorProfilerInfo2* profilerInfo ) {
 		InitializeCriticalSection(&threadMapLock);
@@ -379,7 +380,7 @@ public:
 		TIMECAPS timeCaps;
 		timeGetDevCaps(&timeCaps, sizeof(TIMECAPS));
 		cout << timeCaps.wPeriodMin;
-		timer = timeSetEvent(interval,10,TimerFunction,	(DWORD_PTR)this,TIME_PERIODIC);
+		timer = timeSetEvent(interval,10,(LPTIMECALLBACK)TimerFunction,	(DWORD_PTR)this,TIME_PERIODIC);
 	}
 
 	// Called by the profiler hook when a managed thread is assigned to an OS thread
@@ -443,6 +444,7 @@ public:
 			GetThreadContext(threadHandle,&context);
 
 			HANDLE process=GetCurrentProcess();
+			//DebugBreak();
 
 			int count=0;
 			profilerInfo->DoStackSnapshot(

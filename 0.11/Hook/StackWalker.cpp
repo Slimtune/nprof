@@ -952,13 +952,13 @@ BOOL StackWalker::MoveUpCallStack(CComPtr< ICorProfilerInfo2 > profilerInfo,HAND
   s.AddrStack.Offset = c->Esp;
   s.AddrStack.Mode = AddrModeFlat;
 #elif _M_X64
-  imageType = IMAGE_FILE_MACHINE_AMD64;
-  s.AddrPC.Offset = c.Rip;
-  s.AddrPC.Mode = AddrModeFlat;
-  s.AddrFrame.Offset = c.Rsp;
-  s.AddrFrame.Mode = AddrModeFlat;
-  s.AddrStack.Offset = c.Rsp;
-  s.AddrStack.Mode = AddrModeFlat;
+  //imageType = IMAGE_FILE_MACHINE_AMD64;
+  //s.AddrPC.Offset = c.Rip;
+  //s.AddrPC.Mode = AddrModeFlat;
+  //s.AddrFrame.Offset = c.Rsp;
+  //s.AddrFrame.Mode = AddrModeFlat;
+  //s.AddrStack.Offset = c.Rsp;
+  //s.AddrStack.Mode = AddrModeFlat;
 #elif _M_IA64
   imageType = IMAGE_FILE_MACHINE_IA64;
   s.AddrPC.Offset = c.StIIP;
@@ -988,11 +988,28 @@ BOOL StackWalker::MoveUpCallStack(CComPtr< ICorProfilerInfo2 > profilerInfo,HAND
   for (frameNum = 0; frameNum<3; ++frameNum )
   {
 	FunctionID functionId=0;
-	if(SUCCEEDED(profilerInfo->GetFunctionFromIP((LPCBYTE)context->Eip,&functionId))) {
+
+	LPCBYTE instructionPointer;
+#ifdef _M_IX86
+  // normally, call ImageNtHeader() and use machine info from PE header
+	instructionPointer=(LPCBYTE)context->Eip;
+#elif _M_X64
+	instructionPointer=(LPCBYTE)context->Rip;
+#endif
+  //imageType = IMAGE_FILE_MACHINE_AMD64;
+  //s.AddrPC.Offset = c.Rip;
+  //s.AddrPC.Mode = AddrModeFlat;
+  //s.AddrFrame.Offset = c.Rsp;
+  //s.AddrFrame.Mode = AddrModeFlat;
+  //s.AddrStack.Offset = c.Rsp;
+  //s.AddrStack.Mode = AddrModeFlat;
+
+	if(SUCCEEDED(profilerInfo->GetFunctionFromIP(instructionPointer,&functionId))) {
 		if(functionId!=0) {
 			break;
 		}
 	}
+
     // get next stack frame (StackWalk64(), SymFunctionTableAccess64(), SymGetModuleBase64())
     // if this returns ERROR_INVALID_ADDRESS (487) or ERROR_NOACCESS (998), you can
     // assume that either you are done, or that the stack is so hosed that the next
