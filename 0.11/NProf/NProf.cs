@@ -31,6 +31,7 @@ using System.Reflection;
 
 namespace NProf
 {
+    using FunctionID = System.UInt64;
     public class NamespaceView : View
     {
         private void Filter(MethodView view)
@@ -80,9 +81,9 @@ namespace NProf
             };
         }
         private Run run;
-        private Dictionary<long, Function> functions;
+        private FunctionMap functions;
         private bool updating = false;
-        public void Update(Run run, Dictionary<long, Function> functions)
+        public void Update(Run run, FunctionMap functions)
         {
             this.Nodes.Clear();
             updating = true;
@@ -323,7 +324,7 @@ namespace NProf
             {
                 TreeNode item = callers.SelectedNode;
 
-                long id = ((Function)item.Tag).ID;
+                FunctionID id = ((Function)item.Tag).ID;
                 if (item.Parent.Parent == null)
                 {
                     callees.MoveTo(id);
@@ -533,7 +534,7 @@ namespace NProf
     }
     public class StackWalk
     {
-        public StackWalk(int id, int index, List<long> frames)
+        public StackWalk(int id, int index, List<FunctionID> frames)
         {
             this.id = id;
             this.frames = frames;
@@ -541,7 +542,7 @@ namespace NProf
         }
         public readonly int length;
         public readonly int id;
-        public readonly List<long> frames;
+        public readonly List<FunctionID> frames;
     }
     public class FunctionInfo
     {
@@ -563,23 +564,23 @@ namespace NProf
                 return run.signatures[ID];
             }
         }
-        public Function(long ID, Run run)
+        public Function(FunctionID ID, Run run)
         {
             this.run = run;
             this.ID = ID;
         }
-        public readonly long ID;
+        public readonly FunctionID ID;
         public int Samples;
         public int lastWalk;
-        private Dictionary<long, Function> children;
+        private FunctionMap children;
         public List<StackWalk> stackWalks = new List<StackWalk>();
-        public Dictionary<long, Function> Children
+        public FunctionMap Children
         {
             get
             {
                 if (children == null)
                 {
-                    children = new Dictionary<long, Function>();
+                    children = new FunctionMap();
                     foreach (StackWalk walk in stackWalks)
                     {
                         if (walk.length != 0)
@@ -604,7 +605,7 @@ namespace NProf
         {
             return executable +"s     " + Duration.TotalSeconds.ToString("0.00");
         }
-        public static Function GetFunctionInfo(Dictionary<long, Function> functions, long id, Run run)
+        public static Function GetFunctionInfo(FunctionMap functions, FunctionID id, Run run)
         {
             Function result;
             if (!functions.TryGetValue(id, out result))
@@ -615,14 +616,14 @@ namespace NProf
             return result;
         }
         public int maxSamples;
-        public List<List<long>> stackWalks = new List<List<long>>();
+        public List<List<FunctionID>> stackWalks = new List<List<FunctionID>>();
         private void InterpreteData()
         {
             Interprete(functions, false, this);
             Interprete(callers, true, this);
             List<Function> startFunctions = new List<Function>();
             maxSamples = 0;
-            foreach (List<long> stackWalk in stackWalks)
+            foreach (List<FunctionID> stackWalk in stackWalks)
             {
                 if (stackWalk.Count != 0)
                 {
@@ -630,16 +631,16 @@ namespace NProf
                 }
             }
         }
-        private void Interprete(Dictionary<long, Function> map, bool reverse, Run run)
+        private void Interprete(FunctionMap map, bool reverse, Run run)
         {
             int currentWalk = 0;
-            foreach (List<long> original in stackWalks)
+            foreach (List<FunctionID> original in stackWalks)
             {
                 currentWalk++;
-                List<long> stackWalk;
+                List<FunctionID> stackWalk;
                 if (reverse)
                 {
-                    stackWalk = new List<long>(original);
+                    stackWalk = new List<FunctionID>(original);
                     stackWalk.Reverse();
                 }
                 else
@@ -660,7 +661,7 @@ namespace NProf
         }
         private string ReadString(BinaryReader br)
         {
-            long length = br.ReadInt64();
+            FunctionID length = br.ReadUInt64();
             byte[] abString = new byte[length];
             br.Read(abString, 0, (int)length);
             return System.Text.ASCIIEncoding.ASCII.GetString(abString, 0, (int)length);
@@ -682,14 +683,15 @@ namespace NProf
         }
         private void ReadStackWalks()
         {
+            signatures[0] = new FunctionInfo(Path.GetFileName(this.executable), "test");
             using (BinaryReader r = new BinaryReader(File.Open(FileName, FileMode.Open)))
             {
                 this.end = DateTime.Now;
                 while (true)
                 {
 					//int functionId = r.ReadInt32();
-					long functionId = r.ReadInt64();
-                    if (functionId == -1)
+                    FunctionID functionId = r.ReadUInt64();
+                    if (functionId == FunctionID.MaxValue)
                     {
                         break;
                     }
@@ -700,21 +702,22 @@ namespace NProf
                 }
                 while (true)
                 {
-                    List<long> stackWalk = new List<long>();
+                    List<FunctionID> stackWalk = new List<FunctionID>();
                     while (true)
                     {
-						long functionId = r.ReadInt64();
+                        FunctionID functionId = r.ReadUInt64();
 						//int functionId = r.ReadInt32();
-						if (functionId == -1)
+						if (functionId == FunctionID.MaxValue)
                         {
                             break;
                         }
-                        else if (functionId == -2)
+                        else if (functionId == FunctionID.MaxValue-1)
                         {
                             return;
                         }
                         stackWalk.Add(functionId);
                     }
+                    stackWalk.Add(0);
                     stackWalks.Add(stackWalk);
                 }
             }
@@ -732,9 +735,9 @@ namespace NProf
                 NProf.form.ShowRun(this);
             }));
         }
-        public Dictionary<long, FunctionInfo> signatures = new Dictionary<long, FunctionInfo>();
-        public Dictionary<long, Function> functions = new Dictionary<long, Function>();
-        public Dictionary<long, Function> callers = new Dictionary<long, Function>();
+        public Dictionary<FunctionID, FunctionInfo> signatures = new Dictionary<FunctionID, FunctionInfo>();
+        public FunctionMap functions = new FunctionMap();
+        public FunctionMap callers = new FunctionMap();
         private DateTime start = DateTime.MinValue;
         private DateTime end = DateTime.MinValue;
         public Run(Profiler p,string executable)
@@ -756,6 +759,9 @@ namespace NProf
         }
         public Profiler profiler;
     }
+    public class FunctionMap : Dictionary<FunctionID, Function>
+    {
+    }
     public class View : TreeView
     {
         public View()
@@ -766,7 +772,7 @@ namespace NProf
     }
     public class MethodView : View
     {
-        public void MoveTo(long id)
+        public void MoveTo(FunctionID id)
         {
             foreach (TreeNode item in Nodes)
             {
@@ -779,7 +785,7 @@ namespace NProf
                 }
             }
         }
-        public void Update(Run run, Dictionary<long, Function> functions)
+        public void Update(Run run, FunctionMap functions)
         {
             currentRun = run;
             SuspendLayout();
@@ -966,6 +972,17 @@ namespace NProf
             process.StartInfo.UseShellExecute = false;
             process.EnableRaisingEvents = true;
             process.Exited += new EventHandler(OnProcessExited);
+
+            string directory;
+            if (NProf.directory.Text != "")
+            {
+                directory = NProf.directory.Text;
+            }
+            else
+            {
+                directory = Path.GetDirectoryName(run.Executable);
+            }
+            Directory.SetCurrentDirectory(directory);
             return process.Start();
         }
         private void OnProcessExited(object oSender, EventArgs ea)

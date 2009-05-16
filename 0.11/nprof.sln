@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NProf", "NProf\NProf.csproj
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NProf.Hook", "Hook\Hook.vcproj", "{1EF831D4-C2DA-4DEA-AD58-16A0C4EBBA93}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{C713271A-3AB7-42BF-8324-D310AED42BEB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,6 +50,18 @@ Global
 		{1EF831D4-C2DA-4DEA-AD58-16A0C4EBBA93}.Release|Win32.Build.0 = Release|Win32
 		{1EF831D4-C2DA-4DEA-AD58-16A0C4EBBA93}.Release|x64.ActiveCfg = Release|x64
 		{1EF831D4-C2DA-4DEA-AD58-16A0C4EBBA93}.Release|x64.Build.0 = Release|x64
+		{C713271A-3AB7-42BF-8324-D310AED42BEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C713271A-3AB7-42BF-8324-D310AED42BEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C713271A-3AB7-42BF-8324-D310AED42BEB}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C713271A-3AB7-42BF-8324-D310AED42BEB}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{C713271A-3AB7-42BF-8324-D310AED42BEB}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{C713271A-3AB7-42BF-8324-D310AED42BEB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C713271A-3AB7-42BF-8324-D310AED42BEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C713271A-3AB7-42BF-8324-D310AED42BEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C713271A-3AB7-42BF-8324-D310AED42BEB}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C713271A-3AB7-42BF-8324-D310AED42BEB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{C713271A-3AB7-42BF-8324-D310AED42BEB}.Release|Win32.ActiveCfg = Release|Any CPU
+		{C713271A-3AB7-42BF-8324-D310AED42BEB}.Release|x64.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
