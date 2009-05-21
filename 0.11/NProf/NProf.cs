@@ -54,10 +54,7 @@ namespace NProf
                         break;
                     }
                 }
-                if (nodes != null)
-                {
-                }
-                else
+                if (nodes == null && ((Function)node.Tag).Signature.Namespace!="")
                 {
                     remove.Add(node);
                 }
@@ -92,6 +89,10 @@ namespace NProf
             BeginUpdate();
             foreach (Function function in functions.Values)
             {
+                if (function.Signature.Namespace == "")
+                {
+                    continue;
+                }
                 TreeNodeCollection items = this.Nodes;
                 foreach (string name in function.Signature.Namespace.Split('.'))
                 {
@@ -683,7 +684,7 @@ namespace NProf
         }
         private void ReadStackWalks()
         {
-            signatures[0] = new FunctionInfo(Path.GetFileName(this.executable), "test");
+            signatures[0] = new FunctionInfo(Path.GetFileName(this.executable), "");
             using (BinaryReader r = new BinaryReader(File.Open(FileName, FileMode.Open)))
             {
                 this.end = DateTime.Now;
