@@ -31,10 +31,14 @@ namespace NProf
     {
         public static void Main()
         {
-            for (int i = 0; i < 4000000; i++)
+			Dictionary<string,string> dictionary=new Dictionary<string,string>();
+			//list.AddRange(new string[] { "", "", "", "", "", "", "", "", "", "" });
+            for (int i = 0; i < 50000000; i++)
             {
                 object x = new object();
-                XmlDocument a=new XmlDocument();
+				dictionary["hello"] = "world";
+				//XmlDocument a=new XmlDocument();
+				//list[i % 10] = "hello";
             }            
         }
     }

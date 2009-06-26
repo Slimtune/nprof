@@ -34,37 +34,68 @@ namespace NProf
     using FunctionID = System.UInt64;
     public class NamespaceView : View
     {
-        private void Filter(MethodView view)
-        {
-            view.BeginUpdate();
-            view.Update(run, functions);
-            List<TreeNode> remove = new List<TreeNode>();
-            foreach (TreeNode node in view.Nodes)
-            {
-                TreeNodeCollection nodes = Nodes;
-                foreach (string s in ((Function)node.Tag).Signature.Namespace.Split('.'))
-                {
-                    if (nodes[s] != null && nodes[s].Checked)
-                    {
-                        nodes = nodes[s].Nodes;
-                    }
-                    else
-                    {
-                        nodes = null;
-                        break;
-                    }
-                }
-                if (nodes == null && ((Function)node.Tag).Signature.Namespace!="")
-                {
-                    remove.Add(node);
-                }
-            }
-            foreach (TreeNode node in remove)
-            {
-                node.Remove();
-            }
-            view.EndUpdate();
-        }
+		private void Filter(MethodView view)
+		{
+			view.BeginUpdate();
+			view.Update(run, view.functions);
+			List<TreeNode> remove = new List<TreeNode>();
+			foreach (TreeNode node in view.Nodes)
+			{
+				TreeNodeCollection nodes = Nodes;
+				foreach (string s in ((Function)node.Tag).Signature.Namespace.Split('.'))
+				{
+					if (nodes[s] != null && nodes[s].Checked)
+					{
+						nodes = nodes[s].Nodes;
+					}
+					else
+					{
+						nodes = null;
+						break;
+					}
+				}
+				if (nodes == null && ((Function)node.Tag).Signature.Namespace != "")
+				{
+					remove.Add(node);
+				}
+			}
+			foreach (TreeNode node in remove)
+			{
+				node.Remove();
+			}
+			view.EndUpdate();
+		}
+		//private void Filter(MethodView view)
+		//{
+		//    view.BeginUpdate();
+		//    view.Update(run, functions);
+		//    List<TreeNode> remove = new List<TreeNode>();
+		//    foreach (TreeNode node in view.Nodes)
+		//    {
+		//        TreeNodeCollection nodes = Nodes;
+		//        foreach (string s in ((Function)node.Tag).Signature.Namespace.Split('.'))
+		//        {
+		//            if (nodes[s] != null && nodes[s].Checked)
+		//            {
+		//                nodes = nodes[s].Nodes;
+		//            }
+		//            else
+		//            {
+		//                nodes = null;
+		//                break;
+		//            }
+		//        }
+		//        if (nodes == null && ((Function)node.Tag).Signature.Namespace!="")
+		//        {
+		//            remove.Add(node);
+		//        }
+		//    }
+		//    foreach (TreeNode node in remove)
+		//    {
+		//        node.Remove();
+		//    }
+		//    view.EndUpdate();
+		//}
         public NamespaceView(RunView run)
         {
             this.CheckBoxes = true;
@@ -87,12 +118,17 @@ namespace NProf
             this.run = run;
             this.functions = functions;
             BeginUpdate();
-            foreach (Function function in functions.Values)
+			List<Function> functionList = new List<Function>(functions.Values);
+			functionList.Sort(new Comparison<Function>(delegate(Function a, Function b)
+			{
+				return a.Signature.Namespace.CompareTo(b.Signature.Namespace);
+			}));
+            foreach (Function function in functionList)
             {
-                if (function.Signature.Namespace == "")
-                {
-                    continue;
-                }
+				if (function.Signature.Namespace == "")
+				{
+					continue;
+				}
                 TreeNodeCollection items = this.Nodes;
                 foreach (string name in function.Signature.Namespace.Split('.'))
                 {
@@ -201,26 +237,26 @@ namespace NProf
             namespaces.Height = 100;
             namespaces.Dock = DockStyle.Fill;
 
-            callers.DoubleClick += delegate { CallersNext(); };
-            callers.KeyDown += delegate(object sender, KeyEventArgs e)
-            {
-                if (e.KeyData == Keys.Enter)
-                {
-                    CallersNext();
-                }
-            };
-            callees.KeyDown += delegate(object sender, KeyEventArgs e)
-            {
-                if (e.KeyData == Keys.Enter)
-                {
-                    CalleesNext();
-                }
-            };
+			//callers.DoubleClick += delegate { CallersNext(); };
+			//callers.KeyDown += delegate(object sender, KeyEventArgs e)
+			//{
+			//    if (e.KeyData == Keys.Enter)
+			//    {
+			//        CallersNext();
+			//    }
+			//};
+			//callees.KeyDown += delegate(object sender, KeyEventArgs e)
+			//{
+			//    if (e.KeyData == Keys.Enter)
+			//    {
+			//        CalleesNext();
+			//    }
+			//};
 
-            callees.DoubleClick += delegate
-            {
-                CalleesNext();
-            };
+			//callees.DoubleClick += delegate
+			//{
+			//    CalleesNext();
+			//};
 
 
             ContextMenu callerMenu = new ContextMenu(
@@ -268,10 +304,15 @@ namespace NProf
             SplitContainer methodPanel = new SplitContainer();
             methodPanel.Orientation = Orientation.Horizontal;
 
+
+			//const string columnCaptions = "        Inclusive   Method signature";
+
             methodPanel.Panel2.Controls.Add(callers);
-            methodPanel.Panel2.Controls.Add(Caption("Method callers"));
+			//methodPanel.Panel2.Controls.Add(Caption(columnCaptions));
+            methodPanel.Panel2.Controls.Add(Caption("Callers"));
             methodPanel.Panel1.Controls.Add(callees);
-            methodPanel.Panel1.Controls.Add(Caption("Method calls"));
+			//methodPanel.Panel1.Controls.Add(Caption(columnCaptions));
+			methodPanel.Panel1.Controls.Add(Caption("Calls"));
 
             methodPanel.Dock = DockStyle.Fill;
             methodPanel.Dock = DockStyle.Fill;
@@ -375,7 +416,8 @@ namespace NProf
                 return "NProf " + Profiler.Version;
             }
         }
-        TableLayoutPanel mainPanel = new TableLayoutPanel();
+		FlowLayoutPanel mainPanel = new FlowLayoutPanel();
+
         Label help = MakeLabel("Select the application to profile and click 'Start'.");
         private NProf()
         {
@@ -397,13 +439,14 @@ namespace NProf
 
             Splitter leftSplitter = new Splitter();
             leftSplitter.Dock = DockStyle.Bottom;
- 
-            
+
+
+			mainPanel.AutoSize = true;
             application = new TextBox();
-            application.Anchor = AnchorStyles.Top;
-            application.Width = 250;
+			application.Width = 200;
+			application.Dock = DockStyle.Fill;
             arguments = new TextBox();
-            arguments.Width = 250;
+			arguments.Width = 200;
             directory = new TextBox();
             start = new Button();
             start.Text = "";
@@ -415,7 +458,7 @@ namespace NProf
             start.Anchor = AnchorStyles.Right;
             start.Height = application.Height;
             start.BackgroundImageLayout = ImageLayout.Zoom;
-            directory.Width = 250;
+			directory.Width = 200;
             start.Width = start.PreferredSize.Width;
             mainPanel.Height = 100;
             mainPanel.AutoSize = true;
@@ -425,14 +468,14 @@ namespace NProf
 
             Button browse = new Button();
             browse.Anchor = AnchorStyles.Top;
-            browse.Text = "...";
-            browse.Width = 30;
+            browse.Text = "Browse...";
             browse.Focus();
             browse.Height = application.Height;
             browse.TextAlign = ContentAlignment.MiddleCenter;
             browse.Click += delegate
             {
                 OpenFileDialog dialog = new OpenFileDialog();
+				dialog.FileName = application.Text;
                 dialog.Filter = "Executable files (*.exe)|*.exe";
                 DialogResult dr = dialog.ShowDialog();
                 if (dr == DialogResult.OK)
@@ -444,7 +487,7 @@ namespace NProf
             };
             Button directoryBrowse = new Button();
 
-            directoryBrowse.Text = "...";
+            directoryBrowse.Text = "Browse...";
             directoryBrowse.Width = 20;
             directoryBrowse.Width = directoryBrowse.PreferredSize.Width;
             directoryBrowse.Height = directory.Height;
@@ -452,21 +495,22 @@ namespace NProf
             directoryBrowse.Click += delegate
             {
                 FolderBrowserDialog dialog = new FolderBrowserDialog();
+				dialog.SelectedPath = directory.Text;
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     directory.Text = dialog.SelectedPath;
                 }
             };
+			mainPanel.Controls.Add(MakeLabel("Application:"));
+			mainPanel.Controls.Add(application);
+			mainPanel.Controls.Add(browse);
+			mainPanel.Controls.Add(MakeLabel("Arguments:"));
+			mainPanel.Controls.Add(arguments);
+			mainPanel.Controls.Add(MakeLabel("Working directory:"));
+			mainPanel.Controls.Add(directory);
+			mainPanel.Controls.Add(directoryBrowse);
+			mainPanel.Controls.Add(start);
 
-            mainPanel.Controls.Add(MakeLabel("Application:"), 0, 0);
-            mainPanel.Controls.Add(application, 1, 0);
-            mainPanel.Controls.Add(browse, 2, 0);
-            mainPanel.Controls.Add(MakeLabel("Arguments:"), 3, 0);
-            mainPanel.Controls.Add(arguments, 4, 0);
-            mainPanel.Controls.Add(MakeLabel("Working directory:"), 5, 0);
-            mainPanel.Controls.Add(directory, 6, 0);
-            mainPanel.Controls.Add(directoryBrowse, 7, 0);
-            mainPanel.Controls.Add(start, 8, 0);
             mainPanel.Padding = new Padding(3);
             tabs = new TabControl();
             tabs.Dock = DockStyle.Fill;
@@ -558,6 +602,7 @@ namespace NProf
     public class Function
     {
         public Run run;
+		public readonly bool reverse;
         public FunctionInfo Signature
         {
             get
@@ -565,12 +610,51 @@ namespace NProf
                 return run.signatures[ID];
             }
         }
-        public Function(FunctionID ID, Run run)
+        public Function(FunctionID ID, Run run,bool reverse)
         {
             this.run = run;
             this.ID = ID;
+			this.reverse = reverse;
         }
         public readonly FunctionID ID;
+
+		//public int ExclusiveSamples=0;
+		public int ExclusiveSamples
+		{
+			get
+			{
+				int samples=0;
+				foreach(StackWalk stackWalk in stackWalks)
+				{
+					if (!reverse)
+					{
+						//if (stackWalk.length + 1 == stackWalk.frames.Count)
+						//{
+						//    samples++;
+						//}
+						if (stackWalk.length == 0)
+						{
+							samples++;
+						}
+					}
+					else
+					{
+						if (stackWalk.length +1 == stackWalk.frames.Count)
+						{
+							samples++;
+						}
+					}
+
+					//if(stackWalk.frames[stackWalk.length-1]==this.ID)
+					//{
+					//    samples++;
+					//}
+				}
+				return samples;
+			}
+		}
+
+
         public int Samples;
         public int lastWalk;
         private FunctionMap children;
@@ -586,7 +670,7 @@ namespace NProf
                     {
                         if (walk.length != 0)
                         {
-                            Function callee = Run.GetFunctionInfo(children, walk.frames[walk.length - 1], run);
+                            Function callee = Run.GetFunctionInfo(children, walk.frames[walk.length - 1], run,this.reverse);
                             if (callee.lastWalk != walk.id)
                             {
                                 callee.Samples++;
@@ -606,12 +690,12 @@ namespace NProf
         {
             return executable +"s     " + Duration.TotalSeconds.ToString("0.00");
         }
-        public static Function GetFunctionInfo(FunctionMap functions, FunctionID id, Run run)
+        public static Function GetFunctionInfo(FunctionMap functions, FunctionID id, Run run,bool reverse)
         {
             Function result;
             if (!functions.TryGetValue(id, out result))
             {
-                result = new Function(id, run);
+                result = new Function(id, run,reverse);
                 functions[id] = result;
             }
             return result;
@@ -650,7 +734,7 @@ namespace NProf
                 }
                 for (int i = 0; i < stackWalk.Count; i++)
                 {
-                    Function function = Run.GetFunctionInfo(map, stackWalk[stackWalk.Count - i - 1], run);
+                    Function function = Run.GetFunctionInfo(map, stackWalk[stackWalk.Count - i - 1], run,reverse);
                     if (function.lastWalk != currentWalk)
                     {
                         function.Samples++;
@@ -659,6 +743,11 @@ namespace NProf
                     function.lastWalk = currentWalk;
                 }
             }
+			//foreach (List<FunctionID> stackWalk in stackWalks)
+			//{
+			//    Function f = Run.GetFunctionInfo(map, stackWalk[0], run);
+			//    f.ExclusiveSamples++;
+			//}
         }
         private string ReadString(BinaryReader br)
         {
@@ -786,8 +875,10 @@ namespace NProf
                 }
             }
         }
+		public FunctionMap functions;
         public void Update(Run run, FunctionMap functions)
         {
+			this.functions = functions;
             currentRun = run;
             SuspendLayout();
             Invalidate();
@@ -940,7 +1031,9 @@ namespace NProf
                 TreeNode item = parent.Insert(i, signature, signature);
                 double fraction = ((double)function.Samples) / (double)currentRun.maxSamples;
                 double percent = (100.0 * ((double)function.Samples / (double)function.run.maxSamples));
-                item.Text = percent.ToString("0.00;-0.00;0.00").PadLeft(7, ' ') + "  " + currentRun.signatures[function.ID].Signature.Trim();
+				//double exclusivePercent = (100.0 * ((double)function.ExclusiveSamples / (double)function.run.maxSamples));
+				//item.Text = percent.ToString("0.00;-0.00;0.00").PadLeft(7, ' ') + "" + exclusivePercent.ToString("0.00;-0.00;0.00").PadLeft(7, ' ') + "  " + currentRun.signatures[function.ID].Signature.Trim();
+				item.Text = percent.ToString("0.00;-0.00;0.00").PadLeft(7, ' ') + "  " + currentRun.signatures[function.ID].Signature.Trim();
                 item.Tag = function;
                 return item;
             }
