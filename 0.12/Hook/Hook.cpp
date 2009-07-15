@@ -36,12 +36,13 @@
 #include "resource.h"
 #include "Stackwalker.h"
 #include "CorHdr.h"
+#include "winbase.h"
 
 using namespace ATL;
 using namespace std;
 
 const int MAX_FUNCTION_LENGTH=2048;
-#define guid "107F578A-E019-4BAF-86A1-7128A749DB05"
+#define guid "61D3E5D7-53E9-46B2-8DBC-011099A91793"
 
 
 namespace ProfilerHook
@@ -475,6 +476,8 @@ namespace ProfilerHook
 			{
 				cout << "SymInitialize failed";
 			}
+			//Sleep(15000);
+			//DebugBreak();
 			SetTimer();
 		}
 		HANDLE process;
@@ -491,10 +494,12 @@ namespace ProfilerHook
 		{
 			EnterCriticalSection(&threadMapLock);
 			threadMap[dwOSThread]=managedThreadId;
-			FILETIME time;
-			time.dwHighDateTime=0;
-			time.dwLowDateTime=0;
-			threadTime[managedThreadId]=time;
+
+			threadTime[managedThreadId]=0;
+			//FILETIME time;
+			//time.dwHighDateTime=0;
+			//time.dwLowDateTime=0;
+			//threadTime[managedThreadId]=time;
 			LeaveCriticalSection(&threadMapLock);
 		};
 		
@@ -554,24 +559,31 @@ namespace ProfilerHook
 
 				ThreadID id=threadMap[threadId];
 
-				FILETIME creationTime;
-				FILETIME exitTime;
-				FILETIME kernelTime;
-				FILETIME userTime;
+				//FILETIME creationTime;
+				//FILETIME exitTime;
+				//FILETIME kernelTime;
+				//FILETIME userTime;
 
-				GetThreadTimes(
-				  threadHandle,
-				  &creationTime,
-				  &exitTime,
-				  &kernelTime,
-				  &userTime
-				);
+				ULONG64 cycles=0;
+				QueryThreadCycleTime(threadHandle,&cycles);
 
-				FILETIME t=threadTime[id];
+				//GetThreadTimes(
+				//  threadHandle,
+				//  &creationTime,
+				//  &exitTime,
+				//  &kernelTime,
+				//  &userTime
+				//);
 
-				if(CompareFileTime(&userTime,&t)>0)
+				ULONG64 t=threadTime[id];
+				//FILETIME t=threadTime[id];
+
+				if( cycles - t > 10000000)
+				//if(CompareFileTime(&userTime,&t)>0)
 				{
-					threadTime[id]=userTime;
+					//cout << "Stack walk";
+					threadTime[id]=cycles;
+					//threadTime[id]=userTime;
 					vector<FunctionID>* functions=new vector<FunctionID>();
 					CONTEXT context;
 					context.ContextFlags=CONTEXT_FULL;
@@ -717,7 +729,8 @@ namespace ProfilerHook
 		}
 		CRITICAL_SECTION threadMapLock;
 		map<DWORD,ThreadID> threadMap;
-		map<ThreadID,FILETIME> threadTime;
+		map<ThreadID,ULONG64> threadTime;
+		//map<ThreadID,FILETIME> threadTime;
 	protected:
 		CComPtr<ICorProfilerInfo2> profilerInfo;
 		ProfilerHelper profilerHelper;
