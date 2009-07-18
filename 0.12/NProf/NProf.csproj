@@ -131,6 +131,7 @@
     <EmbeddedResource Include="Resources\go.bmp">
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\close.gif" />
+    <EmbeddedResource Include="Resources\closeSelected.gif" />
     <Content Include="Resources\toolbar16.png" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

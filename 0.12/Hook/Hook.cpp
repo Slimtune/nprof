@@ -34,7 +34,7 @@
 #include "corprof.h"
 #include "Dbghelp.h"
 #include "resource.h"
-#include "Stackwalker.h"
+//#include "Stackwalker.h"
 #include "CorHdr.h"
 #include "winbase.h"
 
@@ -234,7 +234,7 @@ namespace ProfilerHook
 
 			ULONG callConv;
 			sigBlob += CorSigUncompressData(sigBlob, &callConv);
-			name+=" (";
+			name+="(";
 
 			ULONG argCount=0;
 			sigBlob += CorSigUncompressData(sigBlob, &argCount);
@@ -440,7 +440,6 @@ namespace ProfilerHook
 		void EndAll(ProfilerHelper& profilerHelper) {
 			file=new ofstream(GetTemporaryFileName().c_str(), ios::binary);
 			for(map< FunctionID, FunctionInfo*>::iterator i=signatures.begin();i!=signatures.end();i++) {
-			//for(map< FunctionID, string >::iterator i=signatures.begin();i!=signatures.end();i++) {
 				WriteInteger(i->first);
 				WriteString(i->second->signature);
 				WriteString(i->second->nameSpace);
@@ -476,8 +475,16 @@ namespace ProfilerHook
 			{
 				cout << "SymInitialize failed";
 			}
-			//Sleep(15000);
-			//DebugBreak();
+			isVista=false;
+			HMODULE kernel32 = LoadLibraryW(L"Kernel32");
+			if (kernel32 != NULL)
+			{    
+				FARPROC proc=GetProcAddress(kernel32, "QueryThreadCycleTime");
+				if (proc != NULL)    
+				{        
+					isVista=true;
+				}
+			}
 			SetTimer();
 		}
 		HANDLE process;
@@ -495,11 +502,13 @@ namespace ProfilerHook
 			EnterCriticalSection(&threadMapLock);
 			threadMap[dwOSThread]=managedThreadId;
 
-			threadTime[managedThreadId]=0;
-			//FILETIME time;
-			//time.dwHighDateTime=0;
-			//time.dwLowDateTime=0;
-			//threadTime[managedThreadId]=time;
+			vistaThreadTime[managedThreadId]=0;
+
+			FILETIME time;
+			time.dwHighDateTime=0;
+			time.dwLowDateTime=0;
+			threadTime[managedThreadId]=time;
+
 			LeaveCriticalSection(&threadMapLock);
 		};
 		
@@ -542,6 +551,52 @@ namespace ProfilerHook
 		}
 		static UINT timer;
 		map<DWORD,DWORD> switchMap;
+		bool DecideWalk(HANDLE threadHandle,ThreadID id)
+		{
+			if(isVista)
+			{
+				ULONG64 cycles=0;
+				QueryThreadCycleTime(threadHandle,&cycles);
+				ULONG64 t=vistaThreadTime[id];
+
+				if( cycles - t > 10000000)
+				{
+					vistaThreadTime[id]=cycles;
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			}
+			else
+			{
+				FILETIME creationTime;
+				FILETIME exitTime;
+				FILETIME kernelTime;
+				FILETIME userTime;
+				FILETIME t=threadTime[id];
+				GetThreadTimes(
+				  threadHandle,
+				  &creationTime,
+				  &exitTime,
+				  &kernelTime,
+				  &userTime
+				);
+
+				if(CompareFileTime(&userTime,&t)>0)
+				{
+					threadTime[id]=userTime;
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+
+			}
+		}
+		bool isVista;
 		void WalkStack() {
 			EnterCriticalSection(&threadMapLock);
 			for(map<DWORD,ThreadID>::iterator i=threadMap.begin();i!=threadMap.end();i++) {
@@ -559,31 +614,9 @@ namespace ProfilerHook
 
 				ThreadID id=threadMap[threadId];
 
-				//FILETIME creationTime;
-				//FILETIME exitTime;
-				//FILETIME kernelTime;
-				//FILETIME userTime;
-
-				ULONG64 cycles=0;
-				QueryThreadCycleTime(threadHandle,&cycles);
-
-				//GetThreadTimes(
-				//  threadHandle,
-				//  &creationTime,
-				//  &exitTime,
-				//  &kernelTime,
-				//  &userTime
-				//);
-
-				ULONG64 t=threadTime[id];
-				//FILETIME t=threadTime[id];
-
-				if( cycles - t > 10000000)
-				//if(CompareFileTime(&userTime,&t)>0)
+				if(DecideWalk(threadHandle,id))
 				{
-					//cout << "Stack walk";
-					threadTime[id]=cycles;
-					//threadTime[id]=userTime;
+					
 					vector<FunctionID>* functions=new vector<FunctionID>();
 					CONTEXT context;
 					context.ContextFlags=CONTEXT_FULL;
@@ -646,9 +679,19 @@ namespace ProfilerHook
 							pSymbol->MaxNameLen = MAX_SYM_NAME;
 
 							string symbol;
+							FunctionID f;
 							if (SymFromAddr(process, (DWORD64)sf64.AddrPC.Offset, (PDWORD64)&dwDisplacement, pSymbol))
 							{
 								symbol=pSymbol->Name;
+								f=pSymbol->Address;
+								//if(pSymbol->Address==sf64.AddrPC.Offset)
+								//{
+								//	cout<<"same"<<endl;
+								//}
+								//else
+								//{
+								//	cout<<"different"<<endl;
+								//}
 							}
 							else
 							{
@@ -656,7 +699,9 @@ namespace ProfilerHook
 								std::stringstream out;
 								out << "0x" << setbase(16) << sf64.AddrPC.Offset;
 								symbol = out.str();
+								f=sf64.AddrPC.Offset;
 							}
+							// todo: is this correct?
 							if(sf64.AddrPC.Offset==0)
 							{
 								break;
@@ -666,7 +711,7 @@ namespace ProfilerHook
 							//{
 							//	symbol=symbol+ "(" + module.ModuleName + ")";
 							//}
-							FunctionID f=sf64.AddrPC.Offset;
+							/*FunctionID f=sf64.AddrPC.Offset;*/
 							functions->push_back(f);
 
 							const map< FunctionID, FunctionInfo* >::iterator found = signatures.find(f);
@@ -729,8 +774,8 @@ namespace ProfilerHook
 		}
 		CRITICAL_SECTION threadMapLock;
 		map<DWORD,ThreadID> threadMap;
-		map<ThreadID,ULONG64> threadTime;
-		//map<ThreadID,FILETIME> threadTime;
+		map<ThreadID,ULONG64> vistaThreadTime;
+		map<ThreadID,FILETIME> threadTime;
 	protected:
 		CComPtr<ICorProfilerInfo2> profilerInfo;
 		ProfilerHelper profilerHelper;
