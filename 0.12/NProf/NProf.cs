@@ -32,151 +32,95 @@ using System.Reflection;
 namespace NProf
 {
     using FunctionID = System.UInt64;
-	//public class NamespaceView : View
-	//{
-	//    private void Filter(MethodView view)
-	//    {
-	//        view.BeginUpdate();
-	//        view.Update(run, view.functions);
-	//        List<TreeNode> remove = new List<TreeNode>();
-	//        foreach (TreeNode node in view.Nodes)
-	//        {
-	//            TreeNodeCollection nodes = Nodes;
-	//            foreach (string s in ((Function)node.Tag).Signature.Namespace.Split('.'))
-	//            {
-	//                if (nodes[s] != null && nodes[s].Checked)
-	//                {
-	//                    nodes = nodes[s].Nodes;
-	//                }
-	//                else
-	//                {
-	//                    nodes = null;
-	//                    break;
-	//                }
-	//            }
-	//            if (nodes == null && ((Function)node.Tag).Signature.Namespace != "")
-	//            {
-	//                remove.Add(node);
-	//            }
-	//        }
-	//        foreach (TreeNode node in remove)
-	//        {
-	//            node.Remove();
-	//        }
-	//        view.EndUpdate();
-	//    }
-	//    //private void Filter(MethodView view)
-	//    //{
-	//    //    view.BeginUpdate();
-	//    //    view.Update(run, functions);
-	//    //    List<TreeNode> remove = new List<TreeNode>();
-	//    //    foreach (TreeNode node in view.Nodes)
-	//    //    {
-	//    //        TreeNodeCollection nodes = Nodes;
-	//    //        foreach (string s in ((Function)node.Tag).Signature.Namespace.Split('.'))
-	//    //        {
-	//    //            if (nodes[s] != null && nodes[s].Checked)
-	//    //            {
-	//    //                nodes = nodes[s].Nodes;
-	//    //            }
-	//    //            else
-	//    //            {
-	//    //                nodes = null;
-	//    //                break;
-	//    //            }
-	//    //        }
-	//    //        if (nodes == null && ((Function)node.Tag).Signature.Namespace!="")
-	//    //        {
-	//    //            remove.Add(node);
-	//    //        }
-	//    //    }
-	//    //    foreach (TreeNode node in remove)
-	//    //    {
-	//    //        node.Remove();
-	//    //    }
-	//    //    view.EndUpdate();
-	//    //}
-	//    public NamespaceView(RunView run)
-	//    {
-	//        this.CheckBoxes = true;
-	//        this.AfterCheck += delegate(object sender, TreeViewEventArgs e)
-	//        {
-	//            if (!updating)
-	//            {
-	//                Filter(run.calls);
-	//                Filter(run.callers);
-	//            }
-	//        };
-	//    }
-	//    private Run run;
-	//    private FunctionMap functions;
-	//    private bool updating = false;
-	//    public void Update(Run run, FunctionMap functions)
-	//    {
-	//        this.Nodes.Clear();
-	//        updating = true;
-	//        this.run = run;
-	//        this.functions = functions;
-	//        BeginUpdate();
-	//        List<Function> functionList = new List<Function>(functions.Values);
-	//        functionList.Sort(new Comparison<Function>(delegate(Function a, Function b)
-	//        {
-	//            return a.Signature.Namespace.CompareTo(b.Signature.Namespace);
-	//        }));
-	//        foreach (Function function in functionList)
-	//        {
-	//            if (function.Signature.Namespace == "")
-	//            {
-	//                continue;
-	//            }
-	//            TreeNodeCollection items = this.Nodes;
-	//            foreach (string name in function.Signature.Namespace.Split('.'))
-	//            {
-	//                bool found = false;
-	//                foreach (TreeNode item in items)
-	//                {
-	//                    if (item.Text == name)
-	//                    {
-	//                        items = item.Nodes;
-	//                        found = true;
-	//                        break;
-	//                    }
-	//                }
-	//                if (!found)
-	//                {
-	//                    TreeNode item = items.Add(name, name);
-	//                    //TreeNode item = items.Add(name, name);
-	//                    item.Checked = true;
-	//                    items = item.Nodes;
-	//                }
-	//            }
-	//        }
-	//        EndUpdate();
-	//        updating = false;
-	//    }
-	//}
-	public class UpDownButton : Button
+	public class NamespaceView : View
 	{
-		MethodView view;
-		bool ascending;
-		SortColumn sort;
-		public UpDownButton(string text,MethodView view,SortColumn sort,RunView runView)
+		private void Filter(MethodView view)
 		{
-			this.Text = text;
-			this.view = view;
-			this.sort = sort;
-			this.Padding = new Padding();
-			this.Margin = new Padding();
-			//this.Dock = DockStyle.Top;
-			this.Click += delegate
+			view.BeginUpdate();
+			view.Update(run, view.functions);
+			List<TreeNode> remove = new List<TreeNode>();
+			foreach (TreeNode node in view.Nodes)
 			{
-				view.Nodes.Clear();
-				view.Nodes.Clear();
-				runView.sort = sort;
-
-				view.Update(view.currentRun, view.currentRun.functions);
-				view.Update(view.currentRun, view.currentRun.callers);
+				TreeNodeCollection nodes = Nodes;
+				foreach (string s in ((Function)node.Tag).Signature.Namespace.Split('.'))
+				{
+					if (nodes[s] != null && nodes[s].Checked)
+					{
+						nodes = nodes[s].Nodes;
+					}
+					else
+					{
+						nodes = null;
+						break;
+					}
+				}
+				if (nodes == null && ((Function)node.Tag).Signature.Namespace != "")
+				{
+					remove.Add(node);
+				}
+			}
+			foreach (TreeNode node in remove)
+			{
+				node.Remove();
+			}
+			view.EndUpdate();
+		}
+		public NamespaceView(RunView run)
+		{
+			this.CheckBoxes = true;
+			this.AfterCheck += delegate(object sender, TreeViewEventArgs e)
+			{
+				if (!updating)
+				{
+					Filter(run.calls);
+					Filter(run.callers);
+				}
 			};
+		}
+		private Run run;
+		private FunctionMap functions;
+		private bool updating = false;
+		public void Update(Run run, FunctionMap functions)
+		{
+			this.Nodes.Clear();
+			updating = true;
+			this.run = run;
+			this.functions = functions;
+			BeginUpdate();
+			List<Function> functionList = new List<Function>(functions.Values);
+			functionList.Sort(new Comparison<Function>(delegate(Function a, Function b)
+			{
+				return a.Signature.Namespace.CompareTo(b.Signature.Namespace);
+			}));
+			foreach (Function function in functionList)
+			{
+				if (function.Signature.Namespace == "")
+				{
+					continue;
+				}
+				TreeNodeCollection items = this.Nodes;
+				foreach (string name in function.Signature.Namespace.Split('.'))
+				{
+					bool found = false;
+					foreach (TreeNode item in items)
+					{
+						if (item.Text == name)
+						{
+							items = item.Nodes;
+							found = true;
+							break;
+						}
+					}
+					if (!found)
+					{
+						TreeNode item = items.Add(name, name);
+						item.Checked = true;
+						items = item.Nodes;
+					}
+				}
+			}
+			EndUpdate();
+			updating = false;
 		}
 	}
     public class SearchPanel : FlowLayoutPanel
@@ -188,17 +132,21 @@ namespace NProf
 			{
 				this.findText.Focus();
 			}
+			else
+			{
+				this.methodView.Focus();
+			}
 		}
         private MethodView methodView;
         public void Find(bool forward, bool step)
         {
             if (methodView.SelectedNode != null)
             {
-                methodView.Find(findText.Text, forward, step);
+                methodView.Find(findText.Text, forward, step,false);
             }
             else
             {
-                methodView.Find(findText.Text, forward, step);
+                methodView.Find(findText.Text, forward, step,false);
             }
         }
         public SearchPanel(MethodView methodView)
@@ -206,19 +154,32 @@ namespace NProf
             Dock = DockStyle.Bottom;
             this.methodView = methodView;
             findText = new TextBox();
+			findText.AcceptsReturn = true;
             findText.TextChanged += delegate
             {
                 Find(true, false);
             };
-            findText.KeyDown += delegate(object sender, KeyEventArgs e)
-            {
-                if (e.KeyCode == Keys.Enter)
-                {
-                    Find(true, true);
-                    e.Handled = true;
-                }
-            };
-
+			findText.KeyDown+=delegate(object sender,KeyEventArgs e)
+			{
+				if (e.KeyCode == Keys.Enter)
+				{
+					Find(true, true);
+					e.Handled = true;
+					e.SuppressKeyPress = true;
+				}
+				else if (e.KeyCode == Keys.Escape)
+				{
+					Toggle();
+					e.Handled = true;
+					e.SuppressKeyPress = true;
+				}
+				if (e.KeyData == (Keys.F | Keys.Control))
+				{
+					Toggle();
+					e.Handled = true;
+					e.SuppressKeyPress = true;
+				}
+			};			
             BorderStyle = BorderStyle.FixedSingle;
             WrapContents = false;
             AutoSize = true;
@@ -230,12 +191,11 @@ namespace NProf
 			close.Width = 30;
 
             findNext.AutoSize = true;
-            findNext.Text = "Next";
+            findNext.Text = "&Next";
             findNext.Click += delegate(object sender, EventArgs e)
             {
                 Find(true, true);
             };
-
 
             Label findLabel = new Label();
             findLabel.Text = "Find:";
@@ -246,12 +206,12 @@ namespace NProf
             Button findPrevious = new Button();
             findPrevious.AutoSize = true;
             findPrevious.FlatAppearance.BorderSize = 0;
+			
             findPrevious.Click += delegate(object sender, EventArgs e)
             {
                 Find(false, true);
             };
-            findPrevious.Text = "Previous";
-
+            findPrevious.Text = "&Previous";
             Controls.AddRange(new Control[] { findLabel, findText, findNext, findPrevious,close });
 			this.Visible = false;
         }
@@ -267,8 +227,9 @@ namespace NProf
 	}
     public class RunView : TabPage
     {
+
 		public ComboBox comparison = new ComboBox();
-		//private ComboBox order = new ComboBox();
+		NamespaceView namespaceView;
         public static Label Caption(string text)
         {
             Label caption = new Label();
@@ -280,12 +241,22 @@ namespace NProf
         public static int count = 0;
 		public void UpdateComparison()
 		{
-			comparison.Items.Clear();
-			comparison.Items.Add("");
+			List<TabPage> remove = new List<TabPage>();
+			foreach (TabPage page in comparison.Items)
+			{
+				if (!NProf.tabs.TabPages.Contains(page))
+				{
+					remove.Add(page);
+				}
+			}
+			foreach (TabPage page in remove)
+			{
+				comparison.Items.Remove(page);
+			}
 
 			foreach (RunView r in NProf.tabs.TabPages)
 			{
-				if (r != this)
+				if (r != this && !comparison.Items.Contains(r))
 				{
 					comparison.Items.Add(r);
 				}
@@ -309,6 +280,34 @@ namespace NProf
             count++;
             this.Text = Path.GetFileNameWithoutExtension(run.Executable) + " #" + count+"    ";
 
+			MenuItem callComparison = new MenuItem("Go to comparison run", delegate
+			{
+				Function function = calls.GetOtherFunction(((Function)calls.SelectedNode.Tag), comparisonRun.functions);
+				if (function != null)
+				{
+					RunView other = ((RunView)comparison.SelectedItem);
+					NProf.tabs.SelectedTab = other;
+					other.comparison.SelectedItem = this;
+
+					//other.callers.SelectedNode = other.callers.Nodes[function.ID.ToString()];
+					other.calls.SelectNode(function);
+					other.calls.Focus();
+				}
+			});
+			MenuItem callerComparison = new MenuItem("Go to comparison run", delegate
+			{
+				Function function=callers.GetOtherFunction(((Function)callers.SelectedNode.Tag), comparisonRun.callers);
+				if (function != null)
+				{
+					RunView other = ((RunView)comparison.SelectedItem);
+					NProf.tabs.SelectedTab = other;
+					other.comparison.SelectedItem = this;
+
+					//other.callers.SelectedNode = other.callers.Nodes[function.ID.ToString()];
+					other.callers.SelectNode(function);
+					other.callers.Focus();
+				}
+			});
 			ContextMenu callsMenu = new ContextMenu(new MenuItem[] {
 				new MenuItem("Show callers",delegate(object sender,EventArgs e){
 					callers.MoveTo(((Function)calls.SelectedNode.Tag).ID);
@@ -317,7 +316,9 @@ namespace NProf
 				new MenuItem("Show all calls",delegate(object sender,EventArgs e){
 					calls.MoveTo(((Function)calls.SelectedNode.Tag).ID);
 					calls.Focus();
-				})
+				}),
+				callComparison
+				
 			});
 			ContextMenu callersMenu = new ContextMenu(new MenuItem[] {
 				new MenuItem("Show calls",delegate(object sender,EventArgs e){
@@ -327,7 +328,8 @@ namespace NProf
 				new MenuItem("Show all callers",delegate(object sender,EventArgs e){
 					callers.MoveTo(((Function)callers.SelectedNode.Tag).ID);
 					callers.Focus();			
-				})
+				}),
+				callerComparison				
 			});
 			calls.MouseClick+= delegate(object sender, MouseEventArgs e)
 			{
@@ -351,8 +353,10 @@ namespace NProf
 			methodPanel.SplitterWidth = 10;
             methodPanel.Orientation = Orientation.Horizontal;
 
-			methodPanel.Panel2.Controls.Add(new MethodPanel("Callers",callers,this));
-			methodPanel.Panel1.Controls.Add(new MethodPanel("Calls",calls,this));
+			callerPanel = new MethodPanel("Callers", callers, this);
+			callPanel = new MethodPanel("Calls",calls,this);
+			methodPanel.Panel2.Controls.Add(callerPanel);
+			methodPanel.Panel1.Controls.Add(callPanel);
 
 			comparison.DropDownStyle = ComboBoxStyle.DropDownList;
 			comparison.Dock = DockStyle.Top;
@@ -370,45 +374,145 @@ namespace NProf
 			p.Dock = DockStyle.Top;
 			methodPanel.Panel1.Controls.Add(p);
 
+			Label label = new Label();
+			label.Width = (int)(MethodPanel.CharWidth(this.CreateGraphics()).Width*3);
+			p.Controls.Add(label);
 			p.Controls.Add(Caption("Compare to:"));
 			p.Controls.Add(comparison);
 			
             methodPanel.Dock = DockStyle.Fill;
+			bool initializing=true;
 
 			if (comparison.Items.Count != 0)
 			{
-				comparison.SelectedIndexChanged += new EventHandler(comparison_SelectedIndexChanged);
+				comparison.SelectedValueChanged += delegate
+				{
+				};
+				comparison.SelectedIndexChanged += delegate
+				{
+					//if (!initializing)
+					//{
+						RunView r = comparison.Items[comparison.SelectedIndex] as RunView;
+						if (r == null)
+						{
+							comparisonRun = null;
+						}
+						else
+						{
+							comparisonRun = r.run;
+							if (r.comparison.SelectedItem != this)
+							{
+								r.comparison.SelectedItem = this;
+							}
+						}
+						calls.Nodes.Clear();
+						callers.Nodes.Clear();
+						calls.Update(run, run.functions);
+						callers.Update(run, run.callers);
+						callComparison.Visible = callerComparison.Visible = comparison.Items.Count != 0;//comparison.SelectedIndex != 0;
+					//}
+				};
 				comparison.SelectedIndex = 0;
 
 			}
-            calls.Update(run, run.functions);
-            callers.Update(run, run.callers);
+			namespaceView = new NamespaceView(this);
+			namespaceView.Dock = DockStyle.Fill;
+			if (NProf.tabs.TabPages.Count == 0)
+			{
+
+				calls.Update(run, run.functions);
+				callers.Update(run, run.callers);
+			}
+			namespaceView.Update(run, run.functions);
+			namespaceView.Width = 300;
 			this.Controls.Add(methodPanel);
+			Splitter s = new Splitter();
+			this.Controls.Add(s);
+			initializing = false;
+			comparison.SelectedIndex = comparison.Items.Count - 1;
+
+			Label namespaceLabel = NProf.MakeLabel("Namespaces:");
+			namespaceLabel.Dock = DockStyle.Top;
+			namespaceView.Dock = DockStyle.Fill;
+			Panel leftPanel = new Panel();
+			leftPanel.Width = 200;
+			leftPanel.Dock = DockStyle.Left;
+			leftPanel.Controls.Add(namespaceView);
+			leftPanel.Controls.Add(namespaceLabel);
+			this.Controls.Add(leftPanel);
         }
+		public MethodPanel callPanel;
+		public MethodPanel callerPanel;
 		public SortColumn sort = SortColumn.Inclusive;
 
 		public Run run;
-
-		void comparison_SelectedIndexChanged(object sender, EventArgs e)
-		{
-			RunView r = comparison.Items[comparison.SelectedIndex] as RunView;
-			if (r == null)
-			{
-				comparisonRun = null;
-			}
-			else
-			{
-				comparisonRun = r.run;
-			}
-			calls.Nodes.Clear();
-			callers.Nodes.Clear();
-			calls.Update(run, run.functions);
-			callers.Update(run, run.callers);
-		}
 		public Run comparisonRun;
 		public MethodView calls;
 		public MethodView callers;
     }
+	public class About : Form
+	{
+		public About()
+		{
+			Button ok=new Button();
+			Bitmap image= new Bitmap(this.GetType().Assembly.GetManifestResourceStream("NProf.Resources.app-icon.ico"));
+			ok.Text = "OK";
+			this.Text = "About NProf";
+			this.ShowIcon = false;
+			ok.Click += delegate
+			{
+				this.Close();
+			};
+			PictureBox picture = new PictureBox();
+			picture.Image = image;
+
+
+			FlowLayoutPanel p = new FlowLayoutPanel();
+			p.Dock = DockStyle.Top;
+			Label nprofLabel = NProf.MakeLabel("NProf 0.12\n(C) Matthew Mastracci, Christian Staudenmeyer\n\nLicense:");
+			nprofLabel.Dock = DockStyle.Fill;
+			nprofLabel.TextAlign = ContentAlignment.MiddleLeft;
+			p.Controls.Add(nprofLabel);//
+			p.Controls.Add(picture);
+
+			this.KeyDown += new KeyEventHandler(About_KeyDown);
+
+			TextBox license = new TextBox();
+			license.Multiline = true;
+			license.ReadOnly = true;
+			picture.Width = image.Width;
+			picture.Height = image.Height;
+			license.WordWrap = false;
+			license.Text=new StreamReader(this.GetType().Assembly.GetManifestResourceStream("NProf.COPYING.txt")).ReadToEnd();
+			license.Dock = DockStyle.Fill;
+			license.BackColor = Color.White;
+			license.ScrollBars = ScrollBars.Both;
+			
+			this.Controls.Add(license);
+			FlowLayoutPanel q = new FlowLayoutPanel();
+			q.FlowDirection = FlowDirection.RightToLeft;
+			q.AutoSize = true;
+			q.Dock = DockStyle.Bottom;
+			q.Controls.Add(ok);
+			this.Controls.Add(q);
+			p.AutoSize = true;
+			this.FormBorderStyle= FormBorderStyle.FixedSingle;
+			this.Controls.Add(p);
+			this.Width = 450;
+			this.AcceptButton = ok;
+			license.Select(0, 0);
+			ok.Focus();
+		}
+		void About_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.KeyData == Keys.Escape)
+			{
+				this.Close();
+				e.Handled = true;
+				e.SuppressKeyPress = true;
+			}
+		}
+	}
     public class NProf : Form
     {
         public static Font font = new Font("Courier New", 10.0f);
@@ -437,7 +541,6 @@ namespace NProf
 				SaveSettings();
 			};
 			LoadSettings();
-			help.Font = new Font("Microsoft Sans Serif", 10);
             WindowState = FormWindowState.Maximized;
             Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("NProf.Resources.app-icon.ico"));
             Text = Title;
@@ -446,12 +549,26 @@ namespace NProf
 				new MenuItem(
 					"File",
 					new MenuItem[] {
+						new MenuItem(
+							"Close Tab",
+							delegate {RemoveTab();},Shortcut.CtrlF4
+						),
 						new MenuItem("E&xit",delegate {Close();})
 					}),
 				new MenuItem(
 					"Edit",
 					new MenuItem[] {
-						//new MenuItem("Find",delegate {if(tabs.SelectedTab!=null){((RunView)tabs.SelectedTab).searchPanel.Toggle();}},Shortcut.CtrlF)
+						new MenuItem(
+						    "Find",
+						    delegate
+						    {
+						        if(tabs.SelectedTab!=null)
+						        {
+						            ((RunView)tabs.SelectedTab).callPanel.searchPanel.Toggle();
+						        }
+						    },
+						    Shortcut.CtrlF
+						)
 					}
 				),
 				new MenuItem(
@@ -459,18 +576,15 @@ namespace NProf
 					new MenuItem[] {
 							new MenuItem("Start Profiling",delegate{StartRun();},Shortcut.F5)
 					}
+				),
+				new MenuItem(
+					"Help",
+					new MenuItem[] {
+						new MenuItem("Help",delegate { Process.Start("http://code.google.com/p/nprof/w/list");},Shortcut.F1),
+						new MenuItem("About",delegate{new About().ShowDialog();})
+					}
 				)
             });
-
-			//Splitter methodSplitter = new Splitter();
-			//methodSplitter.Dock = DockStyle.Bottom;
-			//methodSplitter.BorderStyle = BorderStyle.FixedSingle;
-			//methodSplitter.MinSize=10;
-			//methodSplitter.Height = 30;
-
-			//Splitter leftSplitter = new Splitter();
-			//leftSplitter.Dock = DockStyle.Bottom;
-
 			mainPanel.AutoSize = true;
             application = new TextBox();
 			application.Width = 200;
@@ -569,21 +683,10 @@ namespace NProf
 
 		void tabs_MouseHover(object sender, EventArgs e)
 		{
-			//left=
 			Rectangle r=tabs.GetTabRect(tabs.SelectedIndex);
 
 			ToolTip t = new ToolTip();
 			int left = 0;
-			//int counter=0;
-			//foreach (TabPage tab in tabs.TabPages)
-			//{
-			//    left += tabs.GetTabRect(counter).Size.Width;
-			//    counter++;
-			//    if (tab == tabs.SelectedTab)
-			//    {
-			//        break;
-			//    }
-			//}
 			Point p=PointToClient(Cursor.Position)-new Size(tabs.Left,tabs.Top);
 			if (TestHit(tabs,p))
 			{
@@ -619,24 +722,25 @@ namespace NProf
 			Point p = e.Location;
 			if (TestHit(tc, p))
 			{
-				//TabPage TabP = (TabPage)tc.TabPages[tc.SelectedIndex];
 				RemoveTab();
-				//tc.TabPages.Remove(TabP);
 			}
 		}
 		public void RemoveTab()
 		{
 			int index=tabs.SelectedIndex;
-			if (tabs.SelectedIndex < tabs.TabPages.Count - 1)
+			if (index >= 0)
 			{
-				tabs.SelectedIndex++;
+				if (tabs.SelectedIndex < tabs.TabPages.Count - 1)
+				{
+					tabs.SelectedIndex++;
+				}
+				else if (tabs.SelectedIndex > 0)
+				{
+					tabs.SelectedIndex--;
+				}
+				tabs.TabPages.RemoveAt(index);
 			}
-			else if (tabs.SelectedIndex > 0)
-			{
-				tabs.SelectedIndex--;
-			}
-			//tabs.SelectedIndex = Math.Min(tabs.TabPages.Count - 1, index);
-			tabs.TabPages.RemoveAt(index);
+			((RunView)tabs.SelectedTab).UpdateComparison();
 		}
 
 		private bool TestHit(TabControl tc, Point p)
@@ -653,7 +757,7 @@ namespace NProf
 			}
 			return false;
 		}
-        private static Label MakeLabel(string text)
+        public static Label MakeLabel(string text)
         {
             Label label = new Label();
             label.Text = text;
@@ -674,7 +778,6 @@ namespace NProf
             run.profiler.completed = new EventHandler(run.Complete);
             run.Start();
         }
-		//public Button close = new Button();
         public void ShowRun(Run run)
         {
             RunView runView=new RunView(run);
@@ -758,7 +861,6 @@ namespace NProf
 					{
 						key.DeleteSubKeyTree(field.Name);
 						RegistryKey k = key.CreateSubKey(field.Name);
-						//k.deletevalu
 						int count = 1;
 						foreach (string s in (string[])value)
 						{
@@ -809,6 +911,7 @@ namespace NProf
     {
         public Run run;
 		public readonly bool reverse;
+		public Function parent;
         public FunctionInfo Signature
         {
             get
@@ -816,14 +919,14 @@ namespace NProf
                 return run.signatures[ID];
             }
         }
-        public Function(FunctionID ID, Run run,bool reverse)
+		public Function(FunctionID ID, Function parent, Run run, bool reverse)
         {
+			this.parent = parent;
             this.run = run;
             this.ID = ID;
 			this.reverse = reverse;
         }
         public readonly FunctionID ID;
-
 
 		//public int ExclusiveSamples = 0;
 		public int ExclusiveSamples
@@ -835,10 +938,6 @@ namespace NProf
 				{
 					if (!reverse)
 					{
-						//if (stackWalk.length + 1 == stackWalk.frames.Count)
-						//{
-						//    samples++;
-						//}
 						if (stackWalk.length == 0)
 						{
 							samples++;
@@ -851,17 +950,10 @@ namespace NProf
 							samples++;
 						}
 					}
-
-					//if(stackWalk.frames[stackWalk.length-1]==this.ID)
-					//{
-					//    samples++;
-					//}
 				}
 				return samples;
 			}
 		}
-
-
         public int Samples;
         public int lastWalk;
 		public double InclusiveChange;
@@ -879,7 +971,7 @@ namespace NProf
                     {
                         if (walk.length != 0)
                         {
-                            Function callee = Run.GetFunctionInfo(children, walk.frames[walk.length - 1], run,this.reverse);
+                            Function callee = Run.GetFunctionInfo(children, this,walk.frames[walk.length - 1], run,this.reverse);
                             if (callee.lastWalk != walk.id)
                             {
                                 callee.Samples++;
@@ -899,12 +991,12 @@ namespace NProf
         {
             return executable +"s     " + Duration.TotalSeconds.ToString("0.00");
         }
-        public static Function GetFunctionInfo(FunctionMap functions, FunctionID id, Run run,bool reverse)
+        public static Function GetFunctionInfo(FunctionMap functions, Function parent,FunctionID id, Run run,bool reverse)
         {
             Function result;
             if (!functions.TryGetValue(id, out result))
             {
-                result = new Function(id, run,reverse);
+                result = new Function(id, parent, run,reverse);
                 functions[id] = result;
             }
             return result;
@@ -943,7 +1035,7 @@ namespace NProf
                 }
                 for (int i = 0; i < stackWalk.Count; i++)
                 {
-                    Function function = Run.GetFunctionInfo(map, stackWalk[stackWalk.Count - i - 1], run,reverse);
+                    Function function = Run.GetFunctionInfo(map,null, stackWalk[stackWalk.Count - i - 1], run,reverse);
                     if (function.lastWalk != currentWalk)
                     {
                         function.Samples++;
@@ -952,11 +1044,6 @@ namespace NProf
                     function.lastWalk = currentWalk;
                 }
             }
-			//foreach (List<FunctionID> stackWalk in stackWalks)
-			//{
-			//    Function f = Run.GetFunctionInfo(map, stackWalk[0], run,reverse);
-			//    f.ExclusiveSamples++;
-			//}
         }
         private string ReadString(BinaryReader br)
         {
@@ -988,7 +1075,6 @@ namespace NProf
                 this.end = DateTime.Now;
                 while (true)
                 {
-					//int functionId = r.ReadInt32();
                     FunctionID functionId = r.ReadUInt64();
                     if (functionId == FunctionID.MaxValue)
                     {
@@ -1060,21 +1146,6 @@ namespace NProf
     public class FunctionMap : Dictionary<FunctionID, Function>
     {
     }
-	//public class Sorter : System.Collections.IComparer
-	//{
-	//    public int Compare(object x, object y)
-	//    {
-	//        if (((TreeNode)x).Tag == null)
-	//        {
-	//            return -1;
-	//        }
-	//        if (((TreeNode)y).Tag == null)
-	//        {
-	//            return 1;
-	//        }
-	//        return ((Function)((TreeNode)y).Tag).ExclusiveSamples.CompareTo(((Function)((TreeNode)x).Tag).ExclusiveSamples);
-	//    }
-	//}
     public class View : TreeView
     {
         public View()
@@ -1085,86 +1156,93 @@ namespace NProf
     }
 	public class MethodPanel : Panel
 	{
+		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+		{
+			if (keyData == (Keys.F | Keys.Control))
+			{
+				this.searchPanel.Toggle();
+				return true;
+			}
+			else
+			{
+				return base.ProcessCmdKey(ref msg, keyData);
+			}
+		}
 		public SearchPanel searchPanel;
 		public MethodPanel(string caption,MethodView view,RunView runView)
 		{
 			searchPanel = new SearchPanel(view);
-			view.KeyDown += delegate(object sender,KeyEventArgs e)
-			{
-				if (e.KeyData == (Keys.F | Keys.Control))
-				{
-					searchPanel.Toggle();
-				}
-			};
 			searchPanel.Dock = DockStyle.Top;
 
-
-
-			//Panel q = new Panel();
 			FlowLayoutPanel q = new FlowLayoutPanel();
 			q.Padding = new Padding(0);
 			q.Margin = new Padding(0);
 			q.Dock = DockStyle.Top;
 			q.Height=25;
 			Controls.Add(view);
-			Button inclusive = new UpDownButton("Inclusive", view, SortColumn.Inclusive, runView);
 
 			Graphics graphics=NProf.form.CreateGraphics();
 			graphics.PageUnit = GraphicsUnit.Pixel;
-			SizeF size=graphics.MeasureString("a", NProf.font, 100,StringFormat.GenericTypographic);
+			SizeF size = CharWidth(graphics);
 
 			Label label = new Label();
 			label.Width = (int)size.Width * 3;
-			//label.Text = caption;
 			q.Controls.Add(label);
-			int s=(int)(size.Width * 7);
-			inclusive.Width = s;
-			q.Controls.Add(inclusive);
-			UpDownButton inclusiveChanged = new UpDownButton("Change", view, SortColumn.InclusiveChange, runView);
-			inclusiveChanged.Width = s;
-			inclusiveChanged.Visible = false;
+			int s=(int)(size.Width * 8);
+			Label time = NProf.MakeLabel("Time");
+			time.AutoSize = false;
+			time.Width = s;
+			time.Margin = new Padding(0);
+			time.Padding = new Padding(0);
+			q.Controls.Add(time);
+			Label inclusiveChanged = NProf.MakeLabel("Change");
+			inclusiveChanged.AutoSize = false;
+			inclusiveChanged.Width = (int)(size.Width*7);
+			inclusiveChanged.Margin = new Padding(0);
+			inclusiveChanged.Padding = new Padding(0);
 			q.Controls.Add(inclusiveChanged);
-			Button exclusive = new UpDownButton("Exclusive", view, SortColumn.Exclusive, runView);
-			exclusive.Width = (int)s;
-			q.Controls.Add(exclusive);
-			UpDownButton exclusiveChanged = new UpDownButton("Change", view, SortColumn.ExclusiveChange, runView);
-			exclusiveChanged.Width = (int)s;
-			exclusiveChanged.Visible = false;
-			q.Controls.Add(exclusiveChanged);
 			runView.comparison.SelectedIndexChanged += delegate
 			{
-				inclusiveChanged.Visible=exclusiveChanged.Visible=runView.comparison.SelectedIndex!=0;
+				inclusiveChanged.Visible=runView.comparison.SelectedIndex!=0;
 			};
-			Label c=new Label();
-			c.Margin = new Padding((int)size.Width*2, 0, 0, 0);
-			c.Text=caption;
-			c.TextAlign = ContentAlignment.MiddleLeft;
+			q.Padding = new Padding(0);
+			Label c = NProf.MakeLabel(caption);
 			q.Controls.Add(c);
-			//q.Controls.Add(
+			c.Padding = new Padding(0);
+			c.Margin = new Padding(0);
 			Controls.Add(q);
-			//Controls.Add(RunView.Caption(caption));
 			Controls.Add(searchPanel);
-
 			this.Dock = DockStyle.Fill;
+		}
+
+		public static SizeF CharWidth(Graphics graphics)
+		{
+			SizeF size = graphics.MeasureString("a", NProf.font, 100, StringFormat.GenericTypographic);
+			return size;
 		}
 	}
     public class MethodView : View
     {
+		public void SelectNode(Function f)
+		{
+			TreeNode n=GetNode(f);
+			this.SelectedNode = n;
+		}
+		private TreeNode GetNode(Function f)
+		{
+			if (f.parent == null)
+			{
+				return this.Nodes[f.ID.ToString()];
+			}
+			else
+			{
+				return GetNode(f.parent).Nodes[f.ID.ToString()];
+			}
+		}
         public TreeNode MoveTo(FunctionID id)
         {
 			SelectedNode=Nodes[id.ToString()];
-
 			return SelectedNode;
-			//foreach (TreeNode item in Nodes)
-			//{
-			//    if (((Function)item.Tag).ID == id)
-			//    {
-			//        this.SelectedNode = item;
-			//        Invalidate();
-			//        this.Focus();
-			//        break;
-			//    }
-			//}
         }
 
 		void MethodView_MouseClick(object sender, MouseEventArgs e)
@@ -1183,6 +1261,7 @@ namespace NProf
             SuspendLayout();
             Invalidate();
             BeginUpdate();
+			this.Nodes.Clear();
             foreach(Function method in SortFunctions(functions.Values))
             {
                 AddItem(Nodes, method);
@@ -1194,7 +1273,7 @@ namespace NProf
             EndUpdate();
             ResumeLayout();
         }
-        public void Find(string text, bool forward, bool step)
+        public void Find(string text, bool forward, bool step,bool start)
         {
             if (text != "")
             {
@@ -1231,7 +1310,8 @@ namespace NProf
                 TreeNode firstItem = item;
                 while (item != null)
                 {
-                    if (item.Text.ToLower().Contains(text.ToLower()))
+					if ((!start && ((Function)item.Tag).Signature.Signature.ToLower().Contains(text.ToLower())) ||
+						(start && ((Function)item.Tag).Signature.Signature.ToLower().StartsWith(text.ToLower())))
                     {
                         SelectedNode = null;
                         SelectedNode = item;
@@ -1272,8 +1352,22 @@ namespace NProf
         }
         public Run currentRun;
 		private RunView runView;
+		string interactiveSearchText = "";
+		DateTime lastSearch=DateTime.MaxValue;
         public MethodView(string name,RunView runView)
         {
+			this.KeyPress += delegate(object sender,KeyPressEventArgs e)
+			{
+				if ((DateTime.Now-lastSearch).TotalMilliseconds > 1500)
+				{
+					interactiveSearchText = "";
+				}
+				lastSearch = DateTime.Now;
+
+				interactiveSearchText += e.KeyChar;
+				this.Find(interactiveSearchText, true, false,true);
+				e.Handled = true;
+			};
 			this.MouseClick += new MouseEventHandler(MethodView_MouseClick);
 			this.Dock = DockStyle.Fill;
 			this.runView = runView;
@@ -1285,7 +1379,6 @@ namespace NProf
             this.SizeChanged += delegate
             {
             };
-			//this.TreeViewNodeSorter = new Sorter();
 			this.HideSelection = false;
 
         }
@@ -1330,6 +1423,47 @@ namespace NProf
                 }
             }
         }
+		public Function GetOtherFunction(Function function, FunctionMap other)
+		{
+			List<Function> functions = new List<Function>();
+			Function f = function;
+			while (f != null)
+			{
+				functions.Add(f);
+				f = f.parent;
+				if (functions.Count > 10)
+				{
+				}
+				if (functions.Count > 100)
+				{
+					// TODO
+					return null;
+					//break;
+				}
+			}
+			functions.Reverse();
+			if (!other.ContainsKey(functions[0].ID))
+			{
+				return null;
+			}
+
+			Function start = other[functions[0].ID];
+			functions.RemoveAt(0);
+
+			Function o = start;
+			foreach (Function a in functions)
+			{
+				if (o.Children.ContainsKey(a.ID))
+				{
+					o = o.Children[a.ID];
+				}
+				else
+				{
+					return null;
+				}
+			}
+			return o;
+		}
         private TreeNode AddItem(TreeNodeCollection parent, Function function)
         {
             string signature = currentRun.signatures[function.ID].Signature;
@@ -1339,46 +1473,25 @@ namespace NProf
             }
             else
             {
-				//int i = 0;
-				//for (; i < parent.Count; i++)
-				//{
-				//    if (((Function)parent[i].Tag).Samples < function.Samples)
-				//    {
-				//        break;
-				//    }
-				//}
-
-
-				//parent.Insert(i, signature, signature);
                 double fraction = ((double)function.Samples) / (double)currentRun.maxSamples;
                 double percent = (100.0 * ((double)function.Samples / (double)function.run.maxSamples));
-				double exclusivePercent = (100.0 * ((double)function.ExclusiveSamples / (double)function.run.maxSamples));
 				string text = percent.ToString("0.00;-0.00;0.00").PadLeft(7, ' ');
 				if (runView.comparisonRun != null)
 				{
 
-					if (runView.comparisonRun.functions.ContainsKey(function.ID))
+					if (this.runView.comparisonRun.functions.ContainsKey(function.ID))
 					{
-						Function other = runView.comparisonRun.functions[function.ID];
-						//text += "  ";
-						function.InclusiveChange=(((double)function.Samples - (double)other.Samples)/ function.run.maxSamples) * 100;
-						function.ExclusiveChange= (((double)function.ExclusiveSamples - (double)other.ExclusiveSamples) / function.run.maxSamples) * 100;
-						//text += (function.Change).ToString("+0.00;-0.00;0.00").PadLeft(11, ' ');
-					}
-					else
-					{
-						function.InclusiveChange = fraction;// (((double)function.Samples - (double)other.Samples) / function.run.maxSamples) * 100;
-						function.ExclusiveChange = exclusivePercent;
-						//text += (function.Change).ToString("+0.00;-0.00;0.00").PadLeft(11, ' ');
-						//text += "  ".PadLeft(11,' ');
+						Function other = GetOtherFunction(function, this.runView.comparisonRun.functions);//[function.ID]);
+						if (other == null)
+						{
+							function.InclusiveChange = (double)function.Samples / (double)function.run.maxSamples;
+						}
+						else
+						{
+							function.InclusiveChange = (((double)function.Samples - (double)other.Samples) / function.run.maxSamples) * 100;
+						}
 					}
 					text += FormatChange(function.InclusiveChange);
-				}
-				text += "" + exclusivePercent.ToString("0.00;-0.00;0.00").PadLeft(7, ' ');
-				if (runView.comparisonRun != null)
-				{
-					text += FormatChange(function.ExclusiveChange);
-					//text += "  (" + (function.ExclusiveChange).ToString("+##0.00;-##0.00;+  0.00").PadLeft(7, ' ') + ")";
 				}
 				text += "  " + currentRun.signatures[function.ID].Signature.Trim();
 				TreeNode item = new TreeNode();
@@ -1386,7 +1499,6 @@ namespace NProf
 				item.Name = function.ID.ToString();
 				item.Text=text;
 				parent.Add(item);
-				//item.Text = percent.ToString("0.00;-0.00;0.00").PadLeft(7, ' ') + "  " + currentRun.signatures[function.ID].Signature.Trim();
                 return item;
             }
         }

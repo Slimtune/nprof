@@ -34,7 +34,6 @@
 #include "corprof.h"
 #include "Dbghelp.h"
 #include "resource.h"
-//#include "Stackwalker.h"
 #include "CorHdr.h"
 #include "winbase.h"
 
@@ -186,15 +185,16 @@ namespace ProfilerHook
 
 			IMetaDataImport *metaDataImport = 0;	
 			mdToken	token;
+			// TODO: fix deadlock
 			if(FAILED(profilerInfo->GetTokenAndMetaDataFromFunction(functionId, IID_IMetaDataImport, (IUnknown **)&metaDataImport,&token))) 
 			{
-				DebugBreak();
+				//DebugBreak();
 			}
 
 			WCHAR functionName[MAX_FUNCTION_LENGTH];
 			if(FAILED(metaDataImport->GetMethodProps(token, 0, functionName, MAX_FUNCTION_LENGTH,0,0,0,0,0,0))) 
 			{
-				DebugBreak();
+				//DebugBreak();
 			}
 
 			mdTypeDef classToken = 0;
@@ -559,7 +559,7 @@ namespace ProfilerHook
 				QueryThreadCycleTime(threadHandle,&cycles);
 				ULONG64 t=vistaThreadTime[id];
 
-				if( cycles - t > 10000000)
+				if( cycles - t > 8000000)
 				{
 					vistaThreadTime[id]=cycles;
 					return true;
@@ -651,7 +651,7 @@ namespace ProfilerHook
 						sf64.AddrStack.Mode=AddrModeFlat;
 						sf64.AddrFrame.Mode=AddrModeFlat;
 
-						//FunctionID functionId=0;
+						FunctionID functionId=0;
 						while(StackWalk64(
 							#ifdef _M_IX86
 							IMAGE_FILE_MACHINE_I386,
@@ -668,7 +668,6 @@ namespace ProfilerHook
 							0
 						))
 						{
-							
 							WORD  dwAddress;
 							DWORD  dwDisplacement;
 							ULONG64 buffer[(sizeof(SYMBOL_INFO) +MAX_SYM_NAME * sizeof(TCHAR) +
@@ -684,14 +683,6 @@ namespace ProfilerHook
 							{
 								symbol=pSymbol->Name;
 								f=pSymbol->Address;
-								//if(pSymbol->Address==sf64.AddrPC.Offset)
-								//{
-								//	cout<<"same"<<endl;
-								//}
-								//else
-								//{
-								//	cout<<"different"<<endl;
-								//}
 							}
 							else
 							{
@@ -699,6 +690,7 @@ namespace ProfilerHook
 								std::stringstream out;
 								out << "0x" << setbase(16) << sf64.AddrPC.Offset;
 								symbol = out.str();
+								symbol = "Unknown function";
 								f=sf64.AddrPC.Offset;
 							}
 							// todo: is this correct?
@@ -721,6 +713,8 @@ namespace ProfilerHook
 							}
 
 							int x=functions->size();
+
+							FunctionID a=0;
 							CONTEXT c=context;
 							// TODO: check result
 							profilerInfo->DoStackSnapshot(
@@ -731,6 +725,10 @@ namespace ProfilerHook
 								(BYTE*)&c,sizeof(c)
 							);
 							if(functions->size()!=x)
+							{
+								break;
+							}
+							if(x>5)
 							{
 								break;
 							}
@@ -824,6 +822,9 @@ namespace ProfilerHook
 		}
 		STDMETHOD(Initialize)(LPUNKNOWN pICorProfilerInfoUnk) 
 		{
+			//cout << "Hello from hook" << endl;
+			//Sleep(15000);
+			//cout << "Go!" << endl;
 			CComQIPtr<ICorProfilerInfo2> profilerInfo = pICorProfilerInfoUnk;
 			InitializeCriticalSection(&criticalSection);
 			profiler = new Profiler(profilerInfo);
@@ -1118,7 +1119,6 @@ namespace ProfilerHook
 		}
 		STDMETHOD(GarbageCollectionStarted)(int cGenerations, BOOL generationCollected[], COR_PRF_GC_REASON reason) 
 		{
-			//cout << "garbage collection started" << endl;
 			return E_NOTIMPL;
 		}
 		STDMETHOD(SurvivingReferences) (ULONG cSurvivingObjectIDRanges,ObjectID objectIDRangeStart[],ULONG cObjectIDRangeLength[]) 
@@ -1127,7 +1127,6 @@ namespace ProfilerHook
 		}
 		STDMETHOD(GarbageCollectionFinished)() 
 		{
-			//cout << "garbage collection finished" << endl;
 			return E_NOTIMPL;
 		}
 		STDMETHOD(FinalizeableObjectQueued)(DWORD finalizerFlags,ObjectID objectID) 
