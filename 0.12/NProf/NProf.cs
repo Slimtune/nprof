@@ -228,6 +228,17 @@ namespace NProf
     public class RunView : TabPage
     {
 
+		public RunView GetSelectedComparison()
+		{
+			if (comparison.SelectedItem is RunView)
+			{
+				return (RunView)comparison.SelectedItem;
+			}
+			else
+			{
+				return null;
+			}
+		}
 		public ComboBox comparison = new ComboBox();
 		NamespaceView namespaceView;
         public static Label Caption(string text)
@@ -242,9 +253,14 @@ namespace NProf
 		public void UpdateComparison()
 		{
 			List<TabPage> remove = new List<TabPage>();
-			foreach (TabPage page in comparison.Items)
+			if (!comparison.Items.Contains(""))
 			{
-				if (!NProf.tabs.TabPages.Contains(page))
+				comparison.Items.Add("");
+			}
+			foreach (object o in comparison.Items)
+			{
+				TabPage page = o as TabPage;
+				if (page!=null && !NProf.tabs.TabPages.Contains(page))
 				{
 					remove.Add(page);
 				}
@@ -254,12 +270,15 @@ namespace NProf
 				comparison.Items.Remove(page);
 			}
 
-			foreach (RunView r in NProf.tabs.TabPages)
+			foreach (object o in NProf.tabs.TabPages)
 			{
-				if (r != this && !comparison.Items.Contains(r))
+				TabPage r = o as TabPage;
+				if (r!= null && r!=this && !comparison.Items.Contains(r))
 				{
+					//ListViewItem i=new ListViewItem(
 					comparison.Items.Add(r);
 				}
+				//comparison.Items.Add(null);
 			}
 		}
         public RunView(Run run)
@@ -280,69 +299,80 @@ namespace NProf
             count++;
             this.Text = Path.GetFileNameWithoutExtension(run.Executable) + " #" + count+"    ";
 
-			MenuItem callComparison = new MenuItem("Go to comparison run", delegate
+			MenuItem callComparison = new MenuItem("Go to comparison", delegate
 			{
 				Function function = calls.GetOtherFunction(((Function)calls.SelectedNode.Tag), comparisonRun.functions);
 				if (function != null)
 				{
-					RunView other = ((RunView)comparison.SelectedItem);
+					RunView other = GetSelectedComparison();
 					NProf.tabs.SelectedTab = other;
 					other.comparison.SelectedItem = this;
-
-					//other.callers.SelectedNode = other.callers.Nodes[function.ID.ToString()];
 					other.calls.SelectNode(function);
 					other.calls.Focus();
 				}
 			});
-			MenuItem callerComparison = new MenuItem("Go to comparison run", delegate
+			MenuItem callerComparison = new MenuItem("Go to comparison", delegate
 			{
 				Function function=callers.GetOtherFunction(((Function)callers.SelectedNode.Tag), comparisonRun.callers);
 				if (function != null)
 				{
-					RunView other = ((RunView)comparison.SelectedItem);
+					RunView other = GetSelectedComparison();
 					NProf.tabs.SelectedTab = other;
 					other.comparison.SelectedItem = this;
 
-					//other.callers.SelectedNode = other.callers.Nodes[function.ID.ToString()];
 					other.callers.SelectNode(function);
 					other.callers.Focus();
 				}
 			});
+			MenuItem allCallsMenu=new MenuItem("Go to calls",delegate(object sender,EventArgs e){
+				calls.MoveTo(((Function)calls.SelectedNode.Tag).ID);
+				calls.Focus();
+			});
 			ContextMenu callsMenu = new ContextMenu(new MenuItem[] {
-				new MenuItem("Show callers",delegate(object sender,EventArgs e){
+				new MenuItem("Go to callers",delegate(object sender,EventArgs e){
 					callers.MoveTo(((Function)calls.SelectedNode.Tag).ID);
 					callers.Focus();
 				}),
-				new MenuItem("Show all calls",delegate(object sender,EventArgs e){
-					calls.MoveTo(((Function)calls.SelectedNode.Tag).ID);
-					calls.Focus();
-				}),
+				allCallsMenu,
 				callComparison
-				
+			});
+			MenuItem allCallersMenu = new MenuItem("Go to callers", delegate(object sender, EventArgs e)
+			{
+				callers.MoveTo(((Function)callers.SelectedNode.Tag).ID);
+				callers.Focus();
 			});
 			ContextMenu callersMenu = new ContextMenu(new MenuItem[] {
-				new MenuItem("Show calls",delegate(object sender,EventArgs e){
+				new MenuItem("Go to calls",delegate(object sender,EventArgs e){
 					calls.MoveTo(((Function)callers.SelectedNode.Tag).ID);
 					calls.Focus();
 				}),
-				new MenuItem("Show all callers",delegate(object sender,EventArgs e){
-					callers.MoveTo(((Function)callers.SelectedNode.Tag).ID);
-					callers.Focus();			
-				}),
-				callerComparison				
+				allCallersMenu,
+				callerComparison
 			});
 			calls.MouseClick+= delegate(object sender, MouseEventArgs e)
 			{
 				if (e.Button == MouseButtons.Right)
 				{
-					callsMenu.Show(calls,new Point(e.X,e.Y));
+					TreeNode node = calls.GetNodeAt(e.X, e.Y);
+					if(node!=null)
+					{
+						allCallsMenu.Visible=node.Parent!=null;
+						callComparison.Visible = GetSelectedComparison() != null && GetSelectedComparison()!= this;
+						callsMenu.Show(calls,new Point(e.X,e.Y));
+					}
 				}
 			};
 			callers.MouseClick += delegate(object sender, MouseEventArgs e)
 			{
 				if (e.Button == MouseButtons.Right)
 				{
-					callersMenu.Show(callers, new Point(e.X, e.Y));
+					TreeNode node = callers.GetNodeAt(e.X, e.Y);
+					if (node != null)
+					{
+						allCallersMenu.Visible = node.Parent != null;
+						callerComparison.Visible = GetSelectedComparison() != null && GetSelectedComparison()!=this;
+						callersMenu.Show(callers, new Point(e.X, e.Y));
+					}
 				}
 			};
             calls.Size = new Size(100, 100);
@@ -385,22 +415,19 @@ namespace NProf
 
 			if (comparison.Items.Count != 0)
 			{
-				comparison.SelectedValueChanged += delegate
-				{
-				};
 				comparison.SelectedIndexChanged += delegate
 				{
 					//if (!initializing)
 					//{
 						RunView r = comparison.Items[comparison.SelectedIndex] as RunView;
-						if (r == null)
+						if (r == null || r==this)
 						{
 							comparisonRun = null;
 						}
 						else
 						{
 							comparisonRun = r.run;
-							if (r.comparison.SelectedItem != this)
+							if (r.GetSelectedComparison() != this)
 							{
 								r.comparison.SelectedItem = this;
 							}
@@ -409,7 +436,8 @@ namespace NProf
 						callers.Nodes.Clear();
 						calls.Update(run, run.functions);
 						callers.Update(run, run.callers);
-						callComparison.Visible = callerComparison.Visible = comparison.Items.Count != 0;//comparison.SelectedIndex != 0;
+						// TODO: refactor
+						callComparison.Visible = callerComparison.Visible = comparison.Items.Count != 0 && GetSelectedComparison()!=this;
 					//}
 				};
 				comparison.SelectedIndex = 0;
@@ -740,7 +768,10 @@ namespace NProf
 				}
 				tabs.TabPages.RemoveAt(index);
 			}
-			((RunView)tabs.SelectedTab).UpdateComparison();
+			if (tabs.SelectedTab != null)
+			{
+				((RunView)tabs.SelectedTab).UpdateComparison();
+			}
 		}
 
 		private bool TestHit(TabControl tc, Point p)
@@ -1200,10 +1231,11 @@ namespace NProf
 			inclusiveChanged.Width = (int)(size.Width*7);
 			inclusiveChanged.Margin = new Padding(0);
 			inclusiveChanged.Padding = new Padding(0);
+			inclusiveChanged.Visible = false;
 			q.Controls.Add(inclusiveChanged);
 			runView.comparison.SelectedIndexChanged += delegate
 			{
-				inclusiveChanged.Visible=runView.comparison.SelectedIndex!=0;
+				inclusiveChanged.Visible=runView.comparison.Items.Count!=0 && runView.GetSelectedComparison()!=runView;
 			};
 			q.Padding = new Padding(0);
 			Label c = NProf.MakeLabel(caption);
@@ -1223,10 +1255,11 @@ namespace NProf
 	}
     public class MethodView : View
     {
-		public void SelectNode(Function f)
+		public TreeNode SelectNode(Function f)
 		{
 			TreeNode n=GetNode(f);
 			this.SelectedNode = n;
+			return n;
 		}
 		private TreeNode GetNode(Function f)
 		{
@@ -1266,6 +1299,16 @@ namespace NProf
             {
                 AddItem(Nodes, method);
             }
+			if (runView.comparisonRun != null)
+			{
+				foreach (Function method in runView.comparisonRun.functions.Values)
+				{
+					if (!functions.ContainsKey(method.ID))
+					{
+						AddItem(Nodes, method);
+					}
+				}
+			}
             foreach(TreeNode item in Nodes)
             {
                 EnsureComputed(item);
@@ -1466,34 +1509,55 @@ namespace NProf
 		}
         private TreeNode AddItem(TreeNodeCollection parent, Function function)
         {
-            string signature = currentRun.signatures[function.ID].Signature;
+			double fraction;// = ((double)function.Samples) / (double)currentRun.maxSamples;
+			double percent;//(100.0 * ((double)function.Samples / (double)function.run.maxSamples));
+			int samples;
+
+            string signature;
+			if (currentRun.signatures.ContainsKey(function.ID))
+			{
+				signature = currentRun.signatures[function.ID].Signature;
+				fraction = ((double)function.Samples) / (double)currentRun.maxSamples;
+				percent = (100.0 * ((double)function.Samples / (double)function.run.maxSamples));
+				samples = function.Samples;
+			}
+			else if (runView.comparisonRun != null && runView.comparisonRun.functions.ContainsKey(function.ID))
+			{
+				signature = runView.comparisonRun.signatures[function.ID].Signature;
+				fraction = 0;
+				percent = 0;
+				samples = 0;
+			}
+			else
+			{
+				throw new Exception("Could not find signature");
+			}
+
             if (parent[signature] != null)
             {
                 return parent[signature];
             }
             else
             {
-                double fraction = ((double)function.Samples) / (double)currentRun.maxSamples;
-                double percent = (100.0 * ((double)function.Samples / (double)function.run.maxSamples));
 				string text = percent.ToString("0.00;-0.00;0.00").PadLeft(7, ' ');
 				if (runView.comparisonRun != null)
 				{
 
 					if (this.runView.comparisonRun.functions.ContainsKey(function.ID))
 					{
-						Function other = GetOtherFunction(function, this.runView.comparisonRun.functions);//[function.ID]);
+						Function other = GetOtherFunction(function, this.runView.comparisonRun.functions);
 						if (other == null)
 						{
-							function.InclusiveChange = (double)function.Samples / (double)function.run.maxSamples;
+							function.InclusiveChange = (double)samples / (double)function.run.maxSamples;
 						}
 						else
 						{
-							function.InclusiveChange = (((double)function.Samples - (double)other.Samples) / function.run.maxSamples) * 100;
+							function.InclusiveChange = (((double)samples - (double)other.Samples) / function.run.maxSamples) * 100;
 						}
 					}
 					text += FormatChange(function.InclusiveChange);
 				}
-				text += "  " + currentRun.signatures[function.ID].Signature.Trim();
+				text += "  " + signature;
 				TreeNode item = new TreeNode();
 				item.Tag = function;
 				item.Name = function.ID.ToString();
