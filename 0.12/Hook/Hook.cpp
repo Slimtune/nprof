@@ -438,6 +438,9 @@ namespace ProfilerHook
 			return (string)path+guid+".nprof";
 		}
 		void EndAll(ProfilerHelper& profilerHelper) {
+			//cout << "ending"<<endl;
+			//string s;
+			//cin >> s;
 			file=new ofstream(GetTemporaryFileName().c_str(), ios::binary);
 			for(map< FunctionID, FunctionInfo*>::iterator i=signatures.begin();i!=signatures.end();i++) {
 				WriteInteger(i->first);
@@ -475,16 +478,17 @@ namespace ProfilerHook
 			{
 				cout << "SymInitialize failed";
 			}
-			isVista=false;
+			//isVista=false;
 			HMODULE kernel32 = LoadLibraryW(L"Kernel32");
 			if (kernel32 != NULL)
 			{    
 				FARPROC proc=GetProcAddress(kernel32, "QueryThreadCycleTime");
 				if (proc != NULL)    
 				{        
-					isVista=true;
+					//isVista=true;
 				}
 			}
+			//DebugBreak();
 			SetTimer();
 		}
 		HANDLE process;
@@ -553,50 +557,56 @@ namespace ProfilerHook
 		map<DWORD,DWORD> switchMap;
 		bool DecideWalk(HANDLE threadHandle,ThreadID id)
 		{
-			if(isVista)
-			{
+			//if(isVista)
+			//{
 				ULONG64 cycles=0;
 				QueryThreadCycleTime(threadHandle,&cycles);
 				ULONG64 t=vistaThreadTime[id];
+				//DebugBreak();
 
-				if( cycles - t > 8000000)
+				int diff=3000000;
+				if( cycles - t > diff)
 				{
+					//cout << cycles -t <<endl;
+					//vistaThreadTime[id]=t+diff;
 					vistaThreadTime[id]=cycles;
+					//vistaThreadTime[id]=cycles;
 					return true;
 				}
 				else
 				{
+					//cout << "not walking" << endl;
 					return false;
 				}
-			}
-			else
-			{
-				FILETIME creationTime;
-				FILETIME exitTime;
-				FILETIME kernelTime;
-				FILETIME userTime;
-				FILETIME t=threadTime[id];
-				GetThreadTimes(
-				  threadHandle,
-				  &creationTime,
-				  &exitTime,
-				  &kernelTime,
-				  &userTime
-				);
+			//}
+			//else
+			//{
+			//	FILETIME creationTime;
+			//	FILETIME exitTime;
+			//	FILETIME kernelTime;
+			//	FILETIME userTime;
+			//	FILETIME t=threadTime[id];
+			//	GetThreadTimes(
+			//	  threadHandle,
+			//	  &creationTime,
+			//	  &exitTime,
+			//	  &kernelTime,
+			//	  &userTime
+			//	);
 
-				if(CompareFileTime(&userTime,&t)>0)
-				{
-					threadTime[id]=userTime;
-					return true;
-				}
-				else
-				{
-					return false;
-				}
+			//	if(CompareFileTime(&userTime,&t)>0)
+			//	{
+			//		threadTime[id]=userTime;
+			//		return true;
+			//	}
+			//	else
+			//	{
+			//		return false;
+			//	}
 
-			}
+			//}
 		}
-		bool isVista;
+		//bool isVista;
 		void WalkStack() {
 			EnterCriticalSection(&threadMapLock);
 			for(map<DWORD,ThreadID>::iterator i=threadMap.begin();i!=threadMap.end();i++) {
@@ -605,17 +615,27 @@ namespace ProfilerHook
 				int suspendCount=SuspendThread(threadHandle);
 				CloseHandle(threadHandle);
 			}
+			//if(stackWalks.size()==0)
+			//{
+			//	DebugBreak();
+			//}
 
 			for(map<DWORD,ThreadID>::iterator i=threadMap.begin();i!=threadMap.end();i++) {
 
 				DWORD threadId=i->first;
+				//cout << i->first<< endl;
+				//cout << i->second << endl;
 
 				HANDLE threadHandle=OpenThread(THREAD_SUSPEND_RESUME|THREAD_QUERY_INFORMATION|THREAD_GET_CONTEXT,false,threadId);
+				//cout << threadHandle <<endl;
 
 				ThreadID id=threadMap[threadId];
 
+				//cout << id << endl;
+
 				if(DecideWalk(threadHandle,id))
 				{
+					//cout << "walking thread " << id << endl;
 					
 					vector<FunctionID>* functions=new vector<FunctionID>();
 					CONTEXT context;
@@ -634,6 +654,10 @@ namespace ProfilerHook
 						);
 						if(functions->size()!=0)
 						{
+							//cout << "thread id" << threadId<<endl;
+							//string s;
+							//cin >>s;
+							cout << "tries: 0" << endl;
 							break;
 						}
 						STACKFRAME64 sf64;
@@ -652,6 +676,7 @@ namespace ProfilerHook
 						sf64.AddrFrame.Mode=AddrModeFlat;
 
 						FunctionID functionId=0;
+						int count=0;
 						while(StackWalk64(
 							#ifdef _M_IX86
 							IMAGE_FILE_MACHINE_I386,
@@ -690,7 +715,7 @@ namespace ProfilerHook
 								std::stringstream out;
 								out << "0x" << setbase(16) << sf64.AddrPC.Offset;
 								symbol = out.str();
-								symbol = "Unknown function";
+								symbol = "Unknown native function";
 								f=sf64.AddrPC.Offset;
 							}
 							// todo: is this correct?
@@ -726,20 +751,26 @@ namespace ProfilerHook
 							);
 							if(functions->size()!=x)
 							{
+								//cout << "thread id" << threadId<< " with native " << endl;
+								//string s;
+								//cin >>s;
 								break;
 							}
-							if(x>5)
+							if(x>500)
 							{
 								break;
 							}
+							count++;
 						}
+						cout << "tries: " << count << endl;
+
 						if(functions->size()==0)
 						{
 							functions->push_back(17);
 							break;
 						}
 						else
-						{
+						{							
 							break;
 						}
 					}
@@ -832,6 +863,8 @@ namespace ProfilerHook
 		}
 		STDMETHOD(Shutdown)() 
 		{
+			//int a;
+			//cin >> a;
 			EnterCriticalSection(&criticalSection);
 			profiler->End();
 			delete profiler;
