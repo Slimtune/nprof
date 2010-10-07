@@ -642,8 +642,8 @@ namespace ProfilerHook
 					context.ContextFlags=CONTEXT_FULL;
 					GetThreadContext(threadHandle,&context);
 
-					while(true)
-					{
+					//while(true)
+					//{
 						// TODO: check result, combine with below
 						profilerInfo->DoStackSnapshot(
 							id,
@@ -652,14 +652,25 @@ namespace ProfilerHook
 							functions,
 							(BYTE*)&context,sizeof(context)
 						);
-						if(functions->size()!=0)
+						//if(functions->size()!=0)
+						//{
+						//	//cout << "thread id" << threadId<<endl;
+						//	//string s;
+						//	//cin >>s;
+						//	//cout << "tries: 0" << endl;
+						//	break;
+						//	/*break;*/
+						//}
+
+						if(functions->size()==0)
 						{
 							//cout << "thread id" << threadId<<endl;
 							//string s;
 							//cin >>s;
-							cout << "tries: 0" << endl;
-							break;
-						}
+							//cout << "tries: 0" << endl;
+							/*break;*/
+
+
 						STACKFRAME64 sf64;
 						memset(&sf64,0,sizeof(STACKFRAME64));
 						#ifdef _M_IX86
@@ -762,18 +773,20 @@ namespace ProfilerHook
 							}
 							count++;
 						}
-						cout << "tries: " << count << endl;
+						//cout << "tries: " << count << endl;
 
 						if(functions->size()==0)
 						{
 							functions->push_back(17);
-							break;
+						//	break;
 						}
-						else
-						{							
-							break;
-						}
+						//else
+						//{							
+						//	break;
+						//}
+						cout << "several" << endl;
 					}
+					//}
 					for(int index=0;index<functions->size();index++) {
 						FunctionID id=functions->at(index);
 						const map< FunctionID, FunctionInfo* >::iterator found = signatures.find(id);
