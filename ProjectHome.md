@@ -1,0 +1,1 @@
+NProf is not actively developed anymore. If you are looking for an open source .NET profiler, take a look at [SlimTune](http://code.google.com/p/slimtune/)
